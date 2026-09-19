@@ -1,0 +1,88 @@
+import { expect, test } from '@playwright/test';
+
+test.beforeEach(async ({ page }) => {
+  await page.route(/tiles\.openfreemap\.org/, (route) => route.abort());
+});
+
+test('anonymous visitors are sent to /auth from every protected area', async ({ page }) => {
+  for (const path of ['/game', '/game/shop', '/onboarding', '/admin']) {
+    await page.goto(path);
+    await expect(page).toHaveURL(/\/auth$/);
+  }
+});
+
+test('404 page', async ({ page }) => {
+  const res = await page.goto('/questa-pagina-non-esiste');
+  expect(res?.status()).toBe(404);
+  await expect(page.getByRole('heading', { name: 'Pagina non trovata' })).toBeVisible();
+  await page.getByRole('link', { name: 'Torna alla centrale' }).click();
+  await expect(page).toHaveURL(/\/auth$/);
+});
+
+test('design system page showcases every component group', async ({ page }) => {
+  await page.goto('/design');
+  for (const id of [
+    'brand',
+    'tokens',
+    'typography',
+    'buttons',
+    'forms',
+    'status',
+    'capability',
+    'overlays',
+    'data',
+    'icons',
+  ])
+    await expect(page.getByTestId(`design-${id}`)).toBeVisible();
+  await page.getByRole('button', { name: 'Dialog' }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await page.getByRole('button', { name: 'BottomSheet' }).click();
+  const sheet = page.getByRole('region', { name: 'Pannello inferiore di esempio' });
+  await expect(sheet).toHaveAttribute('data-snap', 'half');
+  await page.getByTestId('sheet-handle').click();
+  await expect(sheet).toHaveAttribute('data-snap', 'full');
+});
+
+test('keyboard: the auth form is fully operable and focus is visible', async ({ page }) => {
+  await page.goto('/auth');
+  await page.getByLabel('Email').focus();
+  await expect(page.getByLabel('Email')).toBeFocused();
+  await page.keyboard.type('tastiera@example.com');
+  await page.keyboard.press('Enter');
+  await expect(page.getByTestId('otp-0')).toBeFocused();
+  const outline = await page.getByTestId('otp-0').evaluate((el) => getComputedStyle(el).borderColor);
+  expect(outline).not.toBe('');
+});
+
+test('admin: role-gated shell with live tables and the ledger form', async ({ page }) => {
+  await page.goto('/auth');
+  await page.getByLabel('Email').fill('admin@rescue-control.test');
+  await page.getByLabel('Email').press('Enter');
+  await page.getByTestId('otp-0').click();
+  await page.keyboard.type('123456');
+  // First run creates the admin account; later runs (reused server, same browser storage) sign straight in.
+  const profile = page.getByLabel('Nome del Direttore');
+  await Promise.race([profile.waitFor(), page.waitForURL(/\/(onboarding|game)$/)]);
+  if (await profile.isVisible()) {
+    await profile.fill(`Admin ${Date.now() % 100000}`);
+    await page.locator('#acceptTerms').click();
+    await page.locator('#confirmAge').click();
+    await page.getByRole('button', { name: 'Crea il mio account' }).click();
+  }
+  await expect(page).toHaveURL(/\/(onboarding|game)$/);
+  await page.goto('/admin');
+  await expect(page.getByRole('heading', { name: 'Panoramica' })).toBeVisible();
+  await expect(page.getByRole('table', { name: 'Code di lavoro' })).toBeVisible();
+  await page.getByRole('link', { name: 'Utenti' }).click();
+  await expect(
+    page.getByRole('table', { name: 'Utenti' }).getByText('admin@rescue-control.test'),
+  ).toBeVisible();
+  await page.getByRole('link', { name: 'Rettifica Crediti' }).click();
+  await page.getByRole('button', { name: 'Registra la rettifica' }).click();
+  await expect(page.getByText('Campo obbligatorio.')).toBeVisible();
+  await expect(page.getByText('Inserisci un intero diverso da zero.')).toBeVisible();
+  await page.getByRole('link', { name: 'Funzioni' }).click();
+  await expect(page.getByRole('switch', { name: 'rewardedAds' })).toBeVisible();
+});

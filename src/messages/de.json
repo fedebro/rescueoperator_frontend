@@ -1,0 +1,1176 @@
+{
+  "meta": {
+    "title": "Rescue Control — Leitstellen-Simulator für Notfalleinsätze",
+    "description": "Leite die Leitstelle deiner Stadt: Alarmiere Fahrzeuge, verwalte deine Wachen und baue dein Rettungsnetz auf einer echten Karte aus."
+  },
+  "common": {
+    "back": "Zurück",
+    "close": "Schließen",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "credits": "Credits",
+    "eta": "Ankunft",
+    "arriving": "trifft ein…",
+    "locked": "Gesperrt",
+    "unlocked": "Freigeschaltet",
+    "requiresLevel": "Erfordert Level {level}",
+    "skipToContent": "Zum Inhalt springen",
+    "disclaimer": "Rescue Control ist ein Spiel. Wähle im echten Notfall die 112. Keine Verbindung zu Behörden oder Rettungsorganisationen.",
+    "attribution": "Kartendaten © OpenStreetMap-Mitwirkende · Gebietsdaten ISTAT"
+  },
+  "errors": {
+    "UNKNOWN": "Etwas ist schiefgelaufen. Versuch es gleich noch einmal.",
+    "NETWORK_ERROR": "Keine Verbindung. Prüfe dein Netz und versuch es erneut.",
+    "TIMEOUT": "Der Server antwortet nicht. Versuch es gleich noch einmal.",
+    "INVALID_RESPONSE": "Ungültige Antwort vom Server. Versuch es gleich noch einmal.",
+    "ABORTED": "Anfrage abgebrochen.",
+    "VALIDATION_ERROR": "Einige Angaben sind ungültig. Prüfe sie und versuch es erneut.",
+    "UNAUTHENTICATED": "Deine Sitzung ist abgelaufen. Melde dich erneut an.",
+    "FORBIDDEN": "Dafür fehlt dir die Berechtigung.",
+    "NOT_FOUND": "Element nicht gefunden.",
+    "CONFLICT": "Die Aktion passt nicht mehr zum aktuellen Stand. Aktualisiere und versuch es erneut.",
+    "RATE_LIMITED": "Zu viele Anfragen. Warte ein paar Sekunden.",
+    "IDEMPOTENCY_CONFLICT": "Diese Aktion wurde bereits mit anderen Daten gesendet.",
+    "IDEMPOTENCY_IN_PROGRESS": "Die Aktion läuft bereits. Einen Moment bitte.",
+    "INTERNAL_ERROR": "Serverfehler. Wir kümmern uns schon darum: Versuch es gleich noch einmal.",
+    "SERVICE_UNAVAILABLE": "Dienst vorübergehend nicht verfügbar.",
+    "MAINTENANCE_MODE": "Wartungsarbeiten. Wir sind in Kürze wieder einsatzbereit.",
+    "OTP_INVALID": "Falscher Code. Schau in deine E-Mails und versuch es erneut.",
+    "OTP_EXPIRED": "Der Code ist abgelaufen. Fordere einen neuen an.",
+    "OTP_TOO_MANY_ATTEMPTS": "Zu viele Versuche. Fordere einen neuen Code an.",
+    "OTP_COOLDOWN": "Du hast gerade erst einen Code angefordert. Warte kurz, bevor du einen weiteren anforderst.",
+    "DIRECTOR_NAME_REQUIRED": "Wähle einen Leiternamen, um fortzufahren.",
+    "DIRECTOR_NAME_INVALID": "Dieser Name ist nicht verfügbar. Wähle einen anderen.",
+    "SESSION_REVOKED": "Diese Sitzung wurde von einem anderen Gerät beendet.",
+    "CAREER_ALREADY_EXISTS": "Du hast bereits eine aktive Karriere.",
+    "LOCATION_NOT_PLAYABLE": "Dieser Ort ist noch nicht spielbar.",
+    "SITE_NOT_AVAILABLE": "Dieser Standort ist nicht mehr verfügbar. Wähle einen anderen.",
+    "INSUFFICIENT_CREDITS": "Nicht genug Credits.",
+    "LEVEL_TOO_LOW": "Dein Level ist zu niedrig.",
+    "NOT_UNLOCKED": "Diesen Inhalt hast du noch nicht freigeschaltet.",
+    "PACKAGE_NOT_FOUND": "Paket nicht gefunden.",
+    "AD_LIMIT_REACHED": "Du hast das Videolimit für heute erreicht.",
+    "AD_COOLDOWN": "Warte ein paar Minuten bis zum nächsten Video.",
+    "INCIDENT_NOT_DISPATCHABLE": "Zu diesem Einsatz können keine Fahrzeuge mehr entsandt werden.",
+    "VEHICLE_NOT_AVAILABLE": "Eines der Fahrzeuge ist nicht mehr verfügbar. Der Vorschlag wurde aktualisiert.",
+    "VEHICLE_NOT_RECALLABLE": "Dieses Fahrzeug kann gerade nicht zurückgerufen werden.",
+    "CREW_INSUFFICIENT": "Zu wenig Besatzung, um auszurücken.",
+    "CREW_UNQUALIFIED": "Der Besatzung fehlen die nötigen Qualifikationen.",
+    "CREW_EXHAUSTED": "Die Besatzung ist zu erschöpft und braucht eine Pause.",
+    "INVENTORY_INSUFFICIENT": "Nicht genug Vorräte im Lager.",
+    "CAPACITY_EXCEEDED": "In dieser Wache ist nicht genug Platz.",
+    "ROUTE_UNAVAILABLE": "Keine Route zum Ziel verfügbar.",
+    "HOSPITAL_NOT_COMPATIBLE": "Das gewählte Krankenhaus kann diesen Patienten nicht aufnehmen.",
+    "INVALID_STATE_TRANSITION": "Diese Aktion ist im Moment nicht möglich.",
+    "FEATURE_DISABLED": "Diese Funktion ist noch nicht aktiv."
+  },
+  "errorBoundary": {
+    "title": "Ein Fehler ist aufgetreten",
+    "body": "Die Ansicht wurde nicht richtig geladen. Deine Karriere ist sicher: Die Daten liegen auf dem Server.",
+    "retry": "Erneut versuchen",
+    "home": "Zur Startseite"
+  },
+  "notFound": {
+    "title": "Seite nicht gefunden",
+    "body": "Diese Adresse führt zu keiner Leitstelle.",
+    "back": "Zurück zur Leitstelle"
+  },
+  "auth": {
+    "pitch": "Eine echte Stadt. Echte Notfälle. Jede Entscheidung liegt bei dir.",
+    "families": "Rettungsdienste",
+    "email": {
+      "title": "Ab in die Leitstelle",
+      "subtitle": "Gib deine E-Mail-Adresse ein: Wir schicken dir einen Zugangscode. Er gilt für Anmeldung und Registrierung.",
+      "label": "E-Mail",
+      "placeholder": "name@beispiel.de",
+      "invalid": "Gib eine gültige E-Mail-Adresse ein.",
+      "submit": "Code zusenden",
+      "noPassword": "Kein Passwort, das du dir merken musst."
+    },
+    "otp": {
+      "title": "Schau in dein Postfach",
+      "subtitle": "Wir haben einen 6-stelligen Code an {email} gesendet. Er läuft in 10 Minuten ab.",
+      "label": "Zugangscode, Ziffer",
+      "submit": "Anmelden",
+      "resend": "Neuen Code senden",
+      "resendIn": "Neuer Code verfügbar in"
+    },
+    "profile": {
+      "title": "Willkommen, Leiter",
+      "subtitle": "Du bist zum ersten Mal hier. Wähle den Namen, mit dem du deine Dienstanweisungen unterzeichnest.",
+      "nameLabel": "Leitername",
+      "nameHint": "3 bis 24 Zeichen: Buchstaben, Ziffern, Leerzeichen und . _ - ’",
+      "nameInvalid": "Verwende 3 bis 24 Zeichen: Buchstaben, Ziffern, Leerzeichen und . _ - ’",
+      "consents": "Einwilligungen",
+      "acceptTerms": "Ich akzeptiere die Nutzungsbedingungen und habe die Datenschutzerklärung gelesen",
+      "confirmAge": "Ich bestätige, dass ich mindestens 14 Jahre alt bin",
+      "marketing": "Ich möchte Neuigkeiten und Updates zum Spiel per E-Mail erhalten",
+      "consentsRequired": "Um fortzufahren, musst du die Bedingungen akzeptieren und dein Alter bestätigen.",
+      "submit": "Konto erstellen"
+    }
+  },
+  "onboarding": {
+    "step": "Schritt {current} von {total}",
+    "mapLabel": "Karte der Startstandorte",
+    "location": {
+      "title": "Wo trittst du deinen Dienst an, {name}?",
+      "subtitle": "Wähle die Gemeinde, in der du deine erste Leitstelle eröffnest. Karte, Straßen und Entfernungen sind echt.",
+      "placeholder": "Gemeinde suchen, zum Beispiel Pescara",
+      "hint": "Gib mindestens zwei Buchstaben ein.",
+      "results": "Gefundene Gemeinden",
+      "empty": "Keine Gemeinde gefunden",
+      "emptyHint": "Prüfe den Namen oder versuch es mit einer Nachbargemeinde.",
+      "population": "{count} Einwohner",
+      "playable": "Verfügbar",
+      "comingSoon": "Demnächst"
+    },
+    "sites": {
+      "title": "Wähle deine erste Wache in {location}",
+      "subtitle": "Drei Lagen, drei Spielstile. Vergleiche Abdeckung und Reaktionszeiten: Weitere Wachen kannst du später eröffnen.",
+      "submit": "Karriere starten"
+    },
+    "site": {
+      "coverage": "Abgedeckte Bevölkerung",
+      "response": "Reaktionszeit",
+      "capacity": "Stellplätze",
+      "expansion": "Ausbau",
+      "real": "Echter Standort",
+      "generated": "Freies Grundstück",
+      "profile": {
+        "CENTRAL": "Zentral",
+        "BALANCED": "Ausgewogen",
+        "PERIPHERAL": "Stadtrand"
+      },
+      "potential": {
+        "LOW": "Gering",
+        "MEDIUM": "Mittel",
+        "HIGH": "Hoch"
+      },
+      "hint": {
+        "CENTRAL": "Du bist fast überall schnell vor Ort, hast aber wenig Platz zum Wachsen.",
+        "BALANCED": "Guter Kompromiss aus Reaktionszeit und Platz für neue Fahrzeuge. Empfohlen.",
+        "PERIPHERAL": "Viel Platz und günstiger Ausbau, aber längere Anfahrt ins Zentrum."
+      }
+    },
+    "creating": {
+      "title": "Wir eröffnen deine Leitstelle…",
+      "body": "Wir bereiten die Wache, das erste Fahrzeug und das Team in {location} vor."
+    }
+  },
+  "status": {
+    "incident": {
+      "CREATED": "Wird erstellt",
+      "PENDING_RESPONSE": "Wartet auf Fahrzeuge",
+      "RESPONDING": "Fahrzeuge unterwegs",
+      "ON_SCENE": "Einsatz läuft",
+      "RESOLVING": "Wird abgeschlossen",
+      "RESOLVED": "Abgeschlossen",
+      "FAILED": "Gescheitert",
+      "CANCELLED": "Abgebrochen",
+      "EXPIRED": "Abgelaufen"
+    },
+    "vehicle": {
+      "IN_DELIVERY": "In Lieferung",
+      "AVAILABLE": "Verfügbar",
+      "PREPARING": "Rückt aus",
+      "EN_ROUTE": "Auf Anfahrt",
+      "ON_SCENE": "Vor Ort",
+      "TRANSPORTING": "Patiententransport",
+      "AT_HOSPITAL": "Im Krankenhaus",
+      "RETURNING": "Auf Rückfahrt",
+      "RESTOCKING": "Auffüllen",
+      "MAINTENANCE": "In Wartung",
+      "BROKEN_DOWN": "Defekt",
+      "BEING_RECOVERED": "Wird geborgen",
+      "OUT_OF_SERVICE": "Außer Dienst"
+    },
+    "facility": {
+      "OPERATIONAL": "In Betrieb",
+      "UNDER_CONSTRUCTION": "Im Bau",
+      "OFFLINE": "Außer Betrieb"
+    },
+    "health": {
+      "EXCELLENT": "Sehr gut",
+      "GOOD": "Gut",
+      "WORN": "Abgenutzt",
+      "HIGH_RISK": "Gefährdet",
+      "CRITICAL": "Kritisch",
+      "INOPERABLE": "Nicht einsatzfähig"
+    }
+  },
+  "notifications": {
+    "newIncident": "Neuer Einsatz",
+    "open": "Öffnen",
+    "escalated": "Lage verschärft sich: Schweregrad {severity}",
+    "expired": "Einsatz ohne Reaktion abgelaufen",
+    "vehicleArrived": "{callSign} ist vor Ort",
+    "vehicleDelivered": "{callSign} wurde geliefert und ist einsatzbereit",
+    "vehicleBrokeDown": "{callSign} hat einen Defekt",
+    "levelUp": "Level {level} erreicht!",
+    "stipendPaid": "Abdeckungszuschuss gutgeschrieben: +{amount} Credits",
+    "upgradeDone": "Ausbau abgeschlossen: {facility}",
+    "incidentExpired": "Niemand ist ausgerückt: {address}"
+  },
+  "game": {
+    "loadFailed": "Leitstelle konnte nicht geladen werden",
+    "loadFailedHint": "Prüfe deine Verbindung. Deine Daten sind auf dem Server sicher.",
+    "retry": "Erneut versuchen",
+    "nav": {
+      "label": "Hauptnavigation",
+      "operations": "Leitstelle",
+      "map": "Karte",
+      "incidents": "Einsätze",
+      "facilities": "Wachen",
+      "fleet": "Fuhrpark",
+      "shop": "Shop",
+      "progression": "Karriere",
+      "economy": "Finanzen",
+      "settings": "Optionen",
+      "more": "Mehr"
+    },
+    "topbar": {
+      "level": "Level",
+      "levelAria": "Level {level}, {percent}% bis zum nächsten",
+      "activeIncidents": "Aktive Einsätze",
+      "availableVehicles": "Verfügbare Fahrzeuge",
+      "admin": "Administrationsbereich",
+      "profile": "Profil von {name}"
+    },
+    "world": {
+      "weather": {
+        "CLEAR": "Klar",
+        "CLOUDY": "Bewölkt",
+        "RAIN": "Regen",
+        "HEAVY_RAIN": "Starkregen",
+        "STORM": "Gewitter",
+        "HIGH_WIND": "Starker Wind",
+        "FOG": "Nebel",
+        "SNOW": "Schnee",
+        "EXTREME_HEAT": "Extreme Hitze"
+      },
+      "phase": {
+        "DAY": "Tag",
+        "TWILIGHT": "Dämmerung",
+        "NIGHT": "Nacht"
+      }
+    },
+    "connection": {
+      "connecting": "Verbindung zur Leitstelle…",
+      "online": "Verbunden",
+      "reconnecting": "Verbindung verloren. Wird wiederhergestellt…",
+      "polling": "Echtzeitverbindung nicht verfügbar: Aktualisierung alle 10 Sekunden.",
+      "offline": "Du bist offline. Die Leitstelle arbeitet weiter: Wir bringen dich auf den neuesten Stand, sobald das Netz zurück ist."
+    },
+    "notifications": {
+      "title": "Benachrichtigungen",
+      "open": "Benachrichtigungen, {count} ungelesen",
+      "empty": "Keine Benachrichtigungen"
+    },
+    "duty": {
+      "on": "Im Dienst",
+      "off": "Außer Dienst",
+      "onHint": "Du erhältst neue Einsätze.",
+      "offHint": "Keine neuen Einsätze. Laufende Einsätze werden abgeschlossen."
+    },
+    "map": {
+      "label": "Einsatzkarte"
+    },
+    "sheet": {
+      "handle": "Panel: Ziehen oder drücken, um die Höhe zu ändern"
+    },
+    "inspector": {
+      "label": "Details zur Auswahl",
+      "centerOnMap": "Auf Karte zentrieren",
+      "close": "Details schließen"
+    },
+    "queue": {
+      "title": "Einsätze",
+      "pending": "{count, plural, one {# wartet} other {# warten}}",
+      "emptyTitle": "Alles ruhig",
+      "emptyOnDuty": "Kein aktiver Einsatz. Der nächste Notruf kommt bestimmt bald.",
+      "emptyOffDuty": "Du bist außer Dienst: Es kommen keine neuen Einsätze."
+    },
+    "incident": {
+      "severity": "Schweregrad",
+      "tutorial": "Tutorial",
+      "expiresIn": "Läuft ab in",
+      "endsIn": "Einsatzende",
+      "elapsed": "Offen seit",
+      "closing": "wird abgeschlossen…",
+      "work": "Einsatzfortschritt",
+      "workWaiting": "wartet auf das erste Fahrzeug",
+      "assigned": "Zugewiesene Fahrzeuge",
+      "report": "Notruf",
+      "received": "Eingegangen um",
+      "patients": "Patienten",
+      "estimatedReward": "Geschätzte Belohnung",
+      "requirements": "Was gebraucht wird",
+      "timelineEmpty": "Noch keine Ereignisse",
+      "tabs": {
+        "dispatch": "Fahrzeuge",
+        "details": "Details",
+        "timeline": "Verlauf"
+      }
+    },
+    "requirements": {
+      "onScene": "Vor Ort",
+      "enRoute": "Auf Anfahrt",
+      "planned": "Ausgewählt",
+      "required": "Erforderlich",
+      "level": {
+        "REQUIRED": "Erforderlich",
+        "RECOMMENDED": "Empfohlen",
+        "OPTIONAL": "Optional"
+      }
+    },
+    "dispatch": {
+      "requirements": "Was gebraucht wird",
+      "options": "Fahrzeuge deines Fuhrparks",
+      "recommended": "Empfohlen",
+      "sendRecommended": "{count, plural, =0 {Keine Empfehlung möglich} one {Empfohlenes alarmieren} other {# Empfohlene alarmieren}}",
+      "sendSelected": "{count, plural, one {Ausgewähltes alarmieren} other {# Ausgewählte alarmieren}}",
+      "selectVehicle": "{callSign} auswählen",
+      "sent": "{count, plural, one {Fahrzeug alarmiert} other {# Fahrzeuge alarmiert}}",
+      "insufficient": "Zu schwache Reaktion: Mit diesen Fahrzeugen dauert der Einsatz länger und die Belohnung fällt geringer aus. Du kannst trotzdem alarmieren und später Verstärkung nachschicken.",
+      "recommendationPartial": "Dein Fuhrpark deckt nicht alles ab, was gebraucht wird: Dieser Vorschlag ist im Moment der bestmögliche.",
+      "noneAvailableTitle": "Kein Fahrzeug verfügbar",
+      "noneAvailableHint": "Alle Fahrzeuge sind im Einsatz. Warte auf eine Rückkehr oder erweitere deinen Fuhrpark.",
+      "goToShop": "Zum Shop",
+      "warning": {
+        "CREW_BELOW_OPTIMAL": "Besatzung reduziert",
+        "HEALTH_LOW": "Wartung empfohlen",
+        "NO_RELEVANT_CAPABILITY": "Hier wenig nützlich",
+        "CREW_TIRED": "Besatzung müde",
+        "LONG_ETA": "Lange Anfahrt"
+      }
+    },
+    "vehicle": {
+      "recall": "Fahrzeug zurückrufen",
+      "recalled": "{callSign} kehrt zurück",
+      "movement": "Fahrt",
+      "purpose": "Ziel",
+      "distance": "Entfernung",
+      "openIncident": "Einsatz öffnen",
+      "capabilities": "Einsatzfähigkeiten",
+      "health": "Zustand",
+      "crew": "Besatzung",
+      "crewMin": "mindestens {min} zum Ausrücken",
+      "purposes": {
+        "TO_INCIDENT": "Zum Einsatzort",
+        "TO_HOSPITAL": "Zum Krankenhaus",
+        "TO_BASE": "Rückfahrt zur Wache",
+        "DELIVERY": "Lieferung",
+        "RECOVERY": "Bergung"
+      }
+    },
+    "facility": {
+      "capacities": "Kapazität",
+      "vehicles": "{count, plural, =0 {Kein Fahrzeug zugewiesen} one {# Fahrzeug zugewiesen} other {# Fahrzeuge zugewiesen}}",
+      "manage": "Wache verwalten",
+      "domain": {
+        "GROUND": "Fahrzeughalle",
+        "AIR": "Hubschrauberlandeplatz",
+        "WATER": "Liegeplätze",
+        "PERSONNEL": "Unterkünfte",
+        "STORAGE": "Lager",
+        "WORKSHOP": "Werkstatt"
+      }
+    },
+    "incidentsPage": {
+      "title": "Einsätze",
+      "subtitle": "{count, plural, =0 {Kein aktiver Einsatz} one {# aktiver Einsatz} other {# aktive Einsätze}}",
+      "empty": "Kein aktiver Einsatz",
+      "col": {
+        "title": "Art",
+        "address": "Ort",
+        "status": "Status",
+        "vehicles": "Fahrzeuge",
+        "coverage": "Abdeckung",
+        "received": "Eingang",
+        "timer": "Timer"
+      }
+    },
+    "fleetPage": {
+      "title": "Fuhrpark",
+      "subtitle": "{count, plural, one {# Fahrzeug} other {# Fahrzeuge}} · {available} verfügbar",
+      "buy": "Fahrzeug kaufen",
+      "empty": "Kein Fahrzeug in dieser Ansicht",
+      "filter": {
+        "all": "Alle",
+        "available": "Verfügbar",
+        "busy": "Im Einsatz"
+      },
+      "col": {
+        "callSign": "Funkname",
+        "type": "Modell",
+        "status": "Status",
+        "facility": "Wache",
+        "crew": "Bes.",
+        "health": "Zustand"
+      }
+    },
+    "facilitiesPage": {
+      "title": "Wachen",
+      "subtitle": "{count, plural, one {# Wache} other {# Wachen}}",
+      "empty": "Keine Wache",
+      "upgrades": "Ausbauten",
+      "upgradeLevel": "St. {level}/{max}",
+      "buyUpgrade": "Bauen",
+      "building": "Im Bau:",
+      "maxLevel": "Maximale Stufe erreicht",
+      "upgradeStarted": "Bauarbeiten gestartet"
+    },
+    "shop": {
+      "title": "Fahrzeugshop",
+      "subtitle": "Erweitere deinen Fuhrpark. Das Level schaltet Modelle frei, mit Credits kaufst du sie.",
+      "deliverTo": "Lieferung an",
+      "empty": "Kein Fahrzeug in dieser Kategorie",
+      "buy": "Kaufen",
+      "noRoom": "Wache voll",
+      "crew": "Besatzung",
+      "space": "Plätze",
+      "delivery": "Lieferung",
+      "lockedFamily": "Dienst noch nicht freigeschaltet",
+      "bought": "{callSign} bestellt",
+      "boughtHint": "Nach der Lieferung ist es einsatzbereit.",
+      "insufficient": {
+        "title": "Nicht genug Credits",
+        "subtitle": "Dir fehlt nicht viel. So geht es weiter:",
+        "missing": "Dir fehlen",
+        "keepPlaying": "Spiel weiter: Jeder Einsatz bringt Credits",
+        "watchAd": "Video ansehen und Credits erhalten",
+        "buyCredits": "Credits kaufen",
+        "soon": "Bald"
+      }
+    },
+    "outcome": {
+      "title": {
+        "SUCCESS": "Einsatz abgeschlossen",
+        "PARTIAL": "Einsatz mit Mühe abgeschlossen",
+        "FAILURE": "Einsatz gescheitert"
+      },
+      "result": {
+        "SUCCESS": "Erfolg",
+        "PARTIAL": "Teilerfolg",
+        "FAILURE": "Gescheitert"
+      },
+      "subtitle": "Einsatzbericht",
+      "stars": "{stars} von 3 Sternen",
+      "gross": "Belohnung brutto",
+      "net": "Netto gutgeschrieben",
+      "xp": "Erfahrung",
+      "response": "Reaktionszeit",
+      "duration": "Dauer",
+      "continue": "Weiter",
+      "cost": {
+        "TRAVEL": "Fahrtkosten",
+        "ON_SCENE": "Kosten vor Ort",
+        "CONSUMABLES": "Verbrauchsmaterial",
+        "EXTERNAL_SUPPORT": "Externe Unterstützung"
+      }
+    },
+    "away": {
+      "title": "Während du weg warst",
+      "since": "Seit {date}",
+      "resolved": "Abgeschlossene Einsätze",
+      "failed": "Gescheiterte Einsätze",
+      "credits": "Credits aus Einsätzen",
+      "stipend": "Abdeckungszuschuss",
+      "xp": "Erfahrung",
+      "continue": "Zurück in den Dienst"
+    },
+    "progression": {
+      "title": "Karriere",
+      "subtitle": "Dein Level steigt nur durch Erfahrung im Einsatz: Kaufen kann man es nicht.",
+      "level": "Level {level}",
+      "xpProgress": "Erfahrung bis zum nächsten Level",
+      "toNext": "noch {xp}",
+      "totalXp": "Erfahrung gesamt",
+      "reputation": "Ansehen",
+      "resolved": "Abgeschlossen",
+      "failed": "Gescheitert",
+      "unlocks": "Freischaltungen nach Level"
+    },
+    "economy": {
+      "title": "Finanzen",
+      "subtitle": "Einnahmen aus Einsätzen und dem Abdeckungszuschuss, Ausgaben für Fahrzeuge und Wachen.",
+      "balance": "Kontostand",
+      "earned": "Insgesamt verdient",
+      "spent": "Insgesamt ausgegeben",
+      "stipend": "Abdeckungszuschuss",
+      "stipendHint": "Alle 4 Stunden erhältst du einen Zuschuss, der sich nach der Bevölkerung richtet, die du rechtzeitig erreichst. Er läuft auch in deiner Abwesenheit weiter, bis zu 12 Stunden.",
+      "stipendAmount": "Geschätzter Betrag",
+      "coverage": "Abdeckung",
+      "nextPayment": "Nächster in",
+      "ledger": "Buchungen",
+      "ledgerEmpty": "Noch keine Buchungen",
+      "loadMore": "Weitere Buchungen laden",
+      "col": {
+        "date": "Datum",
+        "description": "Beschreibung",
+        "amount": "Betrag",
+        "balance": "Kontostand"
+      }
+    },
+    "tutorial": {
+      "label": "Geführtes Tutorial",
+      "progress": "Tutorial · {current} von {total}",
+      "skip": "Tutorial überspringen",
+      "start": "Los geht’s",
+      "WELCOME": {
+        "title": "Willkommen in der Leitstelle, Leiter",
+        "body": "Der erste Notruf ist eingegangen. In wenigen Schritten siehst du, wie ein Einsatz von Anfang bis Ende abläuft."
+      },
+      "SELECT_INCIDENT": {
+        "title": "Öffne den Notruf",
+        "body": "Aktive Einsätze stehen immer in dieser Liste, nach Dringlichkeit sortiert. Wähle den Einsatz aus, um zu lesen, was passiert ist."
+      },
+      "DISPATCH": {
+        "title": "Alarmiere die Fahrzeuge",
+        "body": "Die Balken zeigen, was gebraucht wird. Die Leitstelle schlägt dir die besten Fahrzeuge vor: Ein Tipp, und sie rücken sofort aus. Du kannst jederzeit selbst auswählen."
+      },
+      "WATCH_ARRIVAL": {
+        "title": "Das Fahrzeug ist unterwegs",
+        "body": "Verfolge es auf der Karte: Bei der Ankunft beginnt der Einsatz. Er schreitet umso schneller voran, je besser die Fahrzeuge vor Ort den Bedarf decken."
+      },
+      "OUTCOME": {
+        "title": "Einsatz beendet",
+        "body": "Lies den Bericht: Belohnung, Kosten und Erfahrung."
+      },
+      "BUY_VEHICLE": {
+        "title": "Bau deinen Fuhrpark aus",
+        "body": "Mit der Belohnung kannst du dir ein zweites Fahrzeug leisten. Öffne den Fahrzeugshop und such dir eins aus: Zwei Fahrzeuge bedeuten zwei Einsätze gleichzeitig."
+      }
+    }
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "account": "Konto",
+    "directorName": "Leitername",
+    "email": "E-Mail",
+    "preferences": "Präferenzen",
+    "language": "Sprache",
+    "sound": "Soundeffekte",
+    "soundHint": "Ein Signal bei neuen Einsätzen und bei bestätigter Alarmierung.",
+    "reducedMotion": "Animationen reduzieren",
+    "reducedMotionHint": "Schaltet Pulsieren und Übergänge ab; Fahrzeuge bewegen sich sprunghaft.",
+    "duty": "Dienst",
+    "sessions": "Verbundene Geräte",
+    "unknownDevice": "Unbekanntes Gerät",
+    "lastUsed": "Zuletzt verwendet: {date}",
+    "thisDevice": "Dieses Gerät",
+    "revoke": "Trennen",
+    "logout": "Abmelden",
+    "deleteAccount": "Konto löschen",
+    "deleteTitle": "Konto löschen?",
+    "deleteBody": "Mit dieser Anfrage wird die endgültige Löschung von Konto und Karriere eingeleitet. Du wirst sofort abgemeldet. Nach Ablauf der Bedenkzeit lässt sich der Vorgang nicht mehr rückgängig machen.",
+    "deleteConfirm": "Ja, löschen",
+    "deleteRequested": "Löschanfrage registriert"
+  },
+  "catalog": {
+    "family": {
+      "FIRE": "Feuerwehr",
+      "EMS": "Rettungsdienst",
+      "POLICE": "Polizei",
+      "WILDFIRE": "Waldbrandbekämpfung",
+      "ALPINE": "Bergrettung",
+      "UNG": "Externe Unterstützung"
+    },
+    "capability": {
+      "FIRE_SUPPRESSION": "Brandbekämpfung",
+      "WATER_SUPPLY": "Wasserversorgung",
+      "HEIGHT_ACCESS": "Höhenzugang",
+      "EXTRICATION": "Personenbefreiung",
+      "TECHNICAL_RESCUE": "Technische Rettung",
+      "HEAVY_RESCUE": "Schwere Bergung",
+      "HAZMAT": "Gefahrstoffe",
+      "WATER_RESCUE": "Wasserrettung",
+      "MEDICAL_BASIC": "Basisversorgung",
+      "MEDICAL_ADVANCED": "Erweiterte Versorgung",
+      "PATIENT_TRANSPORT": "Patiententransport",
+      "MASS_CASUALTY": "Massenanfall (MANV)",
+      "SCENE_SECURITY": "Sicherung der Einsatzstelle",
+      "TRAFFIC_CONTROL": "Verkehrsregelung",
+      "INVESTIGATION": "Spurensicherung",
+      "K9_SEARCH": "Hundestaffel",
+      "EOD": "Kampfmittelräumung",
+      "WILDLAND_FIRE": "Vegetationsbrand",
+      "OFFROAD_ACCESS": "Geländezugang",
+      "MOUNTAIN_RESCUE": "Rettung im unwegsamen Gelände",
+      "AIR_SUPPORT": "Luftunterstützung",
+      "COMMAND": "Führung und Koordination",
+      "LOGISTICS": "Logistische Unterstützung"
+    },
+    "upgrade": {
+      "GARAGE": {
+        "name": "Fahrzeughalle",
+        "description": "Mehr Stellplätze für Landfahrzeuge."
+      },
+      "QUARTERS": {
+        "name": "Unterkünfte",
+        "description": "Mehr Plätze für das Personal."
+      },
+      "WORKSHOP": {
+        "name": "Werkstatt",
+        "description": "Wartung und Reparaturen direkt in der Wache."
+      },
+      "STORAGE": {
+        "name": "Lager",
+        "description": "Mehr Platz für Vorräte und Material."
+      },
+      "HELIPAD": {
+        "name": "Hubschrauberlandeplatz",
+        "description": "Ermöglicht die Stationierung von Luftfahrzeugen."
+      }
+    },
+    "vehicle": {
+      "FIRE_APS": {
+        "name": "Löschfahrzeug (APS)",
+        "description": "Das Erstangriffsfahrzeug: Brandbekämpfung, Verkehrsunfälle und technische Hilfe."
+      },
+      "FIRE_4X4": {
+        "name": "Geländewagen mit Löschmodul",
+        "description": "Wendig und günstig, kommt dorthin, wo das Löschfahrzeug nicht durchpasst."
+      },
+      "FIRE_ABP": {
+        "name": "Tanklöschfahrzeug (ABP)",
+        "description": "Großer Wasservorrat für lange Brandeinsätze."
+      },
+      "FIRE_AS": {
+        "name": "Drehleiter (AS)",
+        "description": "Rettung und Brandbekämpfung in den oberen Stockwerken."
+      },
+      "FIRE_AG": {
+        "name": "Feuerwehrkran (AG)",
+        "description": "Hebt Fahrzeuge und schwere Lasten."
+      },
+      "FIRE_SAF": {
+        "name": "Höhenrettungsgruppe (SAF)",
+        "description": "Spezialisten für Höhlen, Berg und Fluss in der technischen Rettung."
+      },
+      "FIRE_FOAM": {
+        "name": "Schaumlöschfahrzeug",
+        "description": "Für Brände brennbarer Flüssigkeiten und Industrieanlagen."
+      },
+      "FIRE_AIR": {
+        "name": "Atemschutzfahrzeug",
+        "description": "Füllt Atemschutzgeräte bei langen Einsätzen wieder auf."
+      },
+      "FIRE_NBCR": {
+        "name": "ABC-Zug (NBCR)",
+        "description": "Aufspüren und Eindämmen von Gefahrstoffen."
+      },
+      "FIRE_USAR": {
+        "name": "USAR-Modul",
+        "description": "Suche und Rettung unter Trümmern."
+      },
+      "FIRE_DIVERS": {
+        "name": "Tauchergruppe",
+        "description": "Suche und Bergung im Wasser."
+      },
+      "FIRE_BOAT": {
+        "name": "Rettungsschlauchboot",
+        "description": "Schnelle Einsätze auf Meer, Flüssen und Seen."
+      },
+      "FIRE_UCL": {
+        "name": "Einsatzleitwagen (UCL)",
+        "description": "Vorgeschobene Einsatzleitung für komplexe Lagen."
+      },
+      "FIRE_HELI": {
+        "name": "Feuerwehrhubschrauber",
+        "description": "Rettung aus der Luft und Erkundung."
+      },
+      "EMS_MSB": {
+        "name": "Rettungswagen (MSB)",
+        "description": "Rettungssanitäter und Patiententransport."
+      },
+      "EMS_MSI": {
+        "name": "Rettungswagen mit Pflegekraft (MSI)",
+        "description": "Erweiterte Versorgung durch Pflegefachpersonal."
+      },
+      "EMS_MSA": {
+        "name": "Notarztwagen (MSA)",
+        "description": "Notarzt und Pflegekraft an Bord für kritische Fälle."
+      },
+      "EMS_AUTOMEDICA": {
+        "name": "Notarzteinsatzfahrzeug",
+        "description": "Bringt den Notarzt schnell zum Einsatzort; transportiert keine Patienten."
+      },
+      "EMS_PEDIATRIC": {
+        "name": "Baby- und Kindernotarztwagen",
+        "description": "Ausgerüstet für die kleinsten Patienten."
+      },
+      "EMS_MAXI": {
+        "name": "Gerätewagen MANV",
+        "description": "Material und Logistik für Ereignisse mit vielen Verletzten."
+      },
+      "EMS_PMA": {
+        "name": "Behandlungsplatz (PMA)",
+        "description": "Mobile Einrichtung für Sichtung und Stabilisierung."
+      },
+      "EMS_HELI": {
+        "name": "Rettungshubschrauber",
+        "description": "Erweiterte Versorgung und schneller Transport."
+      },
+      "POL_PATROL": {
+        "name": "Streifenwagen",
+        "description": "Streife für Soforteinsätze."
+      },
+      "POL_MOTO": {
+        "name": "Motorradstreife",
+        "description": "Blitzschnell im Verkehr, ideal für die Verkehrsregelung."
+      },
+      "POL_TRAFFIC": {
+        "name": "Verkehrspolizei",
+        "description": "Verkehrsregelung und Unfallaufnahme."
+      },
+      "POL_VAN": {
+        "name": "Mannschaftswagen",
+        "description": "Großes Team für die Sicherung der Einsatzstelle."
+      },
+      "POL_K9": {
+        "name": "Hundestaffel",
+        "description": "Suche nach Personen und Substanzen."
+      },
+      "POL_FORENSIC": {
+        "name": "Kriminaltechnik",
+        "description": "Tatortarbeit und Beweissicherung."
+      },
+      "POL_EOD": {
+        "name": "Entschärfer",
+        "description": "Entschärfung von Sprengkörpern und verdächtigen Paketen."
+      },
+      "POL_TACTICAL": {
+        "name": "Spezialeinheit",
+        "description": "Für Hochrisikolagen."
+      },
+      "POL_HELI": {
+        "name": "Polizeihubschrauber",
+        "description": "Beobachtung und Unterstützung aus der Luft."
+      },
+      "AIB_PICKUP": {
+        "name": "Pick-up mit Löschmodul (AIB)",
+        "description": "Erstangriff bei Vegetationsbränden."
+      },
+      "AIB_TANKER": {
+        "name": "Waldbrand-Tanklöschfahrzeug",
+        "description": "Wasser und Pumpe für breite Feuerfronten."
+      },
+      "AIB_COMMAND": {
+        "name": "Waldbrand-Einsatzleitung (AIB)",
+        "description": "Koordiniert Bodenkräfte und Luftfahrzeuge."
+      },
+      "AIB_HELI": {
+        "name": "Löschhubschrauber",
+        "description": "Gezielte Wasserabwürfe auf die Feuerfront."
+      },
+      "AIB_PLANE": {
+        "name": "Löschflugzeug",
+        "description": "Große Abwurfkapazität; benötigt einen Flugstützpunkt."
+      },
+      "ALP_4X4": {
+        "name": "Rettungs-Geländewagen",
+        "description": "Bringt das Team über Pisten und Schotterwege heran."
+      },
+      "ALP_TEAM": {
+        "name": "Fußtrupp",
+        "description": "Bergretter für Wege und Felswände."
+      },
+      "ALP_SNOW": {
+        "name": "Motorschlitten / Quad",
+        "description": "Mobil auf Schnee und in schwierigem Gelände."
+      },
+      "ALP_K9": {
+        "name": "Lawinenhundestaffel",
+        "description": "Suche nach Vermissten und Verschütteten."
+      },
+      "ALP_HELI": {
+        "name": "Bergrettungshubschrauber",
+        "description": "Windenbergung im unwegsamen Gelände."
+      }
+    },
+    "facility": {
+      "FIRE_STATION_LOCAL": {
+        "name": "Ortsfeuerwache",
+        "description": "Kleine Wache mit wenigen Landfahrzeugen."
+      },
+      "FIRE_DETACHMENT": {
+        "name": "Außenwache",
+        "description": "Mittelgroße Wache mit Werkstatt."
+      },
+      "FIRE_COMMAND": {
+        "name": "Hauptfeuerwache",
+        "description": "Große Wache mit Spezialfahrzeugen."
+      },
+      "FIRE_SPECIAL_HUB": {
+        "name": "Spezialzentrum",
+        "description": "Beherbergt Spezialgruppen, Luft- und Wasserfahrzeuge."
+      },
+      "EMS_POST": {
+        "name": "Rettungswache",
+        "description": "Ausgangspunkt für ein bis zwei Rettungswagen."
+      },
+      "EMS_CENTER": {
+        "name": "Rettungszentrum",
+        "description": "Mehr Fahrzeuge und medizinisches Personal."
+      },
+      "EMS_ADVANCED_CENTER": {
+        "name": "Notfallzentrum",
+        "description": "Notarztfahrzeuge und Großschadenslagen."
+      },
+      "EMS_HELI_BASE": {
+        "name": "Luftrettungsstation",
+        "description": "Landeplatz für den Rettungshubschrauber."
+      },
+      "POLICE_POST": {
+        "name": "Polizeiposten",
+        "description": "Präsenz im Viertel."
+      },
+      "POLICE_STATION": {
+        "name": "Polizeirevier",
+        "description": "Bezirkswache mit mehreren Streifen."
+      },
+      "POLICE_HQ": {
+        "name": "Polizeipräsidium",
+        "description": "Hauptdienststelle mit Spezialabteilungen."
+      },
+      "POLICE_SPECIAL_UNIT": {
+        "name": "Sondereinheit",
+        "description": "Spezialeinheiten, Entschärfer und Fliegerstaffel."
+      },
+      "AIB_OUTPOST": {
+        "name": "Waldbrandposten (AIB)",
+        "description": "Saisonaler Posten für den Erstangriff."
+      },
+      "AIB_BASE": {
+        "name": "Waldbrandstützpunkt (AIB)",
+        "description": "Fahrzeuge und Teams für die Wälder der Region."
+      },
+      "AIB_OPERATIONS_CENTER": {
+        "name": "Waldbrand-Einsatzzentrale (AIB)",
+        "description": "Koordiniert die Waldbrandkampagnen."
+      },
+      "AIB_AIR_BASE": {
+        "name": "Flugstützpunkt (AIB)",
+        "description": "Beherbergt Löschhubschrauber und Löschflugzeuge."
+      },
+      "ALPINE_STATION": {
+        "name": "Bergrettungsstation",
+        "description": "Talmannschaft, jederzeit abmarschbereit."
+      },
+      "ALPINE_RESCUE_CENTER": {
+        "name": "Bergrettungszentrum",
+        "description": "Mehr Teams, Spezialfahrzeuge und Hundestaffeln."
+      },
+      "ALPINE_HELI_BASE": {
+        "name": "Alpiner Hubschrauberstützpunkt",
+        "description": "Hubschrauber mit Winde und Luftretter."
+      },
+      "COORDINATION_CENTER": {
+        "name": "Koordinierungszentrum",
+        "description": "Koordiniert alle Dienste bei Großereignissen."
+      }
+    }
+  },
+  "incidents": {
+    "TRASH_FIRE": {
+      "title": "Brennende Müllcontainer",
+      "report": "Hier brennen Müllcontainer, {address}, die Flammen sind schon ganz nah an den geparkten Autos."
+    },
+    "CAR_FIRE": {
+      "title": "Pkw-Brand",
+      "report": "Hier brennt ein Auto, {address}! Aus der Motorhaube kommt schwarzer Rauch, drin sitzt niemand."
+    },
+    "APARTMENT_FIRE": {
+      "title": "Wohnungsbrand",
+      "report": "Aus einem Fenster im dritten Stock kommt Rauch, {address}. Ich glaube, im Haus sind noch Leute."
+    },
+    "ELEVATOR_RESCUE": {
+      "title": "Personen im Aufzug eingeschlossen",
+      "report": "Wir stecken zu zweit im Aufzug fest, zwischen zwei Stockwerken, {address}. Einer von uns hat Platzangst."
+    },
+    "FALLEN_TREE": {
+      "title": "Baum auf Fahrbahn",
+      "report": "Hier ist ein großer Baum umgestürzt, {address}, der blockiert die ganze Fahrbahn."
+    },
+    "FLOODED_BASEMENT": {
+      "title": "Keller unter Wasser",
+      "report": "Der Keller steht unter Wasser, {address}, und es steigt immer weiter, da unten ist der Sicherungskasten."
+    },
+    "ROAD_ACCIDENT": {
+      "title": "Verkehrsunfall",
+      "report": "Zwei Autos sind zusammengestoßen, {address}. Die Leute sind selbst ausgestiegen, aber auf der Straße läuft irgendeine Flüssigkeit aus."
+    },
+    "ROAD_ACCIDENT_TRAPPED": {
+      "title": "Verkehrsunfall mit eingeklemmter Person",
+      "report": "Ein Auto hat sich überschlagen, {address}. Der Fahrer ist ansprechbar, aber er kommt nicht raus!"
+    },
+    "GAS_LEAK": {
+      "title": "Gasaustritt",
+      "report": "Im Treppenhaus riecht es ganz stark nach Gas, {address}."
+    },
+    "MEDICAL_MINOR": {
+      "title": "Unwohlsein",
+      "report": "Hier geht es jemandem schlecht, {address}. Die Person ist bei Bewusstsein, aber ganz blass."
+    },
+    "FALL_INJURY": {
+      "title": "Sturz mit Verletzung",
+      "report": "Ein Mann ist von der Leiter gefallen, {address}, er hat starke Schmerzen im Bein und kann nicht aufstehen."
+    },
+    "CARDIAC_ARREST": {
+      "title": "Herzstillstand",
+      "report": "Kommen Sie schnell! Ein Mann ist zusammengebrochen, {address}, er reagiert nicht und atmet nicht!"
+    }
+  },
+  "ledger": {
+    "STARTER_GRANT": "Startkapital",
+    "MISSION_REWARD": "Einsatzbelohnung",
+    "COVERAGE_STIPEND": "Abdeckungszuschuss",
+    "MILESTONE": "Meilenstein erreicht",
+    "REWARDED_AD": "Belohnungsvideo",
+    "REFERRAL_BONUS": "Einladungsbonus",
+    "PURCHASE": "Kauf von Credits",
+    "PROMOTION": "Aktion",
+    "COMPENSATION": "Entschädigung",
+    "ADMIN_ADJUSTMENT": "Korrektur durch den Support",
+    "REFUND": "Erstattung",
+    "VEHICLE_PURCHASE": "Fahrzeugkauf",
+    "FACILITY_ACQUISITION": "Erwerb einer Wache",
+    "FACILITY_UPGRADE": "Ausbau einer Wache",
+    "PERSONNEL_HIRE": "Einstellung",
+    "TRAINING": "Lehrgang",
+    "MAINTENANCE": "Wartung",
+    "REPAIR": "Reparatur",
+    "RECOVERY": "Fahrzeugbergung",
+    "SUPPLIES": "Vorräte",
+    "SPEEDUP": "Beschleunigung",
+    "EXTERNAL_SUPPORT": "Externe Unterstützung"
+  },
+  "outcome": {
+    "note": {
+      "FAST_RESPONSE": "Schnelle Reaktion: Bonus für rasches Eintreffen.",
+      "UNDER_RESOURCED": "Zu wenig Kräfte vor Ort: Der Einsatz hat länger gedauert als nötig.",
+      "TUTORIAL_BONUS": "Erster Einsatz abgeschlossen: Willkommensbonus von 300 Credits."
+    }
+  },
+  "timeline": {
+    "incident_created": "Notruf eingegangen",
+    "vehicle_dispatched": "{callSign} alarmiert",
+    "vehicle_departed": "{callSign} ist ausgerückt",
+    "vehicle_arrived": "{callSign} ist vor Ort",
+    "vehicle_recalled": "{callSign} zurückgerufen",
+    "incident_escalated": "Die Lage verschärft sich: Schweregrad {severity}",
+    "incident_resolved": "Einsatz abgeschlossen",
+    "incident_failed": "Einsatz gescheitert",
+    "incident_expired": "Kein Fahrzeug ist rechtzeitig eingetroffen"
+  },
+  "away": {
+    "event": {
+      "RESOLVED": "{count, plural, one {Ein Einsatz wurde} other {# Einsätze wurden}} in deiner Abwesenheit abgeschlossen.",
+      "STIPEND": "Du hast {amount} Credits Abdeckungszuschuss erhalten."
+    }
+  },
+  "admin": {
+    "nav": {
+      "label": "Admin-Navigation",
+      "badge": "Admin",
+      "backToGame": "Zurück zum Spiel",
+      "dashboard": "Übersicht",
+      "users": "Nutzer",
+      "careers": "Karrieren",
+      "incidents": "Einsätze",
+      "scheduledActions": "Geplante Aktionen",
+      "ledger": "Credits-Korrektur",
+      "config": "Konfigurationen",
+      "flags": "Funktionen"
+    },
+    "dashboard": {
+      "title": "Übersicht",
+      "subtitle": "Systemstatus, alle 15 Sekunden aktualisiert.",
+      "users": "Nutzer",
+      "careers": "Karrieren",
+      "activeCareers": "Aktive Karrieren",
+      "activeIncidents": "Aktive Einsätze",
+      "pendingActions": "Wartende Aktionen",
+      "overdueActions": "Überfällige Aktionen",
+      "outboxPending": "Zu veröffentlichende Events",
+      "credits24h": "Credits ausgegeben / verbraucht (24 h)",
+      "queues": "Arbeitswarteschlangen",
+      "queue": {
+        "name": "Warteschlange",
+        "waiting": "Wartend",
+        "active": "Aktiv",
+        "delayed": "Verzögert",
+        "failed": "Fehlgeschlagen",
+        "completed": "Abgeschlossen"
+      }
+    },
+    "users": {
+      "title": "Nutzer",
+      "search": "Nach E-Mail oder Name suchen",
+      "empty": "Keine Nutzer gefunden",
+      "email": "E-Mail",
+      "director": "Leiter",
+      "roles": "Rollen",
+      "status": "Status",
+      "created": "Registriert",
+      "suspend": "Sperren",
+      "reactivate": "Reaktivieren",
+      "statuses": {
+        "ACTIVE": "Aktiv",
+        "SUSPENDED": "Gesperrt",
+        "DELETION_REQUESTED": "Wird gelöscht"
+      }
+    },
+    "careers": {
+      "title": "Karrieren",
+      "search": "Nach Leiter oder ID suchen",
+      "empty": "Keine Karriere gefunden",
+      "director": "Leiter",
+      "location": "Ort",
+      "level": "Level",
+      "credits": "Credits",
+      "incidents": "Einsätze",
+      "vehicles": "Fahrzeuge",
+      "duty": "Dienst",
+      "onDuty": "Im Dienst",
+      "offDuty": "Außer Dienst"
+    },
+    "incidents": {
+      "title": "Aktive Einsätze",
+      "all": "Alle Status",
+      "empty": "Keine Einsätze",
+      "severity": "Schweregrad",
+      "template": "Art",
+      "status": "Status",
+      "address": "Ort",
+      "career": "Karriere",
+      "created": "Erstellt",
+      "cancel": "Abbrechen",
+      "cancelled": "Einsatz abgebrochen"
+    },
+    "scheduledActions": {
+      "title": "Geplante Aktionen",
+      "subtitle": "Künftige Ereignisse, die auf ihre Ausführung warten. Alle 5 Sekunden aktualisiert.",
+      "empty": "Keine wartenden Aktionen",
+      "type": "Typ",
+      "status": "Status",
+      "dueAt": "Fällig",
+      "attempts": "Versuche",
+      "career": "Karriere",
+      "lastError": "Letzter Fehler",
+      "retry": "Erneut versuchen"
+    },
+    "ledger": {
+      "title": "Credits-Korrektur",
+      "subtitle": "Schreibt eine Buchung in das Append-only-Register. Jede Korrektur bleibt mit Autor und Grund nachvollziehbar.",
+      "careerId": "ID der Karriere",
+      "amount": "Betrag",
+      "amountHint": "Ganze Zahl ungleich null. Negativ zum Abziehen.",
+      "amountInvalid": "Gib eine ganze Zahl ungleich null ein.",
+      "entryType": "Buchungsart",
+      "reason": "Grund",
+      "reasonHint": "Im Audit sichtbar. Mindestens 5 Zeichen.",
+      "reasonInvalid": "Gib einen Grund mit mindestens 5 Zeichen an.",
+      "required": "Pflichtfeld.",
+      "submit": "Korrektur buchen",
+      "done": "Korrektur gebucht"
+    },
+    "config": {
+      "title": "Konfigurationsversionen",
+      "subtitle": "Das Balancing liegt in versionierten Konfigurationen: Ein Entwurf wird erst aktiv, wenn er veröffentlicht wird.",
+      "empty": "Keine Version",
+      "version": "Version",
+      "status": "Status",
+      "author": "Autor",
+      "created": "Erstellt",
+      "notes": "Notizen",
+      "publish": "Veröffentlichen",
+      "published": "Version veröffentlicht"
+    },
+    "flags": {
+      "title": "Funktionen",
+      "subtitle": "Schalter, um Funktionen ohne Release ein- oder auszuschalten.",
+      "empty": "Kein Schalter definiert"
+    }
+  },
+  "design": {
+    "title": "Designsystem",
+    "intro": "Dunkles Leitstellen-Theme, abgeleitet vom Logo: nachtblaue Flächen, Markenrot, silberner Text. Zustände werden nie allein über Farbe vermittelt: Jeder Zustand hat zusätzlich ein Icon, eine Beschriftung oder ein Muster.",
+    "severity": "Schweregrad",
+    "tooltip": "Das ist ein Tooltip",
+    "sheet": "Beispiel für ein unteres Panel",
+    "sheetBody": "Zieh am Griff oder drücke, um zwischen den drei Höhen zu wechseln.",
+    "sections": {
+      "brand": "Marke",
+      "tokens": "Farben und Skalen",
+      "typography": "Typografie",
+      "buttons": "Schaltflächen",
+      "forms": "Felder",
+      "status": "Zustände, Beträge und Zeiten",
+      "capability": "Fähigkeits- und Fortschrittsbalken",
+      "overlays": "Dialoge, Panels und Benachrichtigungen",
+      "data": "Tabellen, Verläufe und leere Zustände",
+      "icons": "Spiel-Icons"
+    },
+    "typo": {
+      "display": "Überschriften",
+      "body": "Fließtext"
+    },
+    "btn": {
+      "primary": "Primär",
+      "secondary": "Sekundär",
+      "outline": "Kontur",
+      "ghost": "Dezent",
+      "danger": "Gefahr",
+      "link": "Link",
+      "loading": "Lädt",
+      "disabled": "Deaktiviert",
+      "add": "Hinzufügen",
+      "notifications": "Benachrichtigungen",
+      "hover": "Hier hovern"
+    },
+    "form": {
+      "label": "Beschriftung",
+      "hint": "Hilfetext",
+      "placeholder": "Platzhalter",
+      "error": "Fehlermeldung",
+      "checkbox": "Kontrollkästchen",
+      "switch": "Schalter"
+    },
+    "cap": {
+      "a": "Brandbekämpfung",
+      "b": "Wasserversorgung",
+      "c": "Höhenzugang",
+      "onScene": "Vor Ort",
+      "enRoute": "Auf Anfahrt",
+      "planned": "Ausgewählt",
+      "required": "Erforderlich",
+      "recommended": "Empfohlen"
+    },
+    "dialog": {
+      "title": "Titel des Dialogs",
+      "body": "Auf dem Handy fährt der Dialog von unten herein, gut mit dem Daumen erreichbar."
+    },
+    "toast": {
+      "title": "Titel der Benachrichtigung",
+      "body": "Kurze Beschreibung."
+    },
+    "table": {
+      "callSign": "Funkname",
+      "status": "Status",
+      "dense": "Dicht · 2.000 virtualisierte Zeilen",
+      "compact": "Kompakt"
+    },
+    "timeline": {
+      "a": "Notruf eingegangen",
+      "b": "APS 1 ist ausgerückt",
+      "c": "APS 1 ist vor Ort",
+      "d": "Einsatz abgeschlossen"
+    },
+    "empty": {
+      "title": "Nichts anzuzeigen",
+      "body": "Leere Zustände erklären immer, was als Nächstes passiert."
+    }
+  }
+}

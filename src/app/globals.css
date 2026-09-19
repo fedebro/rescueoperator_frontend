@@ -1,0 +1,282 @@
+@import 'tailwindcss';
+
+/*
+ * Rescue Control design tokens — dark "control room" theme derived from logo.png.
+ * Semantic tokens are CSS variables; Tailwind utilities are generated from them via @theme.
+ */
+:root {
+  color-scheme: dark;
+
+  /* surfaces (deep navy) */
+  --rc-bg: #070d18;
+  --rc-surface-1: #0a1220;
+  --rc-surface-2: #0f1a2c;
+  --rc-surface-3: #16233a;
+  --rc-surface-4: #1e2f4b;
+  --rc-border: #22324d;
+  --rc-border-strong: #33486b;
+  --rc-overlay: rgb(3 7 14 / 0.72);
+
+  /* text (silver) */
+  --rc-text: #e8edf5;
+  --rc-text-muted: #a3b0c4;
+  --rc-text-subtle: #7485a0;
+  --rc-text-inverse: #070d18;
+
+  /* brand */
+  --rc-brand: #e5202a;
+  --rc-brand-hover: #f23a43;
+  --rc-brand-active: #c4151e;
+  --rc-brand-soft: rgb(229 32 42 / 0.14);
+  --rc-silver: #cdd5e1;
+  --rc-skyline: #5aa2e6;
+  --rc-focus: #7cc0ff;
+
+  /* feedback */
+  --rc-success: #35c987;
+  --rc-warning: #f5b63c;
+  --rc-danger: #ff5a5f;
+  --rc-info: #5aa2e6;
+  --rc-credits: #f3cf6b;
+  --rc-xp: #9d8cff;
+
+  /* service families */
+  --rc-family-fire: #e5342b;
+  --rc-family-ems: #2f7df0;
+  --rc-family-police: #2b4fb8;
+  --rc-family-wildfire: #f08a1c;
+  --rc-family-alpine: #1f9d63;
+  --rc-family-ung: #8492a6;
+  --rc-family-shared: #6b7fa3;
+
+  /* severity scale 1–10 (green → amber → red → magenta), always paired with the number */
+  --rc-sev-1: #4cc38a;
+  --rc-sev-2: #7acb6a;
+  --rc-sev-3: #a9d152;
+  --rc-sev-4: #d8d044;
+  --rc-sev-5: #f5b63c;
+  --rc-sev-6: #f79a35;
+  --rc-sev-7: #f57a35;
+  --rc-sev-8: #f0503a;
+  --rc-sev-9: #e5202a;
+  --rc-sev-10: #d0166e;
+
+  --rc-radius-sm: 6px;
+  --rc-radius: 10px;
+  --rc-radius-lg: 16px;
+  --rc-shadow: 0 10px 30px rgb(0 0 0 / 0.45);
+
+  --rc-topbar-h: 52px;
+  --rc-sidebar-w: 60px;
+  --rc-bottomnav-h: 60px;
+  --rc-safe-top: env(safe-area-inset-top, 0px);
+  --rc-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --rc-safe-left: env(safe-area-inset-left, 0px);
+  --rc-safe-right: env(safe-area-inset-right, 0px);
+}
+
+@theme inline {
+  --color-bg: var(--rc-bg);
+  --color-surface-1: var(--rc-surface-1);
+  --color-surface-2: var(--rc-surface-2);
+  --color-surface-3: var(--rc-surface-3);
+  --color-surface-4: var(--rc-surface-4);
+  --color-border: var(--rc-border);
+  --color-border-strong: var(--rc-border-strong);
+  --color-overlay: var(--rc-overlay);
+  --color-fg: var(--rc-text);
+  --color-muted: var(--rc-text-muted);
+  --color-subtle: var(--rc-text-subtle);
+  --color-inverse: var(--rc-text-inverse);
+  --color-brand: var(--rc-brand);
+  --color-brand-hover: var(--rc-brand-hover);
+  --color-brand-active: var(--rc-brand-active);
+  --color-brand-soft: var(--rc-brand-soft);
+  --color-silver: var(--rc-silver);
+  --color-skyline: var(--rc-skyline);
+  --color-focus: var(--rc-focus);
+  --color-success: var(--rc-success);
+  --color-warning: var(--rc-warning);
+  --color-danger: var(--rc-danger);
+  --color-info: var(--rc-info);
+  --color-credits: var(--rc-credits);
+  --color-xp: var(--rc-xp);
+  --color-family-fire: var(--rc-family-fire);
+  --color-family-ems: var(--rc-family-ems);
+  --color-family-police: var(--rc-family-police);
+  --color-family-wildfire: var(--rc-family-wildfire);
+  --color-family-alpine: var(--rc-family-alpine);
+  --color-family-ung: var(--rc-family-ung);
+  --radius-sm: var(--rc-radius-sm);
+  --radius-md: var(--rc-radius);
+  --radius-lg: var(--rc-radius-lg);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: var(--font-display), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --shadow-panel: var(--rc-shadow);
+  --animate-pulse-ring: rc-pulse-ring 1.6s ease-out infinite;
+  --animate-slide-up: rc-slide-up 0.22s ease-out;
+  --animate-fade-in: rc-fade-in 0.18s ease-out;
+}
+
+@keyframes rc-pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+@keyframes rc-slide-up {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes rc-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  body {
+    background: var(--rc-bg);
+    color: var(--rc-text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  * {
+    border-color: var(--rc-border);
+  }
+  :focus-visible {
+    outline: 2px solid var(--rc-focus);
+    outline-offset: 2px;
+    border-radius: var(--rc-radius-sm);
+  }
+  ::selection {
+    background: rgb(229 32 42 / 0.4);
+  }
+  button,
+  [role='button'] {
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+  /* iOS zooms inputs below 16px: keep form controls at 16px on touch devices */
+  @media (pointer: coarse) {
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--rc-surface-4);
+    border-radius: 8px;
+    border: 2px solid var(--rc-surface-1);
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+  .pt-safe {
+    padding-top: var(--rc-safe-top);
+  }
+  .pb-safe {
+    padding-bottom: var(--rc-safe-bottom);
+  }
+  .h-dvh-safe {
+    height: 100vh;
+    height: 100dvh;
+  }
+  .panel {
+    background: var(--rc-surface-1);
+    border: 1px solid var(--rc-border);
+    border-radius: var(--rc-radius);
+  }
+  .scroll-y {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Reduced motion: system preference OR the in-game setting (html[data-reduced-motion="true"]) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+html[data-reduced-motion='true'] *,
+html[data-reduced-motion='true'] *::before,
+html[data-reduced-motion='true'] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* MapLibre chrome on the dark theme */
+.maplibregl-map {
+  font-family: var(--font-sans);
+  background: #0b1422;
+}
+.maplibregl-ctrl-attrib {
+  background: rgb(7 13 24 / 0.82) !important;
+  color: var(--rc-text-muted) !important;
+  font-size: 10px;
+  line-height: 1.4;
+}
+.maplibregl-ctrl-attrib a {
+  color: var(--rc-text) !important;
+}
+.maplibregl-ctrl-group {
+  background: var(--rc-surface-2) !important;
+  border: 1px solid var(--rc-border);
+}
+.maplibregl-ctrl-group button + button {
+  border-top: 1px solid var(--rc-border) !important;
+}
+.maplibregl-ctrl-group button span {
+  filter: invert(0.85);
+}
