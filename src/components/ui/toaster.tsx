@@ -21,8 +21,8 @@ function ToastCard({ toast, closeLabel }: { toast: ToastItem; closeLabel: string
   const Icon = ICON[toast.tone];
   return (
     <div
-      role={toast.tone === 'danger' ? 'alert' : 'status'}
       data-testid="toast"
+      data-tone={toast.tone}
       className={cn(
         'animate-slide-up bg-surface-2 shadow-panel pointer-events-auto flex w-full items-start gap-3 rounded-md border p-3',
         TONE[toast.tone],
@@ -35,7 +35,7 @@ function ToastCard({ toast, closeLabel }: { toast: ToastItem; closeLabel: string
         {toast.action ? (
           <button
             type="button"
-            className="text-skyline mt-1.5 text-xs font-bold hover:underline"
+            className="text-skyline mt-1.5 -mb-1 inline-flex min-h-9 items-center text-xs font-bold hover:underline"
             onClick={() => {
               toast.action!.onClick();
               dismiss(toast.id);
@@ -49,7 +49,7 @@ function ToastCard({ toast, closeLabel }: { toast: ToastItem; closeLabel: string
         type="button"
         aria-label={closeLabel}
         onClick={() => dismiss(toast.id)}
-        className="text-subtle hover:text-fg -m-1 grid size-7 shrink-0 place-items-center rounded-sm"
+        className="text-muted hover:text-fg -m-2 grid size-11 shrink-0 place-items-center rounded-sm md:-m-1 md:size-7"
       >
         <X className="size-4" aria-hidden />
       </button>
@@ -57,17 +57,31 @@ function ToastCard({ toast, closeLabel }: { toast: ToastItem; closeLabel: string
   );
 }
 
-/** Top-centre on phones (the bottom belongs to the sheet and the nav), bottom-right on desktop. */
+const POSITION =
+  'pointer-events-none fixed inset-x-3 top-[calc(var(--rc-safe-top)+60px)] z-[95] mx-auto flex max-w-sm flex-col gap-2 md:inset-x-auto md:top-auto md:right-4 md:bottom-4 md:mx-0 md:w-96';
+
+/**
+ * Top-centre on phones (the bottom belongs to the sheet and the nav), bottom-right on desktop.
+ * Two PERSISTENT live regions (they exist before any toast, which is what screen readers need to announce
+ * insertions): danger toasts are assertive (`role="alert"`), everything else is polite (`role="status"`).
+ * The cards themselves carry no live role, so nothing is announced twice.
+ */
 export function Toaster({ closeLabel }: { closeLabel: string }) {
   const toasts = useToastStore((s) => s.toasts);
+  const urgent = toasts.filter((t) => t.tone === 'danger');
+  const polite = toasts.filter((t) => t.tone !== 'danger');
   return (
-    <div
-      aria-live="polite"
-      className="pointer-events-none fixed inset-x-3 top-[calc(var(--rc-safe-top)+60px)] z-[95] mx-auto flex max-w-sm flex-col gap-2 md:inset-x-auto md:top-auto md:right-4 md:bottom-4 md:mx-0 md:w-96"
-    >
-      {toasts.map((t) => (
-        <ToastCard key={t.id} toast={t} closeLabel={closeLabel} />
-      ))}
+    <div className={POSITION} data-testid="toaster">
+      <div role="alert" aria-atomic="false" className="flex flex-col gap-2">
+        {urgent.map((t) => (
+          <ToastCard key={t.id} toast={t} closeLabel={closeLabel} />
+        ))}
+      </div>
+      <div role="status" aria-atomic="false" className="flex flex-col gap-2">
+        {polite.map((t) => (
+          <ToastCard key={t.id} toast={t} closeLabel={closeLabel} />
+        ))}
+      </div>
     </div>
   );
 }

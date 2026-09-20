@@ -1,0 +1,185 @@
+{
+  "world": {
+    "duration": {
+      "hours": "{h} h",
+      "minutes": "{m} min",
+      "hoursMinutes": "{h} h {m} min"
+    },
+    "widget": {
+      "open": "Conditions in your area: {weather}, {temperature}, {time}, traffic {traffic}. Open details",
+      "title": "Conditions in your area",
+      "close": "Close",
+      "weather": "Weather",
+      "temperature": "{value} °C",
+      "wind": "Wind {value} km/h",
+      "noData": "n/a",
+      "degraded": "Estimated weather data",
+      "degradedHint": "The weather service is not responding: we use an estimate until it is back.",
+      "source": {
+        "simulated": "simulated weather",
+        "live": "live data"
+      },
+      "localTime": "Local time",
+      "traffic": {
+        "title": "Traffic",
+        "level": {
+          "FREE_FLOW": "Free flowing",
+          "LIGHT": "Light",
+          "MODERATE": "Moderate",
+          "HEAVY": "Heavy",
+          "SEVERE": "Gridlocked"
+        }
+      },
+      "travelEffectNone": "Travel times are normal.",
+      "travelEffectSlower": "Road travel is {percent} slower because of traffic and weather.",
+      "closuresTitle": "Roads",
+      "closures": "{count, plural, =0 {No closed roads} one {# closed road} other {# closed roads}}",
+      "closuresEffect": "Longer routes",
+      "showClosures": "Show on the map"
+    },
+    "layers": {
+      "open": "Map layers",
+      "button": "Layers",
+      "title": "Map layers",
+      "close": "Close",
+      "layer": {
+        "hospitals": "Hospitals",
+        "closures": "Closed roads",
+        "coverage": "Coverage",
+        "sites": "Sites for new facilities"
+      },
+      "hint": {
+        "hospitals": "Emergency departments and available units",
+        "closures": "Roadworks, events and roads blocked by responders",
+        "coverage": "Estimated arrival times from your facilities",
+        "sites": "Where you can open a new facility"
+      },
+      "coverage": {
+        "title": "Population covered",
+        "family": "Service shown",
+        "all": "All",
+        "inactive": "no vehicles",
+        "threshold": "Service threshold: {minutes} min",
+        "method": {
+          "OSRM_TABLE": "computed on the road network",
+          "STRAIGHT_LINE": "straight-line estimate",
+          "NONE": "no operational facility"
+        },
+        "stale": "Recomputing after your latest changes…",
+        "legend": "Estimated arrival time",
+        "unreachable": "Unreachable",
+        "over": "over {from} min",
+        "upTo": "up to {to} min",
+        "range": "{from}–{to} min"
+      },
+      "closures": {
+        "title": "Roads closed now",
+        "empty": "No active closures.",
+        "kind": {
+          "FULL": "Closed",
+          "PARTIAL": "Partially closed"
+        },
+        "effect": "+{percent} travel time through it",
+        "endsIn": "Reopens in",
+        "reopening": "reopening",
+        "noEnd": "Until further notice",
+        "center": "Centre on the map: {reason}",
+        "mapLabel": {
+          "FULL": "CLOSED",
+          "PARTIAL": "REDUCED"
+        }
+      }
+    },
+    "closure": {
+      "ROADWORKS": "Roadworks in {street}",
+      "EVENT": "Public event in {street}",
+      "EXTERNAL_SUPPORT": "{address}: road closed, external units at work",
+      "INCIDENT": "{address}: road closed for an ongoing emergency",
+      "MANUAL": "Closure ordered by the control room"
+    },
+    "stipend": {
+      "title": "Coverage stipend",
+      "hint": "Every {period} you receive a stipend proportional to the population you can reach in time. It keeps accruing while you are away, up to {cap}.",
+      "unavailable": "Stipend data is not available right now.",
+      "next": "Next payout in",
+      "paying": "paying out…",
+      "estimate": "Estimated amount",
+      "period": "Period",
+      "accrued": "Accrued while away",
+      "accruedValue": "{n} of {max} periods",
+      "accrualStops": "If you do not come back, the stipend stops accruing after {date}.",
+      "breakdown": "How it is computed",
+      "base": "Level {level} base",
+      "coverageMultiplier": "Coverage at {pct}",
+      "reputationMultiplier": "Reputation {value}/100",
+      "bonusMultiplier": "Facility bonus",
+      "personnelCost": "Personnel cost for the period",
+      "net": "Net stipend",
+      "coverage": "Coverage",
+      "showCoverage": "See it on the map",
+      "overall": "Overall (weighted average)",
+      "threshold": "within {minutes} min",
+      "familyInactive": "No operational vehicle for this service.",
+      "stale": "Coverage is being recomputed after your latest changes…",
+      "history": "History",
+      "lastPayout": "Last payout",
+      "never": "none yet",
+      "status": {
+        "PAID": "Paid",
+        "SKIPPED_INACTIVE": "Not accrued (away)"
+      },
+      "showLess": "Show less",
+      "showAll": "Show all ({count})"
+    },
+    "milestones": {
+      "title": "Milestones",
+      "summary": "{done} of {total} achieved",
+      "empty": "No milestones available",
+      "phase": {
+        "FIRST_HOURS": "First hours",
+        "EARLY": "Early career",
+        "MID": "Growing network",
+        "LATE": "Large network"
+      },
+      "phaseCount": "{done}/{total}",
+      "progress": "{current} of {target}",
+      "progressPercent": "{current} of {target}",
+      "progressLabel": "Progress: {title}",
+      "achievedOn": "Achieved on {date}",
+      "achieved": "Achieved",
+      "reward": "Reward:",
+      "xp": "{xp} XP"
+    },
+    "reputation": {
+      "title": "Reputation",
+      "rank": "Rank: {rank}",
+      "band": {
+        "CRITICAL": "Damaged",
+        "LOW": "Low",
+        "FAIR": "Fair",
+        "GOOD": "Good",
+        "EXCELLENT": "Excellent"
+      },
+      "valueText": "{value} out of 100, {band}",
+      "multiplier": "Coverage stipend multiplier",
+      "effects": "Reputation is a moving average of your interventions: it weighs on the coverage stipend and on some unlocks.",
+      "up": "What raises it",
+      "down": "What lowers it",
+      "upItems": {
+        "fast": "Reaching the scene quickly",
+        "adequate": "Sending every required resource (2–3 stars)",
+        "patients": "Delivering patients in good condition"
+      },
+      "downItems": {
+        "expired": "Emergencies that expire unanswered",
+        "failed": "Failed interventions",
+        "under": "Not enough resources on scene"
+      }
+    }
+  },
+  "notifications": {
+    "world": {
+      "milestone": "Milestone achieved!"
+    }
+  }
+}

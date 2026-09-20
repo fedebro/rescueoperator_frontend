@@ -1,0 +1,180 @@
+{
+  "notifications": {
+    "purchaseCredited": "Acquisto completato: +{credits} Crediti",
+    "referralRewarded": "La tua rete è completa: +{credits} Crediti",
+    "referralWelcome": "Invito convalidato: +{credits} Crediti di benvenuto"
+  },
+  "monetization": {
+    "ads": {
+      "title": "Video ricompensato",
+      "active": "Attivo",
+      "description": "Guarda un breve video fino alla fine e ricevi Crediti. È sempre facoltativo.",
+      "reward": "Ricompensa",
+      "watchedToday": "Oggi: {watched}/{limit} video",
+      "watchedShort": "{watched}/{limit} oggi",
+      "watch": "Guarda un video",
+      "cooldown": "Prossimo video tra",
+      "limitReached": "Limite di oggi raggiunto. Si azzera alle {time}.",
+      "disabled": "I video non sono disponibili al momento.",
+      "unavailable": "Nessun video disponibile in questo momento. Riprova più tardi.",
+      "abandoned": "Video interrotto: nessuna ricompensa.",
+      "credited": "+{credits} Crediti accreditati",
+      "player": {
+        "title": "Video in corso",
+        "simulated": "Simulazione: nessun annuncio reale viene mostrato.",
+        "abandon": "Interrompi il video",
+        "progress": "Avanzamento del video",
+        "paused": "In pausa: torna su questa scheda per continuare.",
+        "remaining": "{seconds, plural, one {Ancora # secondo} other {Ancora # secondi}}",
+        "abandonHint": "Se interrompi prima della fine non ricevi la ricompensa."
+      }
+    },
+    "insufficient": {
+      "subtitleLocked": "Ogni intervento concluso paga: continua a gestire le emergenze.",
+      "covered": "Ora hai Crediti a sufficienza. Ti mancano",
+      "notAvailable": "Non disponibile"
+    },
+    "speedup": {
+      "button": "Termina ora",
+      "title": "Terminare subito?",
+      "description": "Processo: {process}",
+      "remaining": "Tempo rimanente",
+      "cost": "Costo",
+      "free": "Gratis",
+      "rule": "I Crediti accelerano solo i processi gestionali: mai i viaggi, gli interventi o l’esperienza.",
+      "confirm": "Spendi e termina",
+      "confirmFree": "Termina gratis",
+      "done": "Processo completato",
+      "alreadyDone": "Il processo è già terminato: non hai speso nulla."
+    },
+    "purchaseStatus": {
+      "CREATED": "In attesa di pagamento",
+      "PAID": "Pagato, in accredito",
+      "CREDITED": "Accreditato",
+      "FAILED": "Non riuscito",
+      "REFUNDED": "Rimborsato"
+    },
+    "shop": {
+      "title": "Crediti",
+      "subtitle": "Sostieni il gioco e dai una spinta alla tua centrale. Facoltativo, sempre.",
+      "balance": "Saldo attuale",
+      "purchasedBalance": "di cui acquistati: {credits} (usati per ultimi)",
+      "waiver": "Chiedo l’esecuzione immediata e rinuncio al diritto di recesso: i Crediti vengono consegnati subito dopo il pagamento.",
+      "waiverHint": "Contenuto digitale fornito immediatamente. Dettagli nei",
+      "terms": "Termini di servizio",
+      "waiverRequired": "Per acquistare devi spuntare questa casella.",
+      "packages": "Pacchetti di Crediti",
+      "fairPlay": "I Crediti acquistati non sbloccano livelli né esperienza: la progressione si guadagna giocando.",
+      "payment": "Il pagamento avviene su una pagina sicura del nostro fornitore; i prezzi includono l’IVA.",
+      "highlight": {
+        "POPULAR": "Più scelto",
+        "BEST_VALUE": "Miglior valore",
+        "STARTER": "Per iniziare"
+      },
+      "oneTime": "Una sola volta",
+      "bonus": "{base} + {bonus} in omaggio",
+      "buy": "Acquista · {price}",
+      "buyFor": "Acquista {name} per {price}",
+      "alreadyBought": "Già acquistato",
+      "unavailable": "Non disponibile al momento",
+      "history": {
+        "title": "Storico acquisti",
+        "empty": "Nessun acquisto finora.",
+        "date": "Data",
+        "package": "Pacchetto",
+        "price": "Prezzo",
+        "status": "Stato"
+      }
+    },
+    "checkout": {
+      "backToGame": "Torna alla mappa",
+      "backToShop": "Torna ai pacchetti",
+      "successTitle": "Grazie per l’acquisto",
+      "credited": "Crediti accreditati",
+      "newBalance": "Nuovo saldo:",
+      "failed": "Il pagamento non è andato a buon fine",
+      "failedHint": "Non ti è stato addebitato nulla. Puoi riprovare quando vuoi.",
+      "processing": "Stiamo confermando il pagamento…",
+      "processingHint": "Di solito bastano pochi secondi. Non chiudere questa pagina.",
+      "delayed": "La conferma sta richiedendo più del previsto",
+      "delayedHint": "Puoi tornare a giocare: i Crediti arriveranno appena il pagamento sarà confermato e li troverai nello storico acquisti.",
+      "cancelTitle": "Acquisto annullato",
+      "cancelled": "Nessun addebito",
+      "cancelledHint": "Hai lasciato la pagina di pagamento: non ti è stato addebitato nulla."
+    },
+    "mockCheckout": {
+      "title": "Pagamento",
+      "simulation": "Simulazione",
+      "notice": "Questa pagina sostituisce il checkout del fornitore di pagamento in ambiente di prova: nessun dato di pagamento viene richiesto e nessun addebito reale avviene.",
+      "notFound": "Questo acquisto non è più in attesa di pagamento.",
+      "pay": "Paga {price} (simulato)",
+      "cancel": "Annulla e torna al gioco"
+    },
+    "referral": {
+      "title": "Costruisci la tua rete",
+      "subtitle": "Invita due Direttori: quando entrano in servizio davvero, venite premiati entrambi.",
+      "yourCode": "Il tuo codice invito",
+      "copyCode": "Copia codice",
+      "shareCta": "Condividi l’invito",
+      "copyLink": "Copia link",
+      "linkCopied": "Link copiato",
+      "codeCopied": "Codice copiato",
+      "copyFailed": "Copia non riuscita: seleziona il link e copialo a mano.",
+      "progressTitle": "Direttori attivati",
+      "progressLabel": "{activated} di {required} Direttori attivati",
+      "rewardClaimed": "Premio ricevuto",
+      "rewardReferrer": "Premio al completamento:",
+      "rewardClaimedHint": "Rete completata: il premio è già nel tuo saldo. Puoi continuare a invitare amici, il loro bonus di benvenuto resta valido.",
+      "rewardPending": "Obiettivo raggiunto: il premio è in arrivo.",
+      "progressHint": "Conta chi gioca davvero, non chi si registra soltanto.",
+      "rulesTitle": "Come funziona",
+      "rules": {
+        "share": "Condividi il tuo link: chi si iscrive da lì diventa un tuo invitato.",
+        "activation": "L’invito è convalidato quando il nuovo Direttore conclude {missions} missioni in almeno {days} giorni diversi: in quel momento riceve il suo bonus di benvenuto.",
+        "reward": "Con {required} Direttori convalidati ricevi il tuo premio, una sola volta.",
+        "fair": "Account duplicati o creati solo per ottenere il premio vengono annullati."
+      },
+      "invitedTitle": "I tuoi invitati",
+      "invitedEmpty": "Nessun invitato per ora",
+      "invitedEmptyHint": "Condividi il link qui sopra: i Direttori che si iscrivono compariranno qui.",
+      "col": {
+        "director": "Direttore",
+        "status": "Stato",
+        "joined": "Iscritto il"
+      },
+      "status": {
+        "REGISTERED": "Iscritto",
+        "ACTIVATED": "Convalidato",
+        "REWARDED": "Premiato",
+        "INVALIDATED": "Annullato"
+      },
+      "share": {
+        "title": "Condividi il tuo invito",
+        "subtitle": "Scegli come inviare il link.",
+        "copy": "Copia il link",
+        "whatsapp": "Invia con WhatsApp",
+        "telegram": "Invia con Telegram",
+        "email": "Invia per email",
+        "messageTitle": "Ti sfido su Rescue Control",
+        "message": "Gestisci le emergenze della tua città su una mappa reale. Entra dal mio invito e ricevi {credits} Crediti di benvenuto:"
+      },
+      "mine": {
+        "title": "Il tuo invito",
+        "invitedBy": "Sei stato invitato da {name}.",
+        "missions": "Missioni concluse: {done}/{required}",
+        "days": "Giorni di gioco: {done}/{required}",
+        "bonus": "Bonus di benvenuto alla convalida:",
+        "bonusReceived": "Bonus di benvenuto ricevuto:"
+      }
+    },
+    "invite": {
+      "title": "{name} ti ha invitato su Rescue Control",
+      "pitch": "Dirigi la centrale operativa della tua città: emergenze, mezzi e squadre su una mappa reale.",
+      "bonus": "Entrando da questo invito ricevi un bonus di benvenuto in Crediti dopo le prime missioni.",
+      "invalidTitle": "Invito non valido",
+      "invalidHint": "Questo link non è più attivo, ma puoi iniziare a giocare lo stesso.",
+      "cta": "Accetta l’invito e gioca",
+      "ctaInvalid": "Inizia a giocare"
+    }
+  }
+}

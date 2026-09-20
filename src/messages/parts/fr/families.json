@@ -1,0 +1,76 @@
+{
+  "families": {
+    "overview": {
+      "title": "Services de secours",
+      "unlocked": "Actif",
+      "lockedAt": "Se débloque au niveau {level}",
+      "lockedAtTerritory": "S’ouvre au niveau {level} sur ce territoire",
+      "notInTerritory": "Indisponible sur ce territoire"
+    },
+    "external": {
+      "familyTitle": "{family} — couvert par le soutien externe",
+      "notice": "{count, plural, one {{families} n’est pas encore l’un de vos services : sa part est couverte par le soutien externe et ne pèse pas sur votre évaluation.} other {{families} ne sont pas encore vos services : leur part est couverte par le soutien externe et ne pèse pas sur votre évaluation.}} Envoyez uniquement les véhicules des services que vous gérez."
+    },
+    "attribution": {
+      "title": "Qui s’en occupe",
+      "anyFamily": "Tout service",
+      "external": "Soutien externe",
+      "yours": "Votre service"
+    },
+    "support": {
+      "title": "Soutien externe",
+      "intro": "Vos véhicules ont terminé leur travail. Les unités du système achèvent les opérations : vous ne les gérez pas.",
+      "rewardPaid": "Récompense déjà versée à {time}",
+      "empty": "Clôture en cours : les dernières opérations se terminent.",
+      "status": {
+        "REQUESTED": "Demandée",
+        "WORKING": "Au travail",
+        "DONE": "Terminé",
+        "CANCELLED": "Annulée"
+      },
+      "arrivesIn": "Arrivée dans",
+      "doneIn": "Fin des travaux dans",
+      "roadClosed": "Route fermée jusqu’à la fin"
+    },
+    "unlock": {
+      "title": "Nouveau service : {family}",
+      "subtitle": "Vous avez atteint le niveau {level} : votre centre s’agrandit.",
+      "subtitleTerritory": "Niveau {level} : sur ce territoire, le service s’ouvre maintenant.",
+      "vehicles": "{count, plural, one {# modèle de véhicule} other {# modèles de véhicule}} dans la boutique",
+      "facilities": "{count, plural, one {# type de base} other {# types de base}} à acquérir et à promouvoir",
+      "incidents": "Les urgences de ce service vont commencer à arriver.",
+      "nextStep": "Pour commencer : acquérez une base compatible, puis achetez le premier véhicule.",
+      "later": "Plus tard",
+      "newFacility": "Choisir une base",
+      "openShop": "Aller à la boutique"
+    },
+    "shop": {
+      "domain": {
+        "ALL": "Tous",
+        "GROUND": "Terre",
+        "AIR": "Air",
+        "WATER": "Eau"
+      },
+      "domainFilter": "Filtrer par domaine",
+      "airNote": "Vole en ligne droite à {speed} km/h, sans routes ni trafic. Nécessite une base avec hélisurface (domaine Air).",
+      "trailerNote": "Rejoint les lieux par la route sur remorque : un peu plus lent au départ.",
+      "trailerNoteWater": "Embarcation sur remorque : elle roule jusqu’à l’eau et occupe une place d’amarrage (domaine Eau).",
+      "reason": {
+        "familyLocked": "Service verrouillé : se débloque au niveau {level}",
+        "noFacility": "Aucune base opérationnelle compatible. Il faut : {types}",
+        "noCapacity": "Aucune place libre ({domain}) dans les bases compatibles"
+      },
+      "newFacility": "Acquérir une base",
+      "manageFacilities": "Agrandir ou promouvoir une base"
+    },
+    "queue": {
+      "externalUnits": "{count, plural, one {# unité externe au travail} other {# unités externes au travail}}",
+      "closing": "Clôture",
+      "column": "Services impliqués"
+    },
+    "outcome": {
+      "stillResolving": "L’urgence reste ouverte jusqu’à la fin du soutien externe, mais la récompense est déjà à vous et vos véhicules rentrent."
+    },
+    "radio": "Message radio"
+  }
+}

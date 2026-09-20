@@ -18,6 +18,52 @@
     "veh_snowmobile",
     "veh_tow",
     "veh_utility",
+    "veh_foam",
+    "veh_hazmat",
+    "veh_bus",
+    "veh_tent",
+    "veh_suv",
+    "veh_armored",
+    "veh_plough",
+    "veh_quad",
+    "veh_fire_4x4",
+    "veh_fire_abp",
+    "veh_fire_air",
+    "veh_fire_saf",
+    "veh_fire_divers",
+    "veh_fire_usar",
+    "veh_fire_heli",
+    "veh_ems_msb",
+    "veh_ems_msi",
+    "veh_ems_msa",
+    "veh_ems_automedica",
+    "veh_ems_pediatric",
+    "veh_ems_heli",
+    "veh_pol_traffic",
+    "veh_pol_van",
+    "veh_pol_k9",
+    "veh_pol_forensic",
+    "veh_pol_eod",
+    "veh_pol_heli",
+    "veh_aib_pickup",
+    "veh_aib_tanker",
+    "veh_aib_command",
+    "veh_aib_heli",
+    "veh_aib_plane",
+    "veh_alp_team",
+    "veh_alp_4x4",
+    "veh_alp_k9",
+    "veh_alp_heli",
+    "ung_heavy_tow",
+    "ung_crane",
+    "ung_gas",
+    "ung_power",
+    "ung_water",
+    "ung_road",
+    "ung_road_repair",
+    "ung_salt",
+    "ung_municipal",
+    "ung_pc",
     "family_fire",
     "family_ems",
     "family_police",
@@ -30,6 +76,20 @@
     "facility_wildfire",
     "facility_alpine",
     "facility_coordination",
+    "facility_fire_detachment",
+    "facility_fire_command",
+    "facility_fire_special_hub",
+    "facility_ems_station",
+    "facility_ems_advanced_station",
+    "facility_ems_heli_base",
+    "facility_police_station",
+    "facility_police_hq",
+    "facility_police_special_unit",
+    "facility_wildfire_base",
+    "facility_wildfire_operations_center",
+    "facility_wildfire_air_base",
+    "facility_alpine_rescue_center",
+    "facility_alpine_heli_base",
     "hospital",
     "helipad",
     "site_candidate",
@@ -55,6 +115,35 @@
     "cat_avalanche",
     "cat_weather",
     "cat_generic",
+    "inc_alp_injured_hiker",
+    "inc_alp_missing_hiker",
+    "inc_alp_wall_recovery",
+    "inc_alp_stranded_group",
+    "inc_med_minor_illness",
+    "inc_med_severe_illness",
+    "inc_med_unconscious",
+    "inc_med_fall",
+    "inc_med_pediatric",
+    "inc_fire_apartment_block",
+    "inc_fire_warehouse",
+    "inc_tech_elevator",
+    "inc_tech_fallen_tree",
+    "inc_tech_unsafe_roof",
+    "inc_tech_animal_rescue",
+    "inc_road_accident_trapped",
+    "inc_multi_road_accident",
+    "inc_multi_fire_with_casualties",
+    "inc_multi_hazmat_spill",
+    "inc_multi_building_collapse",
+    "inc_pol_brawl",
+    "inc_pol_alarm_activation",
+    "inc_pol_accident_survey",
+    "inc_pol_public_event",
+    "inc_pol_traffic_disruption",
+    "inc_wf_brush",
+    "inc_wf_forest_medium",
+    "inc_wf_forest_large",
+    "inc_wf_interface",
     "cap_fire_suppression",
     "cap_water_supply",
     "cap_height_access",
@@ -77,7 +166,78 @@
     "cap_mountain_rescue",
     "cap_air_support",
     "cap_command",
-    "cap_logistics"
+    "cap_logistics",
+    "item_foam",
+    "item_absorbent",
+    "item_extrication_kit",
+    "item_medical_pack",
+    "item_trauma_pack",
+    "item_oxygen",
+    "item_retardant",
+    "item_generic",
+    "upgrade_garage",
+    "upgrade_quarters",
+    "upgrade_storage",
+    "upgrade_workshop",
+    "upgrade_training_room",
+    "upgrade_generic",
+    "role_firefighter",
+    "role_driver_operator",
+    "role_team_leader",
+    "role_rescuer",
+    "role_driver",
+    "role_nurse",
+    "role_physician",
+    "role_officer",
+    "role_specialist",
+    "role_wildland_operator",
+    "role_alpine_rescuer",
+    "role_pilot",
+    "role_generic",
+    "qualification",
+    "qual_heavy_vehicle_license",
+    "qual_emergency_driving",
+    "qual_road_rescue",
+    "qual_aerial_ladder_operator",
+    "qual_crane_operator",
+    "qual_saf",
+    "qual_nbcr",
+    "qual_usar",
+    "qual_diver",
+    "qual_boat_operator",
+    "qual_incident_command",
+    "qual_blsd",
+    "qual_als",
+    "qual_pediatric_care",
+    "qual_mci_management",
+    "qual_hems_crew",
+    "qual_motorcycle_patrol",
+    "qual_traffic_investigation",
+    "qual_public_order",
+    "qual_k9_handler",
+    "qual_eod_tech",
+    "qual_forensics",
+    "qual_tactical_ops",
+    "qual_wildland_firefighting",
+    "qual_wildland_command",
+    "qual_mountain_rescue_tech",
+    "qual_avalanche_rescue",
+    "qual_snow_vehicle",
+    "qual_heli_pilot",
+    "qual_airplane_pilot",
+    "qual_winch_operator",
+    "hosp_general_emergency",
+    "hosp_intensive_care",
+    "hosp_cardiology",
+    "hosp_stroke_unit",
+    "hosp_trauma_center",
+    "hosp_pediatrics",
+    "hosp_obstetrics",
+    "hosp_burn_unit",
+    "hosp_toxicology",
+    "course",
+    "closure",
+    "coverage"
   ],
   "topdown": {
     "classes": [
@@ -98,9 +258,18 @@
       "team",
       "snowmobile",
       "tow",
-      "utility"
+      "utility",
+      "foam",
+      "hazmat",
+      "bus",
+      "tent",
+      "suv",
+      "armored",
+      "plough",
+      "quad"
     ],
     "families": [
+      "SHARED",
       "FIRE",
       "EMS",
       "POLICE",
@@ -108,5 +277,699 @@
       "ALPINE",
       "UNG"
     ]
+  },
+  "catalog": {
+    "vehicle-fire-aps": {
+      "pictogram": "veh_engine",
+      "topdown": "engine"
+    },
+    "vehicle-fire-4x4": {
+      "pictogram": "veh_fire_4x4",
+      "topdown": "pickup"
+    },
+    "vehicle-fire-abp": {
+      "pictogram": "veh_fire_abp",
+      "topdown": "tanker"
+    },
+    "vehicle-fire-as": {
+      "pictogram": "veh_ladder",
+      "topdown": "ladder"
+    },
+    "vehicle-fire-boat": {
+      "pictogram": "veh_boat",
+      "topdown": "boat"
+    },
+    "vehicle-fire-ag": {
+      "pictogram": "veh_crane",
+      "topdown": "crane"
+    },
+    "vehicle-fire-foam": {
+      "pictogram": "veh_foam",
+      "topdown": "foam"
+    },
+    "vehicle-fire-air": {
+      "pictogram": "veh_fire_air",
+      "topdown": "truck"
+    },
+    "vehicle-fire-saf": {
+      "pictogram": "veh_fire_saf",
+      "topdown": "van"
+    },
+    "vehicle-fire-ucl": {
+      "pictogram": "veh_command",
+      "topdown": "command"
+    },
+    "vehicle-fire-divers": {
+      "pictogram": "veh_fire_divers",
+      "topdown": "van"
+    },
+    "vehicle-fire-nbcr": {
+      "pictogram": "veh_hazmat",
+      "topdown": "hazmat"
+    },
+    "vehicle-fire-usar": {
+      "pictogram": "veh_fire_usar",
+      "topdown": "truck"
+    },
+    "vehicle-fire-heli": {
+      "pictogram": "veh_fire_heli",
+      "topdown": "helicopter"
+    },
+    "vehicle-ems-msb": {
+      "pictogram": "veh_ems_msb",
+      "topdown": "ambulance"
+    },
+    "vehicle-ems-msi": {
+      "pictogram": "veh_ems_msi",
+      "topdown": "ambulance"
+    },
+    "vehicle-ems-automedica": {
+      "pictogram": "veh_ems_automedica",
+      "topdown": "car"
+    },
+    "vehicle-ems-msa": {
+      "pictogram": "veh_ems_msa",
+      "topdown": "ambulance"
+    },
+    "vehicle-ems-pediatric": {
+      "pictogram": "veh_ems_pediatric",
+      "topdown": "ambulance"
+    },
+    "vehicle-ems-maxi": {
+      "pictogram": "veh_bus",
+      "topdown": "bus"
+    },
+    "vehicle-ems-pma": {
+      "pictogram": "veh_tent",
+      "topdown": "tent"
+    },
+    "vehicle-ems-heli": {
+      "pictogram": "veh_ems_heli",
+      "topdown": "helicopter"
+    },
+    "vehicle-pol-patrol": {
+      "pictogram": "veh_car",
+      "topdown": "car"
+    },
+    "vehicle-pol-moto": {
+      "pictogram": "veh_motorcycle",
+      "topdown": "motorcycle"
+    },
+    "vehicle-pol-traffic": {
+      "pictogram": "veh_pol_traffic",
+      "topdown": "car"
+    },
+    "vehicle-pol-van": {
+      "pictogram": "veh_pol_van",
+      "topdown": "van"
+    },
+    "vehicle-pol-k9": {
+      "pictogram": "veh_pol_k9",
+      "topdown": "van"
+    },
+    "vehicle-pol-forensic": {
+      "pictogram": "veh_pol_forensic",
+      "topdown": "van"
+    },
+    "vehicle-pol-eod": {
+      "pictogram": "veh_pol_eod",
+      "topdown": "truck"
+    },
+    "vehicle-pol-tactical": {
+      "pictogram": "veh_armored",
+      "topdown": "armored"
+    },
+    "vehicle-pol-heli": {
+      "pictogram": "veh_pol_heli",
+      "topdown": "helicopter"
+    },
+    "vehicle-aib-pickup": {
+      "pictogram": "veh_aib_pickup",
+      "topdown": "pickup"
+    },
+    "vehicle-aib-tanker": {
+      "pictogram": "veh_aib_tanker",
+      "topdown": "tanker"
+    },
+    "vehicle-aib-command": {
+      "pictogram": "veh_aib_command",
+      "topdown": "command"
+    },
+    "vehicle-aib-heli": {
+      "pictogram": "veh_aib_heli",
+      "topdown": "helicopter"
+    },
+    "vehicle-aib-plane": {
+      "pictogram": "veh_aib_plane",
+      "topdown": "plane"
+    },
+    "vehicle-alp-team": {
+      "pictogram": "veh_alp_team",
+      "topdown": "team"
+    },
+    "vehicle-alp-4x4": {
+      "pictogram": "veh_alp_4x4",
+      "topdown": "suv"
+    },
+    "vehicle-alp-snow": {
+      "pictogram": "veh_snowmobile",
+      "topdown": "snowmobile"
+    },
+    "vehicle-alp-k9": {
+      "pictogram": "veh_alp_k9",
+      "topdown": "suv"
+    },
+    "vehicle-alp-heli": {
+      "pictogram": "veh_alp_heli",
+      "topdown": "helicopter"
+    },
+    "ung-tow": {
+      "pictogram": "veh_tow",
+      "topdown": "tow"
+    },
+    "ung-heavy-tow": {
+      "pictogram": "ung_heavy_tow",
+      "topdown": "tow"
+    },
+    "ung-crane": {
+      "pictogram": "ung_crane",
+      "topdown": "crane"
+    },
+    "ung-gas": {
+      "pictogram": "ung_gas",
+      "topdown": "utility"
+    },
+    "ung-power": {
+      "pictogram": "ung_power",
+      "topdown": "utility"
+    },
+    "ung-water": {
+      "pictogram": "ung_water",
+      "topdown": "utility"
+    },
+    "ung-road": {
+      "pictogram": "ung_road",
+      "topdown": "utility"
+    },
+    "ung-road-repair": {
+      "pictogram": "ung_road_repair",
+      "topdown": "utility"
+    },
+    "ung-snow": {
+      "pictogram": "veh_plough",
+      "topdown": "plough"
+    },
+    "ung-salt": {
+      "pictogram": "ung_salt",
+      "topdown": "plough"
+    },
+    "ung-municipal": {
+      "pictogram": "ung_municipal",
+      "topdown": "utility"
+    },
+    "ung-pc": {
+      "pictogram": "ung_pc",
+      "topdown": "utility"
+    },
+    "facility-fire-local-station": {
+      "pictogram": "facility_fire"
+    },
+    "facility-fire-detachment": {
+      "pictogram": "facility_fire_detachment"
+    },
+    "facility-fire-command": {
+      "pictogram": "facility_fire_command"
+    },
+    "facility-fire-special-hub": {
+      "pictogram": "facility_fire_special_hub"
+    },
+    "facility-ems-post": {
+      "pictogram": "facility_ems"
+    },
+    "facility-ems-station": {
+      "pictogram": "facility_ems_station"
+    },
+    "facility-ems-advanced-station": {
+      "pictogram": "facility_ems_advanced_station"
+    },
+    "facility-ems-heli-base": {
+      "pictogram": "facility_ems_heli_base"
+    },
+    "facility-police-post": {
+      "pictogram": "facility_police"
+    },
+    "facility-police-station": {
+      "pictogram": "facility_police_station"
+    },
+    "facility-police-hq": {
+      "pictogram": "facility_police_hq"
+    },
+    "facility-police-special-unit": {
+      "pictogram": "facility_police_special_unit"
+    },
+    "facility-aib-outpost": {
+      "pictogram": "facility_wildfire"
+    },
+    "facility-aib-base": {
+      "pictogram": "facility_wildfire_base"
+    },
+    "facility-aib-operations-center": {
+      "pictogram": "facility_wildfire_operations_center"
+    },
+    "facility-aib-air-base": {
+      "pictogram": "facility_wildfire_air_base"
+    },
+    "facility-alpine-station": {
+      "pictogram": "facility_alpine"
+    },
+    "facility-alpine-rescue-center": {
+      "pictogram": "facility_alpine_rescue_center"
+    },
+    "facility-alpine-heli-base": {
+      "pictogram": "facility_alpine_heli_base"
+    },
+    "facility-coordination-center": {
+      "pictogram": "facility_coordination"
+    },
+    "incident-alp-injured-hiker": {
+      "pictogram": "inc_alp_injured_hiker"
+    },
+    "incident-alp-missing-hiker": {
+      "pictogram": "inc_alp_missing_hiker"
+    },
+    "incident-alp-avalanche": {
+      "pictogram": "cat_avalanche"
+    },
+    "incident-alp-wall-recovery": {
+      "pictogram": "inc_alp_wall_recovery"
+    },
+    "incident-alp-stranded-group": {
+      "pictogram": "inc_alp_stranded_group"
+    },
+    "incident-med-minor-illness": {
+      "pictogram": "inc_med_minor_illness"
+    },
+    "incident-med-severe-illness": {
+      "pictogram": "inc_med_severe_illness"
+    },
+    "incident-med-unconscious": {
+      "pictogram": "inc_med_unconscious"
+    },
+    "incident-med-cardiac-arrest": {
+      "pictogram": "cat_cardiac"
+    },
+    "incident-med-fall": {
+      "pictogram": "inc_med_fall"
+    },
+    "incident-med-major-trauma": {
+      "pictogram": "cat_trauma"
+    },
+    "incident-med-multi-patient": {
+      "pictogram": "cat_mass_casualty"
+    },
+    "incident-med-pediatric": {
+      "pictogram": "inc_med_pediatric"
+    },
+    "incident-fire-trash-bin": {
+      "pictogram": "cat_fire_minor"
+    },
+    "incident-fire-vehicle": {
+      "pictogram": "cat_fire_vehicle"
+    },
+    "incident-fire-dwelling": {
+      "pictogram": "cat_fire_structure"
+    },
+    "incident-fire-apartment-block": {
+      "pictogram": "inc_fire_apartment_block"
+    },
+    "incident-fire-warehouse": {
+      "pictogram": "inc_fire_warehouse"
+    },
+    "incident-tech-elevator": {
+      "pictogram": "inc_tech_elevator"
+    },
+    "incident-tech-fallen-tree": {
+      "pictogram": "inc_tech_fallen_tree"
+    },
+    "incident-tech-flooding": {
+      "pictogram": "cat_flood"
+    },
+    "incident-tech-unsafe-roof": {
+      "pictogram": "inc_tech_unsafe_roof"
+    },
+    "incident-tech-animal-rescue": {
+      "pictogram": "inc_tech_animal_rescue"
+    },
+    "incident-road-accident-minor": {
+      "pictogram": "cat_traffic_accident"
+    },
+    "incident-road-accident-trapped": {
+      "pictogram": "inc_road_accident_trapped"
+    },
+    "incident-multi-road-accident": {
+      "pictogram": "inc_multi_road_accident"
+    },
+    "incident-multi-fire-with-casualties": {
+      "pictogram": "inc_multi_fire_with_casualties"
+    },
+    "incident-multi-gas-leak": {
+      "pictogram": "cat_gas_leak"
+    },
+    "incident-multi-severe-weather": {
+      "pictogram": "cat_weather"
+    },
+    "incident-multi-person-in-water": {
+      "pictogram": "cat_water_rescue"
+    },
+    "incident-multi-hazmat-spill": {
+      "pictogram": "inc_multi_hazmat_spill"
+    },
+    "incident-multi-building-collapse": {
+      "pictogram": "inc_multi_building_collapse"
+    },
+    "incident-pol-brawl": {
+      "pictogram": "inc_pol_brawl"
+    },
+    "incident-pol-theft-in-progress": {
+      "pictogram": "cat_crime"
+    },
+    "incident-pol-alarm-activation": {
+      "pictogram": "inc_pol_alarm_activation"
+    },
+    "incident-pol-accident-survey": {
+      "pictogram": "inc_pol_accident_survey"
+    },
+    "incident-pol-missing-person": {
+      "pictogram": "cat_missing_person"
+    },
+    "incident-pol-suspicious-package": {
+      "pictogram": "cat_suspicious_package"
+    },
+    "incident-pol-public-event": {
+      "pictogram": "inc_pol_public_event"
+    },
+    "incident-pol-traffic-disruption": {
+      "pictogram": "inc_pol_traffic_disruption"
+    },
+    "incident-wf-brush": {
+      "pictogram": "inc_wf_brush"
+    },
+    "incident-wf-forest-small": {
+      "pictogram": "cat_wildfire"
+    },
+    "incident-wf-forest-medium": {
+      "pictogram": "inc_wf_forest_medium"
+    },
+    "incident-wf-forest-large": {
+      "pictogram": "inc_wf_forest_large"
+    },
+    "incident-wf-interface": {
+      "pictogram": "inc_wf_interface"
+    },
+    "capability-fire-suppression": {
+      "pictogram": "cap_fire_suppression"
+    },
+    "capability-water-supply": {
+      "pictogram": "cap_water_supply"
+    },
+    "capability-height-access": {
+      "pictogram": "cap_height_access"
+    },
+    "capability-extrication": {
+      "pictogram": "cap_extrication"
+    },
+    "capability-technical-rescue": {
+      "pictogram": "cap_technical_rescue"
+    },
+    "capability-heavy-rescue": {
+      "pictogram": "cap_heavy_rescue"
+    },
+    "capability-hazmat": {
+      "pictogram": "cap_hazmat"
+    },
+    "capability-water-rescue": {
+      "pictogram": "cap_water_rescue"
+    },
+    "capability-medical-basic": {
+      "pictogram": "cap_medical_basic"
+    },
+    "capability-medical-advanced": {
+      "pictogram": "cap_medical_advanced"
+    },
+    "capability-patient-transport": {
+      "pictogram": "cap_patient_transport"
+    },
+    "capability-mass-casualty": {
+      "pictogram": "cap_mass_casualty"
+    },
+    "capability-scene-security": {
+      "pictogram": "cap_scene_security"
+    },
+    "capability-traffic-control": {
+      "pictogram": "cap_traffic_control"
+    },
+    "capability-investigation": {
+      "pictogram": "cap_investigation"
+    },
+    "capability-k9-search": {
+      "pictogram": "cap_k9_search"
+    },
+    "capability-eod": {
+      "pictogram": "cap_eod"
+    },
+    "capability-wildland-fire": {
+      "pictogram": "cap_wildland_fire"
+    },
+    "capability-offroad-access": {
+      "pictogram": "cap_offroad_access"
+    },
+    "capability-mountain-rescue": {
+      "pictogram": "cap_mountain_rescue"
+    },
+    "capability-air-support": {
+      "pictogram": "cap_air_support"
+    },
+    "capability-command": {
+      "pictogram": "cap_command"
+    },
+    "capability-logistics": {
+      "pictogram": "cap_logistics"
+    },
+    "family-fire": {
+      "pictogram": "family_fire"
+    },
+    "family-ems": {
+      "pictogram": "family_ems"
+    },
+    "family-police": {
+      "pictogram": "family_police"
+    },
+    "family-wildfire": {
+      "pictogram": "family_wildfire"
+    },
+    "family-alpine": {
+      "pictogram": "family_alpine"
+    },
+    "family-ung": {
+      "pictogram": "family_ung"
+    },
+    "item-foam": {
+      "pictogram": "item_foam"
+    },
+    "item-absorbent": {
+      "pictogram": "item_absorbent"
+    },
+    "item-extrication-kit": {
+      "pictogram": "item_extrication_kit"
+    },
+    "item-medical-pack": {
+      "pictogram": "item_medical_pack"
+    },
+    "item-trauma-pack": {
+      "pictogram": "item_trauma_pack"
+    },
+    "item-oxygen": {
+      "pictogram": "item_oxygen"
+    },
+    "item-retardant": {
+      "pictogram": "item_retardant"
+    },
+    "upgrade-garage": {
+      "pictogram": "upgrade_garage"
+    },
+    "upgrade-quarters": {
+      "pictogram": "upgrade_quarters"
+    },
+    "upgrade-storage": {
+      "pictogram": "upgrade_storage"
+    },
+    "upgrade-workshop": {
+      "pictogram": "upgrade_workshop"
+    },
+    "upgrade-training-room": {
+      "pictogram": "upgrade_training_room"
+    },
+    "upgrade-helipad": {
+      "pictogram": "helipad"
+    },
+    "role-firefighter": {
+      "pictogram": "role_firefighter"
+    },
+    "role-driver-operator": {
+      "pictogram": "role_driver_operator"
+    },
+    "role-team-leader": {
+      "pictogram": "role_team_leader"
+    },
+    "role-rescuer": {
+      "pictogram": "role_rescuer"
+    },
+    "role-driver": {
+      "pictogram": "role_driver"
+    },
+    "role-nurse": {
+      "pictogram": "role_nurse"
+    },
+    "role-physician": {
+      "pictogram": "role_physician"
+    },
+    "role-officer": {
+      "pictogram": "role_officer"
+    },
+    "role-specialist": {
+      "pictogram": "role_specialist"
+    },
+    "role-wildland-operator": {
+      "pictogram": "role_wildland_operator"
+    },
+    "role-alpine-rescuer": {
+      "pictogram": "role_alpine_rescuer"
+    },
+    "role-pilot": {
+      "pictogram": "role_pilot"
+    },
+    "qualification-heavy-vehicle-license": {
+      "pictogram": "qual_heavy_vehicle_license"
+    },
+    "qualification-emergency-driving": {
+      "pictogram": "qual_emergency_driving"
+    },
+    "qualification-road-rescue": {
+      "pictogram": "qual_road_rescue"
+    },
+    "qualification-aerial-ladder-operator": {
+      "pictogram": "qual_aerial_ladder_operator"
+    },
+    "qualification-crane-operator": {
+      "pictogram": "qual_crane_operator"
+    },
+    "qualification-saf": {
+      "pictogram": "qual_saf"
+    },
+    "qualification-nbcr": {
+      "pictogram": "qual_nbcr"
+    },
+    "qualification-usar": {
+      "pictogram": "qual_usar"
+    },
+    "qualification-diver": {
+      "pictogram": "qual_diver"
+    },
+    "qualification-boat-operator": {
+      "pictogram": "qual_boat_operator"
+    },
+    "qualification-incident-command": {
+      "pictogram": "qual_incident_command"
+    },
+    "qualification-blsd": {
+      "pictogram": "qual_blsd"
+    },
+    "qualification-als": {
+      "pictogram": "qual_als"
+    },
+    "qualification-pediatric-care": {
+      "pictogram": "qual_pediatric_care"
+    },
+    "qualification-mci-management": {
+      "pictogram": "qual_mci_management"
+    },
+    "qualification-hems-crew": {
+      "pictogram": "qual_hems_crew"
+    },
+    "qualification-motorcycle-patrol": {
+      "pictogram": "qual_motorcycle_patrol"
+    },
+    "qualification-traffic-investigation": {
+      "pictogram": "qual_traffic_investigation"
+    },
+    "qualification-public-order": {
+      "pictogram": "qual_public_order"
+    },
+    "qualification-k9-handler": {
+      "pictogram": "qual_k9_handler"
+    },
+    "qualification-eod-tech": {
+      "pictogram": "qual_eod_tech"
+    },
+    "qualification-forensics": {
+      "pictogram": "qual_forensics"
+    },
+    "qualification-tactical-ops": {
+      "pictogram": "qual_tactical_ops"
+    },
+    "qualification-wildland-firefighting": {
+      "pictogram": "qual_wildland_firefighting"
+    },
+    "qualification-wildland-command": {
+      "pictogram": "qual_wildland_command"
+    },
+    "qualification-mountain-rescue-tech": {
+      "pictogram": "qual_mountain_rescue_tech"
+    },
+    "qualification-avalanche-rescue": {
+      "pictogram": "qual_avalanche_rescue"
+    },
+    "qualification-snow-vehicle": {
+      "pictogram": "qual_snow_vehicle"
+    },
+    "qualification-heli-pilot": {
+      "pictogram": "qual_heli_pilot"
+    },
+    "qualification-airplane-pilot": {
+      "pictogram": "qual_airplane_pilot"
+    },
+    "qualification-winch-operator": {
+      "pictogram": "qual_winch_operator"
+    },
+    "hospital-general-emergency": {
+      "pictogram": "hosp_general_emergency"
+    },
+    "hospital-intensive-care": {
+      "pictogram": "hosp_intensive_care"
+    },
+    "hospital-cardiology": {
+      "pictogram": "hosp_cardiology"
+    },
+    "hospital-stroke-unit": {
+      "pictogram": "hosp_stroke_unit"
+    },
+    "hospital-trauma-center": {
+      "pictogram": "hosp_trauma_center"
+    },
+    "hospital-pediatrics": {
+      "pictogram": "hosp_pediatrics"
+    },
+    "hospital-obstetrics": {
+      "pictogram": "hosp_obstetrics"
+    },
+    "hospital-burn-unit": {
+      "pictogram": "hosp_burn_unit"
+    },
+    "hospital-toxicology": {
+      "pictogram": "hosp_toxicology"
+    },
+    "hospital-helipad": {
+      "pictogram": "helipad"
+    }
   }
 }

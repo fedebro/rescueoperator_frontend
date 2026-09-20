@@ -1,0 +1,57 @@
+{
+  "notificationCenter": {
+    "unread": "Ungelesen",
+    "unreadOnly": "Nur ungelesene",
+    "readAll": "Alle als gelesen markieren",
+    "filterLabel": "Nach Kategorie filtern",
+    "listLabel": "Liste der Benachrichtigungen",
+    "loading": "Benachrichtigungen werden geladen…",
+    "errorTitle": "Benachrichtigungen konnten nicht geladen werden",
+    "errorBody": "Prüfe deine Verbindung und versuche es erneut.",
+    "emptyTitle": "Keine Benachrichtigungen",
+    "emptyBody": "Lieferungen, Ausbauten, Stufen und wichtige Ereignisse erscheinen hier.",
+    "emptyFilteredTitle": "Nichts für diese Filter",
+    "emptyFilteredBody": "Wähle eine andere Kategorie oder zeige auch gelesene Benachrichtigungen.",
+    "unreadAnnouncement": "{count, plural, one {# ungelesene Benachrichtigung} other {# ungelesene Benachrichtigungen}}",
+    "category": {
+      "ALL": "Alle",
+      "OPERATIONS": "Einsätze",
+      "FLEET": "Fuhrpark",
+      "PERSONNEL": "Personal",
+      "FACILITIES": "Standorte",
+      "ECONOMY": "Wirtschaft",
+      "PROGRESSION": "Laufbahn",
+      "SYSTEM": "Systemmeldungen"
+    },
+    "priority": {
+      "CRITICAL": "Kritisch",
+      "IMPORTANT": "Wichtig",
+      "INFO": "Hinweis"
+    },
+    "action": {
+      "OPEN_INCIDENT": "Einsatz auf der Karte öffnen",
+      "OPEN_VEHICLE": "Fahrzeug auf der Karte öffnen",
+      "OPEN_FACILITY": "Standort öffnen",
+      "OPEN_PERSONNEL": "Personalakte öffnen",
+      "OPEN_SHOP": "Zum Einkauf",
+      "OPEN_PROGRESSION": "Zur Laufbahn",
+      "NONE": "Keine Aktion"
+    }
+  },
+  "notifications": {
+    "qa": {
+      "OPERATIONS": "Testmeldung: Einsätze",
+      "FLEET": "Testmeldung: Fuhrpark",
+      "PERSONNEL": "Testmeldung: Personal",
+      "FACILITIES": "Testmeldung: Standorte",
+      "ECONOMY": "Testmeldung: Wirtschaft",
+      "PROGRESSION": "Testmeldung: Laufbahn",
+      "SYSTEM": "Testmeldung: System"
+    },
+    "qaBody": {
+      "CRITICAL": "Erfordert sofortiges Handeln.",
+      "IMPORTANT": "Bei Gelegenheit bald ansehen.",
+      "INFO": "Nur zur Kenntnis."
+    }
+  }
+}

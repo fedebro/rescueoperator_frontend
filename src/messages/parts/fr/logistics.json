@@ -1,0 +1,200 @@
+{
+  "logistics": {
+    "title": "Logistique",
+    "subtitle": "Stocks, commandes et ateliers de vos sites",
+    "tabs": {
+      "warehouse": "Entrepôt",
+      "orders": "Commandes",
+      "workshop": "Atelier"
+    },
+    "locked": {
+      "inventory": "La gestion des stocks n’est pas encore disponible",
+      "maintenance": "L’entretien des véhicules n’est pas encore disponible"
+    },
+    "due": {
+      "NOT_DUE": "À jour",
+      "UPCOMING": "Révision proche",
+      "DUE": "Révision à faire",
+      "OVERDUE": "Révision dépassée"
+    },
+    "risk": {
+      "LOW": "Risque de panne faible",
+      "MEDIUM": "Risque de panne moyen",
+      "HIGH": "Risque de panne élevé"
+    },
+    "workStatus": {
+      "QUEUED": "En file d’attente",
+      "IN_PROGRESS": "En cours",
+      "COMPLETED": "Terminé",
+      "CANCELLED": "Annulé"
+    },
+    "orderStatus": {
+      "PLACED": "Enregistrée",
+      "IN_DELIVERY": "En livraison",
+      "DELIVERED": "Livrée",
+      "CANCELLED": "Annulée"
+    },
+    "orderSummary": "{lines, plural, one {# article} other {# articles}} pour {facility}",
+    "stock": {
+      "title": "Stocks",
+      "low": "Stock bas",
+      "ok": "Stock suffisant",
+      "lowAlert": "{count, plural, one {# article est sous le stock minimum} other {# articles sont sous le stock minimum}}",
+      "order": "Commander",
+      "empty": "Aucun stock à gérer",
+      "emptyHint": "Les stocks apparaissent dans les sites des services que vous avez débloqués.",
+      "noneHere": "Ce site n’utilise pas de consommables.",
+      "inboundOrders": "{count, plural, one {# commande en route} other {# commandes en route}}",
+      "col": {
+        "facility": "Site",
+        "item": "Article",
+        "quantity": "En stock",
+        "reserved": "Réservé",
+        "inbound": "En route",
+        "minimum": "Minimum",
+        "state": "État"
+      }
+    },
+    "order": {
+      "title": "Commander des fournitures",
+      "subtitle": "Les fournitures se commandent par colis entiers et arrivent à l’entrepôt du site.",
+      "facility": "Site de livraison",
+      "lines": "Articles",
+      "suggest": "Compléter les stocks bas",
+      "pack": "Colis de {size} {unit}",
+      "inStock": "en stock : {quantity}",
+      "decrease": "Un colis de moins de {item}",
+      "increase": "Un colis de plus de {item}",
+      "packsOf": "{count, plural, one {# colis} other {# colis}} de {item}",
+      "storage": "Espace de stockage",
+      "delivery": "Livraison",
+      "standard": "Standard",
+      "urgent": "Urgente",
+      "arrivesIn": "arrive dans {time}",
+      "urgentHint": "La livraison urgente arrive bien plus vite mais coûte plus cher.",
+      "submit": "Valider la commande",
+      "placed": "Commande envoyée"
+    },
+    "orders": {
+      "title": "Commandes de fournitures",
+      "empty": "Aucune commande",
+      "emptyHint": "Les commandes apparaissent ici avec leur délai de livraison.",
+      "arrived": "Arrivée",
+      "arriving": "arrive…",
+      "urgent": "Urgente",
+      "col": {
+        "placed": "Date",
+        "summary": "Commande",
+        "total": "Total",
+        "status": "Statut",
+        "arrival": "Livraison"
+      }
+    },
+    "workshop": {
+      "sectionTitle": "Entretien",
+      "fleet": "État des véhicules",
+      "queue": "Ateliers",
+      "quotes": "Interventions",
+      "empty": "Aucun véhicule à suivre",
+      "started": "{callSign} est entré à l’atelier",
+      "noQuotes": "Aucune intervention nécessaire.",
+      "notAvailable": "Le véhicule doit être disponible sur son site pour entrer à l’atelier.",
+      "kind": {
+        "SERVICE": "Révision",
+        "REPAIR": "Réparation",
+        "FREE_EMERGENCY_REPAIR": "Réparation d’urgence gratuite"
+      },
+      "start": {
+        "SERVICE": "Lancer la révision",
+        "REPAIR": "Réparer",
+        "FREE_EMERGENCY_REPAIR": "Réparer gratuitement"
+      },
+      "free": "Gratuit",
+      "restoresTo": "état ramené à {health} %",
+      "health": "État",
+      "healthValue": "État à {health} %",
+      "wear": "Usure",
+      "km": "Parcourus",
+      "kmValue": "{km} km",
+      "missions": "Missions",
+      "finishing": "presque prêt…",
+      "waitingSlot": "en attente d’une place libre",
+      "external": "Garage externe",
+      "externalHint": "Ce site n’a pas d’atelier : les travaux se font à l’extérieur, un véhicule à la fois et plus lentement.",
+      "slots": "Places {busy}/{slots}",
+      "queueEmpty": "Aucun travail en cours.",
+      "col": {
+        "vehicle": "Véhicule",
+        "facility": "Site",
+        "status": "Statut",
+        "health": "État",
+        "band": "Niveau",
+        "wear": "Usure",
+        "km": "Km",
+        "missions": "Missions",
+        "due": "Révision",
+        "risk": "Risque"
+      }
+    },
+    "recovery": {
+      "title": "Récupération du véhicule",
+      "automatic": "La récupération est automatique : vous ne perdez jamais un véhicule.",
+      "headline": {
+        "BROKEN_DOWN": "Véhicule en panne",
+        "BEING_RECOVERED": "Remorquage vers le site",
+        "REPAIR": "En réparation",
+        "AVAILABLE": "De nouveau disponible"
+      },
+      "step": {
+        "BROKEN_DOWN": "Panne, dépanneuse appelée",
+        "BEING_RECOVERED": "Remorquage vers le site",
+        "REPAIR": "Réparation à l’atelier",
+        "AVAILABLE": "De nouveau disponible"
+      },
+      "state": {
+        "done": "Fait",
+        "current": "En cours",
+        "pending": "À venir"
+      },
+      "towEta": "Dépanneuse",
+      "homeEta": "Au site",
+      "arriving": "imminent…",
+      "queued": "en attente"
+    },
+    "history": {
+      "title": "Historique du véhicule",
+      "empty": "Aucun événement pour l’instant.",
+      "showAll": "Tout afficher ({count})",
+      "showLess": "Afficher moins",
+      "MISSION": "Retour de mission · {km} km",
+      "RESTOCKED": "Réapprovisionné depuis l’entrepôt ({units} unités)",
+      "SERVICE_STARTED": "Révision lancée ({cost} crédits)",
+      "SERVICE_DONE": "Révision terminée",
+      "REPAIR_STARTED": "Réparation lancée ({cost} crédits)",
+      "REPAIR_DONE": "Réparation terminée",
+      "FREE_EMERGENCY_REPAIR_STARTED": "Réparation d’urgence gratuite lancée",
+      "FREE_EMERGENCY_REPAIR_DONE": "Réparation d’urgence terminée",
+      "BROKE_DOWN": "Panne en service",
+      "RECOVERY_STARTED": "Récupération par dépanneuse ({cost} crédits)",
+      "RECOVERY_STARTED_FREE": "Récupération par dépanneuse (gratuite)",
+      "RECOVERED": "Ramené au site en remorque"
+    }
+  },
+  "notifications": {
+    "lowStock": "Stocks bientôt épuisés : {facility}",
+    "lowStockBody": "{count, plural, one {# article est sous le minimum.} other {# articles sont sous le minimum.}} Commandez un réassort.",
+    "suppliesDelivered": "Fournitures livrées : {facility}",
+    "maintenanceDone": "{callSign} est sorti de l’atelier",
+    "vehicleBrokeDownBody": "La récupération et la réparation démarrent toutes seules."
+  },
+  "timeline": {
+    "vehicle_broke_down": "{callSign} en panne : il n’arrivera pas"
+  },
+  "game": {
+    "dispatch": {
+      "warning": {
+        "INVENTORY_LOW": "Stocks bas au site"
+      }
+    }
+  }
+}

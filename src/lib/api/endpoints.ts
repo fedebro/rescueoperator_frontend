@@ -10,7 +10,6 @@ import {
   TimelineEntryDto,
   UnlockDto,
   CatalogDto,
-  DispatchOptionsResult,
   FacilityDto,
   IncidentDto,
   IncidentOutcomeDto,
@@ -25,19 +24,8 @@ import {
   type SupportedLocale,
 } from '@/contracts';
 import { api } from './client';
-import {
-  AdminCareerDto,
-  AdminConfigVersionDto,
-  AdminDashboardDto,
-  AdminFeatureFlagDto,
-  AdminIncidentDto,
-  AdminQueueDto,
-  AdminScheduledActionDto,
-  AdminUserDto,
-  NotificationDto,
-  StipendDto,
-  type AdminLedgerAdjustmentBody,
-} from './assumed';
+import { NotificationDto, StipendDto } from '@/contracts';
+import { DispatchOptionsResultV2 } from './assumed';
 
 const c = (careerId: string) => `/careers/${careerId}`;
 
@@ -90,7 +78,7 @@ export const gameApi = {
   incident: (careerId: string, id: string) =>
     api.get(`${c(careerId)}/incidents/${id}`, { schema: IncidentDto }),
   dispatchOptions: (careerId: string, incidentId: string) =>
-    api.get(`${c(careerId)}/incidents/${incidentId}/dispatch-options`, { schema: DispatchOptionsResult }),
+    api.get(`${c(careerId)}/incidents/${incidentId}/dispatch-options`, { schema: DispatchOptionsResultV2 }),
   dispatch: (careerId: string, incidentId: string, vehicleIds: string[]) =>
     api.command(
       `${c(careerId)}/incidents/${incidentId}/dispatch`,
@@ -118,34 +106,4 @@ export const gameApi = {
   notifications: (careerId: string) =>
     api.get(`${c(careerId)}/notifications`, { schema: z.array(NotificationDto) }),
   readAllNotifications: (careerId: string) => api.post<void>(`${c(careerId)}/notifications/read-all`),
-};
-
-const page = { limit: 100 };
-export const adminApi = {
-  dashboard: () => api.get('/admin/dashboard', { schema: AdminDashboardDto }),
-  users: (q?: string) => api.get('/admin/users', { query: { q, ...page }, schema: z.array(AdminUserDto) }),
-  setUserStatus: (id: string, status: 'ACTIVE' | 'SUSPENDED') =>
-    api.patch(`/admin/users/${id}`, { status }, { schema: AdminUserDto }),
-  careers: (q?: string) =>
-    api.get('/admin/careers', { query: { q, ...page }, schema: z.array(AdminCareerDto) }),
-  incidents: (status?: string) =>
-    api.get('/admin/incidents', { query: { status, ...page }, schema: z.array(AdminIncidentDto) }),
-  cancelIncident: (id: string) => api.command<void>(`/admin/incidents/${id}/cancel`),
-  scheduledActions: (status?: string) =>
-    api.get('/admin/scheduled-actions', {
-      query: { status, ...page },
-      schema: z.array(AdminScheduledActionDto),
-    }),
-  retryScheduledAction: (id: string) => api.command<void>(`/admin/scheduled-actions/${id}/retry`),
-  queues: () => api.get('/admin/queues', { schema: z.array(AdminQueueDto) }),
-  adjustLedger: (body: AdminLedgerAdjustmentBody) => api.command<void>('/admin/ledger/adjustments', body),
-  configVersions: () => api.get('/admin/config-versions', { schema: z.array(AdminConfigVersionDto) }),
-  publishConfigVersion: (id: string) => api.command<void>(`/admin/config-versions/${id}/publish`),
-  featureFlags: () => api.get('/admin/feature-flags', { schema: z.array(AdminFeatureFlagDto) }),
-  setFeatureFlag: (key: string, enabled: boolean) =>
-    api.patch(
-      `/admin/feature-flags/${encodeURIComponent(key)}`,
-      { enabled },
-      { schema: AdminFeatureFlagDto },
-    ),
 };

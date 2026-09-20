@@ -12,8 +12,22 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const LOCALES = ['it', 'en', 'fr', 'de', 'es'];
 type Tree = { [k: string]: Tree | string };
+const readJson = (file: string): Tree =>
+  JSON.parse(readFileSync(join(root, 'src/messages', file), 'utf8')) as Tree;
+const merge = (a: Tree, b: Tree): Tree => {
+  const out: Tree = { ...a };
+  for (const [k, v] of Object.entries(b)) {
+    const cur = out[k];
+    out[k] = typeof v === 'object' && typeof cur === 'object' ? merge(cur, v) : v;
+  }
+  return out;
+};
+/** Core file + every part in src/messages/parts/<locale>/ (same merge as src/messages/index.ts). */
 const load = (l: string): Tree =>
-  JSON.parse(readFileSync(join(root, 'src/messages', `${l}.json`), 'utf8')) as Tree;
+  readdirSync(join(root, 'src/messages/parts', l))
+    .filter((f) => f.endsWith('.json'))
+    .sort()
+    .reduce((acc, f) => merge(acc, readJson(`parts/${l}/${f}`)), readJson(`${l}.json`));
 const flatten = (t: Tree, prefix = '', out = new Map<string, string>()) => {
   for (const [k, v] of Object.entries(t)) {
     const key = prefix ? `${prefix}.${k}` : k;

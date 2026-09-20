@@ -236,6 +236,8 @@ export const api = {
     request<T>(path, { idempotent: true, ...opts, method: 'POST', body: body ?? {} }).then((r) => r.data),
   patch: <T>(path: string, body: unknown, opts?: Omit<RequestOptions<T>, 'method' | 'body'>) =>
     request<T>(path, { ...opts, method: 'PATCH', body }).then((r) => r.data),
+  put: <T>(path: string, body: unknown, opts?: Omit<RequestOptions<T>, 'method' | 'body'>) =>
+    request<T>(path, { ...opts, method: 'PUT', body }).then((r) => r.data),
   delete: <T = void>(path: string, opts?: Omit<RequestOptions<T>, 'method' | 'body'>) =>
     request<T>(path, { ...opts, method: 'DELETE' }).then((r) => r.data),
 };

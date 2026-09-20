@@ -1,0 +1,131 @@
+{
+  "medical": {
+    "patients": {
+      "title": "Pazienti",
+      "count": "{count, plural, one {# paziente} other {# pazienti}}",
+      "label": "Paziente {n}",
+      "loadError": "Impossibile caricare i pazienti.",
+      "triageUnknown": "Triage in corso",
+      "unassessedTitle": "Triage in corso",
+      "unassessedHint": "I pazienti vengono valutati all’arrivo del primo mezzo sanitario.",
+      "unassessedNoMedical": "Nessun mezzo sanitario sul posto o in arrivo: invia un’ambulanza. In mancanza interverrà un’ambulanza esterna, con un esito peggiore.",
+      "profileUnknown": "Condizioni da valutare",
+      "vehicle": "Mezzo",
+      "hospital": "Ospedale",
+      "externalAmbulance": "Ambulanza esterna",
+      "transportNotRequired": "Non serve il trasporto",
+      "openHospital": "Mostra {hospital} sulla mappa"
+    },
+    "stability": {
+      "label": "Stabilità",
+      "value": "{value} su 100",
+      "band": {
+        "stable": "Stabile",
+        "watch": "Da monitorare",
+        "unstable": "Instabile",
+        "critical": "Critico"
+      },
+      "trend": {
+        "improving": "In miglioramento",
+        "worsening": "In peggioramento",
+        "steady": "Stazionario"
+      }
+    },
+    "needs": {
+      "title": "Trattamento sul posto",
+      "met": "{capability}: coperto",
+      "unmet": "{capability}: non coperto",
+      "unmetHint": "Con i mezzi presenti il paziente non può essere stabilizzato sul posto: invia un mezzo adatto oppure trasportalo appena possibile."
+    },
+    "phase": {
+      "assessing": "Valutazione",
+      "treating": "Trattamento",
+      "packaging": "Preparazione al trasporto",
+      "toHospital": "Arrivo in ospedale",
+      "handoff": "Consegna al pronto soccorso",
+      "done": "in corso…"
+    },
+    "transport": {
+      "title": "Trasporto in ospedale",
+      "loading": "Calcolo degli ospedali…",
+      "loadError": "Impossibile calcolare gli ospedali.",
+      "recommended": "Consigliato",
+      "confirmRecommended": "Trasporta a {hospital}",
+      "chooseOther": "Scegli un altro ospedale",
+      "chooseTitle": "Scegli l’ospedale",
+      "chooseDescription": "Tempo di viaggio, reparto adatto e carico del pronto soccorso determinano l’esito del paziente.",
+      "hideOptions": "Nascondi le alternative",
+      "select": "Seleziona {hospital}",
+      "confirm": "Conferma il trasporto",
+      "vehicle": "Mezzo che trasporta",
+      "travel": "Viaggio",
+      "handoff": "Consegna",
+      "compatible": "Reparto adatto",
+      "notCompatible": "Reparto non adatto",
+      "helipad": "Elisuperficie",
+      "lockedChoice": "La scelta manuale dell’ospedale si sblocca al livello {level}. Per ora viene proposto l’ospedale consigliato.",
+      "autoHint": "Se non scegli, l’ospedale consigliato viene confermato automaticamente dopo una breve attesa.",
+      "noVehicle": "Nessun mezzo con trasporto pazienti sul posto",
+      "noVehicleHint": "Il paziente attende sul posto. Invia un’ambulanza: se non arriva nessuno interverrà un’ambulanza esterna.",
+      "vehicleEnRoute": "{callSign} è in arrivo per il trasporto.",
+      "send": "Invia {callSign}",
+      "noAmbulance": "Nessuna ambulanza disponibile in questo momento.",
+      "sent": "{callSign} inviato per il trasporto",
+      "started": "{callSign} in viaggio verso {hospital}"
+    },
+    "reasons": {
+      "CLOSEST": "È il più vicino",
+      "SPECIALTY_AVAILABLE": "Ha il reparto necessario",
+      "PREFERRED_UNIT": "Ha anche il reparto più indicato",
+      "LOW_LOAD": "Pronto soccorso con carico normale",
+      "BUSY": "Pronto soccorso affollato: consegna più lenta",
+      "SATURATED": "Pronto soccorso saturo: consegna molto lenta",
+      "NOT_COMPATIBLE": "Non ha il reparto necessario",
+      "NO_SPECIALTY_IN_RANGE": "Nessun ospedale della zona ha il reparto specialistico",
+      "CLOSED": "Non accetta pazienti in questo momento"
+    },
+    "hospital": {
+      "subtitle": "Ospedale",
+      "load": "Carico del pronto soccorso",
+      "capabilities": "Reparti",
+      "helipadYes": "Elisuperficie disponibile",
+      "helipadNo": "Senza elisuperficie",
+      "incoming": "Pazienti in arrivo",
+      "incomingNone": "Nessun paziente in arrivo.",
+      "notFound": "Ospedale non trovato.",
+      "loadError": "Impossibile caricare gli ospedali."
+    }
+  },
+  "status": {
+    "patient": {
+      "UNASSESSED": "Da valutare",
+      "ASSESSED": "Valutato",
+      "TREATING": "In trattamento",
+      "STABILIZED": "Stabilizzato",
+      "AWAITING_TRANSPORT": "In attesa di trasporto",
+      "IN_TRANSPORT": "In trasporto",
+      "HANDOFF": "Consegna in ospedale",
+      "ADMITTED": "Affidato all’ospedale",
+      "RELEASED_ON_SCENE": "Trattato sul posto",
+      "DECEASED": "Non sopravvissuto"
+    },
+    "hospitalLoad": {
+      "NORMAL": "Carico normale",
+      "BUSY": "Affollato",
+      "SATURATED": "Saturo",
+      "CLOSED": "Non accetta pazienti"
+    }
+  },
+  "timeline": {
+    "patient_assessed": "Paziente valutato dal personale sanitario",
+    "patient_stabilized": "Paziente stabilizzato sul posto",
+    "patient_released": "Paziente trattato sul posto: non serve il trasporto",
+    "patient_transport": "{callSign} trasporta il paziente a {hospital}",
+    "patient_transport_auto": "{callSign} trasporta il paziente a {hospital} (ospedale consigliato, conferma automatica)",
+    "patient_external": "Paziente affidato a un’ambulanza esterna, diretta a {hospital}",
+    "patient_admitted": "Paziente affidato a {hospital}"
+  },
+  "notifications": {
+    "patientAwaitingTransport": "Paziente in attesa di trasporto in {address}"
+  }
+}

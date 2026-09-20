@@ -226,7 +226,11 @@
       "progression": "Carrière",
       "economy": "Budget",
       "settings": "Paramètres",
-      "more": "Plus"
+      "more": "Plus",
+      "personnel": "Personnel",
+      "logistics": "Logistique",
+      "credits": "Boutique de Crédits",
+      "network": "Votre réseau"
     },
     "topbar": {
       "level": "Niveau",
@@ -341,7 +345,9 @@
         "HEALTH_LOW": "Maintenance conseillée",
         "NO_RELEVANT_CAPABILITY": "Peu utile ici",
         "CREW_TIRED": "Équipage fatigué",
-        "LONG_ETA": "Arrivée tardive"
+        "LONG_ETA": "Arrivée tardive",
+        "GROUNDED_BY_CONDITIONS": "Cloué au sol par les conditions actuelles",
+        "SLOW_TRAVEL_CONDITIONS": "Trajet ralenti par la météo ou le trafic"
       }
     },
     "vehicle": {
@@ -373,7 +379,8 @@
         "WATER": "Amarrages",
         "PERSONNEL": "Logements",
         "STORAGE": "Réserve",
-        "WORKSHOP": "Atelier"
+        "WORKSHOP": "Atelier",
+        "TRAINING": "Places de formation"
       }
     },
     "incidentsPage": {
@@ -944,13 +951,15 @@
     "RECOVERY": "Dépannage d’un véhicule",
     "SUPPLIES": "Stocks",
     "SPEEDUP": "Accélération",
-    "EXTERNAL_SUPPORT": "Renfort extérieur"
+    "EXTERNAL_SUPPORT": "Renfort extérieur",
+    "LEVEL_UP": "Prime du niveau {level}"
   },
   "outcome": {
     "note": {
       "FAST_RESPONSE": "Réponse rapide : bonus de réactivité.",
       "UNDER_RESOURCED": "Moyens insuffisants sur place : l’intervention a duré plus longtemps que nécessaire.",
-      "TUTORIAL_BONUS": "Première intervention terminée : bonus de bienvenue de 300 Crédits."
+      "TUTORIAL_BONUS": "Première intervention terminée : bonus de bienvenue de 450 Crédits.",
+      "EXTERNAL_SUPPORT": "Une partie de l’intervention a été assurée par le soutien externe."
     }
   },
   "timeline": {
@@ -962,7 +971,11 @@
     "incident_escalated": "La situation s’aggrave : gravité {severity}",
     "incident_resolved": "Intervention terminée",
     "incident_failed": "Intervention échouée",
-    "incident_expired": "Aucun véhicule n’est intervenu à temps"
+    "incident_expired": "Aucun véhicule n’est intervenu à temps",
+    "incident_resolving": "Travail sur place terminé : opérations de clôture",
+    "incident_cancelled": "Urgence annulée",
+    "ung_arrived": "Soutien externe sur place",
+    "ung_done": "Soutien externe : intervention terminée"
   },
   "away": {
     "event": {

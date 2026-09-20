@@ -1,0 +1,200 @@
+{
+  "logistics": {
+    "title": "Logistica",
+    "subtitle": "Scorte, ordini e officina delle tue sedi",
+    "tabs": {
+      "warehouse": "Magazzino",
+      "orders": "Ordini",
+      "workshop": "Officina"
+    },
+    "locked": {
+      "inventory": "La gestione delle scorte non è ancora disponibile",
+      "maintenance": "La manutenzione dei mezzi non è ancora disponibile"
+    },
+    "due": {
+      "NOT_DUE": "In regola",
+      "UPCOMING": "Tagliando vicino",
+      "DUE": "Tagliando da fare",
+      "OVERDUE": "Tagliando scaduto"
+    },
+    "risk": {
+      "LOW": "Rischio guasto basso",
+      "MEDIUM": "Rischio guasto medio",
+      "HIGH": "Rischio guasto alto"
+    },
+    "workStatus": {
+      "QUEUED": "In coda",
+      "IN_PROGRESS": "In lavorazione",
+      "COMPLETED": "Completato",
+      "CANCELLED": "Annullato"
+    },
+    "orderStatus": {
+      "PLACED": "Ricevuto",
+      "IN_DELIVERY": "In consegna",
+      "DELIVERED": "Consegnato",
+      "CANCELLED": "Annullato"
+    },
+    "orderSummary": "{lines, plural, one {# articolo} other {# articoli}} per {facility}",
+    "stock": {
+      "title": "Scorte",
+      "low": "Scorta bassa",
+      "ok": "Scorta regolare",
+      "lowAlert": "{count, plural, one {# articolo è sotto la scorta minima} other {# articoli sono sotto la scorta minima}}",
+      "order": "Ordina scorte",
+      "empty": "Nessuna scorta da gestire",
+      "emptyHint": "Le scorte compaiono nelle sedi dei servizi che hai sbloccato.",
+      "noneHere": "Questa sede non usa materiali di consumo.",
+      "inboundOrders": "{count, plural, one {# ordine in arrivo} other {# ordini in arrivo}}",
+      "col": {
+        "facility": "Sede",
+        "item": "Articolo",
+        "quantity": "Disponibili",
+        "reserved": "Prenotate",
+        "inbound": "In arrivo",
+        "minimum": "Minimo",
+        "state": "Stato"
+      }
+    },
+    "order": {
+      "title": "Ordina scorte",
+      "subtitle": "Si ordina a confezioni intere. La merce arriva al magazzino della sede.",
+      "facility": "Sede di consegna",
+      "lines": "Articoli",
+      "suggest": "Ripristina le scorte basse",
+      "pack": "Confezione da {size} {unit}",
+      "inStock": "in magazzino: {quantity}",
+      "decrease": "Una confezione in meno di {item}",
+      "increase": "Una confezione in più di {item}",
+      "packsOf": "{count, plural, one {# confezione} other {# confezioni}} di {item}",
+      "storage": "Spazio in magazzino",
+      "delivery": "Consegna",
+      "standard": "Normale",
+      "urgent": "Urgente",
+      "arrivesIn": "arriva in {time}",
+      "urgentHint": "L’urgente arriva molto prima ma costa di più.",
+      "submit": "Conferma ordine",
+      "placed": "Ordine inviato"
+    },
+    "orders": {
+      "title": "Ordini di scorte",
+      "empty": "Nessun ordine",
+      "emptyHint": "Gli ordini di scorte compaiono qui con il tempo di consegna.",
+      "arrived": "Arrivato",
+      "arriving": "in arrivo…",
+      "urgent": "Urgente",
+      "col": {
+        "placed": "Data",
+        "summary": "Ordine",
+        "total": "Totale",
+        "status": "Stato",
+        "arrival": "Consegna"
+      }
+    },
+    "workshop": {
+      "sectionTitle": "Manutenzione",
+      "fleet": "Stato dei mezzi",
+      "queue": "Officine",
+      "quotes": "Interventi",
+      "empty": "Nessun mezzo da seguire",
+      "started": "{callSign} è entrato in officina",
+      "noQuotes": "Nessun intervento necessario.",
+      "notAvailable": "Il mezzo deve essere disponibile in sede per entrare in officina.",
+      "kind": {
+        "SERVICE": "Tagliando",
+        "REPAIR": "Riparazione",
+        "FREE_EMERGENCY_REPAIR": "Riparazione d’emergenza gratuita"
+      },
+      "start": {
+        "SERVICE": "Avvia tagliando",
+        "REPAIR": "Ripara",
+        "FREE_EMERGENCY_REPAIR": "Ripara gratis"
+      },
+      "free": "Gratis",
+      "restoresTo": "condizioni al {health}%",
+      "health": "Condizioni",
+      "healthValue": "Condizioni al {health}%",
+      "wear": "Usura",
+      "km": "Percorsi",
+      "kmValue": "{km} km",
+      "missions": "Missioni",
+      "finishing": "quasi pronto…",
+      "waitingSlot": "in attesa di un posto libero",
+      "external": "Officina esterna",
+      "externalHint": "Questa sede non ha un’officina: i lavori si fanno fuori, uno alla volta e più lentamente.",
+      "slots": "Posti {busy}/{slots}",
+      "queueEmpty": "Nessun lavoro in corso.",
+      "col": {
+        "vehicle": "Mezzo",
+        "facility": "Sede",
+        "status": "Stato",
+        "health": "Condizioni",
+        "band": "Fascia",
+        "wear": "Usura",
+        "km": "Km",
+        "missions": "Missioni",
+        "due": "Tagliando",
+        "risk": "Rischio"
+      }
+    },
+    "recovery": {
+      "title": "Recupero del mezzo",
+      "automatic": "Il recupero è automatico: non perderai mai un mezzo.",
+      "headline": {
+        "BROKEN_DOWN": "Mezzo in avaria",
+        "BEING_RECOVERED": "Rientro al traino",
+        "REPAIR": "In riparazione",
+        "AVAILABLE": "Di nuovo disponibile"
+      },
+      "step": {
+        "BROKEN_DOWN": "Guasto, carro attrezzi chiamato",
+        "BEING_RECOVERED": "Traino verso la sede",
+        "REPAIR": "Riparazione in officina",
+        "AVAILABLE": "Di nuovo disponibile"
+      },
+      "state": {
+        "done": "Fatto",
+        "current": "In corso",
+        "pending": "Da fare"
+      },
+      "towEta": "Carro attrezzi",
+      "homeEta": "In sede",
+      "arriving": "a momenti…",
+      "queued": "in coda"
+    },
+    "history": {
+      "title": "Storico del mezzo",
+      "empty": "Ancora nessun evento.",
+      "showAll": "Mostra tutto ({count})",
+      "showLess": "Mostra meno",
+      "MISSION": "Rientro da una missione · {km} km",
+      "RESTOCKED": "Rifornito dal magazzino ({units} unità)",
+      "SERVICE_STARTED": "Tagliando avviato ({cost} crediti)",
+      "SERVICE_DONE": "Tagliando completato",
+      "REPAIR_STARTED": "Riparazione avviata ({cost} crediti)",
+      "REPAIR_DONE": "Riparazione completata",
+      "FREE_EMERGENCY_REPAIR_STARTED": "Riparazione d’emergenza gratuita avviata",
+      "FREE_EMERGENCY_REPAIR_DONE": "Riparazione d’emergenza completata",
+      "BROKE_DOWN": "Guasto durante il servizio",
+      "RECOVERY_STARTED": "Recupero con carro attrezzi ({cost} crediti)",
+      "RECOVERY_STARTED_FREE": "Recupero con carro attrezzi (gratuito)",
+      "RECOVERED": "Rientrato in sede al traino"
+    }
+  },
+  "notifications": {
+    "lowStock": "Scorte in esaurimento: {facility}",
+    "lowStockBody": "{count, plural, one {# articolo è sotto la scorta minima.} other {# articoli sono sotto la scorta minima.}} Ordina un rifornimento.",
+    "suppliesDelivered": "Scorte consegnate: {facility}",
+    "maintenanceDone": "{callSign} è uscito dall’officina",
+    "vehicleBrokeDownBody": "Il recupero e la riparazione partono da soli."
+  },
+  "timeline": {
+    "vehicle_broke_down": "{callSign} in avaria: non arriverà"
+  },
+  "game": {
+    "dispatch": {
+      "warning": {
+        "INVENTORY_LOW": "Scorte scarse in sede"
+      }
+    }
+  }
+}

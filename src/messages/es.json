@@ -226,7 +226,11 @@
       "progression": "Carrera",
       "economy": "Finanzas",
       "settings": "Ajustes",
-      "more": "Más"
+      "more": "Más",
+      "personnel": "Plantilla",
+      "logistics": "Logística",
+      "credits": "Tienda de Créditos",
+      "network": "Tu red"
     },
     "topbar": {
       "level": "Nivel",
@@ -341,7 +345,9 @@
         "HEALTH_LOW": "Mantenimiento recomendado",
         "NO_RELEVANT_CAPABILITY": "Poco útil aquí",
         "CREW_TIRED": "Dotación cansada",
-        "LONG_ETA": "Llegada lenta"
+        "LONG_ETA": "Llegada lenta",
+        "GROUNDED_BY_CONDITIONS": "En tierra por las condiciones actuales",
+        "SLOW_TRAVEL_CONDITIONS": "Trayecto ralentizado por el tiempo o el tráfico"
       }
     },
     "vehicle": {
@@ -373,7 +379,8 @@
         "WATER": "Amarres",
         "PERSONNEL": "Alojamientos",
         "STORAGE": "Almacén",
-        "WORKSHOP": "Taller"
+        "WORKSHOP": "Taller",
+        "TRAINING": "Plazas de formación"
       }
     },
     "incidentsPage": {
@@ -944,13 +951,15 @@
     "RECOVERY": "Recuperación de un vehículo",
     "SUPPLIES": "Existencias",
     "SPEEDUP": "Aceleración",
-    "EXTERNAL_SUPPORT": "Apoyo externo"
+    "EXTERNAL_SUPPORT": "Apoyo externo",
+    "LEVEL_UP": "Premio por el nivel {level}"
   },
   "outcome": {
     "note": {
       "FAST_RESPONSE": "Respuesta rápida: bonificación por rapidez.",
       "UNDER_RESOURCED": "Recursos insuficientes en el lugar: la intervención ha durado más de lo necesario.",
-      "TUTORIAL_BONUS": "Primera intervención completada: bonificación de bienvenida de 300 Créditos."
+      "TUTORIAL_BONUS": "Primera intervención completada: bonificación de bienvenida de 450 Créditos.",
+      "EXTERNAL_SUPPORT": "Una parte de la intervención fue cubierta por el apoyo externo."
     }
   },
   "timeline": {
@@ -962,7 +971,11 @@
     "incident_escalated": "La situación se agrava: gravedad {severity}",
     "incident_resolved": "Intervención finalizada",
     "incident_failed": "Intervención fallida",
-    "incident_expired": "Ningún vehículo ha llegado a tiempo"
+    "incident_expired": "Ningún vehículo ha llegado a tiempo",
+    "incident_resolving": "Trabajo en el lugar terminado: quedan tareas de cierre",
+    "incident_cancelled": "Emergencia anulada",
+    "ung_arrived": "Apoyo externo en el lugar",
+    "ung_done": "Apoyo externo: trabajo completado"
   },
   "away": {
     "event": {

@@ -66,7 +66,8 @@ export function facilityFeatures(
         id: f.id,
         kind: 'facility',
         name: f.name,
-        image: `fac:${f.family}`,
+        // The type code selects the pictogram of the facility TYPE (tier/helipad/air base…): see map/images.ts.
+        image: `fac:${f.family}:${f.typeCode}`,
         parked: vehicles.filter((v) => v.facilityId === f.id && v.movement === null && v.incidentId === null)
           .length,
       },
@@ -84,13 +85,16 @@ export function incidentFeatures(incidents: readonly IncidentDto[]): FeatureColl
         id: i.id,
         kind: 'incident',
         severity: i.severity,
-        image: `inc:${i.category}:${i.severity}`,
+        image: `inc:${i.category}${i.icon ? `|${i.icon}` : ''}:${i.severity}`,
         unattended: i.status === 'PENDING_RESPONSE' ? 1 : 0,
         escalating: i.escalating ? 1 : 0,
       },
     })),
   };
 }
+
+/** Stationary vehicles that are NOT at their facility even without an incident (broken down on the road, at the hospital). */
+const OFF_BASE_STATUSES = new Set(['BROKEN_DOWN', 'BEING_RECOVERED', 'AT_HOSPITAL', 'TRANSPORTING']);
 
 /** Vehicles away from their base (moving or on scene). Parked vehicles are represented by the facility marker. */
 export function vehicleFeatures(
@@ -122,7 +126,7 @@ export function vehicleFeatures(
           returning: v.movement.purpose === 'TO_BASE' ? 1 : 0,
         },
       });
-    } else if (v.incidentId === null) {
+    } else if (v.incidentId === null && !OFF_BASE_STATUSES.has(v.status)) {
       positions.set(v.id, position);
       continue;
     }
@@ -374,13 +378,25 @@ export function setPulsePhase(map: MlMap, phase: number): void {
   map.setPaintProperty(LAYER.incidentPulse, 'circle-opacity', 0.45 * (1 - phase));
 }
 
+/**
+ * Layers added by map overlays (hospitals, candidate sites…) that take part in click-to-select: their features must
+ * carry `properties.kind` (a `Selection` kind) and `properties.id`.
+ */
+const EXTRA_CLICKABLE = new Set<string>();
+export function registerClickableLayer(layerId: string): () => void {
+  EXTRA_CLICKABLE.add(layerId);
+  return () => EXTRA_CLICKABLE.delete(layerId);
+}
+
 export function bindInteractions(
   map: MlMap,
   handlers: { onSelect: (selection: Selection) => void },
 ): () => void {
   const clickable = [LAYER.incidents, LAYER.vehicles, LAYER.facilities, LAYER.clusters];
   const onClick = (e: MapMouseEvent) => {
-    const features = map.queryRenderedFeatures(e.point, { layers: clickable.filter((l) => map.getLayer(l)) });
+    const features = map.queryRenderedFeatures(e.point, {
+      layers: [...clickable, ...EXTRA_CLICKABLE].filter((l) => map.getLayer(l)),
+    });
     const top = features[0];
     if (!top) {
       handlers.onSelect(null);
@@ -388,7 +404,7 @@ export function bindInteractions(
     }
     const props = top.properties as {
       id?: string;
-      kind?: 'incident' | 'vehicle' | 'facility';
+      kind?: NonNullable<Selection>['kind'];
       cluster_id?: number;
     };
     if (props.cluster_id !== undefined) {

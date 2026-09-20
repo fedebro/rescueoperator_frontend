@@ -39,7 +39,19 @@ export type Effect =
   | { type: 'notification'; payload: Record<string, unknown> }
   | {
       type: 'invalidate';
-      scope: 'catalog' | 'economy' | 'progression' | 'notifications' | 'facility' | 'config';
+      scope:
+        | 'catalog'
+        | 'economy'
+        | 'progression'
+        | 'notifications'
+        | 'facility'
+        | 'config'
+        | 'personnel'
+        | 'medical'
+        | 'inventory'
+        | 'maintenance'
+        | 'world'
+        | 'monetization';
     };
 
 const Payload = z
@@ -114,6 +126,14 @@ export function applyEvent(snapshot: SyncSnapshot, envelope: RealtimeEnvelope): 
         : upsert(next.incidents, incident),
     };
     if (!known && !CLOSED.has(incident.status)) effects.push({ type: 'incident.new', incident });
+    // The backend emits `incident.resolved` when the reward is paid: the incident may still be RESOLVING (external
+    // support, patients in transport) and leaves the snapshot with a later `incident.updated` → RESOLVED.
+    if (CLOSED.has(incident.status))
+      effects.push({
+        type: 'incident.closed',
+        incident,
+        result: incident.status.toLowerCase() as 'resolved',
+      });
   }
   if (p.outcome) {
     if (!next.pendingOutcomes.some((o) => o.incidentId === p.outcome!.incidentId)) {
@@ -130,12 +150,6 @@ export function applyEvent(snapshot: SyncSnapshot, envelope: RealtimeEnvelope): 
     case 'incident.failed':
     case 'incident.expired':
     case 'incident.cancelled':
-      if (p.incident)
-        effects.push({
-          type: 'incident.closed',
-          incident: p.incident,
-          result: envelope.type.slice('incident.'.length) as 'resolved',
-        });
       effects.push({ type: 'invalidate', scope: 'economy' }, { type: 'invalidate', scope: 'progression' });
       break;
     case 'vehicle.arrived':
@@ -146,6 +160,14 @@ export function applyEvent(snapshot: SyncSnapshot, envelope: RealtimeEnvelope): 
       break;
     case 'vehicle.broke_down':
       if (p.vehicle) effects.push({ type: 'vehicle.broke_down', vehicle: p.vehicle });
+      effects.push({ type: 'invalidate', scope: 'maintenance' });
+      break;
+    case 'vehicle.returned':
+      effects.push(
+        { type: 'invalidate', scope: 'maintenance' },
+        { type: 'invalidate', scope: 'inventory' },
+        { type: 'invalidate', scope: 'personnel' },
+      );
       break;
     case 'level.reached':
       if (p.level !== undefined) effects.push({ type: 'level.reached', level: p.level });
@@ -163,13 +185,29 @@ export function applyEvent(snapshot: SyncSnapshot, envelope: RealtimeEnvelope): 
       effects.push({ type: 'invalidate', scope: 'economy' });
       break;
     case 'credits.changed':
-      effects.push({ type: 'invalidate', scope: 'economy' });
+      effects.push({ type: 'invalidate', scope: 'economy' }, { type: 'invalidate', scope: 'monetization' });
       break;
     case 'xp.awarded':
       effects.push({ type: 'invalidate', scope: 'progression' });
       break;
     case 'facility.updated':
-      effects.push({ type: 'invalidate', scope: 'facility' });
+      effects.push({ type: 'invalidate', scope: 'facility' }, { type: 'invalidate', scope: 'world' });
+      break;
+    // Depth domains are not part of the snapshot: their REST resources are refetched when the server says they changed.
+    case 'personnel.updated':
+      effects.push({ type: 'invalidate', scope: 'personnel' });
+      break;
+    case 'patient.updated':
+      effects.push({ type: 'invalidate', scope: 'medical' });
+      break;
+    case 'inventory.updated':
+      effects.push({ type: 'invalidate', scope: 'inventory' });
+      break;
+    case 'maintenance.updated':
+      effects.push({ type: 'invalidate', scope: 'maintenance' });
+      break;
+    case 'world.updated':
+      effects.push({ type: 'invalidate', scope: 'world' });
       break;
     case 'notification.created':
       effects.push(

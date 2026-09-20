@@ -226,7 +226,11 @@
       "progression": "Carriera",
       "economy": "Bilancio",
       "settings": "Impostazioni",
-      "more": "Altro"
+      "more": "Altro",
+      "personnel": "Personale",
+      "logistics": "Logistica",
+      "credits": "Negozio Crediti",
+      "network": "La tua rete"
     },
     "topbar": {
       "level": "Livello",
@@ -341,7 +345,9 @@
         "HEALTH_LOW": "Manutenzione consigliata",
         "NO_RELEVANT_CAPABILITY": "Poco utile qui",
         "CREW_TIRED": "Equipaggio stanco",
-        "LONG_ETA": "Arrivo lento"
+        "LONG_ETA": "Arrivo lento",
+        "GROUNDED_BY_CONDITIONS": "Non può volare con queste condizioni",
+        "SLOW_TRAVEL_CONDITIONS": "Viaggio rallentato da meteo o traffico"
       }
     },
     "vehicle": {
@@ -373,7 +379,8 @@
         "WATER": "Ormeggi",
         "PERSONNEL": "Alloggi",
         "STORAGE": "Magazzino",
-        "WORKSHOP": "Officina"
+        "WORKSHOP": "Officina",
+        "TRAINING": "Posti in aula"
       }
     },
     "incidentsPage": {
@@ -944,13 +951,15 @@
     "RECOVERY": "Recupero di un mezzo",
     "SUPPLIES": "Scorte",
     "SPEEDUP": "Accelerazione",
-    "EXTERNAL_SUPPORT": "Supporto esterno"
+    "EXTERNAL_SUPPORT": "Supporto esterno",
+    "LEVEL_UP": "Premio per il livello {level}"
   },
   "outcome": {
     "note": {
       "FAST_RESPONSE": "Risposta rapida: bonus di tempestività.",
       "UNDER_RESOURCED": "Risorse sul posto insufficienti: l’intervento è durato più del necessario.",
-      "TUTORIAL_BONUS": "Primo intervento completato: bonus di benvenuto di 300 Crediti."
+      "TUTORIAL_BONUS": "Primo intervento completato: bonus di benvenuto di 450 Crediti.",
+      "EXTERNAL_SUPPORT": "Una parte dell’intervento è stata coperta dal supporto esterno."
     }
   },
   "timeline": {
@@ -962,7 +971,11 @@
     "incident_escalated": "La situazione peggiora: gravità {severity}",
     "incident_resolved": "Intervento concluso",
     "incident_failed": "Intervento fallito",
-    "incident_expired": "Nessun mezzo è intervenuto in tempo"
+    "incident_expired": "Nessun mezzo è intervenuto in tempo",
+    "incident_resolving": "Lavoro sul posto concluso: restano le code",
+    "incident_cancelled": "Emergenza annullata",
+    "ung_arrived": "Supporto esterno sul posto",
+    "ung_done": "Supporto esterno: intervento completato"
   },
   "away": {
     "event": {

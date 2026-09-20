@@ -1,4 +1,4 @@
-import { AdminConfig } from '@/features/admin/admin-pages';
+import { AdminConfig } from '@/features/admin/config';
 
 export default function Page() {
   return <AdminConfig />;

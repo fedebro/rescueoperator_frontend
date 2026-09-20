@@ -10,11 +10,13 @@ import { fileURLToPath } from 'node:url';
 import opentype from 'opentype.js';
 import sharp from 'sharp';
 import {
+  CATALOG_ICONS,
   FAMILY_COLORS,
   PICTOGRAM_NAMES,
   VEHICLE_CLASSES,
   pictogramSvg,
   topdownSvg,
+  vehicleClassOf,
 } from '../src/design/icons/index';
 import type { ServiceFamily } from '../src/contracts';
 
@@ -198,6 +200,15 @@ async function main() {
       {
         pictograms: PICTOGRAM_NAMES,
         topdown: { classes: VEHICLE_CLASSES, families: Object.keys(FAMILY_COLORS) },
+        // catalog `icon` key → pictogram file (+ top-down class for vehicles and UNG units)
+        catalog: Object.fromEntries(
+          Object.entries(CATALOG_ICONS).map(([key, pictogram]) => [
+            key,
+            key.startsWith('vehicle-') || key.startsWith('ung-')
+              ? { pictogram, topdown: vehicleClassOf(key) }
+              : { pictogram },
+          ]),
+        ),
       },
       null,
       2,

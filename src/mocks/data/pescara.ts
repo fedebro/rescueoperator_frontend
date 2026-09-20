@@ -134,6 +134,235 @@ export const STARTER_SITES = [
   },
 ];
 
+/**
+ * Candidate sites where a new facility can be acquired (GET /sites). `real: true` sites are named after the real KIND of
+ * place found in the geodata (never an emblem or livery, D-80); generated ones follow the geodata naming
+ * ("Sede operativa <street>"). A SHARED site carries the family of its closest service and only offers SHARED types.
+ * The three starter sites are candidates too (see `STARTER_SITES`): the one picked at onboarding shows up as owned.
+ */
+export interface MockCandidateSite {
+  key: string;
+  name: string;
+  real: boolean;
+  family: 'FIRE' | 'EMS' | 'POLICE' | 'WILDFIRE' | 'ALPINE';
+  position: LngLat;
+  address: string;
+  capacityPoints: number;
+  expansionPotential: 'LOW' | 'MEDIUM' | 'HIGH';
+  profile: 'CENTRAL' | 'BALANCED' | 'PERIPHERAL';
+  compatibleFacilityTypes: string[];
+}
+const site = (
+  key: string,
+  name: string,
+  real: boolean,
+  family: MockCandidateSite['family'],
+  position: LngLat,
+  address: string,
+  capacityPoints: number,
+  expansionPotential: MockCandidateSite['expansionPotential'],
+  profile: MockCandidateSite['profile'],
+  compatibleFacilityTypes: string[],
+): MockCandidateSite => ({
+  key,
+  name,
+  real,
+  family,
+  position,
+  address,
+  capacityPoints,
+  expansionPotential,
+  profile,
+  compatibleFacilityTypes,
+});
+const FIRE_SMALL = ['FIRE_LOCAL_STATION', 'FIRE_DETACHMENT'];
+const EMS_SMALL = ['EMS_POST', 'EMS_STATION'];
+const POLICE_SMALL = ['POLICE_POST', 'POLICE_STATION'];
+export const CANDIDATE_SITES: MockCandidateSite[] = [
+  ...STARTER_SITES.map((s) =>
+    site(
+      s.key,
+      s.name,
+      s.real,
+      'FIRE',
+      s.position,
+      s.address,
+      s.capacityPoints,
+      s.expansionPotential,
+      s.profile,
+      FIRE_SMALL,
+    ),
+  ),
+  site(
+    'fire-port',
+    'Distaccamento portuale dei Vigili del Fuoco',
+    true,
+    'FIRE',
+    [14.2297, 42.4668],
+    'Lungomare Giovanni XXIII, Pescara',
+    8,
+    'MEDIUM',
+    'BALANCED',
+    [...FIRE_SMALL, 'FIRE_COMMAND'],
+  ),
+  site(
+    'fire-north',
+    'Sede operativa Via Nazionale Adriatica Nord',
+    false,
+    'FIRE',
+    [14.1985, 42.4794],
+    'Via Nazionale Adriatica Nord, Pescara',
+    6,
+    'HIGH',
+    'PERIPHERAL',
+    FIRE_SMALL,
+  ),
+  site(
+    'ems-hospital',
+    'Postazione 118 dell’ospedale civile',
+    true,
+    'EMS',
+    [14.2012, 42.4619],
+    'Via Fonte Romana, Pescara',
+    3,
+    'LOW',
+    'CENTRAL',
+    EMS_SMALL,
+  ),
+  site(
+    'ems-south',
+    'Postazione 118 Pescara Sud',
+    true,
+    'EMS',
+    [14.2243, 42.4497],
+    'Viale Pindaro, Pescara',
+    4,
+    'MEDIUM',
+    'BALANCED',
+    [...EMS_SMALL, 'EMS_ADVANCED_STATION'],
+  ),
+  site(
+    'ems-marconi',
+    'Sede operativa Viale Marconi',
+    false,
+    'EMS',
+    [14.2189, 42.4571],
+    'Viale Guglielmo Marconi, Pescara',
+    2,
+    'LOW',
+    'CENTRAL',
+    ['EMS_POST'],
+  ),
+  site(
+    'ems-caravaggio',
+    'Sede operativa Via Caravaggio',
+    false,
+    'EMS',
+    [14.2068, 42.4758],
+    'Via Caravaggio, Pescara',
+    4,
+    'HIGH',
+    'PERIPHERAL',
+    EMS_SMALL,
+  ),
+  site(
+    'ems-airport',
+    'Area elicotteri dell’aeroporto',
+    true,
+    'EMS',
+    [14.1889, 42.4362],
+    'Via Tiburtina Valeria, Pescara',
+    10,
+    'HIGH',
+    'PERIPHERAL',
+    ['EMS_ADVANCED_STATION', 'EMS_HELI_BASE'],
+  ),
+  site(
+    'police-hq',
+    'Questura di Pescara',
+    true,
+    'POLICE',
+    [14.2079, 42.4671],
+    'Via Pesaro, Pescara',
+    10,
+    'MEDIUM',
+    'CENTRAL',
+    [...POLICE_SMALL, 'POLICE_HQ'],
+  ),
+  site(
+    'police-local',
+    'Comando della Polizia Locale',
+    true,
+    'POLICE',
+    [14.1948, 42.4663],
+    'Via del Circuito, Pescara',
+    6,
+    'MEDIUM',
+    'BALANCED',
+    POLICE_SMALL,
+  ),
+  site(
+    'police-tirino',
+    'Sede operativa Via Tirino',
+    false,
+    'POLICE',
+    [14.2047, 42.4507],
+    'Via Tirino, Pescara',
+    3,
+    'LOW',
+    'PERIPHERAL',
+    ['POLICE_POST'],
+  ),
+  site(
+    'aib-pineta',
+    'Stazione dei Carabinieri Forestali della Pineta',
+    true,
+    'WILDFIRE',
+    [14.2331, 42.4489],
+    'Pineta Dannunziana, Pescara',
+    4,
+    'MEDIUM',
+    'BALANCED',
+    ['AIB_OUTPOST', 'AIB_BASE'],
+  ),
+  site(
+    'aib-colle',
+    'Sede operativa Strada Colle Pineta',
+    false,
+    'WILDFIRE',
+    [14.2226, 42.4405],
+    'Strada Colle Pineta, Pescara',
+    8,
+    'HIGH',
+    'PERIPHERAL',
+    ['AIB_OUTPOST', 'AIB_BASE', 'AIB_OPERATIONS_CENTER'],
+  ),
+  site(
+    'alpine-silvestro',
+    'Sede operativa San Silvestro Colle',
+    false,
+    'ALPINE',
+    [14.2141, 42.4271],
+    'San Silvestro, Pescara',
+    4,
+    'MEDIUM',
+    'PERIPHERAL',
+    ['ALPINE_STATION', 'ALPINE_RESCUE_CENTER'],
+  ),
+  site(
+    'shared-coc',
+    'Centro operativo comunale di protezione civile',
+    true,
+    'FIRE',
+    [14.2039, 42.4583],
+    'Via Aterno, Pescara',
+    4,
+    'LOW',
+    'CENTRAL',
+    ['COORDINATION_CENTER'],
+  ),
+];
+
 /** Inland spots (approximate, all on land) used to place mock incidents. */
 export const INCIDENT_SPOTS: { address: string; position: LngLat }[] = [
   { address: 'Corso Umberto I, Pescara', position: [14.2131, 42.4661] },

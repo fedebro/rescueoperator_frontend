@@ -1,0 +1,200 @@
+{
+  "logistics": {
+    "title": "Logística",
+    "subtitle": "Existencias, pedidos y talleres de tus sedes",
+    "tabs": {
+      "warehouse": "Almacén",
+      "orders": "Pedidos",
+      "workshop": "Taller"
+    },
+    "locked": {
+      "inventory": "La gestión de existencias aún no está disponible",
+      "maintenance": "El mantenimiento de vehículos aún no está disponible"
+    },
+    "due": {
+      "NOT_DUE": "Al día",
+      "UPCOMING": "Revisión próxima",
+      "DUE": "Revisión pendiente",
+      "OVERDUE": "Revisión vencida"
+    },
+    "risk": {
+      "LOW": "Riesgo de avería bajo",
+      "MEDIUM": "Riesgo de avería medio",
+      "HIGH": "Riesgo de avería alto"
+    },
+    "workStatus": {
+      "QUEUED": "En cola",
+      "IN_PROGRESS": "En curso",
+      "COMPLETED": "Completado",
+      "CANCELLED": "Cancelado"
+    },
+    "orderStatus": {
+      "PLACED": "Recibido",
+      "IN_DELIVERY": "En reparto",
+      "DELIVERED": "Entregado",
+      "CANCELLED": "Cancelado"
+    },
+    "orderSummary": "{lines, plural, one {# artículo} other {# artículos}} para {facility}",
+    "stock": {
+      "title": "Existencias",
+      "low": "Existencias bajas",
+      "ok": "Existencias correctas",
+      "lowAlert": "{count, plural, one {# artículo está por debajo del mínimo} other {# artículos están por debajo del mínimo}}",
+      "order": "Pedir suministros",
+      "empty": "No hay existencias que gestionar",
+      "emptyHint": "Las existencias aparecen en las sedes de los servicios que has desbloqueado.",
+      "noneHere": "Esta sede no usa material consumible.",
+      "inboundOrders": "{count, plural, one {# pedido en camino} other {# pedidos en camino}}",
+      "col": {
+        "facility": "Sede",
+        "item": "Artículo",
+        "quantity": "En almacén",
+        "reserved": "Reservadas",
+        "inbound": "En camino",
+        "minimum": "Mínimo",
+        "state": "Estado"
+      }
+    },
+    "order": {
+      "title": "Pedir suministros",
+      "subtitle": "Se pide por paquetes completos; la mercancía llega al almacén de la sede.",
+      "facility": "Sede de entrega",
+      "lines": "Artículos",
+      "suggest": "Reponer lo que falta",
+      "pack": "Paquete de {size} {unit}",
+      "inStock": "en almacén: {quantity}",
+      "decrease": "Un paquete menos de {item}",
+      "increase": "Un paquete más de {item}",
+      "packsOf": "{count, plural, one {# paquete} other {# paquetes}} de {item}",
+      "storage": "Espacio de almacén",
+      "delivery": "Entrega",
+      "standard": "Normal",
+      "urgent": "Urgente",
+      "arrivesIn": "llega en {time}",
+      "urgentHint": "El envío urgente llega mucho antes, pero cuesta más.",
+      "submit": "Confirmar pedido",
+      "placed": "Pedido enviado"
+    },
+    "orders": {
+      "title": "Pedidos de suministros",
+      "empty": "Ningún pedido",
+      "emptyHint": "Los pedidos aparecen aquí con su plazo de entrega.",
+      "arrived": "Recibido",
+      "arriving": "llegando…",
+      "urgent": "Urgente",
+      "col": {
+        "placed": "Fecha",
+        "summary": "Pedido",
+        "total": "Total",
+        "status": "Estado",
+        "arrival": "Entrega"
+      }
+    },
+    "workshop": {
+      "sectionTitle": "Mantenimiento",
+      "fleet": "Estado de los vehículos",
+      "queue": "Talleres",
+      "quotes": "Trabajos",
+      "empty": "Ningún vehículo que atender",
+      "started": "{callSign} ha entrado en el taller",
+      "noQuotes": "No hace falta ningún trabajo.",
+      "notAvailable": "El vehículo debe estar disponible en su sede para entrar en el taller.",
+      "kind": {
+        "SERVICE": "Revisión",
+        "REPAIR": "Reparación",
+        "FREE_EMERGENCY_REPAIR": "Reparación de emergencia gratuita"
+      },
+      "start": {
+        "SERVICE": "Iniciar revisión",
+        "REPAIR": "Reparar",
+        "FREE_EMERGENCY_REPAIR": "Reparar gratis"
+      },
+      "free": "Gratis",
+      "restoresTo": "estado al {health} %",
+      "health": "Estado",
+      "healthValue": "Estado al {health} %",
+      "wear": "Desgaste",
+      "km": "Recorridos",
+      "kmValue": "{km} km",
+      "missions": "Misiones",
+      "finishing": "casi listo…",
+      "waitingSlot": "esperando un puesto libre",
+      "external": "Taller externo",
+      "externalHint": "Esta sede no tiene taller: los trabajos se hacen fuera, de uno en uno y más despacio.",
+      "slots": "Puestos {busy}/{slots}",
+      "queueEmpty": "Ningún trabajo en curso.",
+      "col": {
+        "vehicle": "Vehículo",
+        "facility": "Sede",
+        "status": "Estado",
+        "health": "Condición",
+        "band": "Nivel",
+        "wear": "Desgaste",
+        "km": "Km",
+        "missions": "Misiones",
+        "due": "Revisión",
+        "risk": "Riesgo"
+      }
+    },
+    "recovery": {
+      "title": "Recuperación del vehículo",
+      "automatic": "La recuperación es automática: nunca pierdes un vehículo.",
+      "headline": {
+        "BROKEN_DOWN": "Vehículo averiado",
+        "BEING_RECOVERED": "Remolcado a la sede",
+        "REPAIR": "En reparación",
+        "AVAILABLE": "Disponible de nuevo"
+      },
+      "step": {
+        "BROKEN_DOWN": "Avería, grúa avisada",
+        "BEING_RECOVERED": "Remolque hacia la sede",
+        "REPAIR": "Reparación en el taller",
+        "AVAILABLE": "Disponible de nuevo"
+      },
+      "state": {
+        "done": "Hecho",
+        "current": "En curso",
+        "pending": "Pendiente"
+      },
+      "towEta": "Grúa",
+      "homeEta": "En sede",
+      "arriving": "enseguida…",
+      "queued": "en cola"
+    },
+    "history": {
+      "title": "Historial del vehículo",
+      "empty": "Todavía no hay eventos.",
+      "showAll": "Ver todo ({count})",
+      "showLess": "Ver menos",
+      "MISSION": "Regreso de una misión · {km} km",
+      "RESTOCKED": "Repuesto desde el almacén ({units} unidades)",
+      "SERVICE_STARTED": "Revisión iniciada ({cost} créditos)",
+      "SERVICE_DONE": "Revisión completada",
+      "REPAIR_STARTED": "Reparación iniciada ({cost} créditos)",
+      "REPAIR_DONE": "Reparación completada",
+      "FREE_EMERGENCY_REPAIR_STARTED": "Reparación de emergencia gratuita iniciada",
+      "FREE_EMERGENCY_REPAIR_DONE": "Reparación de emergencia completada",
+      "BROKE_DOWN": "Avería en servicio",
+      "RECOVERY_STARTED": "Recuperación con grúa ({cost} créditos)",
+      "RECOVERY_STARTED_FREE": "Recuperación con grúa (gratuita)",
+      "RECOVERED": "Remolcado de vuelta a la sede"
+    }
+  },
+  "notifications": {
+    "lowStock": "Existencias casi agotadas: {facility}",
+    "lowStockBody": "{count, plural, one {# artículo está por debajo del mínimo.} other {# artículos están por debajo del mínimo.}} Pide una reposición.",
+    "suppliesDelivered": "Suministros entregados: {facility}",
+    "maintenanceDone": "{callSign} ha salido del taller",
+    "vehicleBrokeDownBody": "La recuperación y la reparación empiezan solas."
+  },
+  "timeline": {
+    "vehicle_broke_down": "{callSign} averiado: no llegará"
+  },
+  "game": {
+    "dispatch": {
+      "warning": {
+        "INVENTORY_LOW": "Pocas existencias en sede"
+      }
+    }
+  }
+}

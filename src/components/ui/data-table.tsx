@@ -41,6 +41,9 @@ export function DataTable<T>({
   className,
 }: DataTableProps<T>) {
   const [sort, setSort] = React.useState<{ id: string; dir: 1 | -1 } | null>(null);
+  // Roving tabindex: the table is ONE tab stop; arrows / Home / End move between rows (a 500-row fleet must not
+  // cost 500 Tab presses to get past).
+  const [activeIndex, setActiveIndex] = React.useState(0);
   const parentRef = React.useRef<HTMLDivElement>(null);
   const rowHeight = density === 'dense' ? 32 : 40;
   const template = columns.map((c) => c.width ?? 'minmax(96px,1fr)').join(' ');
@@ -65,6 +68,19 @@ export function DataTable<T>({
     initialRect: { width: 800, height: 480 },
   });
   const items = virtualizer.getVirtualItems();
+  const rowsRef = React.useRef<HTMLDivElement>(null);
+  // The tab stop must be a rendered row: when the active one is scrolled out of the virtual window, the first
+  // rendered row takes over.
+  const tabStop = items.some((vi) => vi.index === activeIndex) ? activeIndex : (items[0]?.index ?? 0);
+  const focusRow = (index: number) => {
+    const target = Math.min(sorted.length - 1, Math.max(0, index));
+    setActiveIndex(target);
+    virtualizer.scrollToIndex(target);
+    // The row may only exist after the virtualizer has rendered the new window.
+    requestAnimationFrame(() =>
+      rowsRef.current?.querySelector<HTMLElement>(`[aria-rowindex="${target + 2}"]`)?.focus(),
+    );
+  };
 
   return (
     <div
@@ -86,7 +102,9 @@ export function DataTable<T>({
                 <div
                   key={c.id}
                   role="columnheader"
-                  aria-sort={active ? (sort!.dir === 1 ? 'ascending' : 'descending') : undefined}
+                  aria-sort={
+                    active ? (sort!.dir === 1 ? 'ascending' : 'descending') : c.sortValue ? 'none' : undefined
+                  }
                   className={cn(
                     'px-3',
                     c.align === 'right' && 'text-right',
@@ -96,7 +114,7 @@ export function DataTable<T>({
                   {c.sortValue ? (
                     <button
                       type="button"
-                      className="hover:text-fg inline-flex items-center gap-1 uppercase"
+                      className="hover:text-fg -my-2 inline-flex min-h-9 items-center gap-1 uppercase"
                       onClick={() =>
                         setSort((s) =>
                           s?.id === c.id
@@ -127,7 +145,7 @@ export function DataTable<T>({
             {sorted.length === 0 ? (
               <div className="p-6">{empty}</div>
             ) : (
-              <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
+              <div ref={rowsRef} style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
                 {items.map((vi) => {
                   const row = sorted[vi.index]!;
                   const key = rowKey(row);
@@ -138,21 +156,36 @@ export function DataTable<T>({
                       role="row"
                       aria-rowindex={vi.index + 2}
                       aria-selected={selectedKey === key || undefined}
-                      tabIndex={clickable ? 0 : undefined}
+                      tabIndex={clickable ? (vi.index === tabStop ? 0 : -1) : undefined}
                       onClick={clickable ? () => onRowClick(row) : undefined}
+                      onFocus={clickable ? () => setActiveIndex(vi.index) : undefined}
                       onKeyDown={
                         clickable
                           ? (e) => {
+                              if (e.target !== e.currentTarget) return; // keys typed in a control inside a cell
+                              const move: Record<string, number> = {
+                                ArrowDown: vi.index + 1,
+                                ArrowUp: vi.index - 1,
+                                Home: 0,
+                                End: sorted.length - 1,
+                                PageDown: vi.index + 10,
+                                PageUp: vi.index - 10,
+                              };
                               if (e.key === 'Enter' || e.key === ' ') {
                                 e.preventDefault();
                                 onRowClick(row);
+                              } else if (e.key in move) {
+                                e.preventDefault();
+                                focusRow(move[e.key]!);
                               }
                             }
                           : undefined
                       }
                       className={cn(
                         'border-border/60 absolute inset-x-0 grid items-center border-b',
-                        clickable && 'hover:bg-surface-2 cursor-pointer',
+                        // Inset focus ring: the scroll container would clip an outer one.
+                        clickable &&
+                          'hover:bg-surface-2 focus-visible:outline-focus cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2',
                         selectedKey === key && 'bg-surface-3',
                       )}
                       style={{

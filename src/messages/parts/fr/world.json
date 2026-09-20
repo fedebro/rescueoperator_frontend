@@ -1,0 +1,185 @@
+{
+  "world": {
+    "duration": {
+      "hours": "{h} h",
+      "minutes": "{m} min",
+      "hoursMinutes": "{h} h {m} min"
+    },
+    "widget": {
+      "open": "Conditions sur le territoire : {weather}, {temperature}, {time}, trafic {traffic}. Ouvrir les détails",
+      "title": "Conditions sur le territoire",
+      "close": "Fermer",
+      "weather": "Météo",
+      "temperature": "{value} °C",
+      "wind": "Vent à {value} km/h",
+      "noData": "n.d.",
+      "degraded": "Données météo estimées",
+      "degradedHint": "Le service météo ne répond pas : nous utilisons une estimation en attendant son retour.",
+      "source": {
+        "simulated": "météo simulée",
+        "live": "données en temps réel"
+      },
+      "localTime": "Heure locale",
+      "traffic": {
+        "title": "Trafic",
+        "level": {
+          "FREE_FLOW": "Fluide",
+          "LIGHT": "Léger",
+          "MODERATE": "Modéré",
+          "HEAVY": "Dense",
+          "SEVERE": "Saturé"
+        }
+      },
+      "travelEffectNone": "Temps de trajet normaux.",
+      "travelEffectSlower": "Trajets routiers {percent} plus lents à cause du trafic et de la météo.",
+      "closuresTitle": "Circulation",
+      "closures": "{count, plural, =0 {Aucune route fermée} one {# route fermée} other {# routes fermées}}",
+      "closuresEffect": "Itinéraires plus longs",
+      "showClosures": "Afficher sur la carte"
+    },
+    "layers": {
+      "open": "Couches de la carte",
+      "button": "Couches",
+      "title": "Couches de la carte",
+      "close": "Fermer",
+      "layer": {
+        "hospitals": "Hôpitaux",
+        "closures": "Routes fermées",
+        "coverage": "Couverture",
+        "sites": "Sites pour nouvelles bases"
+      },
+      "hint": {
+        "hospitals": "Urgences et services disponibles",
+        "closures": "Chantiers, événements et routes bloquées par les secours",
+        "coverage": "Temps d’arrivée estimés depuis vos bases",
+        "sites": "Où vous pouvez ouvrir une nouvelle base"
+      },
+      "coverage": {
+        "title": "Population couverte",
+        "family": "Service affiché",
+        "all": "Tous",
+        "inactive": "aucun véhicule",
+        "threshold": "Seuil de service : {minutes} min",
+        "method": {
+          "OSRM_TABLE": "calculée sur le réseau routier",
+          "STRAIGHT_LINE": "estimation à vol d’oiseau",
+          "NONE": "aucune base opérationnelle"
+        },
+        "stale": "Recalcul en cours après vos dernières modifications…",
+        "legend": "Temps d’arrivée estimé",
+        "unreachable": "Inaccessible",
+        "over": "plus de {from} min",
+        "upTo": "jusqu’à {to} min",
+        "range": "{from}–{to} min"
+      },
+      "closures": {
+        "title": "Routes fermées en ce moment",
+        "empty": "Aucune fermeture active.",
+        "kind": {
+          "FULL": "Fermée",
+          "PARTIAL": "Partiellement fermée"
+        },
+        "effect": "+{percent} de temps pour y passer",
+        "endsIn": "Réouverture dans",
+        "reopening": "réouverture en cours",
+        "noEnd": "Jusqu’à nouvel ordre",
+        "center": "Centrer sur la carte : {reason}",
+        "mapLabel": {
+          "FULL": "FERMÉE",
+          "PARTIAL": "RÉDUITE"
+        }
+      }
+    },
+    "closure": {
+      "ROADWORKS": "Travaux en cours, {street}",
+      "EVENT": "Manifestation, {street}",
+      "EXTERNAL_SUPPORT": "{address} : route fermée, unités externes au travail",
+      "INCIDENT": "{address} : route fermée pour une urgence en cours",
+      "MANUAL": "Fermeture décidée par le centre opérationnel"
+    },
+    "stipend": {
+      "title": "Dotation de couverture",
+      "hint": "Toutes les {period}, vous recevez une dotation proportionnelle à la population que vous atteignez à temps. Elle continue de s’accumuler en votre absence, jusqu’à {cap}.",
+      "unavailable": "Les données de la dotation ne sont pas disponibles pour le moment.",
+      "next": "Prochain versement dans",
+      "paying": "versement en cours…",
+      "estimate": "Montant estimé",
+      "period": "Période",
+      "accrued": "Accumulées en votre absence",
+      "accruedValue": "{n} périodes sur {max}",
+      "accrualStops": "Si vous ne revenez pas, la dotation cesse de s’accumuler après le {date}.",
+      "breakdown": "Mode de calcul",
+      "base": "Base du niveau {level}",
+      "coverageMultiplier": "Couverture à {pct}",
+      "reputationMultiplier": "Réputation {value}/100",
+      "bonusMultiplier": "Bonus des bases",
+      "personnelCost": "Coût du personnel sur la période",
+      "net": "Dotation nette",
+      "coverage": "Couverture",
+      "showCoverage": "Voir sur la carte",
+      "overall": "Globale (moyenne pondérée)",
+      "threshold": "en moins de {minutes} min",
+      "familyInactive": "Aucun véhicule opérationnel pour ce service.",
+      "stale": "Couverture en cours de recalcul après vos dernières modifications…",
+      "history": "Historique",
+      "lastPayout": "Dernier versement",
+      "never": "aucun pour l’instant",
+      "status": {
+        "PAID": "Versée",
+        "SKIPPED_INACTIVE": "Non accumulée (absence)"
+      },
+      "showLess": "Afficher moins",
+      "showAll": "Tout afficher ({count})"
+    },
+    "milestones": {
+      "title": "Objectifs",
+      "summary": "{done} atteints sur {total}",
+      "empty": "Aucun objectif disponible",
+      "phase": {
+        "FIRST_HOURS": "Premières heures",
+        "EARLY": "Début de carrière",
+        "MID": "Réseau en expansion",
+        "LATE": "Grand réseau"
+      },
+      "phaseCount": "{done}/{total}",
+      "progress": "{current} sur {target}",
+      "progressPercent": "{current} sur {target}",
+      "progressLabel": "Progression : {title}",
+      "achievedOn": "Atteint le {date}",
+      "achieved": "Atteint",
+      "reward": "Récompense :",
+      "xp": "{xp} XP"
+    },
+    "reputation": {
+      "title": "Réputation",
+      "rank": "Grade : {rank}",
+      "band": {
+        "CRITICAL": "Compromise",
+        "LOW": "Faible",
+        "FAIR": "Correcte",
+        "GOOD": "Bonne",
+        "EXCELLENT": "Excellente"
+      },
+      "valueText": "{value} sur 100, {band}",
+      "multiplier": "Multiplicateur de la dotation de couverture",
+      "effects": "La réputation est une moyenne glissante de vos interventions : elle pèse sur la dotation de couverture et sur certains déblocages.",
+      "up": "Ce qui la fait monter",
+      "down": "Ce qui la fait baisser",
+      "upItems": {
+        "fast": "Arriver vite sur place",
+        "adequate": "Envoyer toutes les ressources demandées (2–3 étoiles)",
+        "patients": "Remettre les patients en bon état"
+      },
+      "downItems": {
+        "expired": "Urgences expirées sans réponse",
+        "failed": "Interventions échouées",
+        "under": "Ressources insuffisantes sur place"
+      }
+    }
+  },
+  "notifications": {
+    "world": {
+      "milestone": "Objectif atteint !"
+    }
+  }
+}

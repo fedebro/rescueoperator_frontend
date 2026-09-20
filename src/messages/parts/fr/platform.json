@@ -1,0 +1,50 @@
+{
+  "platform": {
+    "a11y": {
+      "pendingIncidents": "{count, plural, one {# urgence en attente} other {# urgences en attente}}"
+    },
+    "sound": {
+      "title": "Sons",
+      "masterHint": "Signaux synthétiques brefs, jamais avant ton premier geste. Désactivés par défaut sur téléphones et tablettes.",
+      "volume": "Volume général",
+      "volumeValue": "{percent} %",
+      "alerts": "Alertes",
+      "alertsHint": "Nouvelles urgences, aggravations, avis critiques, missions échouées.",
+      "feedback": "Confirmations",
+      "feedbackHint": "Arrivées sur place, missions réussies, niveaux, déblocages, Crédits, confirmations des commandes.",
+      "test": "Tester le son"
+    },
+    "privacy": {
+      "title": "Confidentialité et application",
+      "analytics": "Statistiques d’utilisation anonymes",
+      "analyticsHint": "Elles nous aident à améliorer le jeu. Jamais d’e-mails, de noms ni de textes : seulement des événements de jeu. Désactivées tant que tu ne les actives pas."
+    },
+    "pwa": {
+      "title": "Installer l’application",
+      "install": "Installer",
+      "installed": "Installée",
+      "hint": "Ajoute Rescue Control à l’écran d’accueil : il s’ouvre en plein écran, comme une application.",
+      "installedHint": "Tu utilises déjà l’application installée.",
+      "unavailableHint": "Ce navigateur ne propose pas l’installation. Essaie depuis le menu du navigateur, ou avec Chrome, Edge ou Safari.",
+      "hintTitle": "Rescue Control comme application",
+      "hintBody": "Installe-la pour ouvrir ta centrale d’un geste, en plein écran.",
+      "iosTitle": "Installer sur iPhone et iPad",
+      "iosIntro": "Safari n’affiche pas de bouton d’installation : trois étapes suffisent.",
+      "iosStep1": "Touche Partager dans la barre de Safari.",
+      "iosStep2": "Fais défiler et choisis « Sur l’écran d’accueil ».",
+      "iosStep3": "Confirme avec « Ajouter » : l’icône apparaît à côté de tes autres applications."
+    },
+    "offline": {
+      "title": "Tu es hors ligne",
+      "body": "La centrale a besoin du réseau : le monde du jeu vit sur le serveur et continue même sans toi.",
+      "retry": "Réessayer",
+      "safe": "Ta progression est en sécurité."
+    },
+    "manifest": {
+      "description": "Simulateur de gestion des urgences sur carte réelle : dirige ta propre centrale.",
+      "shortcutMap": "Carte opérationnelle",
+      "shortcutIncidents": "Urgences",
+      "shortcutFleet": "Flotte"
+    }
+  }
+}

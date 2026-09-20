@@ -1,0 +1,50 @@
+{
+  "platform": {
+    "a11y": {
+      "pendingIncidents": "{count, plural, one {# emergenza in attesa} other {# emergenze in attesa}}"
+    },
+    "sound": {
+      "title": "Suoni",
+      "masterHint": "Segnali sintetici brevi, mai prima di un tuo tocco. Spenti in partenza su telefoni e tablet.",
+      "volume": "Volume generale",
+      "volumeValue": "{percent}%",
+      "alerts": "Allarmi",
+      "alertsHint": "Nuove emergenze, peggioramenti, avvisi critici, missioni fallite.",
+      "feedback": "Conferme",
+      "feedbackHint": "Arrivi sul posto, missioni riuscite, livelli, sblocchi, Crediti, conferme dei comandi.",
+      "test": "Prova il suono"
+    },
+    "privacy": {
+      "title": "Privacy e app",
+      "analytics": "Statistiche d’uso anonime",
+      "analyticsHint": "Ci aiutano a migliorare il gioco. Mai email, nomi o testi: solo eventi di gioco. Disattivate finché non le accendi tu."
+    },
+    "pwa": {
+      "title": "Installa l’app",
+      "install": "Installa",
+      "installed": "Installata",
+      "hint": "Aggiungi Rescue Control alla schermata Home: si apre a tutto schermo, come un’app.",
+      "installedHint": "Stai già usando l’app installata.",
+      "unavailableHint": "Questo browser non offre l’installazione. Prova dal menu del browser oppure con Chrome, Edge o Safari.",
+      "hintTitle": "Rescue Control come app",
+      "hintBody": "Installala per aprire la centrale con un tocco, a tutto schermo.",
+      "iosTitle": "Installa su iPhone e iPad",
+      "iosIntro": "Safari non mostra un pulsante di installazione: bastano tre passaggi.",
+      "iosStep1": "Tocca Condividi nella barra di Safari.",
+      "iosStep2": "Scorri e scegli «Aggiungi alla schermata Home».",
+      "iosStep3": "Conferma con «Aggiungi»: troverai l’icona accanto alle altre app."
+    },
+    "offline": {
+      "title": "Sei offline",
+      "body": "La centrale operativa ha bisogno della rete: il mondo di gioco vive sul server e continua anche senza di te.",
+      "retry": "Riprova",
+      "safe": "I tuoi progressi sono al sicuro."
+    },
+    "manifest": {
+      "description": "Simulatore di gestione delle emergenze su mappa reale: dirigi la tua centrale operativa.",
+      "shortcutMap": "Mappa operativa",
+      "shortcutIncidents": "Emergenze",
+      "shortcutFleet": "Flotta"
+    }
+  }
+}

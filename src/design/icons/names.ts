@@ -21,8 +21,62 @@ export const VEHICLE_CLASSES = [
   'snowmobile',
   'tow',
   'utility',
+  'foam',
+  'hazmat',
+  'bus',
+  'tent',
+  'suv',
+  'armored',
+  'plough',
+  'quad',
 ] as const;
 export type VehicleClass = (typeof VEHICLE_CLASSES)[number];
+
+/** Vehicle TYPES that need more than their class silhouette to be told apart (class + role mark, composed in code). */
+export const VEHICLE_TYPE_ICONS = [
+  'veh_fire_4x4',
+  'veh_fire_abp',
+  'veh_fire_air',
+  'veh_fire_saf',
+  'veh_fire_divers',
+  'veh_fire_usar',
+  'veh_fire_heli',
+  'veh_ems_msb',
+  'veh_ems_msi',
+  'veh_ems_msa',
+  'veh_ems_automedica',
+  'veh_ems_pediatric',
+  'veh_ems_heli',
+  'veh_pol_traffic',
+  'veh_pol_van',
+  'veh_pol_k9',
+  'veh_pol_forensic',
+  'veh_pol_eod',
+  'veh_pol_heli',
+  'veh_aib_pickup',
+  'veh_aib_tanker',
+  'veh_aib_command',
+  'veh_aib_heli',
+  'veh_aib_plane',
+  'veh_alp_team',
+  'veh_alp_4x4',
+  'veh_alp_k9',
+  'veh_alp_heli',
+] as const;
+
+/** Non-player (UNG) support units; `ung-tow` and `ung-snow` use the `veh_tow` / `veh_plough` class pictograms. */
+export const UNG_ICONS = [
+  'ung_heavy_tow',
+  'ung_crane',
+  'ung_gas',
+  'ung_power',
+  'ung_water',
+  'ung_road',
+  'ung_road_repair',
+  'ung_salt',
+  'ung_municipal',
+  'ung_pc',
+] as const;
 
 export const FAMILY_ICONS = [
   'family_fire',
@@ -40,6 +94,20 @@ export const FACILITY_ICONS = [
   'facility_wildfire',
   'facility_alpine',
   'facility_coordination',
+  'facility_fire_detachment',
+  'facility_fire_command',
+  'facility_fire_special_hub',
+  'facility_ems_station',
+  'facility_ems_advanced_station',
+  'facility_ems_heli_base',
+  'facility_police_station',
+  'facility_police_hq',
+  'facility_police_special_unit',
+  'facility_wildfire_base',
+  'facility_wildfire_operations_center',
+  'facility_wildfire_air_base',
+  'facility_alpine_rescue_center',
+  'facility_alpine_heli_base',
   'hospital',
   'helipad',
   'site_candidate',
@@ -70,6 +138,39 @@ export const CATEGORY_ICONS = [
   'cat_generic',
 ] as const;
 
+/** Incident templates whose icon key deserves its own glyph (the others reuse a `cat_*` glyph that truly fits). */
+export const INCIDENT_ICONS = [
+  'inc_alp_injured_hiker',
+  'inc_alp_missing_hiker',
+  'inc_alp_wall_recovery',
+  'inc_alp_stranded_group',
+  'inc_med_minor_illness',
+  'inc_med_severe_illness',
+  'inc_med_unconscious',
+  'inc_med_fall',
+  'inc_med_pediatric',
+  'inc_fire_apartment_block',
+  'inc_fire_warehouse',
+  'inc_tech_elevator',
+  'inc_tech_fallen_tree',
+  'inc_tech_unsafe_roof',
+  'inc_tech_animal_rescue',
+  'inc_road_accident_trapped',
+  'inc_multi_road_accident',
+  'inc_multi_fire_with_casualties',
+  'inc_multi_hazmat_spill',
+  'inc_multi_building_collapse',
+  'inc_pol_brawl',
+  'inc_pol_alarm_activation',
+  'inc_pol_accident_survey',
+  'inc_pol_public_event',
+  'inc_pol_traffic_disruption',
+  'inc_wf_brush',
+  'inc_wf_forest_medium',
+  'inc_wf_forest_large',
+  'inc_wf_interface',
+] as const;
+
 export const CAPABILITY_ICONS = [
   'cap_fire_suppression',
   'cap_water_supply',
@@ -96,11 +197,108 @@ export const CAPABILITY_ICONS = [
   'cap_logistics',
 ] as const;
 
+export const ITEM_ICONS = [
+  'item_foam',
+  'item_absorbent',
+  'item_extrication_kit',
+  'item_medical_pack',
+  'item_trauma_pack',
+  'item_oxygen',
+  'item_retardant',
+  'item_generic',
+] as const;
+
+/** Facility upgrades (`upgrade-helipad` uses the `helipad` glyph). */
+export const UPGRADE_ICONS = [
+  'upgrade_garage',
+  'upgrade_quarters',
+  'upgrade_storage',
+  'upgrade_workshop',
+  'upgrade_training_room',
+  'upgrade_generic',
+] as const;
+
+export const ROLE_ICONS = [
+  'role_firefighter',
+  'role_driver_operator',
+  'role_team_leader',
+  'role_rescuer',
+  'role_driver',
+  'role_nurse',
+  'role_physician',
+  'role_officer',
+  'role_specialist',
+  'role_wildland_operator',
+  'role_alpine_rescuer',
+  'role_pilot',
+  'role_generic',
+] as const;
+
+/** A medal carrying the mark of the skill; `qualification` (star) is the generic one. */
+export const QUALIFICATION_ICONS = [
+  'qualification',
+  'qual_heavy_vehicle_license',
+  'qual_emergency_driving',
+  'qual_road_rescue',
+  'qual_aerial_ladder_operator',
+  'qual_crane_operator',
+  'qual_saf',
+  'qual_nbcr',
+  'qual_usar',
+  'qual_diver',
+  'qual_boat_operator',
+  'qual_incident_command',
+  'qual_blsd',
+  'qual_als',
+  'qual_pediatric_care',
+  'qual_mci_management',
+  'qual_hems_crew',
+  'qual_motorcycle_patrol',
+  'qual_traffic_investigation',
+  'qual_public_order',
+  'qual_k9_handler',
+  'qual_eod_tech',
+  'qual_forensics',
+  'qual_tactical_ops',
+  'qual_wildland_firefighting',
+  'qual_wildland_command',
+  'qual_mountain_rescue_tech',
+  'qual_avalanche_rescue',
+  'qual_snow_vehicle',
+  'qual_heli_pilot',
+  'qual_airplane_pilot',
+  'qual_winch_operator',
+] as const;
+
+/** Hospital capabilities: the "H" tile plus the mark of the department (`hospital-helipad` uses `helipad`). */
+export const HOSPITAL_ICONS = [
+  'hosp_general_emergency',
+  'hosp_intensive_care',
+  'hosp_cardiology',
+  'hosp_stroke_unit',
+  'hosp_trauma_center',
+  'hosp_pediatrics',
+  'hosp_obstetrics',
+  'hosp_burn_unit',
+  'hosp_toxicology',
+] as const;
+
+export const GENERIC_ICONS = ['course', 'closure', 'coverage'] as const;
+
 export const PICTOGRAM_NAMES = [
   ...VEHICLE_CLASSES.map((c) => `veh_${c}` as const),
+  ...VEHICLE_TYPE_ICONS,
+  ...UNG_ICONS,
   ...FAMILY_ICONS,
   ...FACILITY_ICONS,
   ...CATEGORY_ICONS,
+  ...INCIDENT_ICONS,
   ...CAPABILITY_ICONS,
+  ...ITEM_ICONS,
+  ...UPGRADE_ICONS,
+  ...ROLE_ICONS,
+  ...QUALIFICATION_ICONS,
+  ...HOSPITAL_ICONS,
+  ...GENERIC_ICONS,
 ] as const;
 export type PictogramName = (typeof PICTOGRAM_NAMES)[number];

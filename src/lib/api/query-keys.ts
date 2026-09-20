@@ -19,5 +19,35 @@ export const qk = {
   progression: (id: string) => ['career', id, 'progression'] as const,
   unlocks: (id: string) => ['career', id, 'progression', 'unlocks'] as const,
   notifications: (id: string) => ['career', id, 'notifications'] as const,
+  milestones: (id: string) => ['career', id, 'progression', 'milestones'] as const,
+  /* depth domains — everything of a domain lives under its root key so one realtime event invalidates it all */
+  personnelRoot: (id: string) => ['career', id, 'personnel'] as const,
+  personnel: (id: string) => ['career', id, 'personnel', 'list'] as const,
+  personnelDetail: (id: string, personnelId: string) =>
+    ['career', id, 'personnel', 'detail', personnelId] as const,
+  candidates: (id: string) => ['career', id, 'personnel', 'candidates'] as const,
+  teams: (id: string) => ['career', id, 'personnel', 'teams'] as const,
+  departments: (id: string) => ['career', id, 'personnel', 'departments'] as const,
+  training: (id: string) => ['career', id, 'personnel', 'training'] as const,
+  medicalRoot: (id: string) => ['career', id, 'medical'] as const,
+  patients: (id: string, incidentId: string) => ['career', id, 'medical', 'patients', incidentId] as const,
+  hospitalOptions: (id: string, patientId: string) =>
+    ['career', id, 'medical', 'options', patientId] as const,
+  hospitals: (id: string) => ['career', id, 'medical', 'hospitals'] as const,
+  inventory: (id: string) => ['career', id, 'inventory'] as const,
+  inventoryItems: (id: string) => ['career', id, 'inventory', 'items'] as const,
+  maintenance: (id: string) => ['career', id, 'maintenance'] as const,
+  vehicleHistory: (id: string, vehicleId: string) =>
+    ['career', id, 'maintenance', 'history', vehicleId] as const,
+  worldRoot: (id: string) => ['career', id, 'world'] as const,
+  coverage: (id: string) => ['career', id, 'world', 'coverage'] as const,
+  sites: (id: string, bbox: string) => ['career', id, 'world', 'sites', bbox] as const,
+  monetizationRoot: (id: string) => ['career', id, 'monetization'] as const,
+  packages: (id: string) => ['career', id, 'monetization', 'packages'] as const,
+  purchases: (id: string) => ['career', id, 'monetization', 'purchases'] as const,
+  adsStatus: (id: string) => ['career', id, 'monetization', 'ads'] as const,
+  referrals: (id: string) => ['career', id, 'monetization', 'referrals'] as const,
+  speedupQuote: (id: string, target: string, targetId: string) =>
+    ['career', id, 'monetization', 'speedup', target, targetId] as const,
   admin: (resource: string, ...rest: unknown[]) => ['admin', resource, ...rest] as const,
 };

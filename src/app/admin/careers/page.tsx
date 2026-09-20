@@ -1,4 +1,4 @@
-import { AdminCareers } from '@/features/admin/admin-pages';
+import { AdminCareers } from '@/features/admin/careers';
 
 export default function Page() {
   return <AdminCareers />;

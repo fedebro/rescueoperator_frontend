@@ -40,7 +40,8 @@ export function resolveSnap(height: number, velocity: number, heights: Record<Sh
 
 /**
  * Non-modal bottom sheet with three snap heights. Drag the handle/header with touch or mouse;
- * the handle is also a button (Enter/Space cycles, ArrowUp/ArrowDown move one snap) for keyboard users.
+ * the handle is also a button for keyboard users (Enter/Space cycles, ArrowUp/ArrowDown move one snap,
+ * Home/PageUp = full, End/PageDown/Escape = peek).
  * The content scrolls only in the `full` and `half` states so map gestures are never stolen in `peek`.
  */
 export function BottomSheet({
@@ -133,6 +134,15 @@ export function BottomSheet({
       e.preventDefault();
       onSnapChange(ORDER[Math.max(0, i - 1)]!);
     }
+    if (e.key === 'Home' || e.key === 'PageUp') {
+      e.preventDefault();
+      onSnapChange('full');
+    }
+    // Escape collapses the sheet (it is not modal, so there is nothing to close — only to get out of the way).
+    if (e.key === 'End' || e.key === 'PageDown' || (e.key === 'Escape' && snap !== 'peek')) {
+      e.preventDefault();
+      onSnapChange('peek');
+    }
   };
 
   return (
@@ -169,7 +179,8 @@ export function BottomSheet({
             aria-label={handleLabel}
             aria-expanded={snap !== 'peek'}
             data-testid="sheet-handle"
-            className="flex h-6 w-full items-center justify-center"
+            // 24px tall visually; the pseudo-element extends the hit area to 44px for thumbs.
+            className="relative flex h-6 w-full items-center justify-center after:absolute after:inset-x-0 after:-top-2.5 after:-bottom-2.5 after:content-['']"
           >
             <span aria-hidden className="bg-border-strong h-1.5 w-11 rounded-full" />
           </button>

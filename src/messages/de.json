@@ -226,7 +226,11 @@
       "progression": "Karriere",
       "economy": "Finanzen",
       "settings": "Optionen",
-      "more": "Mehr"
+      "more": "Mehr",
+      "personnel": "Personal",
+      "logistics": "Logistik",
+      "credits": "Credits-Shop",
+      "network": "Dein Netzwerk"
     },
     "topbar": {
       "level": "Level",
@@ -341,7 +345,9 @@
         "HEALTH_LOW": "Wartung empfohlen",
         "NO_RELEVANT_CAPABILITY": "Hier wenig nützlich",
         "CREW_TIRED": "Besatzung müde",
-        "LONG_ETA": "Lange Anfahrt"
+        "LONG_ETA": "Lange Anfahrt",
+        "GROUNDED_BY_CONDITIONS": "Wegen der Bedingungen am Boden",
+        "SLOW_TRAVEL_CONDITIONS": "Fahrt durch Wetter oder Verkehr verlangsamt"
       }
     },
     "vehicle": {
@@ -373,7 +379,8 @@
         "WATER": "Liegeplätze",
         "PERSONNEL": "Unterkünfte",
         "STORAGE": "Lager",
-        "WORKSHOP": "Werkstatt"
+        "WORKSHOP": "Werkstatt",
+        "TRAINING": "Schulungsplätze"
       }
     },
     "incidentsPage": {
@@ -944,13 +951,15 @@
     "RECOVERY": "Fahrzeugbergung",
     "SUPPLIES": "Vorräte",
     "SPEEDUP": "Beschleunigung",
-    "EXTERNAL_SUPPORT": "Externe Unterstützung"
+    "EXTERNAL_SUPPORT": "Externe Unterstützung",
+    "LEVEL_UP": "Prämie für Stufe {level}"
   },
   "outcome": {
     "note": {
       "FAST_RESPONSE": "Schnelle Reaktion: Bonus für rasches Eintreffen.",
       "UNDER_RESOURCED": "Zu wenig Kräfte vor Ort: Der Einsatz hat länger gedauert als nötig.",
-      "TUTORIAL_BONUS": "Erster Einsatz abgeschlossen: Willkommensbonus von 300 Credits."
+      "TUTORIAL_BONUS": "Erster Einsatz abgeschlossen: Willkommensbonus von 450 Credits.",
+      "EXTERNAL_SUPPORT": "Ein Teil des Einsatzes wurde von externer Unterstützung übernommen."
     }
   },
   "timeline": {
@@ -962,7 +971,11 @@
     "incident_escalated": "Die Lage verschärft sich: Schweregrad {severity}",
     "incident_resolved": "Einsatz abgeschlossen",
     "incident_failed": "Einsatz gescheitert",
-    "incident_expired": "Kein Fahrzeug ist rechtzeitig eingetroffen"
+    "incident_expired": "Kein Fahrzeug ist rechtzeitig eingetroffen",
+    "incident_resolving": "Arbeit vor Ort beendet: Abschlussarbeiten laufen",
+    "incident_cancelled": "Einsatz abgebrochen",
+    "ung_arrived": "Externe Unterstützung vor Ort",
+    "ung_done": "Externe Unterstützung: Arbeit abgeschlossen"
   },
   "away": {
     "event": {

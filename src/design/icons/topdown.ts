@@ -140,4 +140,64 @@ export const TOPDOWN: Record<VehicleClass, string> = {
     `<rect x="10" y="12" width="12" height="16" rx="1" ${BODY}/>` +
     '<path d="M10.8 21.5l3.5-3.5h2.8l-6.3 6.3zM13.6 24.5 20.1 18h1.1v1.7l-4.8 4.8zM19.2 24.5l2-2v2z" fill="{dark}"/>' +
     '<rect x="13" y="13.5" width="6" height="2.5" rx="0.5" fill="{dark}"/>',
+  // Foam tender: tank with foam bubbles and a roof monitor (cannon) behind the cab.
+  foam:
+    `<rect x="10" y="3.5" width="12" height="25.5" rx="2.5" ${BODY}/>${truckGlass(5)}` +
+    '<ellipse cx="16" cy="21" rx="4.6" ry="7" fill="{dark}"/>' +
+    '<circle cx="14.8" cy="19" r="1.7" fill="{light}"/><circle cx="17.6" cy="22" r="1.2" fill="{light}"/><circle cx="15.2" cy="24.6" r="0.9" fill="{light}"/>' +
+    '<path d="M16 12V8.2" fill="none" stroke="{dark}" stroke-width="1.8" stroke-linecap="round"/><circle cx="16" cy="12" r="1.7" fill="{dark}"/>',
+
+  // Hazmat / NBCR unit: box truck with the hazard diamond on the roof.
+  hazmat:
+    `<rect x="10.5" y="3.5" width="11" height="7.5" rx="2" ${BODY}/>${truckGlass(5)}` +
+    `<rect x="10" y="11.5" width="12" height="17.5" rx="1" ${BODY}/>` +
+    '<path d="M16 13.5l4.6 6.7-4.6 6.7-4.6-6.7z" fill="{light}"/><path d="M16 16.8l2.3 3.4-2.3 3.4-2.3-3.4z" fill="{dark}"/>',
+
+  // Bus / maxi-emergency vehicle: long one-box body, two roof units, side glazing strips.
+  bus:
+    `<rect x="10" y="2.5" width="12" height="27" rx="2.5" ${BODY}/>${truckGlass(4)}` +
+    '<rect x="13" y="9.5" width="6" height="5" rx="1" fill="{dark}"/><rect x="13" y="18.5" width="6" height="5" rx="1" fill="{dark}"/>' +
+    '<path d="M11.4 9v17.5M20.6 9v17.5" fill="none" stroke="{light}" stroke-width="1.1" stroke-linecap="round"/>' +
+    '<rect x="11.5" y="26.5" width="9" height="1.4" rx="0.7" fill="{dark}"/>',
+
+  // Advanced medical post: truck carrying the field tent (canvas roof with ridge and folds).
+  tent:
+    `<rect x="10.5" y="3.5" width="11" height="7.5" rx="2" ${BODY}/>${truckGlass(5)}` +
+    `<rect x="9.5" y="11.5" width="13" height="17.5" rx="1" ${BODY}/>` +
+    '<rect x="10.8" y="12.8" width="10.4" height="14.9" fill="{light}"/>' +
+    '<path d="M10.8 12.8 16 16.5l5.2-3.7M10.8 27.7 16 24l5.2 3.7M16 16.5V24" fill="none" stroke="{dark}" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>',
+
+  // Off-road wagon: boxy body, front + rear glass, roof rails and light bar.
+  suv:
+    `<rect x="10.5" y="4.5" width="11" height="23" rx="3" ${BODY}/>` +
+    '<path d="M12 12.5l.8-3h6.4l.8 3z" fill="{light}"/>' +
+    '<path d="M12.5 23.5h7l-.6 2.2h-5.8z" fill="{light}"/>' +
+    '<rect x="12" y="14" width="8" height="2.2" rx="1.1" fill="{dark}"/>' +
+    `<path d="M12.6 17.5v5M19.4 17.5v5" ${DARK_LINE}/>`,
+
+  // Armoured tactical vehicle: angular hull, slit windscreen, roof hatch/turret.
+  armored:
+    `<path d="M12.5 3.5h7l2.5 4v17.5l-2 3.5h-8l-2-3.5V7.5z" ${BODY}/>` +
+    '<rect x="12.5" y="8" width="7" height="1.8" rx="0.5" fill="{light}"/>' +
+    '<circle cx="16" cy="17.5" r="3.4" fill="{dark}"/><circle cx="16" cy="17.5" r="1.3" fill="{primary}"/>' +
+    `<path d="M12.5 24.5h7" ${DARK_LINE}/>`,
+
+  // Snow plough / gritter: wide angled blade in front of the cab, hopper at the rear.
+  plough:
+    '<path d="M13 6.5V9M19 5.5V9" fill="none" stroke="{outline}" stroke-width="1.5" stroke-linecap="round"/>' +
+    '<path d="M6 5.5 25 2.5l1 2.5L7 8z" fill="{light}" stroke="{outline}" stroke-width="1" stroke-linejoin="round"/>' +
+    `<rect x="10.5" y="8" width="11" height="7" rx="2" ${BODY}/>${truckGlass(9.5)}` +
+    `<rect x="10" y="15.5" width="12" height="13.5" rx="1" ${BODY}/>` +
+    '<rect x="11.5" y="17" width="9" height="10.5" rx="0.8" fill="{dark}"/>' +
+    '<path d="M13 19.5h6M13 22.5h6M13 25.5h6" fill="none" stroke="{primary}" stroke-width="1.1" stroke-linecap="round"/>',
+
+  // Quad / ATV: four wide tyres, slim body, handlebar and seat.
+  quad:
+    '<rect x="8" y="4.5" width="4.2" height="7.5" rx="1.6" fill="{dark}" stroke="{outline}" stroke-width="0.75"/>' +
+    '<rect x="19.8" y="4.5" width="4.2" height="7.5" rx="1.6" fill="{dark}" stroke="{outline}" stroke-width="0.75"/>' +
+    '<rect x="8" y="20" width="4.2" height="7.5" rx="1.6" fill="{dark}" stroke="{outline}" stroke-width="0.75"/>' +
+    '<rect x="19.8" y="20" width="4.2" height="7.5" rx="1.6" fill="{dark}" stroke="{outline}" stroke-width="0.75"/>' +
+    `<path d="M16 4.5c2.2 0 3.4 1.6 3.4 4v14.5c0 2.4-1.3 4-3.4 4s-3.4-1.6-3.4-4V8.5c0-2.4 1.2-4 3.4-4z" ${BODY}/>` +
+    `<rect x="10.5" y="11.5" width="11" height="1.8" rx="0.9" ${PART}/>` +
+    '<rect x="14" y="15" width="4" height="8.5" rx="2" fill="{dark}"/>',
 };

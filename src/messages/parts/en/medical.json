@@ -1,0 +1,131 @@
+{
+  "medical": {
+    "patients": {
+      "title": "Patients",
+      "count": "{count, plural, one {# patient} other {# patients}}",
+      "label": "Patient {n}",
+      "loadError": "Patients could not be loaded.",
+      "triageUnknown": "Triage in progress",
+      "unassessedTitle": "Triage in progress",
+      "unassessedHint": "Patients are assessed as soon as the first medical vehicle arrives.",
+      "unassessedNoMedical": "No medical vehicle on scene or on its way: send an ambulance. Otherwise an external ambulance will step in, with a worse outcome.",
+      "profileUnknown": "Condition not assessed yet",
+      "vehicle": "Vehicle",
+      "hospital": "Hospital",
+      "externalAmbulance": "External ambulance",
+      "transportNotRequired": "No transport needed",
+      "openHospital": "Show {hospital} on the map"
+    },
+    "stability": {
+      "label": "Stability",
+      "value": "{value} out of 100",
+      "band": {
+        "stable": "Stable",
+        "watch": "Under observation",
+        "unstable": "Unstable",
+        "critical": "Critical"
+      },
+      "trend": {
+        "improving": "Improving",
+        "worsening": "Worsening",
+        "steady": "Steady"
+      }
+    },
+    "needs": {
+      "title": "On-scene treatment",
+      "met": "{capability}: covered",
+      "unmet": "{capability}: not covered",
+      "unmetHint": "The vehicles on scene cannot stabilise this patient here: send a suitable vehicle or transport the patient as soon as possible."
+    },
+    "phase": {
+      "assessing": "Assessment",
+      "treating": "Treatment",
+      "packaging": "Preparing for transport",
+      "toHospital": "Arrival at hospital",
+      "handoff": "Handover to the emergency department",
+      "done": "in progress…"
+    },
+    "transport": {
+      "title": "Transport to hospital",
+      "loading": "Working out the hospitals…",
+      "loadError": "The hospitals could not be worked out.",
+      "recommended": "Recommended",
+      "confirmRecommended": "Transport to {hospital}",
+      "chooseOther": "Choose another hospital",
+      "chooseTitle": "Choose the hospital",
+      "chooseDescription": "Travel time, the right unit and the load of the emergency department decide the patient’s outcome.",
+      "hideOptions": "Hide the alternatives",
+      "select": "Select {hospital}",
+      "confirm": "Confirm transport",
+      "vehicle": "Transporting vehicle",
+      "travel": "Travel",
+      "handoff": "Handover",
+      "compatible": "Suitable unit",
+      "notCompatible": "No suitable unit",
+      "helipad": "Helipad",
+      "lockedChoice": "Choosing the hospital yourself unlocks at level {level}. For now the recommended hospital is proposed.",
+      "autoHint": "If you do not choose, the recommended hospital is confirmed automatically after a short wait.",
+      "noVehicle": "No vehicle with patient transport on scene",
+      "noVehicleHint": "The patient is waiting on scene. Send an ambulance: if none arrives, an external ambulance will step in.",
+      "vehicleEnRoute": "{callSign} is on its way for the transport.",
+      "send": "Send {callSign}",
+      "noAmbulance": "No ambulance available right now.",
+      "sent": "{callSign} sent for the transport",
+      "started": "{callSign} heading to {hospital}"
+    },
+    "reasons": {
+      "CLOSEST": "It is the closest",
+      "SPECIALTY_AVAILABLE": "It has the unit the patient needs",
+      "PREFERRED_UNIT": "It also has the most suitable unit",
+      "LOW_LOAD": "Emergency department under normal load",
+      "BUSY": "Crowded emergency department: slower handover",
+      "SATURATED": "Saturated emergency department: very slow handover",
+      "NOT_COMPATIBLE": "It lacks the unit the patient needs",
+      "NO_SPECIALTY_IN_RANGE": "No hospital in the area has the specialist unit",
+      "CLOSED": "Not accepting patients at the moment"
+    },
+    "hospital": {
+      "subtitle": "Hospital",
+      "load": "Emergency department load",
+      "capabilities": "Units",
+      "helipadYes": "Helipad available",
+      "helipadNo": "No helipad",
+      "incoming": "Incoming patients",
+      "incomingNone": "No incoming patients.",
+      "notFound": "Hospital not found.",
+      "loadError": "Hospitals could not be loaded."
+    }
+  },
+  "status": {
+    "patient": {
+      "UNASSESSED": "Not assessed",
+      "ASSESSED": "Assessed",
+      "TREATING": "Under treatment",
+      "STABILIZED": "Stabilised",
+      "AWAITING_TRANSPORT": "Awaiting transport",
+      "IN_TRANSPORT": "In transport",
+      "HANDOFF": "Hospital handover",
+      "ADMITTED": "Handed over to the hospital",
+      "RELEASED_ON_SCENE": "Treated on scene",
+      "DECEASED": "Did not survive"
+    },
+    "hospitalLoad": {
+      "NORMAL": "Normal load",
+      "BUSY": "Crowded",
+      "SATURATED": "Saturated",
+      "CLOSED": "Not accepting patients"
+    }
+  },
+  "timeline": {
+    "patient_assessed": "Patient assessed by the medical crew",
+    "patient_stabilized": "Patient stabilised on scene",
+    "patient_released": "Patient treated on scene: no transport needed",
+    "patient_transport": "{callSign} is transporting the patient to {hospital}",
+    "patient_transport_auto": "{callSign} is transporting the patient to {hospital} (recommended hospital, confirmed automatically)",
+    "patient_external": "Patient entrusted to an external ambulance heading to {hospital}",
+    "patient_admitted": "Patient handed over to {hospital}"
+  },
+  "notifications": {
+    "patientAwaitingTransport": "Patient awaiting transport at {address}"
+  }
+}

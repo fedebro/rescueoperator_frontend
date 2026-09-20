@@ -8,7 +8,7 @@ import {
   type RealtimeEnvelope as Envelope,
 } from '@/contracts';
 import { applyEvent } from '@/lib/realtime/reconcile';
-import { MockEngine, MockError, OTP_CODE, memoryStorage, type MockCareer } from './engine';
+import { MockEngine, MockError, OTP_CODE, TUTORIAL_BONUS, memoryStorage, type MockCareer } from './engine';
 import { PESCARA, mockRoute } from './data/pescara';
 import { levelForXp, xpThreshold } from './data/catalog';
 
@@ -139,7 +139,7 @@ describe('mock core loop', () => {
     expect(IncidentOutcomeDto.safeParse(outcome).success).toBe(true);
     expect(outcome.stars).toBeGreaterThanOrEqual(1);
     expect(career.ledger.filter((l) => l.entryType === 'MISSION_REWARD')).toHaveLength(1);
-    expect(BigInt(career.summary.credits)).toBe(400n + BigInt(outcome.netCredits) + 300n);
+    expect(BigInt(career.summary.credits)).toBe(400n + BigInt(outcome.netCredits) + BigInt(TUTORIAL_BONUS));
     expect(career.vehicles[0]!.status).toBe('RETURNING');
     expect(career.summary.tutorial.step).toBe('OUTCOME');
 
@@ -185,13 +185,14 @@ describe('mock core loop', () => {
       expect.objectContaining({ code: 'LEVEL_TOO_LOW' }),
     );
     expect(() => w.engine.buyVehicle(career, { vehicleTypeCode: 'EMS_MSB', facilityId })).toThrowError(
-      expect.objectContaining({ code: 'LEVEL_TOO_LOW' }),
+      expect.objectContaining({ code: 'NOT_UNLOCKED', details: { requiredLevel: 3 } }),
     );
+    career.summary.level = 2;
     expect(() => w.engine.buyVehicle(career, { vehicleTypeCode: 'FIRE_4X4', facilityId })).toThrowError(
       expect.objectContaining({ code: 'INSUFFICIENT_CREDITS' }),
     );
     expect(career.summary.credits).toBe('400');
-    career.summary.credits = '700';
+    career.summary.credits = '1200';
     const bought = w.engine.buyVehicle(career, { vehicleTypeCode: 'FIRE_4X4', facilityId });
     expect(bought.status).toBe('IN_DELIVERY');
     expect(career.summary.credits).toBe('100');
@@ -202,6 +203,7 @@ describe('mock core loop', () => {
   it('builds facility upgrades over time', () => {
     const facilityId = career.facilities[0]!.id;
     career.summary.credits = '2000';
+    career.summary.level = 2;
     const before = career.facilities[0]!.capacities.find((c) => c.domain === 'GROUND')!.total;
     w.engine.buyUpgrade(career, facilityId, 'GARAGE');
     expect(

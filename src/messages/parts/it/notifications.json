@@ -1,0 +1,57 @@
+{
+  "notificationCenter": {
+    "unread": "Non letta",
+    "unreadOnly": "Solo non lette",
+    "readAll": "Segna tutte come lette",
+    "filterLabel": "Filtra per categoria",
+    "listLabel": "Elenco delle notifiche",
+    "loading": "Caricamento delle notifiche…",
+    "errorTitle": "Impossibile caricare le notifiche",
+    "errorBody": "Controlla la connessione e riprova.",
+    "emptyTitle": "Nessuna notifica",
+    "emptyBody": "Consegne, ampliamenti, livelli ed eventi importanti compariranno qui.",
+    "emptyFilteredTitle": "Niente con questi filtri",
+    "emptyFilteredBody": "Cambia categoria o mostra anche le notifiche già lette.",
+    "unreadAnnouncement": "{count, plural, one {# notifica non letta} other {# notifiche non lette}}",
+    "category": {
+      "ALL": "Tutte",
+      "OPERATIONS": "Operazioni",
+      "FLEET": "Flotta",
+      "PERSONNEL": "Personale",
+      "FACILITIES": "Sedi",
+      "ECONOMY": "Economia",
+      "PROGRESSION": "Carriera",
+      "SYSTEM": "Sistema"
+    },
+    "priority": {
+      "CRITICAL": "Critica",
+      "IMPORTANT": "Importante",
+      "INFO": "Informazione"
+    },
+    "action": {
+      "OPEN_INCIDENT": "Apri l’emergenza sulla mappa",
+      "OPEN_VEHICLE": "Apri il mezzo sulla mappa",
+      "OPEN_FACILITY": "Apri la sede",
+      "OPEN_PERSONNEL": "Apri la scheda del personale",
+      "OPEN_SHOP": "Vai agli acquisti",
+      "OPEN_PROGRESSION": "Vai alla carriera",
+      "NONE": "Nessuna azione"
+    }
+  },
+  "notifications": {
+    "qa": {
+      "OPERATIONS": "Avviso di prova: operazioni",
+      "FLEET": "Avviso di prova: flotta",
+      "PERSONNEL": "Avviso di prova: personale",
+      "FACILITIES": "Avviso di prova: sedi",
+      "ECONOMY": "Avviso di prova: economia",
+      "PROGRESSION": "Avviso di prova: carriera",
+      "SYSTEM": "Avviso di prova: sistema"
+    },
+    "qaBody": {
+      "CRITICAL": "Richiede un intervento immediato.",
+      "IMPORTANT": "Conviene dare un’occhiata appena possibile.",
+      "INFO": "Solo per conoscenza."
+    }
+  }
+}

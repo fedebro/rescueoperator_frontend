@@ -84,14 +84,18 @@ export function SectionTitle({
   children,
   className,
   action,
+  level = 2,
 }: {
   children: React.ReactNode;
   className?: string;
   action?: React.ReactNode;
+  /** Heading level: sections sit directly under the page `h1` by default; pass 3 inside a panel that has its own `h2`. */
+  level?: 2 | 3;
 }) {
+  const Heading = level === 2 ? 'h2' : 'h3';
   return (
     <div className={cn('mb-2 flex items-center justify-between gap-2', className)}>
-      <h3 className="text-subtle text-[11px] font-bold tracking-[0.08em] uppercase">{children}</h3>
+      <Heading className="text-subtle text-[11px] font-bold tracking-[0.08em] uppercase">{children}</Heading>
       {action}
     </div>
   );

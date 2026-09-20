@@ -3,7 +3,21 @@ import * as React from 'react';
 import Link from 'next/link';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
-import { Crosshair, MapPin, Undo2, Users, X, Wrench } from 'lucide-react';
+import {
+  Anchor,
+  Crosshair,
+  Hammer,
+  MapPin,
+  Package,
+  Plane,
+  Radio,
+  Truck,
+  Undo2,
+  Users,
+  Warehouse,
+  Wrench,
+  X,
+} from 'lucide-react';
 import type { FacilityDto, IncidentDto, VehicleDto } from '@/contracts';
 import { gameApi } from '@/lib/api/endpoints';
 import { qk } from '@/lib/api/query-keys';
@@ -13,14 +27,14 @@ import { movementProgress, pointAlong } from '@/lib/geo';
 import { serverNow } from '@/lib/clock';
 import { toast } from '@/stores/toast';
 import { useUiStore } from '@/stores/ui';
-import { useI18nText } from '@/i18n/use-i18n-text';
+import { useCatalogName, useI18nText } from '@/i18n/use-i18n-text';
 import {
   FamilyBadge,
   GameIcon,
   TopdownGlyph,
   capabilityIconName,
   categoryIconName,
-  isVehicleClass,
+  vehicleClassOf,
 } from '@/design/icons';
 import { Button, IconButton } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +48,17 @@ import { Timeline } from '@/components/ui/timeline';
 import { useServerNow } from '@/hooks/use-server-now';
 import { useCareerId, useSnapshot, useVehicleTypeLookup } from './hooks';
 import { DispatchPanel, RequirementBars } from './dispatch-panel';
+import { IncidentExternalSupport } from '@/features/families/external-support';
+import { IncidentFamilies } from '@/features/families/family-chips';
+import { RequirementAttribution } from '@/features/families/requirement-attribution';
+import { ConstructionBanner } from '@/features/facilities/facility-extras';
+import { TransferVehicleButton } from '@/features/facilities/transfer-vehicle';
+import { SiteInspector } from '@/features/facilities/map-overlay';
+import { IncidentPatients } from '@/features/medical/incident-patients';
+import { HospitalInspector } from '@/features/medical/map-overlay';
+import { VehicleCrewSection } from '@/features/personnel/slots';
+import { VehicleMaintenanceSection } from '@/features/logistics/slots';
+import { SpeedupButton } from '@/features/monetization/speedup-button';
 
 function InspectorHeader({
   icon,
@@ -115,6 +140,7 @@ export function IncidentInspector({ incident }: { incident: IncidentDto }) {
   const tc = useTranslations('common');
   const ts = useTranslations('status.incident');
   const tsv = useTranslations('status.vehicle');
+  const tf = useTranslations('families');
   const tx = useI18nText();
   const locale = useLocale();
   const { vehicles, career } = useSnapshot();
@@ -139,7 +165,7 @@ export function IncidentInspector({ incident }: { incident: IncidentDto }) {
       <InspectorHeader
         icon={
           <span className="bg-surface-3 grid size-10 place-items-center rounded-md">
-            <GameIcon name={categoryIconName(incident.category)} size={22} />
+            <GameIcon name={categoryIconName(incident.category, incident.icon)} size={22} />
           </span>
         }
         title={tx(incident.title)}
@@ -153,9 +179,7 @@ export function IncidentInspector({ incident }: { incident: IncidentDto }) {
               escalating={incident.escalating}
             />
             <StatusChip status={incident.status} label={ts(incident.status)} />
-            {incident.families.map((f) => (
-              <FamilyBadge key={f} family={f} size={22} title={tx({ key: `catalog.family.${f}` })} />
-            ))}
+            <IncidentFamilies incident={incident} />
             {incident.isTutorial ? <Badge tone="info">{t('tutorial')}</Badge> : null}
             {incident.status === 'PENDING_RESPONSE' && incident.expiresAt ? (
               <Countdown
@@ -217,17 +241,36 @@ export function IncidentInspector({ incident }: { incident: IncidentDto }) {
                 </div>
               </div>
             ) : null}
-            <DispatchPanel incident={incident} />
+            <IncidentExternalSupport incident={incident} />
+            <IncidentPatients incident={incident} />
+            {incident.status === 'RESOLVING' ? null : <DispatchPanel incident={incident} />}
           </TabsContent>
           <TabsContent value="details" className="flex flex-col gap-5 p-4">
             <div>
               <SectionTitle>{t('report')}</SectionTitle>
+              {incident.summary ? (
+                <p className="text-muted mb-2 text-sm" data-testid="incident-summary">
+                  {tx(incident.summary)}
+                </p>
+              ) : null}
               <p
                 className="border-border bg-surface-2 text-fg rounded-md border p-3 text-sm leading-relaxed"
                 data-testid="incident-report"
               >
                 “{tx(incident.report)}”
               </p>
+              {incident.radio ? (
+                <p
+                  className="border-border text-muted mt-2 flex items-start gap-2 rounded-md border border-dashed p-3 font-mono text-xs leading-relaxed"
+                  data-testid="incident-radio"
+                >
+                  <Radio className="text-info mt-0.5 size-3.5 shrink-0" aria-hidden />
+                  <span>
+                    <span className="sr-only">{tf('radio')}: </span>
+                    {tx(incident.radio)}
+                  </span>
+                </p>
+              ) : null}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <Stat label={t('received')} value={formatTime(incident.createdAt, locale, career.timezone)} />
@@ -246,6 +289,10 @@ export function IncidentInspector({ incident }: { incident: IncidentDto }) {
             <div>
               <SectionTitle>{t('requirements')}</SectionTitle>
               <RequirementBars incident={incident} />
+            </div>
+            <div>
+              <SectionTitle>{tf('attribution.title')}</SectionTitle>
+              <RequirementAttribution incident={incident} />
             </div>
           </TabsContent>
           <TabsContent value="timeline" className="p-4">
@@ -310,13 +357,7 @@ export function VehicleInspector({ vehicle }: { vehicle: VehicleDto }) {
       data-vehicle-status={vehicle.status}
     >
       <InspectorHeader
-        icon={
-          <TopdownGlyph
-            vehicleClass={type && isVehicleClass(type.icon) ? type.icon : 'truck'}
-            family={vehicle.family}
-            size={40}
-          />
-        }
+        icon={<TopdownGlyph vehicleClass={vehicleClassOf(type?.icon)} family={vehicle.family} size={40} />}
         title={vehicle.callSign}
         subtitle={facility?.name}
         onFocus={() => focusOn(currentPosition(), 15)}
@@ -331,6 +372,16 @@ export function VehicleInspector({ vehicle }: { vehicle: VehicleDto }) {
                 doneLabel={tc('arriving')}
                 className="ml-auto text-sm"
               />
+            ) : vehicle.status === 'IN_DELIVERY' && vehicle.busyUntil ? (
+              <span className="ml-auto flex items-center gap-2 text-sm">
+                <Countdown to={vehicle.busyUntil} doneLabel="…" />
+                <SpeedupButton
+                  target="VEHICLE_DELIVERY"
+                  targetId={vehicle.id}
+                  endsAt={vehicle.busyUntil}
+                  size="sm"
+                />
+              </span>
             ) : null}
           </>
         }
@@ -383,6 +434,9 @@ export function VehicleInspector({ vehicle }: { vehicle: VehicleDto }) {
             ))}
           </ul>
         </div>
+        <VehicleCrewSection vehicle={vehicle} />
+        <VehicleMaintenanceSection vehicle={vehicle} />
+        <TransferVehicleButton vehicle={vehicle} />
         <div className="grid grid-cols-2 gap-3">
           <div>
             <SectionTitle>{t('health')}</SectionTitle>
@@ -425,6 +479,19 @@ function MovementProgress({ vehicle }: { vehicle: VehicleDto }) {
   );
 }
 
+const DOMAIN_ICONS = {
+  GROUND: Truck,
+  AIR: Plane,
+  WATER: Anchor,
+  PERSONNEL: Users,
+  STORAGE: Package,
+  WORKSHOP: Wrench,
+} as const;
+function DomainIcon({ domain }: { domain: string }) {
+  const Icon = DOMAIN_ICONS[domain as keyof typeof DOMAIN_ICONS] ?? Warehouse;
+  return <Icon className="text-subtle size-3.5 shrink-0" aria-hidden />;
+}
+
 export function FacilitySummary({ facility, compact }: { facility: FacilityDto; compact?: boolean }) {
   const t = useTranslations('game.facility');
   const { vehicles } = useSnapshot();
@@ -437,7 +504,15 @@ export function FacilitySummary({ facility, compact }: { facility: FacilityDto; 
           {facility.capacities
             .filter((c) => c.total > 0 || !compact)
             .map((c) => (
-              <li key={c.domain} className="flex items-center gap-3 text-xs">
+              <li
+                key={c.domain}
+                className="flex items-center gap-2 text-xs"
+                data-testid="capacity-bar"
+                data-domain={c.domain}
+                data-used={c.used}
+                data-total={c.total}
+              >
+                <DomainIcon domain={c.domain} />
                 <span className="text-muted w-24 shrink-0 font-semibold">{t(`domain.${c.domain}`)}</span>
                 <ProgressBar
                   value={c.total ? c.used / c.total : 0}
@@ -484,18 +559,38 @@ function VehicleChips({ vehicles }: { vehicles: VehicleDto[] }) {
 export function FacilityInspector({ facility }: { facility: FacilityDto }) {
   const t = useTranslations('game.facility');
   const ts = useTranslations('status.facility');
-  const tx = useI18nText();
+  const tp = useTranslations('facilities.promotion');
+  const name = useCatalogName();
   const focusOn = useUiStore((s) => s.focusOn);
   return (
-    <div className="flex h-full min-h-0 flex-col" data-testid="facility-inspector">
+    <div
+      className="flex h-full min-h-0 flex-col"
+      data-testid="facility-inspector"
+      data-facility-status={facility.status}
+    >
       <InspectorHeader
         icon={<FamilyBadge family={facility.family} size={40} />}
         title={facility.name}
-        subtitle={tx({ key: `catalog.facility.${facility.typeCode}.name` })}
+        subtitle={name('facility', facility.typeCode)}
         onFocus={() => focusOn(facility.position, 15)}
         badges={<StatusChip status={facility.status} label={ts(facility.status)} />}
       />
       <div className="scroll-y flex min-h-0 flex-1 flex-col gap-5 p-4">
+        <ConstructionBanner facility={facility} />
+        {facility.promotion ? (
+          <p className="text-warning flex flex-wrap items-center gap-2 text-sm" role="status">
+            <Hammer className="size-4" aria-hidden />
+            {tp('buildingTo', { type: name('facility', facility.promotion.toTypeCode) })}
+            <Countdown to={facility.promotion.completeAt} doneLabel="…" />
+            <SpeedupButton
+              target="FACILITY_UPGRADE"
+              targetId={facility.id}
+              endsAt={facility.promotion.completeAt}
+              size="sm"
+              className="ml-auto"
+            />
+          </p>
+        ) : null}
         <FacilitySummary facility={facility} compact />
         <Button asChild variant="secondary">
           <Link href={`/game/facilities?id=${facility.id}`}>{t('manage')}</Link>
@@ -510,18 +605,24 @@ export function SelectionInspector() {
   const selection = useUiStore((s) => s.selection);
   const clear = useUiStore((s) => s.clearSelection);
   const { incidents, vehicles, facilities } = useSnapshot();
+  // Hospitals and candidate sites are not part of the snapshot: their inspectors load their own data.
+  const external = selection?.kind === 'hospital' || selection?.kind === 'site';
   const entity = !selection
     ? null
-    : selection.kind === 'incident'
-      ? incidents.find((i) => i.id === selection.id)
-      : selection.kind === 'vehicle'
-        ? vehicles.find((v) => v.id === selection.id)
-        : facilities.find((f) => f.id === selection.id);
+    : external
+      ? selection
+      : selection.kind === 'incident'
+        ? incidents.find((i) => i.id === selection.id)
+        : selection.kind === 'vehicle'
+          ? vehicles.find((v) => v.id === selection.id)
+          : facilities.find((f) => f.id === selection.id);
   // The selected entity can disappear (incident resolved): drop the selection instead of showing a ghost.
   React.useEffect(() => {
     if (selection && !entity) clear();
   }, [selection, entity, clear]);
   if (!selection || !entity) return null;
+  if (selection.kind === 'hospital') return <HospitalInspector id={selection.id} />;
+  if (selection.kind === 'site') return <SiteInspector id={selection.id} />;
   if (selection.kind === 'incident') return <IncidentInspector incident={entity as IncidentDto} />;
   if (selection.kind === 'vehicle') return <VehicleInspector vehicle={entity as VehicleDto} />;
   return <FacilityInspector facility={entity as FacilityDto} />;

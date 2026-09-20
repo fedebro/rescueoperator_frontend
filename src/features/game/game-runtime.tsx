@@ -8,14 +8,21 @@ import { qk } from '@/lib/api/query-keys';
 import { RealtimeController } from '@/lib/realtime/controller';
 import { connectMockBus, connectSocket } from '@/lib/realtime/transport';
 import type { Effect } from '@/lib/realtime/reconcile';
-import { playSound } from '@/lib/sound';
+import { NotificationDto } from '@/contracts';
+import { track } from '@/lib/analytics';
+import { incidentCue, notificationCue, playCue, type SoundName } from '@/lib/sound';
 import { useI18nText } from '@/i18n/use-i18n-text';
-import { soundEnabled, useSettingsStore } from '@/stores/settings';
 import { toast } from '@/stores/toast';
 import { useUiStore } from '@/stores/ui';
 import { useLatest } from '@/hooks/use-latest';
 import { BrandSplash } from '@/components/brand/splash';
 import { Button } from '@/components/ui/button';
+import { CoreAnalyticsTracker } from '@/features/platform/core-analytics';
+import { InstallHint } from '@/features/platform/install-app';
+import { resolveAction, sameText } from '@/features/platform/notifications-model';
+import { useNotificationAction } from '@/features/platform/notifications-center';
+import { setAnalyticsFlag } from '@/features/platform/platform-bootstrap';
+import { isStandalone } from '@/features/platform/pwa';
 import { CareerProvider, useSnapshotQuery } from './hooks';
 
 /** Loads the snapshot, runs the realtime controller and turns domain effects into toasts / sounds. */
@@ -29,11 +36,18 @@ export function GameRuntime({ careerId, children }: { careerId: string; children
   const select = useUiStore((s) => s.select);
   const loaded = snapshot.isSuccess;
 
+  const runNotificationAction = useNotificationAction();
+  const [analytics] = React.useState(() => new CoreAnalyticsTracker());
+
   const effectRef = useLatest((effect: Effect) => {
-    const sound = soundEnabled(useSettingsStore.getState().sound);
+    analytics.onEffect(effect);
+    // `soundEffects` is the server-side kill switch; the player's own switches live in the settings store.
+    const cue = (name: SoundName) => {
+      if (snapshot.data?.featureFlags.soundEffects !== false) playCue(name);
+    };
     switch (effect.type) {
       case 'incident.new':
-        playSound('incident', sound);
+        cue(incidentCue(effect.incident.severity));
         toast({
           tone: 'danger',
           title: tn('newIncident'),
@@ -46,6 +60,7 @@ export function GameRuntime({ careerId, children }: { careerId: string; children
         });
         break;
       case 'incident.escalated':
+        cue('escalation');
         toast({
           tone: 'warning',
           title: tn('escalated', { severity: effect.incident.severity }),
@@ -53,13 +68,15 @@ export function GameRuntime({ careerId, children }: { careerId: string; children
         });
         break;
       case 'incident.closed':
+        if (effect.result === 'expired' || effect.result === 'failed') cue('failure');
         if (effect.result === 'expired')
           toast({ tone: 'warning', title: tn('expired'), description: effect.incident.address });
         break;
       case 'outcome':
-        playSound('success', sound);
+        cue(effect.outcome.result === 'FAILURE' ? 'failure' : 'success');
         break;
       case 'vehicle.arrived':
+        cue('arrived');
         toast({
           tone: 'info',
           title: tn('vehicleArrived', { callSign: effect.vehicle.callSign }),
@@ -70,19 +87,62 @@ export function GameRuntime({ careerId, children }: { careerId: string; children
         toast({ tone: 'success', title: tn('vehicleDelivered', { callSign: effect.vehicle.callSign }) });
         break;
       case 'vehicle.broke_down':
+        cue('error');
         toast({ tone: 'danger', title: tn('vehicleBrokeDown', { callSign: effect.vehicle.callSign }) });
         break;
       case 'level.reached':
+        cue('levelUp');
         toast({ tone: 'success', title: tn('levelUp', { level: effect.level }), durationMs: 8000 });
         break;
+      case 'unlock.granted':
+        cue('unlock');
+        break;
       case 'stipend.paid':
+        cue('credits');
         toast({ tone: 'success', title: tn('stipendPaid', { amount: effect.amount }) });
         break;
+      case 'notification': {
+        const parsed = NotificationDto.safeParse(effect.payload.notification);
+        if (!parsed.success) break;
+        const n = parsed.data;
+        // INFO notifications stay silent: they land in the centre and on the badge only.
+        if (n.priority !== 'INFO') cue(notificationCue(n.priority));
+        if (n.priority === 'CRITICAL') {
+          const hasAction = resolveAction(n.action).type !== 'none';
+          toast({
+            tone: 'danger',
+            title: tx(n.title),
+            description: sameText(n.title, n.body) ? undefined : tx(n.body),
+            durationMs: 10_000,
+            action: hasAction
+              ? {
+                  label: tn('open'),
+                  onClick: () => {
+                    track('notification_opened', {
+                      notificationId: n.id,
+                      category: n.category,
+                      priority: n.priority,
+                      action: n.action.kind,
+                    });
+                    runNotificationAction(n);
+                  },
+                }
+              : undefined,
+          });
+        }
+        break;
+      }
       case 'invalidate': {
         const keys = {
           catalog: [qk.catalog(careerId)],
           economy: [qk.balance(careerId), qk.ledger(careerId), qk.stipend(careerId)],
-          progression: [qk.progression(careerId)],
+          progression: [qk.progression(careerId), qk.milestones(careerId)],
+          personnel: [qk.personnelRoot(careerId)],
+          medical: [qk.medicalRoot(careerId)],
+          inventory: [qk.inventory(careerId)],
+          maintenance: [qk.maintenance(careerId)],
+          world: [qk.worldRoot(careerId), qk.stipend(careerId)],
+          monetization: [qk.monetizationRoot(careerId)],
           notifications: [qk.notifications(careerId)],
           facility: [[...qk.career(careerId), 'facility']],
           config: [qk.catalog(careerId)],
@@ -122,6 +182,26 @@ export function GameRuntime({ careerId, children }: { careerId: string; children
     };
   }, [careerId, qc, loaded, setConnection, effectRef]);
 
+  // Product analytics of the core loop: derived from snapshot transitions and the selection (see CoreAnalyticsTracker).
+  const data = snapshot.data;
+  React.useEffect(() => {
+    if (!data) return;
+    setAnalyticsFlag(data.featureFlags.analytics !== false);
+    analytics.sessionStart(data, {
+      layout: window.matchMedia('(min-width: 1024px)').matches ? 'desktop' : 'mobile',
+      standalone: isStandalone(),
+    });
+    analytics.onSnapshot(data);
+  }, [data, analytics]);
+  React.useEffect(
+    () =>
+      useUiStore.subscribe((state, previous) => {
+        if (state.selection !== previous.selection)
+          analytics.onSelection(state.selection, qc.getQueryData(qk.sync(careerId)));
+      }),
+    [analytics, qc, careerId],
+  );
+
   if (snapshot.isError) {
     return (
       <div className="h-dvh-safe grid place-items-center p-6 text-center">
@@ -136,5 +216,10 @@ export function GameRuntime({ careerId, children }: { careerId: string; children
     );
   }
   if (!snapshot.data) return <BrandSplash />;
-  return <CareerProvider value={careerId}>{children}</CareerProvider>;
+  return (
+    <CareerProvider value={careerId}>
+      {children}
+      <InstallHint tutorialCompleted={snapshot.data.career.tutorial.completed} />
+    </CareerProvider>
+  );
 }

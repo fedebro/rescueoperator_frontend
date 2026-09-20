@@ -1,0 +1,76 @@
+{
+  "families": {
+    "overview": {
+      "title": "Dienste",
+      "unlocked": "Aktiv",
+      "lockedAt": "Wird auf Stufe {level} freigeschaltet",
+      "lockedAtTerritory": "Öffnet auf Stufe {level} in diesem Gebiet",
+      "notInTerritory": "In diesem Gebiet nicht verfügbar"
+    },
+    "external": {
+      "familyTitle": "{family} — durch externe Unterstützung abgedeckt",
+      "notice": "{count, plural, one {{families} gehört noch nicht zu deinen Diensten: Dieser Teil wird von externer Unterstützung übernommen und zählt nicht für deine Bewertung.} other {{families} gehören noch nicht zu deinen Diensten: Dieser Teil wird von externer Unterstützung übernommen und zählt nicht für deine Bewertung.}} Schicke nur Fahrzeuge der Dienste, die du führst."
+    },
+    "attribution": {
+      "title": "Wer übernimmt was",
+      "anyFamily": "Beliebiger Dienst",
+      "external": "Externe Unterstützung",
+      "yours": "Dein Dienst"
+    },
+    "support": {
+      "title": "Externe Unterstützung",
+      "intro": "Deine Fahrzeuge sind fertig. Systemeinheiten schließen den Einsatz ab: Du steuerst sie nicht.",
+      "rewardPaid": "Belohnung bereits um {time} gutgeschrieben",
+      "empty": "Wird abgeschlossen: Die letzten Arbeiten laufen noch.",
+      "status": {
+        "REQUESTED": "Angefordert",
+        "WORKING": "Im Einsatz",
+        "DONE": "Erledigt",
+        "CANCELLED": "Abgebrochen"
+      },
+      "arrivesIn": "Ankunft in",
+      "doneIn": "Arbeiten enden in",
+      "roadClosed": "Straße bleibt bis zum Ende gesperrt"
+    },
+    "unlock": {
+      "title": "Neuer Dienst: {family}",
+      "subtitle": "Du hast Stufe {level} erreicht: Deine Leitstelle wächst.",
+      "subtitleTerritory": "Stufe {level}: In diesem Gebiet öffnet der Dienst jetzt.",
+      "vehicles": "{count, plural, one {# Fahrzeugmodell} other {# Fahrzeugmodelle}} im Shop",
+      "facilities": "{count, plural, one {# Standorttyp} other {# Standorttypen}} zum Erwerben und Ausbauen",
+      "incidents": "Einsätze dieses Dienstes treffen ab jetzt ein.",
+      "nextStep": "So startest du: Erwirb einen passenden Standort und kaufe dann das erste Fahrzeug.",
+      "later": "Später",
+      "newFacility": "Standort wählen",
+      "openShop": "Zum Shop"
+    },
+    "shop": {
+      "domain": {
+        "ALL": "Alle",
+        "GROUND": "Boden",
+        "AIR": "Luft",
+        "WATER": "Wasser"
+      },
+      "domainFilter": "Nach Bereich filtern",
+      "airNote": "Fliegt geradlinig mit {speed} km/h, unabhängig von Straßen und Verkehr. Benötigt einen Standort mit Landeplatz (Bereich Luft).",
+      "trailerNote": "Fährt auf einem Anhänger über die Straße zum Einsatzort: etwas langsamer beim Ausrücken.",
+      "trailerNoteWater": "Boot auf Straßenanhänger: Es fährt bis zum Wasser und belegt einen Liegeplatz (Bereich Wasser).",
+      "reason": {
+        "familyLocked": "Dienst gesperrt: wird auf Stufe {level} freigeschaltet",
+        "noFacility": "Kein passender einsatzbereiter Standort. Benötigt: {types}",
+        "noCapacity": "Kein freier Platz ({domain}) in den passenden Standorten"
+      },
+      "newFacility": "Standort erwerben",
+      "manageFacilities": "Standort ausbauen oder aufwerten"
+    },
+    "queue": {
+      "externalUnits": "{count, plural, one {# externe Einheit im Einsatz} other {# externe Einheiten im Einsatz}}",
+      "closing": "Wird abgeschlossen",
+      "column": "Dienste"
+    },
+    "outcome": {
+      "stillResolving": "Der Einsatz bleibt offen, bis die externe Unterstützung fertig ist – die Belohnung gehört dir aber schon und deine Fahrzeuge rücken ein."
+    },
+    "radio": "Funkspruch"
+  }
+}

@@ -1,0 +1,185 @@
+{
+  "world": {
+    "duration": {
+      "hours": "{h} h",
+      "minutes": "{m} min",
+      "hoursMinutes": "{h} h {m} min"
+    },
+    "widget": {
+      "open": "Condiciones en el territorio: {weather}, {temperature}, {time}, tráfico {traffic}. Abrir detalles",
+      "title": "Condiciones en el territorio",
+      "close": "Cerrar",
+      "weather": "Tiempo",
+      "temperature": "{value} °C",
+      "wind": "Viento de {value} km/h",
+      "noData": "s. d.",
+      "degraded": "Datos meteorológicos estimados",
+      "degradedHint": "El servicio meteorológico no responde: usamos una estimación hasta que vuelva a estar disponible.",
+      "source": {
+        "simulated": "tiempo simulado",
+        "live": "datos en tiempo real"
+      },
+      "localTime": "Hora local",
+      "traffic": {
+        "title": "Tráfico",
+        "level": {
+          "FREE_FLOW": "Fluido",
+          "LIGHT": "Ligero",
+          "MODERATE": "Moderado",
+          "HEAVY": "Denso",
+          "SEVERE": "Colapsado"
+        }
+      },
+      "travelEffectNone": "Tiempos de trayecto normales.",
+      "travelEffectSlower": "Los trayectos por carretera son un {percent} más lentos por el tráfico y el tiempo.",
+      "closuresTitle": "Circulación",
+      "closures": "{count, plural, =0 {Ninguna calle cortada} one {# calle cortada} other {# calles cortadas}}",
+      "closuresEffect": "Rutas más largas",
+      "showClosures": "Mostrar en el mapa"
+    },
+    "layers": {
+      "open": "Capas del mapa",
+      "button": "Capas",
+      "title": "Capas del mapa",
+      "close": "Cerrar",
+      "layer": {
+        "hospitals": "Hospitales",
+        "closures": "Calles cortadas",
+        "coverage": "Cobertura",
+        "sites": "Emplazamientos para nuevas bases"
+      },
+      "hint": {
+        "hospitals": "Urgencias y unidades disponibles",
+        "closures": "Obras, eventos y calles bloqueadas por los equipos de emergencia",
+        "coverage": "Tiempos de llegada estimados desde tus bases",
+        "sites": "Dónde puedes abrir una nueva base"
+      },
+      "coverage": {
+        "title": "Población cubierta",
+        "family": "Servicio mostrado",
+        "all": "Todos",
+        "inactive": "sin vehículos",
+        "threshold": "Umbral de servicio: {minutes} min",
+        "method": {
+          "OSRM_TABLE": "calculada sobre la red viaria",
+          "STRAIGHT_LINE": "estimación en línea recta",
+          "NONE": "ninguna base operativa"
+        },
+        "stale": "Recalculando tras tus últimos cambios…",
+        "legend": "Tiempo de llegada estimado",
+        "unreachable": "Inalcanzable",
+        "over": "más de {from} min",
+        "upTo": "hasta {to} min",
+        "range": "{from}–{to} min"
+      },
+      "closures": {
+        "title": "Calles cortadas ahora",
+        "empty": "No hay cortes activos.",
+        "kind": {
+          "FULL": "Cortada",
+          "PARTIAL": "Parcialmente cortada"
+        },
+        "effect": "+{percent} de tiempo al atravesarla",
+        "endsIn": "Reabre en",
+        "reopening": "reabriendo",
+        "noEnd": "Hasta nuevo aviso",
+        "center": "Centrar en el mapa: {reason}",
+        "mapLabel": {
+          "FULL": "CORTADA",
+          "PARTIAL": "REDUCIDA"
+        }
+      }
+    },
+    "closure": {
+      "ROADWORKS": "Obras en {street}",
+      "EVENT": "Evento público en {street}",
+      "EXTERNAL_SUPPORT": "{address}: calle cortada, unidades externas trabajando",
+      "INCIDENT": "{address}: calle cortada por una emergencia en curso",
+      "MANUAL": "Corte ordenado por la central"
+    },
+    "stipend": {
+      "title": "Aportación por cobertura",
+      "hint": "Cada {period} recibes una aportación proporcional a la población a la que llegas a tiempo. Sigue acumulándose mientras estás fuera, hasta {cap}.",
+      "unavailable": "Los datos de la aportación no están disponibles en este momento.",
+      "next": "Próximo abono en",
+      "paying": "abonando…",
+      "estimate": "Importe estimado",
+      "period": "Periodo",
+      "accrued": "Acumulados en tu ausencia",
+      "accruedValue": "{n} de {max} periodos",
+      "accrualStops": "Si no vuelves, la aportación deja de acumularse después del {date}.",
+      "breakdown": "Cómo se calcula",
+      "base": "Base del nivel {level}",
+      "coverageMultiplier": "Cobertura al {pct}",
+      "reputationMultiplier": "Reputación {value}/100",
+      "bonusMultiplier": "Bonificación de las bases",
+      "personnelCost": "Coste del personal en el periodo",
+      "net": "Aportación neta",
+      "coverage": "Cobertura",
+      "showCoverage": "Ver en el mapa",
+      "overall": "Global (media ponderada)",
+      "threshold": "en menos de {minutes} min",
+      "familyInactive": "Ningún vehículo operativo para este servicio.",
+      "stale": "Cobertura en recálculo tras tus últimos cambios…",
+      "history": "Historial",
+      "lastPayout": "Último abono",
+      "never": "ninguno todavía",
+      "status": {
+        "PAID": "Abonada",
+        "SKIPPED_INACTIVE": "No acumulada (ausencia)"
+      },
+      "showLess": "Mostrar menos",
+      "showAll": "Mostrar todos ({count})"
+    },
+    "milestones": {
+      "title": "Hitos",
+      "summary": "{done} de {total} conseguidos",
+      "empty": "No hay hitos disponibles",
+      "phase": {
+        "FIRST_HOURS": "Primeras horas",
+        "EARLY": "Inicio de la carrera",
+        "MID": "Red en crecimiento",
+        "LATE": "Gran red"
+      },
+      "phaseCount": "{done}/{total}",
+      "progress": "{current} de {target}",
+      "progressPercent": "{current} de {target}",
+      "progressLabel": "Progreso: {title}",
+      "achievedOn": "Conseguido el {date}",
+      "achieved": "Conseguido",
+      "reward": "Recompensa:",
+      "xp": "{xp} XP"
+    },
+    "reputation": {
+      "title": "Reputación",
+      "rank": "Rango: {rank}",
+      "band": {
+        "CRITICAL": "Dañada",
+        "LOW": "Baja",
+        "FAIR": "Aceptable",
+        "GOOD": "Buena",
+        "EXCELLENT": "Excelente"
+      },
+      "valueText": "{value} de 100, {band}",
+      "multiplier": "Multiplicador de la aportación por cobertura",
+      "effects": "La reputación es una media móvil de tus intervenciones: influye en la aportación por cobertura y en algunos desbloqueos.",
+      "up": "Lo que la sube",
+      "down": "Lo que la baja",
+      "upItems": {
+        "fast": "Llegar rápido al lugar",
+        "adequate": "Enviar todos los recursos requeridos (2–3 estrellas)",
+        "patients": "Entregar a los pacientes en buen estado"
+      },
+      "downItems": {
+        "expired": "Emergencias caducadas sin respuesta",
+        "failed": "Intervenciones fallidas",
+        "under": "Recursos insuficientes en el lugar"
+      }
+    }
+  },
+  "notifications": {
+    "world": {
+      "milestone": "¡Hito conseguido!"
+    }
+  }
+}

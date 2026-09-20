@@ -3,8 +3,8 @@ import {
   FAMILY_COLORS,
   type AnyFamily,
   categoryIconName,
-  facilityIconName,
-  isVehicleClass,
+  facilityTypeIconName,
+  vehicleClassOf,
   topdownSvg,
 } from '@/design/icons';
 import { PICTOGRAMS } from '@/design/icons/pictograms';
@@ -12,11 +12,18 @@ import { PICTOGRAMS } from '@/design/icons/pictograms';
 /**
  * Runtime-added map images. Names encode everything needed to draw them, so any image the style asks for can be
  * generated on demand from `styleimagemissing`:
- *   veh:<FAMILY>:<class>      top-down vehicle glyph
- *   fac:<FAMILY>              facility marker (rounded square, family colour + pictogram)
- *   inc:<category>:<severity> incident pin (severity ring + number + category pictogram)
- *   site:<0|1>                onboarding starter-site marker (idle / selected)
+ *   veh:<FAMILY>:<class|catalog icon key>      top-down vehicle glyph (`veh:FIRE:vehicle-fire-aps`)
+ *   fac:<FAMILY>[:<type code|icon key>]        facility marker (rounded square, family colour + the pictogram of the
+ *                                              facility TYPE: `fac:FIRE:FIRE_COMMAND` = `fac:FIRE:facility-fire-command`;
+ *                                              plain `fac:FIRE` keeps working and draws the family station)
+ *   inc:<CATEGORY>[|<icon key>]:<severity>     incident pin (severity ring + number + template/category pictogram)
+ *   hosp[:helipad]                             hospital marker ("H" tile — never a cross; the variant shows the helipad)
+ *   cand:<FAMILY>[:<0|1>]                      candidate building site (dashed family outline; 1 = selected)
+ *   closure                                    road closure marker
+ *   site:<0|1>                                 onboarding starter-site marker (idle / selected)
  */
+const HOSPITAL = '#14A89A';
+const CLOSURE = '#F5B63C';
 const SEVERITY = [
   '#4CC38A',
   '#7ACB6A',
@@ -43,9 +50,32 @@ export function imageSvg(name: string): { svg: string; width: number; height: nu
   const [kind, a, b] = name.split(':');
   if (kind === 'veh' && a && b && a in FAMILY_COLORS && a !== 'SHARED') {
     return {
-      svg: topdownSvg(isVehicleClass(b) ? b : 'truck', a as Exclude<AnyFamily, 'SHARED'>, 64),
+      svg: topdownSvg(vehicleClassOf(b), a as Exclude<AnyFamily, 'SHARED'>, 64),
       width: 64,
       height: 64,
+    };
+  }
+  if (kind === 'hosp') {
+    return {
+      width: 72,
+      height: 72,
+      svg: `<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 36 36"><rect x="3" y="3" width="30" height="30" rx="8" fill="#0A1220" stroke="${HOSPITAL}" stroke-width="2.5"/><rect x="6.5" y="6.5" width="23" height="23" rx="5" fill="${HOSPITAL}"/>${picto(a === 'helipad' ? 'helipad' : 'hospital', 9, 9, 18, '#0A1220')}</svg>`,
+    };
+  }
+  if (kind === 'cand' && a && a in FAMILY_COLORS) {
+    const c = FAMILY_COLORS[a as AnyFamily];
+    const selected = b === '1';
+    return {
+      width: 72,
+      height: 72,
+      svg: `<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 36 36"><rect x="4" y="4" width="28" height="28" rx="8" fill="${selected ? c.primary : '#0A1220'}" fill-opacity="${selected ? 1 : 0.85}" stroke="${selected ? '#FFFFFF' : c.primary}" stroke-width="2.5" stroke-dasharray="${selected ? 'none' : '4 3'}"/>${picto('site_candidate', 9, 9, 18, selected ? '#FFFFFF' : c.primary)}</svg>`,
+    };
+  }
+  if (kind === 'closure') {
+    return {
+      width: 64,
+      height: 64,
+      svg: `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#0A1220" stroke="${CLOSURE}" stroke-width="2.5"/>${picto('closure', 8, 7.5, 16, CLOSURE)}</svg>`,
     };
   }
   if (kind === 'fac' && a && a in FAMILY_COLORS) {
@@ -53,7 +83,7 @@ export function imageSvg(name: string): { svg: string; width: number; height: nu
     return {
       width: 72,
       height: 72,
-      svg: `<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 36 36"><rect x="3" y="3" width="30" height="30" rx="8" fill="#0A1220" stroke="${c.primary}" stroke-width="2.5"/><rect x="6.5" y="6.5" width="23" height="23" rx="5" fill="${c.primary}"/>${picto(facilityIconName(a as AnyFamily), 9, 9, 18)}</svg>`,
+      svg: `<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 36 36"><rect x="3" y="3" width="30" height="30" rx="8" fill="#0A1220" stroke="${c.primary}" stroke-width="2.5"/><rect x="6.5" y="6.5" width="23" height="23" rx="5" fill="${c.primary}"/>${picto(facilityTypeIconName(a as AnyFamily, b), 9, 9, 18)}</svg>`,
     };
   }
   if (kind === 'inc' && a && b) {
@@ -62,7 +92,7 @@ export function imageSvg(name: string): { svg: string; width: number; height: nu
     return {
       width: 88,
       height: 104,
-      svg: `<svg xmlns="http://www.w3.org/2000/svg" width="88" height="104" viewBox="0 0 44 52"><path d="M22 50 L13 36 A17 17 0 1 1 31 36 Z" fill="#0A1220" stroke="${color}" stroke-width="3" stroke-linejoin="round"/>${picto(categoryIconName(a), 12, 11, 20, '#FFFFFF', 2)}<circle cx="35" cy="9" r="8" fill="${color}" stroke="#0A1220" stroke-width="2"/><text x="35" y="12.6" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-weight="700" font-size="${sev === 10 ? 9 : 10.5}" fill="#0A1220">${sev}</text></svg>`,
+      svg: `<svg xmlns="http://www.w3.org/2000/svg" width="88" height="104" viewBox="0 0 44 52"><path d="M22 50 L13 36 A17 17 0 1 1 31 36 Z" fill="#0A1220" stroke="${color}" stroke-width="3" stroke-linejoin="round"/>${picto(categoryIconName(a.split('|')[0]!, a.split('|')[1]), 12, 11, 20, '#FFFFFF', 2)}<circle cx="35" cy="9" r="8" fill="${color}" stroke="#0A1220" stroke-width="2"/><text x="35" y="12.6" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-weight="700" font-size="${sev === 10 ? 9 : 10.5}" fill="#0A1220">${sev}</text></svg>`,
     };
   }
   if (kind === 'site') {

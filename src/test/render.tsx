@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { render, type RenderOptions } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
-import messages from '@/messages/it.json';
+import { loadMessagesSync } from './messages';
+
+const messages = loadMessagesSync('it');
 
 /** Renders with the Italian messages; a missing message fails the test instead of silently rendering the key. */
 export function renderWithIntl(ui: React.ReactElement, options?: RenderOptions) {

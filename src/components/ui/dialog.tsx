@@ -3,10 +3,28 @@ import * as React from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useRestoreFocus } from './use-restore-focus';
 
 export const Dialog = DialogPrimitive.Root;
 export const DialogTrigger = DialogPrimitive.Trigger;
 export const DialogClose = DialogPrimitive.Close;
+
+/** Rendered only while the dialog is open (Radix Portal/Presence): captures and restores the previous focus. */
+function DialogBody({
+  onCloseAutoFocus,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>) {
+  const restoreFocus = useRestoreFocus();
+  return (
+    <DialogPrimitive.Content
+      {...props}
+      onCloseAutoFocus={(event) => {
+        onCloseAutoFocus?.(event);
+        restoreFocus(event);
+      }}
+    />
+  );
+}
 
 /** Centered modal on desktop, bottom-anchored full-width sheet on phones (thumb reach + safe area). */
 export function DialogContent({
@@ -26,7 +44,7 @@ export function DialogContent({
   return (
     <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay className="animate-fade-in bg-overlay fixed inset-0 z-[70] backdrop-blur-[2px]" />
-      <DialogPrimitive.Content
+      <DialogBody
         {...props}
         aria-describedby={description ? undefined : props['aria-describedby']}
         className={cn(
@@ -49,14 +67,14 @@ export function DialogContent({
           {hideClose ? null : (
             <DialogPrimitive.Close
               aria-label={closeLabel}
-              className="text-muted hover:bg-surface-3 hover:text-fg -mr-2 grid size-9 place-items-center rounded-md"
+              className="text-muted hover:bg-surface-3 hover:text-fg -mr-2 grid size-11 place-items-center rounded-md md:size-9"
             >
               <X className="size-5" aria-hidden />
             </DialogPrimitive.Close>
           )}
         </header>
         <div className="scroll-y min-h-0 flex-1 px-5 py-4">{children}</div>
-      </DialogPrimitive.Content>
+      </DialogBody>
     </DialogPrimitive.Portal>
   );
 }

@@ -3,6 +3,7 @@ import * as React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { CatalogTextsProvider } from '@/i18n/catalog-texts';
 import { Toaster } from '@/components/ui/toaster';
 import { env } from '@/lib/env';
 import { onAuthChange, refreshSession } from '@/lib/api/client';
@@ -10,6 +11,7 @@ import { ApiClientError } from '@/lib/api/errors';
 import { useAuthStore } from '@/stores/auth';
 import { useSettingsStore } from '@/stores/settings';
 import { BrandSplash } from '@/components/brand/splash';
+import { PlatformBootstrap } from '@/features/platform/platform-bootstrap';
 
 function makeQueryClient(): QueryClient {
   return new QueryClient({
@@ -75,8 +77,11 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider delayDuration={250}>
         <MotionPreference />
+        <PlatformBootstrap />
         <MockGate>
-          <AuthBootstrap>{children}</AuthBootstrap>
+          <CatalogTextsProvider>
+            <AuthBootstrap>{children}</AuthBootstrap>
+          </CatalogTextsProvider>
         </MockGate>
         <Toaster closeLabel={t('close')} />
       </TooltipProvider>

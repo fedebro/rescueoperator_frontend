@@ -4,7 +4,8 @@ import { useTranslations } from 'next-intl';
 import { Bell, Inbox, Plus, Search } from 'lucide-react';
 import type { ServiceFamily } from '@/contracts';
 import { toast } from '@/stores/toast';
-import { FamilyBadge, GameIcon, PICTOGRAM_NAMES, TopdownGlyph, VEHICLE_CLASSES } from '@/design/icons';
+import { FamilyBadge, GameIcon, TopdownGlyph, VEHICLE_CLASSES } from '@/design/icons';
+import { iconGallery } from '@/design/icons/gallery';
 import { Logo } from '@/components/brand/logo';
 import { Badge } from '@/components/ui/badge';
 import { BottomSheet, type SheetSnap } from '@/components/ui/bottom-sheet';
@@ -72,6 +73,8 @@ function Section({ id, title, children }: { id: string; title: string; children:
     </section>
   );
 }
+
+const ICON_GALLERY = iconGallery();
 
 /** Living style guide: every design-system component, token and icon on one page. */
 export function DesignScreen() {
@@ -402,18 +405,45 @@ export function DesignScreen() {
         </Section>
 
         <Section id="icons" title={t('sections.icons')}>
-          <ul className="grid grid-cols-4 gap-2 sm:grid-cols-8 lg:grid-cols-10">
-            {PICTOGRAM_NAMES.map((n) => (
-              <li
-                key={n}
-                className="border-border bg-surface-1 flex flex-col items-center gap-1 rounded-md border p-2"
-                title={n}
-              >
-                <GameIcon name={n} size={24} />
-                <code className="text-subtle w-full truncate text-center text-[9px]">{n}</code>
-              </li>
-            ))}
-          </ul>
+          {ICON_GALLERY.map((group) => (
+            <section key={group.id} aria-labelledby={`icons-${group.id}`} className="flex flex-col gap-2">
+              {/* Group headings are code identifiers (catalog key patterns), not translated copy. */}
+              <h3 id={`icons-${group.id}`} className="text-muted flex items-baseline gap-2 text-sm">
+                <code className="text-text font-semibold">{group.id}</code>
+                <span className="text-subtle tabular-nums">{group.entries.length}</span>
+              </h3>
+              <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-8">
+                {group.entries.map((entry) => (
+                  <li
+                    key={entry.id}
+                    data-icon={entry.name}
+                    className="border-border bg-surface-1 flex min-w-0 flex-col items-center gap-1.5 rounded-md border p-2"
+                    title={`${entry.id} → ${entry.name}`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <GameIcon name={entry.name} size={28} />
+                      {/* 20px = the size used in dense tables: every glyph must still read here. */}
+                      <GameIcon name={entry.name} size={20} className="text-muted" />
+                      {entry.topdown ? (
+                        <TopdownGlyph
+                          vehicleClass={entry.topdown.vehicleClass}
+                          family={entry.topdown.family}
+                          size={28}
+                        />
+                      ) : null}
+                    </span>
+                    <code className="text-subtle w-full text-center text-[10px] leading-tight break-words">
+                      {entry.id}
+                    </code>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+          <h3 className="text-muted text-sm">
+            <code className="text-text font-semibold">topdown</code>{' '}
+            <span className="text-subtle tabular-nums">{VEHICLE_CLASSES.length}</span>
+          </h3>
           <ul className="grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-9">
             {VEHICLE_CLASSES.map((c, i) => (
               <li

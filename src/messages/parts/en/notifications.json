@@ -1,0 +1,57 @@
+{
+  "notificationCenter": {
+    "unread": "Unread",
+    "unreadOnly": "Unread only",
+    "readAll": "Mark all as read",
+    "filterLabel": "Filter by category",
+    "listLabel": "Notification list",
+    "loading": "Loading notifications…",
+    "errorTitle": "Could not load notifications",
+    "errorBody": "Check your connection and try again.",
+    "emptyTitle": "No notifications",
+    "emptyBody": "Deliveries, upgrades, levels and important events will show up here.",
+    "emptyFilteredTitle": "Nothing matches these filters",
+    "emptyFilteredBody": "Pick another category or include notifications you already read.",
+    "unreadAnnouncement": "{count, plural, one {# unread notification} other {# unread notifications}}",
+    "category": {
+      "ALL": "All",
+      "OPERATIONS": "Operations",
+      "FLEET": "Fleet",
+      "PERSONNEL": "Personnel",
+      "FACILITIES": "Facilities",
+      "ECONOMY": "Economy",
+      "PROGRESSION": "Career",
+      "SYSTEM": "System"
+    },
+    "priority": {
+      "CRITICAL": "Critical",
+      "IMPORTANT": "Important",
+      "INFO": "Information"
+    },
+    "action": {
+      "OPEN_INCIDENT": "Open the incident on the map",
+      "OPEN_VEHICLE": "Open the vehicle on the map",
+      "OPEN_FACILITY": "Open the facility",
+      "OPEN_PERSONNEL": "Open the personnel record",
+      "OPEN_SHOP": "Go to the shop",
+      "OPEN_PROGRESSION": "Go to your career",
+      "NONE": "No action"
+    }
+  },
+  "notifications": {
+    "qa": {
+      "OPERATIONS": "Test notice: operations",
+      "FLEET": "Test notice: fleet",
+      "PERSONNEL": "Test notice: personnel",
+      "FACILITIES": "Test notice: facilities",
+      "ECONOMY": "Test notice: economy",
+      "PROGRESSION": "Test notice: career",
+      "SYSTEM": "Test notice: system"
+    },
+    "qaBody": {
+      "CRITICAL": "Needs immediate attention.",
+      "IMPORTANT": "Worth a look as soon as you can.",
+      "INFO": "Just so you know."
+    }
+  }
+}

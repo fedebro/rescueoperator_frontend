@@ -1,0 +1,57 @@
+{
+  "notificationCenter": {
+    "unread": "Non lue",
+    "unreadOnly": "Non lues uniquement",
+    "readAll": "Tout marquer comme lu",
+    "filterLabel": "Filtrer par catégorie",
+    "listLabel": "Liste des notifications",
+    "loading": "Chargement des notifications…",
+    "errorTitle": "Impossible de charger les notifications",
+    "errorBody": "Vérifie ta connexion et réessaie.",
+    "emptyTitle": "Aucune notification",
+    "emptyBody": "Livraisons, agrandissements, niveaux et événements importants apparaîtront ici.",
+    "emptyFilteredTitle": "Rien avec ces filtres",
+    "emptyFilteredBody": "Change de catégorie ou affiche aussi les notifications déjà lues.",
+    "unreadAnnouncement": "{count, plural, one {# notification non lue} other {# notifications non lues}}",
+    "category": {
+      "ALL": "Toutes",
+      "OPERATIONS": "Opérations",
+      "FLEET": "Flotte",
+      "PERSONNEL": "Personnel",
+      "FACILITIES": "Sites",
+      "ECONOMY": "Économie",
+      "PROGRESSION": "Carrière",
+      "SYSTEM": "Système"
+    },
+    "priority": {
+      "CRITICAL": "Critique",
+      "IMPORTANT": "Importante",
+      "INFO": "Information"
+    },
+    "action": {
+      "OPEN_INCIDENT": "Ouvrir l’urgence sur la carte",
+      "OPEN_VEHICLE": "Ouvrir le véhicule sur la carte",
+      "OPEN_FACILITY": "Ouvrir le site",
+      "OPEN_PERSONNEL": "Ouvrir la fiche du personnel",
+      "OPEN_SHOP": "Aller aux achats",
+      "OPEN_PROGRESSION": "Aller à la carrière",
+      "NONE": "Aucune action"
+    }
+  },
+  "notifications": {
+    "qa": {
+      "OPERATIONS": "Avis de test : opérations",
+      "FLEET": "Avis de test : flotte",
+      "PERSONNEL": "Avis de test : personnel",
+      "FACILITIES": "Avis de test : sites",
+      "ECONOMY": "Avis de test : économie",
+      "PROGRESSION": "Avis de test : carrière",
+      "SYSTEM": "Avis de test : système"
+    },
+    "qaBody": {
+      "CRITICAL": "Demande une intervention immédiate.",
+      "IMPORTANT": "À regarder dès que possible.",
+      "INFO": "Pour information."
+    }
+  }
+}

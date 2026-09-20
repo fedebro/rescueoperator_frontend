@@ -1,0 +1,286 @@
+{
+  "status": {
+    "personnel": {
+      "ONBOARDING": "En intégration",
+      "AVAILABLE": "Disponible (libre)",
+      "ASSIGNED": "Affecté",
+      "ON_MISSION": "En mission",
+      "RESTING": "Au repos",
+      "TRAINING": "En formation",
+      "INJURED": "Blessé",
+      "TRANSFERRING": "En transfert",
+      "UNAVAILABLE": "Indisponible",
+      "RETIRED": "Parti"
+    },
+    "team": {
+      "READY": "Prête",
+      "PARTIAL": "Partielle",
+      "ON_MISSION": "En mission",
+      "RESTING": "Au repos",
+      "UNAVAILABLE": "Indisponible"
+    }
+  },
+  "notifications": {
+    "personnel": {
+      "onboarded": "{name} a terminé son intégration et prend son service.",
+      "recovered": "{name} s’est remis de sa blessure et est de nouveau disponible.",
+      "trainingDone": "{name} a terminé le cours et obtient une nouvelle qualification.",
+      "restRequired": "{name} est à bout de forces : accordez-lui du repos avant le prochain envoi.",
+      "injured": "{name} s’est blessé en mission. Rien de grave : retour après la convalescence."
+    }
+  },
+  "personnel": {
+    "title": "Personnel de secours",
+    "subtitle": "Opérateurs, équipes, recrutement et formation de votre centre.",
+    "summary": {
+      "total": "Opérateurs",
+      "ready": "Prêts à l’emploi",
+      "cost": "Coût par période"
+    },
+    "tabs": {
+      "roster": "Effectif",
+      "teams": "Équipes et services",
+      "recruitment": "Recrutement",
+      "training": "Formation"
+    },
+    "potential": {
+      "STANDARD": "Potentiel standard",
+      "PROMISING": "Prometteur",
+      "EXCEPTIONAL": "Talent exceptionnel"
+    },
+    "fatigue": {
+      "label": "Niveau de fatigue",
+      "trend": {
+        "stable": "Stable : la fatigue est mise à jour au retour de mission.",
+        "down": "En récupération : la fatigue diminue.",
+        "up": "En hausse : la fatigue augmente."
+      }
+    },
+    "busyReason": {
+      "ONBOARDING": "Intégration en cours",
+      "MISSION": "Engagé en mission",
+      "REST": "Repos en cours",
+      "TRAINING": "Cours en cours",
+      "INJURY": "Convalescence après blessure",
+      "TRANSFER": "Transfert en cours"
+    },
+    "history": {
+      "HIRED": "Embauché",
+      "ONBOARDED": "Intégration terminée : en service",
+      "MISSION": "De retour de mission avec {vehicle}",
+      "REST_STARTED": "Mis au repos",
+      "REST_DONE": "Repos terminé",
+      "TRANSFER_STARTED": "En transfert vers {facility}",
+      "TRANSFERRED": "Arrivé au nouveau site",
+      "RECOVERED": "Guéri : de nouveau disponible",
+      "TRAINING_STARTED": "Inscrit à : {course}",
+      "TRAINING_DONE": "Cours terminé : {course}",
+      "TRAINING_CANCELLED": "Inscription annulée : {course}",
+      "INJURED": "Blessure en mission ({severity})",
+      "TEAM_JOINED": "A rejoint l’équipe {team}"
+    },
+    "sheet": {
+      "title": "Fiche de l’opérateur",
+      "restStarted": "Opérateur mis au repos",
+      "transferStarted": "Transfert lancé",
+      "dismissed": "Opérateur congédié",
+      "enrolled": "Inscription au cours confirmée",
+      "injury": "Blessure : {severity}",
+      "injuryRecovery": "Retour en service dans",
+      "fatigue": "Niveau de fatigue",
+      "facility": "Site",
+      "team": "Équipe",
+      "noTeam": "Aucune équipe",
+      "competence": "Compétence",
+      "missions": "Missions effectuées",
+      "costPerPeriod": "Coût par période",
+      "hiredAt": "Dans l’effectif depuis",
+      "qualifications": "Qualifications obtenues",
+      "noQualifications": "Aucune qualification : inscrivez-le à un cours.",
+      "obtained": "obtenue le {date}",
+      "expires": "expire le {date}",
+      "actions": "Actions possibles",
+      "rest": "Mettre au repos",
+      "course": "Cours",
+      "coursePlaceholder": "Choisir un cours",
+      "noCourses": "Aucun cours adapté",
+      "enroll": "Inscrire",
+      "destination": "Site de destination",
+      "destinationPlaceholder": "Choisir le site",
+      "noDestination": "Aucun autre site adapté",
+      "beds": "{count, plural, =0 {logements complets} one {# place libre} other {# places libres}}",
+      "transfer": "Transférer",
+      "dismiss": "Congédier",
+      "dismissConfirmTitle": "Congédier cet opérateur ?",
+      "dismissConfirmBody": "{name} quittera le centre et le coût d’embauche ne sera pas remboursé.",
+      "dismissConfirm": "Oui, congédier",
+      "history": "Historique"
+    },
+    "roster": {
+      "search": "Rechercher par nom",
+      "filter": {
+        "facility": "Filtrer par site",
+        "family": "Filtrer par service",
+        "role": "Filtrer par rôle",
+        "status": "Filtrer par statut",
+        "band": "Filtrer par fatigue",
+        "qualification": "Filtrer par qualification"
+      },
+      "all": {
+        "facility": "Tous les sites",
+        "family": "Tous les services",
+        "role": "Tous les rôles",
+        "status": "Tous les statuts",
+        "band": "Tout niveau de fatigue",
+        "qualification": "Toutes les qualifications"
+      },
+      "col": {
+        "name": "Opérateur",
+        "role": "Rôle",
+        "facility": "Site",
+        "team": "Équipe",
+        "status": "Statut",
+        "fatigue": "Niveau de fatigue",
+        "competence": "Compét.",
+        "missions": "Missions effectuées"
+      },
+      "emptyTitle": "Aucun opérateur trouvé",
+      "emptyHint": "Élargissez les filtres ou recrutez depuis l’onglet Recrutement.",
+      "count": "{shown} opérateurs sur {total}",
+      "caption": "Effectif du centre"
+    },
+    "locked": {
+      "progress": "Vous êtes au niveau {level} sur {required}"
+    },
+    "hire": {
+      "title": "Embauche rapide",
+      "subtitle": "Rôles de base, dans l’effectif après une courte intégration.",
+      "role": "Rôle",
+      "facility": "Site",
+      "noFacility": "Aucun site adapté",
+      "beds": "{count, plural, =0 {logements complets} one {# place libre} other {# places libres}}",
+      "roleFacts": "Coût par période : {cost} · intégration : {onboarding}",
+      "count": "Nombre d’opérateurs",
+      "fewer": "Un de moins",
+      "more": "Un de plus",
+      "total": "Coût total",
+      "submit": "{count, plural, one {Embaucher # opérateur} other {Embaucher # opérateurs}}",
+      "noBeds": "Logements insuffisants ici : agrandissez les logements ou choisissez un autre site.",
+      "onboarding": "En cours d’intégration",
+      "hired": "{count, plural, one {# opérateur embauché : intégration lancée} other {# opérateurs embauchés : intégration lancée}}"
+    },
+    "market": {
+      "title": "Candidats spécialistes",
+      "subtitle": "Profils déjà formés, disponibles pour une durée limitée.",
+      "nextRefresh": "Nouveaux candidats dans",
+      "emptyTitle": "Aucun candidat pour le moment",
+      "emptyHint": "La liste se renouvelle d’elle-même avec le temps : revenez plus tard.",
+      "competence": "Compétence {value}",
+      "hireCost": "Embauche",
+      "costPerPeriod": "Par période",
+      "expires": "Expire dans",
+      "expired": "expiré",
+      "facility": "Site d’affectation",
+      "noFacility": "Aucune place libre",
+      "hire": "Embaucher",
+      "hired": "{name} embauché : intégration lancée",
+      "fairness": "Les candidats se renouvellent uniquement avec le temps : aucun renouvellement payant."
+    },
+    "training": {
+      "cancelled": "Inscription annulée : la moitié du coût a été remboursée.",
+      "lockedHint": "Les cours donnent à vos opérateurs les qualifications exigées par les véhicules spécialisés.",
+      "slots": "Places en salle par site",
+      "slotsUsed": "{used}/{total} occupées",
+      "running": "Cours en cours",
+      "noneRunning": "Aucun cours en cours.",
+      "cancel": "Annuler",
+      "cancelFor": "Annuler le cours de {name}",
+      "completed": "{count, plural, one {# cours terminé récemment} other {# cours terminés récemment}}",
+      "catalogue": "Catalogue des cours",
+      "grants": "Délivre : {qualification}",
+      "requires": "Exige : {qualification}",
+      "roles": "Rôles admis",
+      "enroll": "Inscrire",
+      "noEligible": "Aucun éligible",
+      "enrollIn": "Inscrire à : {course}",
+      "noCourses": "Aucun cours au catalogue",
+      "enrollHint": "Choisissez jusqu’à {max} opérateurs éligibles et libres. Pendant le cours, ils ne partent pas en mission.",
+      "total": "Coût total",
+      "enrolled": "{count, plural, one {# opérateur inscrit au cours} other {# opérateurs inscrits au cours}}",
+      "enrollCount": "{count, plural, =0 {Sélectionnez les opérateurs} one {Inscrire # opérateur} other {Inscrire # opérateurs}}"
+    },
+    "teams": {
+      "warning": {
+        "NO_MEMBERS": "L’équipe n’a aucun membre.",
+        "NO_LEADER": "Aucun chef d’équipe désigné.",
+        "NO_VEHICLE": "Aucun véhicule affecté.",
+        "BELOW_MIN_CREW": "Sous l’équipage minimum : le véhicule ne peut pas partir.",
+        "BELOW_OPTIMAL_CREW": "Sous l’équipage optimal : efficacité réduite.",
+        "FATIGUED_MEMBERS": "Certains membres sont fatigués.",
+        "INJURED_MEMBERS": "Certains membres sont blessés.",
+        "MISSING_ROLE": "Il manque le rôle exigé par le véhicule : {role}.",
+        "MISSING_QUALIFICATION": "Il manque la qualification exigée par le véhicule : {qualification}."
+      },
+      "lockedHint": "Avec les équipes, vous décidez qui monte dans chaque véhicule et suivez la disponibilité.",
+      "departmentsLockedHint": "Les services regroupent les équipes d’une même famille sur un site.",
+      "subtitle": "Sans équipe, l’équipage est composé automatiquement avec les opérateurs libres du site.",
+      "newDepartment": "Nouveau service",
+      "newTeam": "Nouvelle équipe",
+      "emptyTitle": "Aucune équipe",
+      "emptyHint": "Créez votre première équipe, ajoutez des membres et affectez un véhicule.",
+      "noDepartment": "Sans service",
+      "emptyDepartment": "Aucune équipe dans ce service.",
+      "rename": "Renommer l’équipe",
+      "readiness": "Disponibilité",
+      "vehicle": "Véhicule affecté",
+      "noVehicle": "Aucun véhicule",
+      "department": "Service",
+      "editMembers": "Gérer les membres",
+      "members": "Membres {count}/{max}",
+      "leader": "Chef d’équipe",
+      "noLeader": "Aucun chef d’équipe",
+      "name": "Nom",
+      "namePlaceholder": "Ex. Premier départ",
+      "created": "Équipe « {name} » créée",
+      "newTeamHint": "Une équipe appartient à un site et compte jusqu’à 12 membres.",
+      "facility": "Site",
+      "create": "Créer",
+      "newDepartmentHint": "Un service réunit les équipes d’une même famille sur le même site.",
+      "family": "Famille de service",
+      "saved": "Équipe mise à jour",
+      "membersOf": "Membres de {name}",
+      "membersHint": "Jusqu’à {max} opérateurs du même site. Un opérateur n’appartient qu’à une seule équipe.",
+      "inOtherTeam": "Dans une autre équipe",
+      "save": "Enregistrer l’équipe"
+    },
+    "crew": {
+      "manage": "Gérer",
+      "title": "Équipage",
+      "count": "{assigned}/{optimal}",
+      "belowMin": "Sous le minimum de {min} : le véhicule ne peut pas partir.",
+      "minimum": "Minimum pour partir : {min}",
+      "autoCrew": "Aucune équipe affectée : l’équipage est composé automatiquement au départ.",
+      "preview": "Équipage {available}/{optimal} (min. {min})",
+      "efficiency": "Efficacité {pct} %",
+      "missing": "Manque : {name}",
+      "blocked": {
+        "CREW_INSUFFICIENT": "Équipage insuffisant",
+        "CREW_UNQUALIFIED": "Équipage sans les prérequis",
+        "CREW_EXHAUSTED": "Équipage épuisé"
+      },
+      "fix": {
+        "CREW_INSUFFICIENT": "Embaucher des opérateurs",
+        "CREW_UNQUALIFIED": "Embaucher ou former du personnel",
+        "CREW_EXHAUSTED": "Mettre les opérateurs au repos"
+      },
+      "blockedTitle": "Véhicules bloqués par leur équipage"
+    },
+    "facility": {
+      "manage": "Gérer le personnel",
+      "title": "Personnel du site",
+      "beds": "Logements occupés",
+      "bedsCount": "{used}/{total} places",
+      "empty": "Aucun opérateur sur ce site."
+    }
+  }
+}

@@ -93,7 +93,7 @@ test('core loop: from sign-up to a second vehicle, surviving a reload', async ({
     await expect(page.getByTestId('tutorial')).toHaveAttribute('data-step', 'SELECT_INCIDENT');
     await page.getByTestId('incident-card').first().click();
     await expect(page.getByTestId('incident-inspector')).toBeVisible();
-    await expect(page.getByTestId('inspector-title')).toHaveText('Auto in fiamme');
+    await expect(page.getByTestId('inspector-title')).toHaveText('Incendio cassonetto');
   });
 
   await test.step('dispatch the recommended set with one tap', async () => {
@@ -133,13 +133,18 @@ test('core loop: from sign-up to a second vehicle, surviving a reload', async ({
     await expect(page).toHaveURL(/\/game\/shop$/);
     const ladder = page.locator('[data-testid="vehicle-offer"][data-code="FIRE_AS"]');
     await expect(ladder).toHaveAttribute('data-unlocked', 'false');
-    await expect(ladder.getByTestId('locked-reason')).toContainText('livello 4');
+    await expect(ladder.getByTestId('locked-reason')).toContainText('livello 5');
 
-    // 783-ish credits: the fire engine (900) is out of reach → the three-option dialog, in the mandated order.
-    await page
-      .locator('[data-testid="vehicle-offer"][data-code="FIRE_APS"]')
-      .getByTestId('buy-vehicle')
-      .click();
+    // ~900 credits after the tutorial: a second fire engine (800) is affordable…
+    const engine = page.locator('[data-testid="vehicle-offer"][data-code="FIRE_APS"]');
+    await engine.getByTestId('buy-vehicle').click();
+    await expect(page.getByTestId('toast').filter({ hasText: 'APS 2 ordinato' })).toBeVisible();
+    await expect(page.getByTestId('tutorial')).toBeHidden();
+    creditsAfterPurchase = (await page.getByTestId('credits').innerText()).trim();
+    expect(Number(creditsAfterPurchase.replace(/\D/g, ''))).toBeLessThan(400);
+
+    // …a third one is not → the three-option dialog, in the mandated order.
+    await engine.getByTestId('buy-vehicle').click();
     const dialog = page.getByTestId('insufficient-credits');
     await expect(dialog).toBeVisible();
     await expect(dialog.getByRole('listitem')).toHaveText([
@@ -148,20 +153,11 @@ test('core loop: from sign-up to a second vehicle, surviving a reload', async ({
       /Acquista Crediti/,
     ]);
     await dialog.getByRole('button', { name: 'Chiudi' }).last().click();
-
-    await page
-      .locator('[data-testid="vehicle-offer"][data-code="FIRE_4X4"]')
-      .getByTestId('buy-vehicle')
-      .click();
-    await expect(page.getByTestId('toast').filter({ hasText: '4X4 1 ordinato' })).toBeVisible();
-    await expect(page.getByTestId('tutorial')).toBeHidden();
-    creditsAfterPurchase = (await page.getByTestId('credits').innerText()).trim();
-    expect(Number(creditsAfterPurchase.replace(/\D/g, ''))).toBeLessThan(400);
   });
 
   await test.step('fleet shows both vehicles; delivery completes', async () => {
     await goTo(page, 'Flotta');
-    await expect(page.getByText('4X4 1', { exact: true })).toBeVisible();
+    await expect(page.getByText('APS 2', { exact: true })).toBeVisible();
     await expect(page.getByText('APS 1', { exact: true })).toBeVisible();
     await expect(page.getByTestId('available-vehicles')).toContainText('2', { timeout: 30_000 });
   });
@@ -169,7 +165,7 @@ test('core loop: from sign-up to a second vehicle, surviving a reload', async ({
   await test.step('reload: session restored from the refresh cookie, state intact', async () => {
     await page.reload();
     await expect(page).toHaveURL(/\/game\/fleet$/);
-    await expect(page.getByText('4X4 1', { exact: true })).toBeVisible();
+    await expect(page.getByText('APS 2', { exact: true })).toBeVisible();
     await expect(page.getByTestId('credits')).toHaveText(creditsAfterPurchase);
     await expect(page.getByTestId('tutorial')).toHaveCount(0);
   });

@@ -1,0 +1,76 @@
+{
+  "families": {
+    "overview": {
+      "title": "Services",
+      "unlocked": "Active",
+      "lockedAt": "Unlocks at level {level}",
+      "lockedAtTerritory": "Opens at level {level} in this territory",
+      "notInTerritory": "Not available in this territory"
+    },
+    "external": {
+      "familyTitle": "{family} — covered by external support",
+      "notice": "{count, plural, one {{families} is not one of your services yet: its part is covered by external support and does not count against your rating.} other {{families} are not your services yet: their part is covered by external support and does not count against your rating.}} Only send vehicles of the services you run."
+    },
+    "attribution": {
+      "title": "Who handles what",
+      "anyFamily": "Any service",
+      "external": "External support",
+      "yours": "Your service"
+    },
+    "support": {
+      "title": "External support",
+      "intro": "Your vehicles have finished their work. System units wrap up the operation: you do not manage them.",
+      "rewardPaid": "Reward already paid at {time}",
+      "empty": "Closing: the last operations are being completed.",
+      "status": {
+        "REQUESTED": "Requested",
+        "WORKING": "Working",
+        "DONE": "Done",
+        "CANCELLED": "Cancelled"
+      },
+      "arrivesIn": "Arrives in",
+      "doneIn": "Work ends in",
+      "roadClosed": "Road stays closed until done"
+    },
+    "unlock": {
+      "title": "New service: {family}",
+      "subtitle": "You reached level {level}: your control room is growing.",
+      "subtitleTerritory": "Level {level}: in this territory the service opens now.",
+      "vehicles": "{count, plural, one {# vehicle model} other {# vehicle models}} in the shop",
+      "facilities": "{count, plural, one {# facility type} other {# facility types}} to acquire and promote",
+      "incidents": "Incidents of this service will start coming in.",
+      "nextStep": "To get started: acquire a compatible facility, then buy the first vehicle.",
+      "later": "Later",
+      "newFacility": "Pick a facility",
+      "openShop": "Go to the shop"
+    },
+    "shop": {
+      "domain": {
+        "ALL": "All",
+        "GROUND": "Ground",
+        "AIR": "Air",
+        "WATER": "Water"
+      },
+      "domainFilter": "Filter by domain",
+      "airNote": "Flies straight at {speed} km/h, ignoring roads and traffic. Needs a facility with a helipad (Air domain).",
+      "trailerNote": "Reaches the scene by road on a trailer: a little slower to get going.",
+      "trailerNoteWater": "Boat on a road trailer: it drives to the water and takes a mooring slot (Water domain).",
+      "reason": {
+        "familyLocked": "Service locked: unlocks at level {level}",
+        "noFacility": "No compatible operational facility. Needed: {types}",
+        "noCapacity": "No free space ({domain}) in the compatible facilities"
+      },
+      "newFacility": "Acquire a facility",
+      "manageFacilities": "Expand or promote a facility"
+    },
+    "queue": {
+      "externalUnits": "{count, plural, one {# external unit working} other {# external units working}}",
+      "closing": "Closing",
+      "column": "Services"
+    },
+    "outcome": {
+      "stillResolving": "The incident stays open until external support is done, but the reward is already yours and your vehicles are heading back."
+    },
+    "radio": "Radio message"
+  }
+}

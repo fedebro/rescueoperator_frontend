@@ -20,13 +20,18 @@
   /* text (silver) */
   --rc-text: #e8edf5;
   --rc-text-muted: #a3b0c4;
-  --rc-text-subtle: #7485a0;
+  /* AA: ≥ 4.5:1 on every surface up to surface-4 (was #7485a0 = 4.2:1 on surface-3). Checked by src/app/contrast.test.ts */
+  --rc-text-subtle: #8898b2;
   --rc-text-inverse: #070d18;
 
   /* brand */
   --rc-brand: #e5202a;
-  --rc-brand-hover: #f23a43;
-  --rc-brand-active: #c4151e;
+  /* brand-hover is the LIGHT brand red used for text/icons on dark surfaces (AA on the brand-soft tint);
+     filled buttons darken instead (brand-strong / brand-active) so that white labels keep ≥ 4.5:1. */
+  --rc-brand-hover: #ff6b72;
+  --rc-brand-text: var(--rc-brand-hover);
+  --rc-brand-strong: #d81d27;
+  --rc-brand-active: #b8141d;
   --rc-brand-soft: rgb(229 32 42 / 0.14);
   --rc-silver: #cdd5e1;
   --rc-skyline: #5aa2e6;
@@ -35,10 +40,10 @@
   /* feedback */
   --rc-success: #35c987;
   --rc-warning: #f5b63c;
-  --rc-danger: #ff5a5f;
+  --rc-danger: #ff6b70;
   --rc-info: #5aa2e6;
   --rc-credits: #f3cf6b;
-  --rc-xp: #9d8cff;
+  --rc-xp: #a294ff;
 
   /* service families */
   --rc-family-fire: #e5342b;
@@ -91,6 +96,8 @@
   --color-brand: var(--rc-brand);
   --color-brand-hover: var(--rc-brand-hover);
   --color-brand-active: var(--rc-brand-active);
+  --color-brand-strong: var(--rc-brand-strong);
+  --color-brand-text: var(--rc-brand-text);
   --color-brand-soft: var(--rc-brand-soft);
   --color-silver: var(--rc-silver);
   --color-skyline: var(--rc-skyline);

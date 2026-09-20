@@ -8,7 +8,19 @@ import { PICTOGRAMS } from './pictograms';
 import { TOPDOWN } from './topdown';
 import { PICTOGRAM_NAMES, VEHICLE_CLASSES, type PictogramName, type VehicleClass } from './names';
 
+import {
+  CATALOG_ICONS,
+  catalogIconName,
+  facilityIconKey,
+  hasCatalogIcon,
+  incidentIconName,
+  vehicleClassOf,
+  vehiclePictogramOf,
+} from './catalog-map';
+
 export { PICTOGRAM_NAMES, VEHICLE_CLASSES, type PictogramName, type VehicleClass };
+export { vehicleClassOf, vehiclePictogramOf, incidentIconName, catalogIconName, facilityIconKey };
+export { CATALOG_ICONS, hasCatalogIcon };
 
 export const FAMILY_COLORS: Record<AnyFamily, { primary: string; dark: string }> = {
   SHARED: { primary: '#6B7FA3', dark: '#3A4763' },
@@ -27,9 +39,11 @@ export const isVehicleClass = (name: string): name is VehicleClass =>
   (VEHICLE_CLASSES as readonly string[]).includes(name);
 
 /** Catalog `icon` strings → registry names, with safe fallbacks for codes the client does not know yet. */
-export const vehicleIconName = (icon: string | undefined): PictogramName =>
-  icon && isVehicleClass(icon) ? `veh_${icon}` : 'veh_truck';
-export const categoryIconName = (category: string): PictogramName => {
+export const vehicleIconName = (icon: string | undefined): PictogramName => vehiclePictogramOf(icon);
+/** `category` is the catalog category (FIRE, MEDICAL…) or a legacy lower-case name; `icon` = the template icon key. */
+export const categoryIconName = (category: string, icon?: string | null): PictogramName => {
+  const mapped = incidentIconName(category, icon);
+  if (mapped) return mapped;
   const n = `cat_${category.toLowerCase()}`;
   return isPictogram(n) ? n : 'cat_generic';
 };
@@ -43,6 +57,11 @@ export const facilityIconName = (family: AnyFamily): PictogramName =>
   family === 'UNG' || family === 'SHARED'
     ? 'facility_coordination'
     : (`facility_${family.toLowerCase()}` as PictogramName);
+/** Facility pictogram of a TYPE (catalog type code `FIRE_COMMAND` or icon key `facility-fire-command`); unknown types fall back to the family glyph. */
+export const facilityTypeIconName = (family: AnyFamily, typeCodeOrKey?: string | null): PictogramName => {
+  const key = typeCodeOrKey ? facilityIconKey(typeCodeOrKey) : null;
+  return key && hasCatalogIcon(key) ? catalogIconName(key) : facilityIconName(family);
+};
 
 export function pictogramSvg(
   name: PictogramName,

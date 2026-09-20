@@ -1,629 +1,460 @@
 import type { FacilityFamily, ServiceFamily } from '@/contracts';
+import generated from './generated/catalog.json';
 
-type Caps = Record<string, number>;
+/**
+ * Adapter over the bundled copy of the real game catalog (`pnpm gen:mock-catalog`, source:
+ * ../rescue-control-backend/catalog). Codes, icon keys, i18n keys, prices, levels, capabilities and requirements are
+ * the real ones; only TIME is compressed so the standalone demo stays snappy:
+ *  - managerial timers (delivery, construction, courses, onboarding, maintenance, supplies, external units) × MANAGERIAL_SCALE
+ *  - on-scene work: workUnits × WORK_SCALE, clamped.
+ */
+export const MANAGERIAL_SCALE = 0.1;
+const WORK_SCALE = 0.04;
+const managerial = (seconds: number) => Math.max(10, Math.round(seconds * MANAGERIAL_SCALE));
+
+type Level = 'REQUIRED' | 'RECOMMENDED' | 'OPTIONAL';
+interface RawBand {
+  severity: [number, number];
+  minLevel?: number;
+  requirements: { capability: string; level: Level; threshold: number; family: ServiceFamily }[];
+  workUnits: number;
+  patients?: {
+    count: { n: number; weight: number }[];
+    profiles: { profile: string; weight: number }[];
+  };
+  ung?: { type: string; probability: number }[];
+}
+interface Raw {
+  version: string;
+  i18nHash: string;
+  families: {
+    code: ServiceFamily;
+    color: string;
+    icon: string;
+    playerManaged: boolean;
+    requiredLevel: number;
+    territoryUnlock: unknown;
+  }[];
+  capabilities: { code: string; group: string; icon: string }[];
+  vehicleTypes: {
+    code: string;
+    family: ServiceFamily;
+    domain: 'GROUND' | 'AIR' | 'WATER';
+    capabilities: Record<string, number>;
+    tags: string[];
+    price: number;
+    requiredLevel: number;
+    capacityPoints: number;
+    crew: {
+      min: number;
+      optimal: number;
+      requiredRoles?: { role: string; count: number }[];
+      requiredQualifications?: { qualification: string; count: number }[];
+    };
+    speedFactor: number;
+    sirenFactor: number;
+    airSpeedKmh: number | null;
+    preparationSeconds: number;
+    deliverySeconds: number;
+    patientCapacity: number;
+    baseFailureRate: number;
+    maintenance: {
+      intervalKm: number;
+      intervalMissions: number;
+      routineCost: number;
+      routineSeconds: number;
+      wearPerKm: number;
+      wearPerMission: number;
+    };
+    compatibleFacilityTypes: string[];
+    icon: string;
+    movement: 'ROAD' | 'ROAD_TRAILER' | 'AIR';
+  }[];
+  facilityTypes: {
+    code: string;
+    family: FacilityFamily;
+    chain: string;
+    tier: number;
+    domains: ('GROUND' | 'AIR' | 'WATER')[];
+    baseCapacity: Record<string, number>;
+    upgradeCaps: Record<string, number>;
+    price: number;
+    requiredLevel: number;
+    setupSeconds: number;
+    promotion: {
+      to: string;
+      cost: number;
+      buildSeconds: number;
+      requiredUpgradeLevels: Record<string, number>;
+    } | null;
+    effects: Record<string, unknown>[];
+    icon: string;
+  }[];
+  upgrades: {
+    code: string;
+    capacityKind: string | null;
+    capacityPerLevel: number;
+    requiredLevel: number;
+    baseCost: number;
+    costGrowth: number;
+    baseBuildSeconds: number;
+    buildGrowth: number;
+    maxLevel: number;
+    icon: string;
+  }[];
+  ungUnitTypes: {
+    code: string;
+    icon: string;
+    arrival: { baseSeconds: number; spreadSeconds: number };
+    work: { minSeconds: number; maxSeconds: number };
+    keepsRoadClosed: boolean;
+  }[];
+  itemTypes: {
+    code: string;
+    family: ServiceFamily;
+    requiredLevel: number;
+    unitPrice: number;
+    packSize: number;
+    deliverySeconds: number;
+    starterStock: number;
+    lowStockThreshold: number;
+    icon: string;
+  }[];
+  roles: {
+    code: string;
+    family: ServiceFamily | 'SHARED';
+    specialist: boolean;
+    requiredLevel: number;
+    hireCost: number;
+    costPerPeriod: number;
+    onboardingSeconds: number;
+    startingQualifications: string[];
+    quickHire: boolean;
+    icon: string;
+  }[];
+  qualifications: { code: string; families: string[]; roles: string[]; tier: string; icon: string }[];
+  courses: {
+    code: string;
+    grants: string;
+    tier: string;
+    durationSeconds: number;
+    cost: number;
+    requiredLevel: number;
+    prerequisites: { qualifications: string[]; roles: string[]; trainingRoomLevel: number };
+  }[];
+  patientProfiles: {
+    code: string;
+    category: string;
+    triage: string;
+    stability: {
+      initialMin: number;
+      initialMax: number;
+      decayPerMinuteUntreated: number;
+      decayPerMinuteTreated: number;
+      decayPerMinuteInTransport: number;
+    };
+    treatment: { capability: string; level: Level; threshold: number }[];
+    transport: { probability: number };
+    hospital: { required: string; preferred: string | null };
+  }[];
+  hospitalCapabilities: { code: string; icon: string }[];
+  incidentTemplates: {
+    code: string;
+    category: string;
+    group: string;
+    primaryFamily: ServiceFamily;
+    families: ServiceFamily[];
+    requiredLevel: number;
+    tutorial: boolean;
+    rarity: string | null;
+    weight: number;
+    expirySeconds: number;
+    reward: { baseCredits: number; baseXp: number; complexity: number };
+    consumables?: { item: string; base: number; perSeverity: number }[];
+    icon: string;
+    severity: { min: number; max: number; distribution: Record<string, number> };
+    bands: RawBand[];
+  }[];
+  maxLevel: number;
+  ranks: { code: string; fromLevel: number; toLevel: number }[];
+  levels: {
+    level: number;
+    xpToNext: number;
+    cumulativeXp: number;
+    stipendBase: number;
+    levelUpCredits: number;
+    maxActiveIncidents: number;
+  }[];
+  features: { feature: string; requiredLevel: number }[];
+  milestones: {
+    code: string;
+    order: number;
+    phase: string;
+    trigger: { type: string; count?: number; level?: number; family?: string };
+    rewardCredits: number;
+    rewardXp: number;
+  }[];
+  starterPackage: {
+    credits: number;
+    personnel: { role: string; count: number; qualifications: string[] }[];
+    tutorial: { incidentTemplate: string; severity: number; completionCredits: number; completionXp: number };
+  };
+  economy: {
+    startingCredits: number;
+    stipend: {
+      periodSeconds: number;
+      offlineCapPeriods: number;
+      coverageSteps: { below: number; factor: number }[];
+      reputationFactor: { atZero: number; atHundred: number };
+      coverageThresholdMinutes: Record<string, number>;
+      familyWeights: Record<string, number>;
+    };
+    creditPackages: { code: string; priceEurCents: number; credits: number; order: number }[];
+    rewardedAds: { credits: number; dailyLimit: number; cooldownSeconds: number };
+    referral: {
+      inviterBonus: number;
+      inviteeBonus: number;
+      requiredActivatedReferrals: number;
+      activation: { resolvedIncidents: number; distinctDays: number };
+    };
+    speedup: { creditsPerMinute: Record<string, number>; minimumCost: number; freeBelowSeconds: number };
+    maintenance: {
+      healthBands: { band: string; from: number }[];
+      routineHealthRestore: number;
+      repair: { costShareOfPrice: number; seconds: number; healthAfter: number };
+      recovery: { cost: number; baseSeconds: number };
+      emergencyFreeRepair: { balanceBelow: number; secondsMultiplier: number };
+    };
+    medical: { hospitalHandoffSeconds: number };
+  };
+}
+export const RAW = generated as unknown as Raw;
+export const CATALOG_VERSION = RAW.version;
+export const CATALOG_I18N_HASH = RAW.i18nHash;
+
 export interface MockVehicleType {
   code: string;
   family: ServiceFamily;
   domain: 'GROUND' | 'AIR' | 'WATER';
+  movement: 'ROAD' | 'ROAD_TRAILER' | 'AIR';
+  airSpeedKmh: number | null;
   price: number;
   requiredLevel: number;
   capacityPoints: number;
   crewMin: number;
   crewOptimal: number;
+  requiredRoles: { role: string; count: number }[];
+  requiredQualifications: { qualification: string; count: number }[];
   speedFactor: number;
+  sirenFactor: number;
+  preparationSeconds: number;
   deliverySeconds: number;
-  caps: Caps;
+  patientCapacity: number;
+  baseFailureRate: number;
+  maintenance: Raw['vehicleTypes'][number]['maintenance'];
+  compatibleFacilityTypes: string[];
+  tags: string[];
+  caps: Record<string, number>;
   icon: string;
 }
+/** 41 managed vehicle types. */
+export const VEHICLE_TYPES: MockVehicleType[] = RAW.vehicleTypes.map((v) => ({
+  code: v.code,
+  family: v.family,
+  domain: v.domain,
+  movement: v.movement,
+  airSpeedKmh: v.airSpeedKmh,
+  price: v.price,
+  requiredLevel: v.requiredLevel,
+  capacityPoints: v.capacityPoints,
+  crewMin: v.crew.min,
+  crewOptimal: v.crew.optimal,
+  requiredRoles: v.crew.requiredRoles ?? [],
+  requiredQualifications: v.crew.requiredQualifications ?? [],
+  speedFactor: v.speedFactor,
+  sirenFactor: v.sirenFactor,
+  preparationSeconds: Math.max(8, Math.round(v.preparationSeconds * 0.2)),
+  deliverySeconds: managerial(v.deliverySeconds),
+  patientCapacity: v.patientCapacity,
+  baseFailureRate: v.baseFailureRate,
+  maintenance: { ...v.maintenance, routineSeconds: managerial(v.maintenance.routineSeconds) },
+  compatibleFacilityTypes: v.compatibleFacilityTypes,
+  tags: v.tags,
+  caps: v.capabilities,
+  icon: v.icon,
+}));
 
-const v = (
-  code: string,
-  family: ServiceFamily,
-  icon: string,
-  price: number,
-  requiredLevel: number,
-  caps: Caps,
-  extra: Partial<MockVehicleType> = {},
-): MockVehicleType => ({
-  code,
-  family,
-  icon,
-  price,
-  requiredLevel,
-  caps,
-  domain: 'GROUND',
-  capacityPoints: 2,
-  crewMin: 2,
-  crewOptimal: 3,
-  speedFactor: 1,
-  deliverySeconds: 90,
-  ...extra,
-});
+export const CAPABILITIES = RAW.capabilities;
 
-/** 41 managed vehicle types (analisi/07). Numbers are mock balancing values. */
-export const VEHICLE_TYPES: MockVehicleType[] = [
-  v(
-    'FIRE_APS',
-    'FIRE',
-    'engine',
-    900,
-    1,
-    { FIRE_SUPPRESSION: 75, EXTRICATION: 70, TECHNICAL_RESCUE: 65, WATER_SUPPLY: 45 },
-    { crewMin: 3, crewOptimal: 5 },
-  ),
-  v(
-    'FIRE_4X4',
-    'FIRE',
-    'pickup',
-    600,
-    1,
-    { FIRE_SUPPRESSION: 35, OFFROAD_ACCESS: 70, TECHNICAL_RESCUE: 30 },
-    { capacityPoints: 1, speedFactor: 1.1, deliverySeconds: 60 },
-  ),
-  v('FIRE_ABP', 'FIRE', 'tanker', 1400, 2, { WATER_SUPPLY: 100, FIRE_SUPPRESSION: 40 }),
-  v(
-    'FIRE_AS',
-    'FIRE',
-    'ladder',
-    3200,
-    4,
-    { HEIGHT_ACCESS: 100, FIRE_SUPPRESSION: 35 },
-    { capacityPoints: 3 },
-  ),
-  v(
-    'FIRE_AG',
-    'FIRE',
-    'crane',
-    3800,
-    5,
-    { HEAVY_RESCUE: 90, EXTRICATION: 40 },
-    { capacityPoints: 3, speedFactor: 0.85 },
-  ),
-  v('FIRE_SAF', 'FIRE', 'van', 2600, 5, { TECHNICAL_RESCUE: 100, WATER_RESCUE: 50, HEIGHT_ACCESS: 40 }),
-  v('FIRE_FOAM', 'FIRE', 'tanker', 4200, 7, { FIRE_SUPPRESSION: 90, HAZMAT: 35 }, { capacityPoints: 3 }),
-  v('FIRE_AIR', 'FIRE', 'truck', 2400, 6, { LOGISTICS: 80, FIRE_SUPPRESSION: 10 }),
-  v('FIRE_NBCR', 'FIRE', 'truck', 6500, 9, { HAZMAT: 100, TECHNICAL_RESCUE: 30 }, { capacityPoints: 3 }),
-  v(
-    'FIRE_USAR',
-    'FIRE',
-    'truck',
-    9000,
-    12,
-    { HEAVY_RESCUE: 100, TECHNICAL_RESCUE: 80, K9_SEARCH: 30 },
-    { capacityPoints: 4, speedFactor: 0.85 },
-  ),
-  v('FIRE_DIVERS', 'FIRE', 'van', 5200, 10, { WATER_RESCUE: 100 }),
-  v('FIRE_BOAT', 'FIRE', 'boat', 4800, 10, { WATER_RESCUE: 85 }, { domain: 'WATER', capacityPoints: 2 }),
-  v('FIRE_UCL', 'FIRE', 'command', 5500, 11, { COMMAND: 100, LOGISTICS: 40 }),
-  v(
-    'FIRE_HELI',
-    'FIRE',
-    'helicopter',
-    22000,
-    18,
-    { AIR_SUPPORT: 90, HEIGHT_ACCESS: 60, WATER_RESCUE: 50 },
-    { domain: 'AIR', capacityPoints: 4, speedFactor: 3 },
-  ),
-
-  v(
-    'EMS_MSB',
-    'EMS',
-    'ambulance',
-    700,
-    3,
-    { MEDICAL_BASIC: 80, PATIENT_TRANSPORT: 100 },
-    { crewMin: 2, crewOptimal: 3 },
-  ),
-  v('EMS_MSI', 'EMS', 'ambulance', 1500, 4, {
-    MEDICAL_BASIC: 90,
-    MEDICAL_ADVANCED: 50,
-    PATIENT_TRANSPORT: 100,
-  }),
-  v('EMS_MSA', 'EMS', 'ambulance', 3000, 6, {
-    MEDICAL_BASIC: 100,
-    MEDICAL_ADVANCED: 100,
-    PATIENT_TRANSPORT: 100,
-  }),
-  v(
-    'EMS_AUTOMEDICA',
-    'EMS',
-    'car',
-    2200,
-    5,
-    { MEDICAL_ADVANCED: 100, MEDICAL_BASIC: 60 },
-    { capacityPoints: 1, speedFactor: 1.2 },
-  ),
-  v('EMS_PEDIATRIC', 'EMS', 'ambulance', 4200, 9, { MEDICAL_ADVANCED: 90, PATIENT_TRANSPORT: 100 }),
-  v('EMS_MAXI', 'EMS', 'truck', 8000, 13, { MASS_CASUALTY: 100, LOGISTICS: 60 }, { capacityPoints: 4 }),
-  v('EMS_PMA', 'EMS', 'truck', 9500, 15, { MASS_CASUALTY: 100, MEDICAL_ADVANCED: 80 }, { capacityPoints: 4 }),
-  v(
-    'EMS_HELI',
-    'EMS',
-    'helicopter',
-    25000,
-    17,
-    { MEDICAL_ADVANCED: 100, PATIENT_TRANSPORT: 100, AIR_SUPPORT: 60 },
-    { domain: 'AIR', capacityPoints: 4, speedFactor: 3 },
-  ),
-
-  v(
-    'POL_PATROL',
-    'POLICE',
-    'car',
-    650,
-    6,
-    { SCENE_SECURITY: 70, TRAFFIC_CONTROL: 50 },
-    { capacityPoints: 1, speedFactor: 1.2 },
-  ),
-  v(
-    'POL_MOTO',
-    'POLICE',
-    'motorcycle',
-    500,
-    6,
-    { TRAFFIC_CONTROL: 70, SCENE_SECURITY: 30 },
-    { capacityPoints: 1, crewMin: 1, crewOptimal: 1, speedFactor: 1.35 },
-  ),
-  v(
-    'POL_TRAFFIC',
-    'POLICE',
-    'car',
-    1200,
-    7,
-    { TRAFFIC_CONTROL: 100, INVESTIGATION: 40 },
-    { capacityPoints: 1 },
-  ),
-  v('POL_VAN', 'POLICE', 'van', 2100, 8, { SCENE_SECURITY: 100 }),
-  v('POL_K9', 'POLICE', 'van', 3000, 10, { K9_SEARCH: 100, SCENE_SECURITY: 40 }),
-  v('POL_FORENSIC', 'POLICE', 'van', 3600, 11, { INVESTIGATION: 100 }),
-  v('POL_EOD', 'POLICE', 'truck', 7500, 14, { EOD: 100, SCENE_SECURITY: 40 }, { capacityPoints: 3 }),
-  v(
-    'POL_TACTICAL',
-    'POLICE',
-    'truck',
-    8500,
-    15,
-    { SCENE_SECURITY: 100, TECHNICAL_RESCUE: 30 },
-    { capacityPoints: 3 },
-  ),
-  v(
-    'POL_HELI',
-    'POLICE',
-    'helicopter',
-    21000,
-    19,
-    { AIR_SUPPORT: 80, K9_SEARCH: 20, SCENE_SECURITY: 40 },
-    { domain: 'AIR', capacityPoints: 4, speedFactor: 3 },
-  ),
-
-  v(
-    'AIB_PICKUP',
-    'WILDFIRE',
-    'pickup',
-    800,
-    10,
-    { WILDLAND_FIRE: 60, OFFROAD_ACCESS: 80 },
-    { capacityPoints: 1 },
-  ),
-  v('AIB_TANKER', 'WILDFIRE', 'tanker', 2600, 11, {
-    WILDLAND_FIRE: 90,
-    WATER_SUPPLY: 80,
-    OFFROAD_ACCESS: 50,
-  }),
-  v('AIB_COMMAND', 'WILDFIRE', 'command', 4800, 13, { COMMAND: 100 }),
-  v(
-    'AIB_HELI',
-    'WILDFIRE',
-    'helicopter',
-    20000,
-    16,
-    { AIR_SUPPORT: 100, WILDLAND_FIRE: 80 },
-    { domain: 'AIR', capacityPoints: 4, speedFactor: 3 },
-  ),
-  v(
-    'AIB_PLANE',
-    'WILDFIRE',
-    'plane',
-    25000,
-    20,
-    { AIR_SUPPORT: 100, WILDLAND_FIRE: 100 },
-    { domain: 'AIR', capacityPoints: 6, speedFactor: 4 },
-  ),
-
-  v(
-    'ALP_4X4',
-    'ALPINE',
-    'pickup',
-    900,
-    10,
-    { MOUNTAIN_RESCUE: 60, OFFROAD_ACCESS: 90, MEDICAL_BASIC: 40 },
-    { capacityPoints: 1 },
-  ),
-  v(
-    'ALP_TEAM',
-    'ALPINE',
-    'team',
-    700,
-    10,
-    { MOUNTAIN_RESCUE: 90, TECHNICAL_RESCUE: 50 },
-    { capacityPoints: 1, speedFactor: 0.4, crewMin: 3, crewOptimal: 5 },
-  ),
-  v(
-    'ALP_SNOW',
-    'ALPINE',
-    'snowmobile',
-    1800,
-    12,
-    { MOUNTAIN_RESCUE: 70, OFFROAD_ACCESS: 100 },
-    { capacityPoints: 1 },
-  ),
-  v('ALP_K9', 'ALPINE', 'van', 3200, 13, { K9_SEARCH: 100, MOUNTAIN_RESCUE: 50 }),
-  v(
-    'ALP_HELI',
-    'ALPINE',
-    'helicopter',
-    23000,
-    18,
-    { MOUNTAIN_RESCUE: 100, AIR_SUPPORT: 80, PATIENT_TRANSPORT: 100 },
-    { domain: 'AIR', capacityPoints: 4, speedFactor: 3 },
-  ),
-];
-
-export const CAPABILITIES = [
-  'FIRE_SUPPRESSION',
-  'WATER_SUPPLY',
-  'HEIGHT_ACCESS',
-  'EXTRICATION',
-  'TECHNICAL_RESCUE',
-  'HEAVY_RESCUE',
-  'HAZMAT',
-  'WATER_RESCUE',
-  'MEDICAL_BASIC',
-  'MEDICAL_ADVANCED',
-  'PATIENT_TRANSPORT',
-  'MASS_CASUALTY',
-  'SCENE_SECURITY',
-  'TRAFFIC_CONTROL',
-  'INVESTIGATION',
-  'K9_SEARCH',
-  'EOD',
-  'WILDLAND_FIRE',
-  'OFFROAD_ACCESS',
-  'MOUNTAIN_RESCUE',
-  'AIR_SUPPORT',
-  'COMMAND',
-  'LOGISTICS',
-] as const;
-
-export const FAMILIES: { code: ServiceFamily; color: string; requiredLevel: number }[] = [
-  { code: 'FIRE', color: '#E5342B', requiredLevel: 1 },
-  { code: 'EMS', color: '#2F7DF0', requiredLevel: 3 },
-  { code: 'POLICE', color: '#2B4FB8', requiredLevel: 6 },
-  { code: 'WILDFIRE', color: '#F08A1C', requiredLevel: 10 },
-  { code: 'ALPINE', color: '#1F9D63', requiredLevel: 14 },
-  { code: 'UNG', color: '#8492A6', requiredLevel: 1 },
-];
+export const FAMILIES = RAW.families.map((f) => ({
+  code: f.code,
+  color: f.color,
+  icon: f.icon,
+  playerManaged: f.playerManaged,
+  requiredLevel: f.requiredLevel,
+}));
+/**
+ * WILDFIRE / ALPINE open at 10 and 14 "according to the territory" (analisi/05 §4). Pescara is coastal with pine woods and no
+ * high ground inside the municipality → WILDFIRE first. The catalog DTO carries the resolved level per career.
+ */
+export const resolvedFamilyLevel = (code: ServiceFamily): number =>
+  code === 'WILDFIRE'
+    ? 10
+    : code === 'ALPINE'
+      ? 14
+      : (FAMILIES.find((f) => f.code === code)?.requiredLevel ?? 1);
 
 export interface MockFacilityType {
   code: string;
   family: FacilityFamily;
+  chain: string;
   tier: number;
   price: number;
   requiredLevel: number;
   domains: ('GROUND' | 'AIR' | 'WATER')[];
   baseCapacity: Record<string, number>;
+  upgradeCaps: Record<string, number>;
+  setupSeconds: number;
+  promotion: {
+    to: string;
+    cost: number;
+    buildSeconds: number;
+    requiredUpgradeLevels: Record<string, number>;
+  } | null;
+  effects: Record<string, unknown>[];
   icon: string;
 }
-const f = (
-  code: string,
-  family: FacilityFamily,
-  tier: number,
-  price: number,
-  requiredLevel: number,
-  ground: number,
-  extra: Partial<MockFacilityType> = {},
-): MockFacilityType => ({
-  code,
-  family,
-  tier,
-  price,
-  requiredLevel,
-  domains: ['GROUND'],
-  icon: `facility_${family === 'SHARED' ? 'coordination' : family.toLowerCase()}`,
-  baseCapacity: {
-    GROUND: ground,
-    PERSONNEL: ground * 4,
-    STORAGE: 10 * tier,
-    WORKSHOP: tier > 1 ? tier - 1 : 0,
-  },
-  ...extra,
-});
 /** 20 facility types in 5 chains + the shared coordination centre. */
-export const FACILITY_TYPES: MockFacilityType[] = [
-  f('FIRE_STATION_LOCAL', 'FIRE', 1, 6000, 1, 6),
-  f('FIRE_DETACHMENT', 'FIRE', 2, 14000, 6, 10),
-  f('FIRE_COMMAND', 'FIRE', 3, 32000, 12, 16),
-  f('FIRE_SPECIAL_HUB', 'FIRE', 4, 70000, 18, 22, { domains: ['GROUND', 'AIR', 'WATER'] }),
-  f('EMS_POST', 'EMS', 1, 5000, 3, 4),
-  f('EMS_CENTER', 'EMS', 2, 12000, 7, 8),
-  f('EMS_ADVANCED_CENTER', 'EMS', 3, 28000, 12, 12),
-  f('EMS_HELI_BASE', 'EMS', 4, 60000, 17, 6, { domains: ['GROUND', 'AIR'] }),
-  f('POLICE_POST', 'POLICE', 1, 5500, 6, 4),
-  f('POLICE_STATION', 'POLICE', 2, 13000, 9, 8),
-  f('POLICE_HQ', 'POLICE', 3, 30000, 13, 14),
-  f('POLICE_SPECIAL_UNIT', 'POLICE', 4, 65000, 18, 12, { domains: ['GROUND', 'AIR'] }),
-  f('AIB_OUTPOST', 'WILDFIRE', 1, 5000, 10, 4),
-  f('AIB_BASE', 'WILDFIRE', 2, 12000, 12, 8),
-  f('AIB_OPERATIONS_CENTER', 'WILDFIRE', 3, 27000, 15, 10),
-  f('AIB_AIR_BASE', 'WILDFIRE', 4, 80000, 20, 6, { domains: ['GROUND', 'AIR'] }),
-  f('ALPINE_STATION', 'ALPINE', 1, 5000, 10, 4),
-  f('ALPINE_RESCUE_CENTER', 'ALPINE', 2, 12000, 13, 8),
-  f('ALPINE_HELI_BASE', 'ALPINE', 3, 60000, 18, 6, { domains: ['GROUND', 'AIR'] }),
-  f('COORDINATION_CENTER', 'SHARED', 1, 40000, 15, 2, { icon: 'facility_coordination' }),
-];
+export const FACILITY_TYPES: MockFacilityType[] = RAW.facilityTypes.map((f) => ({
+  ...f,
+  setupSeconds: managerial(f.setupSeconds),
+  promotion: f.promotion ? { ...f.promotion, buildSeconds: managerial(f.promotion.buildSeconds) } : null,
+}));
 
 export interface MockUpgradeType {
   code: string;
   domain: string;
   delta: number;
   basePrice: number;
+  costGrowth: number;
   maxLevel: number;
   requiredLevel: number;
   buildSeconds: number;
+  buildGrowth: number;
+  icon: string;
 }
-export const UPGRADE_TYPES: MockUpgradeType[] = [
-  {
-    code: 'GARAGE',
-    domain: 'GROUND',
-    delta: 2,
-    basePrice: 800,
-    maxLevel: 5,
-    requiredLevel: 1,
-    buildSeconds: 120,
-  },
-  {
-    code: 'QUARTERS',
-    domain: 'PERSONNEL',
-    delta: 6,
-    basePrice: 500,
-    maxLevel: 5,
-    requiredLevel: 2,
-    buildSeconds: 90,
-  },
-  {
-    code: 'WORKSHOP',
-    domain: 'WORKSHOP',
-    delta: 1,
-    basePrice: 1500,
-    maxLevel: 3,
-    requiredLevel: 4,
-    buildSeconds: 180,
-  },
-  {
-    code: 'STORAGE',
-    domain: 'STORAGE',
-    delta: 10,
-    basePrice: 600,
-    maxLevel: 4,
-    requiredLevel: 3,
-    buildSeconds: 90,
-  },
-  {
-    code: 'HELIPAD',
-    domain: 'AIR',
-    delta: 4,
-    basePrice: 12000,
-    maxLevel: 1,
-    requiredLevel: 16,
-    buildSeconds: 600,
-  },
-];
-/** n-th upgrade price = base × 1.45^(n−1) (analisi/05 §6). */
+export const UPGRADE_TYPES: MockUpgradeType[] = RAW.upgrades.map((u) => ({
+  code: u.code,
+  // TRAINING_ROOM adds training slots instead of capacity points.
+  domain: u.capacityKind ?? 'TRAINING',
+  delta: u.capacityKind ? u.capacityPerLevel : 2,
+  basePrice: u.baseCost,
+  costGrowth: u.costGrowth,
+  maxLevel: u.maxLevel,
+  requiredLevel: u.requiredLevel,
+  buildSeconds: managerial(u.baseBuildSeconds),
+  buildGrowth: u.buildGrowth,
+  icon: u.icon,
+}));
+/** n-th upgrade price = base × growth^(n−1) (analisi/05 §6). */
 export const upgradePrice = (u: MockUpgradeType, nextLevel: number): number =>
-  Math.round(u.basePrice * 1.45 ** (nextLevel - 1));
+  Math.round(u.basePrice * u.costGrowth ** (nextLevel - 1));
+export const upgradeBuildSeconds = (u: MockUpgradeType, nextLevel: number): number =>
+  Math.round(u.buildSeconds * u.buildGrowth ** (nextLevel - 1));
 
+export interface MockTemplateBand {
+  severity: [number, number];
+  minLevel: number;
+  requirements: { capability: string; level: Level; threshold: number; family: ServiceFamily }[];
+  workSeconds: number;
+  patients: RawBand['patients'] | null;
+  ung: { type: string; probability: number }[];
+}
 export interface MockIncidentTemplate {
   code: string;
   category: string;
+  group: string;
+  primaryFamily: ServiceFamily;
   families: ServiceFamily[];
   minLevel: number;
+  tutorial: boolean;
+  rarity: string | null;
+  weight: number;
   severity: [number, number];
-  /** capability → [REQUIRED threshold at min severity, level] ; thresholds scale +12% per severity step */
-  requirements: { capability: string; level: 'REQUIRED' | 'RECOMMENDED' | 'OPTIONAL'; base: number }[];
-  workSeconds: number;
+  distribution: Record<string, number>;
+  bands: MockTemplateBand[];
   baseReward: number;
   baseXp: number;
-  weight: number;
+  complexity: number;
+  consumables: { item: string; base: number; perSeverity: number }[];
+  icon: string;
 }
-export const INCIDENT_TEMPLATES: MockIncidentTemplate[] = [
-  {
-    code: 'TRASH_FIRE',
-    category: 'fire_minor',
-    families: ['FIRE'],
-    minLevel: 1,
-    severity: [1, 2],
-    requirements: [{ capability: 'FIRE_SUPPRESSION', level: 'REQUIRED', base: 30 }],
-    workSeconds: 40,
-    baseReward: 45,
-    baseXp: 25,
-    weight: 5,
-  },
-  {
-    code: 'CAR_FIRE',
-    category: 'fire_vehicle',
-    families: ['FIRE'],
-    minLevel: 1,
-    severity: [2, 4],
-    requirements: [
-      { capability: 'FIRE_SUPPRESSION', level: 'REQUIRED', base: 55 },
-      { capability: 'WATER_SUPPLY', level: 'RECOMMENDED', base: 40 },
-    ],
-    workSeconds: 60,
-    baseReward: 80,
-    baseXp: 40,
-    weight: 4,
-  },
-  {
-    code: 'APARTMENT_FIRE',
-    category: 'fire_structure',
-    families: ['FIRE'],
-    minLevel: 2,
-    severity: [4, 7],
-    requirements: [
-      { capability: 'FIRE_SUPPRESSION', level: 'REQUIRED', base: 90 },
-      { capability: 'WATER_SUPPLY', level: 'REQUIRED', base: 50 },
-      { capability: 'HEIGHT_ACCESS', level: 'RECOMMENDED', base: 60 },
-    ],
-    workSeconds: 110,
-    baseReward: 190,
-    baseXp: 80,
-    weight: 2,
-  },
-  {
-    code: 'ELEVATOR_RESCUE',
-    category: 'technical',
-    families: ['FIRE'],
-    minLevel: 1,
-    severity: [1, 3],
-    requirements: [{ capability: 'TECHNICAL_RESCUE', level: 'REQUIRED', base: 40 }],
-    workSeconds: 45,
-    baseReward: 55,
-    baseXp: 30,
-    weight: 4,
-  },
-  {
-    code: 'FALLEN_TREE',
-    category: 'technical',
-    families: ['FIRE'],
-    minLevel: 1,
-    severity: [1, 3],
-    requirements: [{ capability: 'TECHNICAL_RESCUE', level: 'REQUIRED', base: 45 }],
-    workSeconds: 50,
-    baseReward: 60,
-    baseXp: 30,
-    weight: 3,
-  },
-  {
-    code: 'FLOODED_BASEMENT',
-    category: 'flood',
-    families: ['FIRE'],
-    minLevel: 1,
-    severity: [2, 4],
-    requirements: [
-      { capability: 'TECHNICAL_RESCUE', level: 'REQUIRED', base: 35 },
-      { capability: 'WATER_SUPPLY', level: 'OPTIONAL', base: 30 },
-    ],
-    workSeconds: 70,
-    baseReward: 70,
-    baseXp: 35,
-    weight: 2,
-  },
-  {
-    code: 'ROAD_ACCIDENT',
-    category: 'traffic_accident',
-    families: ['FIRE'],
-    minLevel: 1,
-    severity: [2, 5],
-    requirements: [
-      { capability: 'EXTRICATION', level: 'REQUIRED', base: 40 },
-      { capability: 'FIRE_SUPPRESSION', level: 'RECOMMENDED', base: 30 },
-    ],
-    workSeconds: 60,
-    baseReward: 85,
-    baseXp: 45,
-    weight: 4,
-  },
-  {
-    code: 'ROAD_ACCIDENT_TRAPPED',
-    category: 'traffic_accident',
-    families: ['FIRE', 'EMS'],
-    minLevel: 3,
-    severity: [5, 8],
-    requirements: [
-      { capability: 'EXTRICATION', level: 'REQUIRED', base: 65 },
-      { capability: 'MEDICAL_BASIC', level: 'REQUIRED', base: 60 },
-      { capability: 'MEDICAL_ADVANCED', level: 'RECOMMENDED', base: 60 },
-    ],
-    workSeconds: 100,
-    baseReward: 220,
-    baseXp: 95,
-    weight: 2,
-  },
-  {
-    code: 'GAS_LEAK',
-    category: 'gas_leak',
-    families: ['FIRE'],
-    minLevel: 2,
-    severity: [3, 6],
-    requirements: [
-      { capability: 'TECHNICAL_RESCUE', level: 'REQUIRED', base: 55 },
-      { capability: 'HAZMAT', level: 'OPTIONAL', base: 40 },
-    ],
-    workSeconds: 80,
-    baseReward: 120,
-    baseXp: 55,
-    weight: 2,
-  },
-  {
-    code: 'MEDICAL_MINOR',
-    category: 'medical',
-    families: ['EMS'],
-    minLevel: 3,
-    severity: [1, 3],
-    requirements: [
-      { capability: 'MEDICAL_BASIC', level: 'REQUIRED', base: 50 },
-      { capability: 'PATIENT_TRANSPORT', level: 'RECOMMENDED', base: 100 },
-    ],
-    workSeconds: 45,
-    baseReward: 60,
-    baseXp: 30,
-    weight: 5,
-  },
-  {
-    code: 'FALL_INJURY',
-    category: 'trauma',
-    families: ['EMS'],
-    minLevel: 3,
-    severity: [3, 6],
-    requirements: [
-      { capability: 'MEDICAL_BASIC', level: 'REQUIRED', base: 70 },
-      { capability: 'PATIENT_TRANSPORT', level: 'REQUIRED', base: 100 },
-    ],
-    workSeconds: 60,
-    baseReward: 95,
-    baseXp: 50,
-    weight: 3,
-  },
-  {
-    code: 'CARDIAC_ARREST',
-    category: 'cardiac',
-    families: ['EMS'],
-    minLevel: 4,
-    severity: [7, 9],
-    requirements: [
-      { capability: 'MEDICAL_ADVANCED', level: 'REQUIRED', base: 80 },
-      { capability: 'PATIENT_TRANSPORT', level: 'REQUIRED', base: 100 },
-    ],
-    workSeconds: 75,
-    baseReward: 210,
-    baseXp: 100,
-    weight: 2,
-  },
-];
+const RARITY_WEIGHT: Record<string, number> = { COMMON: 1, UNCOMMON: 0.45, RARE: 0.15, EPIC: 0.04 };
+/** 45 incident templates (12 FIRE / 8 EMS / 8 POLICE / 5 WILDFIRE / 5 ALPINE / 7 multi-service). */
+export const INCIDENT_TEMPLATES: MockIncidentTemplate[] = RAW.incidentTemplates.map((t) => ({
+  code: t.code,
+  category: t.category,
+  group: t.group,
+  primaryFamily: t.primaryFamily,
+  families: t.families,
+  minLevel: t.requiredLevel,
+  tutorial: t.tutorial,
+  rarity: t.rarity,
+  weight: t.weight * (RARITY_WEIGHT[t.rarity ?? 'COMMON'] ?? 1),
+  severity: [t.severity.min, t.severity.max],
+  distribution: t.severity.distribution,
+  bands: t.bands.map((b) => ({
+    severity: b.severity,
+    minLevel: b.minLevel ?? t.requiredLevel,
+    requirements: b.requirements,
+    workSeconds: Math.min(160, Math.max(25, Math.round(b.workUnits * WORK_SCALE))),
+    patients: b.patients ?? null,
+    ung: b.ung ?? [],
+  })),
+  baseReward: t.reward.baseCredits,
+  baseXp: t.reward.baseXp,
+  complexity: t.reward.complexity,
+  consumables: t.consumables ?? [],
+  icon: t.icon,
+}));
+export const TUTORIAL_TEMPLATE = RAW.starterPackage.tutorial.incidentTemplate;
+export const bandFor = (t: MockIncidentTemplate, severity: number): MockTemplateBand =>
+  t.bands.find((b) => severity >= b.severity[0] && severity <= b.severity[1]) ?? t.bands.at(-1)!;
 
-/** XP needed to go from level n to n+1 (analisi/05 §4), then +22% per level. */
-const LEVEL_STEPS = [100, 160, 240, 340, 460, 600, 760, 940, 1150];
+export const UNG_TYPES = RAW.ungUnitTypes.map((u) => ({
+  code: u.code,
+  icon: u.icon,
+  keepsRoadClosed: u.keepsRoadClosed,
+  arrivalSeconds: managerial(u.arrival.baseSeconds),
+  workSeconds: managerial((u.work.minSeconds + u.work.maxSeconds) / 2),
+}));
+export const ITEM_TYPES = RAW.itemTypes.map((i) => ({
+  ...i,
+  deliverySeconds: managerial(i.deliverySeconds),
+}));
+export const ROLES = RAW.roles.map((r) => ({ ...r, onboardingSeconds: managerial(r.onboardingSeconds) }));
+export const QUALIFICATIONS = RAW.qualifications;
+export const COURSES = RAW.courses.map((c) => ({ ...c, durationSeconds: managerial(c.durationSeconds) }));
+export const PATIENT_PROFILES = RAW.patientProfiles;
+export const MILESTONES = RAW.milestones;
+export const FEATURES = RAW.features;
+export const RANKS = RAW.ranks;
+export const LEVELS = RAW.levels;
+export const ECONOMY = RAW.economy;
+export const PERSONNEL_PARAMS = RAW.starterPackage.personnel;
+
+/** Cumulative XP required to REACH `level` (level 1 = 0) — table `levels.yaml`, never a formula in code. */
 export function xpThreshold(level: number): number {
-  // cumulative XP required to REACH `level` (level 1 = 0)
-  let total = 0;
-  for (let l = 1; l < level; l++) {
-    const step = LEVEL_STEPS[l - 1] ?? Math.round(1150 * 1.22 ** (l - LEVEL_STEPS.length));
-    total += step;
-  }
-  return total;
+  const row = LEVELS.find((l) => l.level === level);
+  if (row) return row.cumulativeXp;
+  const last = LEVELS.at(-1)!;
+  return last.cumulativeXp + last.xpToNext * Math.max(1, level - last.level);
 }
 export function levelForXp(xp: number): number {
   let level = 1;
-  while (xpThreshold(level + 1) <= xp && level < 60) level++;
+  while (level < RAW.maxLevel && xpThreshold(level + 1) <= xp) level++;
   return level;
 }
+export const levelRow = (level: number) => LEVELS.find((l) => l.level === level) ?? LEVELS.at(-1)!;
+export const rankFor = (level: number) =>
+  RANKS.find((r) => level >= r.fromLevel && level <= r.toLevel) ?? RANKS.at(-1)!;

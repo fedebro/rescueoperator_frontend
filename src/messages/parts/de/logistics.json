@@ -1,0 +1,200 @@
+{
+  "logistics": {
+    "title": "Logistik",
+    "subtitle": "Vorräte, Bestellungen und Werkstätten deiner Standorte",
+    "tabs": {
+      "warehouse": "Lager",
+      "orders": "Bestellungen",
+      "workshop": "Werkstatt"
+    },
+    "locked": {
+      "inventory": "Die Vorratsverwaltung ist noch nicht verfügbar",
+      "maintenance": "Die Fahrzeugwartung ist noch nicht verfügbar"
+    },
+    "due": {
+      "NOT_DUE": "Im Plan",
+      "UPCOMING": "Wartung bald fällig",
+      "DUE": "Wartung fällig",
+      "OVERDUE": "Wartung überfällig"
+    },
+    "risk": {
+      "LOW": "Geringes Pannenrisiko",
+      "MEDIUM": "Mittleres Pannenrisiko",
+      "HIGH": "Hohes Pannenrisiko"
+    },
+    "workStatus": {
+      "QUEUED": "In der Warteschlange",
+      "IN_PROGRESS": "In Arbeit",
+      "COMPLETED": "Abgeschlossen",
+      "CANCELLED": "Storniert"
+    },
+    "orderStatus": {
+      "PLACED": "Aufgegeben",
+      "IN_DELIVERY": "In Zustellung",
+      "DELIVERED": "Geliefert",
+      "CANCELLED": "Storniert"
+    },
+    "orderSummary": "{lines, plural, one {# Artikel} other {# Artikel}} für {facility}",
+    "stock": {
+      "title": "Vorräte",
+      "low": "Bestand niedrig",
+      "ok": "Bestand in Ordnung",
+      "lowAlert": "{count, plural, one {# Artikel liegt unter dem Mindestbestand} other {# Artikel liegen unter dem Mindestbestand}}",
+      "order": "Vorräte bestellen",
+      "empty": "Keine Vorräte zu verwalten",
+      "emptyHint": "Vorräte erscheinen in den Standorten der Dienste, die du freigeschaltet hast.",
+      "noneHere": "Dieser Standort benötigt kein Verbrauchsmaterial.",
+      "inboundOrders": "{count, plural, one {# Bestellung unterwegs} other {# Bestellungen unterwegs}}",
+      "col": {
+        "facility": "Standort",
+        "item": "Artikel",
+        "quantity": "Bestand",
+        "reserved": "Reserviert",
+        "inbound": "Unterwegs",
+        "minimum": "Minimum",
+        "state": "Zustand"
+      }
+    },
+    "order": {
+      "title": "Vorräte bestellen",
+      "subtitle": "Bestellt wird in ganzen Packungen; die Ware kommt ins Lager des Standorts.",
+      "facility": "Lieferstandort",
+      "lines": "Artikel",
+      "suggest": "Niedrige Bestände auffüllen",
+      "pack": "Packung mit {size} {unit}",
+      "inStock": "auf Lager: {quantity}",
+      "decrease": "Eine Packung {item} weniger",
+      "increase": "Eine Packung {item} mehr",
+      "packsOf": "{count, plural, one {# Packung} other {# Packungen}} {item}",
+      "storage": "Lagerplatz",
+      "delivery": "Lieferung",
+      "standard": "Normal",
+      "urgent": "Eilig",
+      "arrivesIn": "kommt in {time}",
+      "urgentHint": "Die Eillieferung kommt viel früher, kostet aber mehr.",
+      "submit": "Bestellung aufgeben",
+      "placed": "Bestellung aufgegeben"
+    },
+    "orders": {
+      "title": "Vorratsbestellungen",
+      "empty": "Keine Bestellungen",
+      "emptyHint": "Bestellungen erscheinen hier mit ihrer Lieferzeit.",
+      "arrived": "Angekommen",
+      "arriving": "trifft ein…",
+      "urgent": "Eilig",
+      "col": {
+        "placed": "Datum",
+        "summary": "Bestellung",
+        "total": "Summe",
+        "status": "Status",
+        "arrival": "Lieferung"
+      }
+    },
+    "workshop": {
+      "sectionTitle": "Wartung",
+      "fleet": "Zustand der Fahrzeuge",
+      "queue": "Werkstätten",
+      "quotes": "Arbeiten",
+      "empty": "Keine Fahrzeuge zu betreuen",
+      "started": "{callSign} ist in der Werkstatt",
+      "noQuotes": "Keine Arbeiten nötig.",
+      "notAvailable": "Das Fahrzeug muss am Standort verfügbar sein, um in die Werkstatt zu kommen.",
+      "kind": {
+        "SERVICE": "Inspektion",
+        "REPAIR": "Reparatur",
+        "FREE_EMERGENCY_REPAIR": "Kostenlose Notreparatur"
+      },
+      "start": {
+        "SERVICE": "Inspektion starten",
+        "REPAIR": "Reparieren",
+        "FREE_EMERGENCY_REPAIR": "Kostenlos reparieren"
+      },
+      "free": "Gratis",
+      "restoresTo": "Zustand wieder {health} %",
+      "health": "Zustand",
+      "healthValue": "Zustand bei {health} %",
+      "wear": "Verschleiß",
+      "km": "Gefahren",
+      "kmValue": "{km} km",
+      "missions": "Einsätze",
+      "finishing": "fast fertig…",
+      "waitingSlot": "wartet auf einen freien Platz",
+      "external": "Externe Werkstatt",
+      "externalHint": "Dieser Standort hat keine Werkstatt: gearbeitet wird extern, ein Fahrzeug nach dem anderen und langsamer.",
+      "slots": "Plätze {busy}/{slots}",
+      "queueEmpty": "Keine laufenden Arbeiten.",
+      "col": {
+        "vehicle": "Fahrzeug",
+        "facility": "Standort",
+        "status": "Status",
+        "health": "Zustand",
+        "band": "Stufe",
+        "wear": "Verschleiß",
+        "km": "Km",
+        "missions": "Einsätze",
+        "due": "Wartung",
+        "risk": "Risiko"
+      }
+    },
+    "recovery": {
+      "title": "Bergung des Fahrzeugs",
+      "automatic": "Die Bergung läuft automatisch: Du verlierst nie ein Fahrzeug.",
+      "headline": {
+        "BROKEN_DOWN": "Fahrzeug liegen geblieben",
+        "BEING_RECOVERED": "Wird abgeschleppt",
+        "REPAIR": "In Reparatur",
+        "AVAILABLE": "Wieder verfügbar"
+      },
+      "step": {
+        "BROKEN_DOWN": "Panne, Abschleppwagen gerufen",
+        "BEING_RECOVERED": "Abschleppen zum Standort",
+        "REPAIR": "Reparatur in der Werkstatt",
+        "AVAILABLE": "Wieder verfügbar"
+      },
+      "state": {
+        "done": "Erledigt",
+        "current": "Läuft",
+        "pending": "Offen"
+      },
+      "towEta": "Abschlepper",
+      "homeEta": "Am Standort",
+      "arriving": "gleich…",
+      "queued": "wartet"
+    },
+    "history": {
+      "title": "Fahrzeughistorie",
+      "empty": "Noch keine Ereignisse.",
+      "showAll": "Alle anzeigen ({count})",
+      "showLess": "Weniger anzeigen",
+      "MISSION": "Zurück vom Einsatz · {km} km",
+      "RESTOCKED": "Aus dem Lager aufgefüllt ({units} Einheiten)",
+      "SERVICE_STARTED": "Inspektion gestartet ({cost} Credits)",
+      "SERVICE_DONE": "Inspektion abgeschlossen",
+      "REPAIR_STARTED": "Reparatur gestartet ({cost} Credits)",
+      "REPAIR_DONE": "Reparatur abgeschlossen",
+      "FREE_EMERGENCY_REPAIR_STARTED": "Kostenlose Notreparatur gestartet",
+      "FREE_EMERGENCY_REPAIR_DONE": "Notreparatur abgeschlossen",
+      "BROKE_DOWN": "Panne im Einsatz",
+      "RECOVERY_STARTED": "Bergung per Abschleppwagen ({cost} Credits)",
+      "RECOVERY_STARTED_FREE": "Bergung per Abschleppwagen (kostenlos)",
+      "RECOVERED": "Zum Standort abgeschleppt"
+    }
+  },
+  "notifications": {
+    "lowStock": "Vorräte gehen zur Neige: {facility}",
+    "lowStockBody": "{count, plural, one {# Artikel liegt unter dem Minimum.} other {# Artikel liegen unter dem Minimum.}} Bestelle Nachschub.",
+    "suppliesDelivered": "Vorräte geliefert: {facility}",
+    "maintenanceDone": "{callSign} hat die Werkstatt verlassen",
+    "vehicleBrokeDownBody": "Bergung und Reparatur starten von selbst."
+  },
+  "timeline": {
+    "vehicle_broke_down": "{callSign} liegen geblieben: kommt nicht an"
+  },
+  "game": {
+    "dispatch": {
+      "warning": {
+        "INVENTORY_LOW": "Wenig Vorräte am Standort"
+      }
+    }
+  }
+}

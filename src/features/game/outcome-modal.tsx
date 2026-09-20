@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { Star } from 'lucide-react';
+import { LifeBuoy, Star } from 'lucide-react';
 import type { SyncSnapshot } from '@/contracts';
 import { gameApi } from '@/lib/api/endpoints';
 import { qk } from '@/lib/api/query-keys';
@@ -19,8 +19,9 @@ import { useCareerId, useSnapshot } from './hooks';
 /** Shows pending mission outcomes one at a time; acknowledging removes it server-side (so it survives reloads until seen). */
 export function OutcomeModal() {
   const careerId = useCareerId();
-  const { pendingOutcomes, career } = useSnapshot();
+  const { pendingOutcomes, career, incidents } = useSnapshot();
   const t = useTranslations('game.outcome');
+  const tf = useTranslations('families.outcome');
   const tc = useTranslations('common');
   const tx = useI18nText();
   const qc = useQueryClient();
@@ -39,6 +40,8 @@ export function OutcomeModal() {
     },
   });
   if (!outcome) return null;
+  // The reward is paid when on-scene work ends; the incident may stay open while system units (UNG) finish.
+  const stillResolving = incidents.some((i) => i.id === outcome.incidentId && i.status === 'RESOLVING');
   const tone = outcome.result === 'SUCCESS' ? 'success' : outcome.result === 'PARTIAL' ? 'warning' : 'danger';
   return (
     <Dialog
@@ -113,6 +116,15 @@ export function OutcomeModal() {
               </li>
             ))}
           </ul>
+        ) : null}
+        {stillResolving ? (
+          <p
+            className="border-info/40 bg-info/10 mt-4 flex items-start gap-2 rounded-md border px-3 py-2 text-xs leading-relaxed"
+            data-testid="outcome-still-resolving"
+          >
+            <LifeBuoy className="text-info mt-0.5 size-4 shrink-0" aria-hidden />
+            {tf('stillResolving')}
+          </p>
         ) : null}
         <DialogFooter>
           <Button

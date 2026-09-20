@@ -90,7 +90,7 @@ export function OtpInput({
           onKeyDown={(e) => handleKeyDown(i, e)}
           onFocus={(e) => e.target.select()}
           className={cn(
-            'tabular bg-surface-2 text-fg caret-brand focus:border-focus h-14 w-11 rounded-md border text-center text-2xl font-semibold transition-colors outline-none sm:w-12',
+            'tabular bg-surface-2 text-fg caret-brand focus:border-focus focus:ring-focus/50 h-14 w-11 rounded-md border text-center text-2xl font-semibold transition-colors outline-none focus:ring-2 sm:w-12',
             invalid ? 'border-danger' : digit ? 'border-border-strong' : 'border-border',
           )}
         />

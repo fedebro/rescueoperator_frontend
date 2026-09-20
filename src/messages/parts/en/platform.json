@@ -1,0 +1,50 @@
+{
+  "platform": {
+    "a11y": {
+      "pendingIncidents": "{count, plural, one {# incident waiting} other {# incidents waiting}}"
+    },
+    "sound": {
+      "title": "Sounds",
+      "masterHint": "Short synthesised cues, never before your first tap. Off by default on phones and tablets.",
+      "volume": "Master volume",
+      "volumeValue": "{percent}%",
+      "alerts": "Alerts",
+      "alertsHint": "New incidents, escalations, critical notices, failed missions.",
+      "feedback": "Feedback",
+      "feedbackHint": "Arrivals on scene, completed missions, levels, unlocks, Credits, command confirmations.",
+      "test": "Play a test sound"
+    },
+    "privacy": {
+      "title": "Privacy and app",
+      "analytics": "Anonymous usage statistics",
+      "analyticsHint": "They help us improve the game. Never emails, names or free text: gameplay events only. Off until you switch them on."
+    },
+    "pwa": {
+      "title": "Install the app",
+      "install": "Install",
+      "installed": "Installed",
+      "hint": "Add Rescue Control to your home screen: it opens full screen, like an app.",
+      "installedHint": "You are already using the installed app.",
+      "unavailableHint": "This browser does not offer installation. Try the browser menu, or use Chrome, Edge or Safari.",
+      "hintTitle": "Rescue Control as an app",
+      "hintBody": "Install it to open your control room with one tap, full screen.",
+      "iosTitle": "Install on iPhone and iPad",
+      "iosIntro": "Safari has no install button: it takes three steps.",
+      "iosStep1": "Tap Share in the Safari toolbar.",
+      "iosStep2": "Scroll and choose “Add to Home Screen”.",
+      "iosStep3": "Confirm with “Add”: the icon appears next to your other apps."
+    },
+    "offline": {
+      "title": "You are offline",
+      "body": "The control room needs a connection: the game world lives on the server and carries on without you.",
+      "retry": "Try again",
+      "safe": "Your progress is safe."
+    },
+    "manifest": {
+      "description": "Emergency management simulator on a real map: run your own control room.",
+      "shortcutMap": "Operations map",
+      "shortcutIncidents": "Incidents",
+      "shortcutFleet": "Fleet"
+    }
+  }
+}

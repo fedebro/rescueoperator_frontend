@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Building2, Hammer, Lock, Truck } from 'lucide-react';
 import type { IncidentDto, VehicleDto } from '@/contracts';
 import { gameApi } from '@/lib/api/endpoints';
+import { facilitiesApi } from '@/lib/api/depth';
 import { qk } from '@/lib/api/query-keys';
 import { isApiError } from '@/lib/api/errors';
 import { useErrorMessage } from '@/lib/api/error-message';
@@ -13,8 +14,8 @@ import { compareAmount, formatClock, formatTime } from '@/lib/format';
 import { toast } from '@/stores/toast';
 import { useUiStore } from '@/stores/ui';
 import { useIsDesktop } from '@/hooks/use-media-query';
-import { useI18nText } from '@/i18n/use-i18n-text';
-import { FamilyBadge, TopdownGlyph, isVehicleClass } from '@/design/icons';
+import { useCatalogName, useI18nText } from '@/i18n/use-i18n-text';
+import { FamilyBadge, TopdownGlyph, vehicleClassOf } from '@/design/icons';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Countdown } from '@/components/ui/countdown';
@@ -24,16 +25,24 @@ import { Card, EmptyState, SectionTitle, Skeleton } from '@/components/ui/misc';
 import { SeverityBadge } from '@/components/ui/severity-badge';
 import { StatusChip } from '@/components/ui/status-chip';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SpeedupButton } from '@/features/monetization/speedup-button';
+import { FacilityPersonnelSection } from '@/features/personnel/slots';
+import { FacilityStockSection } from '@/features/logistics/slots';
 import { SEVERITY_ORDER, useCareerId, useSnapshot, useVehicleTypeLookup } from './hooks';
 import { IncidentQueue } from './incident-queue';
 import { FacilitySummary } from './inspectors';
-import { InsufficientCreditsDialog } from './shop-screen';
+import { requestCredits } from '@/features/monetization/insufficient-credits';
+import { ConstructionBanner, PromotionCard } from '@/features/facilities/facility-extras';
+import { NewFacilitySection } from '@/features/facilities/new-facility-section';
+import { TransferVehicleButton } from '@/features/facilities/transfer-vehicle';
+import { IncidentFamilies } from '@/features/families/family-chips';
 import { PageBody } from './shell';
 
 /* ───────────────────────────── incidents ───────────────────────────── */
 export function IncidentsScreen() {
   const t = useTranslations('game.incidentsPage');
   const ti = useTranslations('game.incident');
+  const tfam = useTranslations('families.queue');
   const ts = useTranslations('status.incident');
   const tx = useI18nText();
   const locale = useLocale();
@@ -62,6 +71,12 @@ export function IncidentsScreen() {
       width: 'minmax(180px,2fr)',
       cell: (i) => <span className="font-semibold">{tx(i.title)}</span>,
       sortValue: (i) => tx(i.title),
+    },
+    {
+      id: 'families',
+      header: tfam('column'),
+      width: '104px',
+      cell: (i) => <IncidentFamilies incident={i} size={18} />,
     },
     {
       id: 'address',
@@ -140,6 +155,7 @@ export function FleetScreen() {
   const ts = useTranslations('status.vehicle');
   const th = useTranslations('status.health');
   const tc = useTranslations('common');
+  const ttr = useTranslations('facilities.transfer');
   const tx = useI18nText();
   const desktop = useIsDesktop();
   const router = useRouter();
@@ -156,13 +172,7 @@ export function FleetScreen() {
   };
   const glyph = (v: VehicleDto) => {
     const ty = typeOf(v.typeCode);
-    return (
-      <TopdownGlyph
-        vehicleClass={ty && isVehicleClass(ty.icon) ? ty.icon : 'truck'}
-        family={v.family}
-        size={24}
-      />
-    );
+    return <TopdownGlyph vehicleClass={vehicleClassOf(ty?.icon)} family={v.family} size={24} />;
   };
   const typeName = (v: VehicleDto) => {
     const ty = typeOf(v.typeCode);
@@ -233,6 +243,13 @@ export function FleetScreen() {
           '—'
         ),
     },
+    {
+      id: 'transfer',
+      header: ttr('column'),
+      width: '76px',
+      align: 'right',
+      cell: (v) => <TransferVehicleButton vehicle={v} compact />,
+    },
   ];
   return (
     <PageBody
@@ -277,11 +294,11 @@ export function FleetScreen() {
       ) : (
         <ul className="flex flex-col gap-2">
           {rows.map((v) => (
-            <li key={v.id}>
+            <li key={v.id} className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => open(v)}
-                className="border-border bg-surface-2 flex w-full items-center gap-3 rounded-md border p-3 text-left"
+                className="border-border bg-surface-2 flex min-w-0 flex-1 items-center gap-3 rounded-md border p-3 text-left"
                 data-testid="vehicle-card"
               >
                 {glyph(v)}
@@ -293,9 +310,12 @@ export function FleetScreen() {
                   <StatusChip status={v.status} label={ts(v.status)} />
                   {v.movement ? (
                     <Countdown to={v.movement.arriveAt} doneLabel="…" className="text-muted text-xs" />
+                  ) : v.busyUntil ? (
+                    <Countdown to={v.busyUntil} doneLabel="…" className="text-muted text-xs" />
                   ) : null}
                 </span>
               </button>
+              <TransferVehicleButton vehicle={v} compact className="size-11" />
             </li>
           ))}
         </ul>
@@ -308,7 +328,7 @@ export function FleetScreen() {
 export function FacilitiesScreen() {
   const t = useTranslations('game.facilitiesPage');
   const ts = useTranslations('status.facility');
-  const tx = useI18nText();
+  const name = useCatalogName();
   const { facilities } = useSnapshot();
   const params = useSearchParams();
   const router = useRouter();
@@ -329,9 +349,15 @@ export function FacilitiesScreen() {
                 <FamilyBadge family={f.family} size={36} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold">{f.name}</span>
-                  <span className="text-muted block truncate text-xs">
-                    {tx({ key: `catalog.facility.${f.typeCode}.name` })}
-                  </span>
+                  <span className="text-muted block truncate text-xs">{name('facility', f.typeCode)}</span>
+                  {f.status !== 'OPERATIONAL' ? (
+                    <span className="mt-1 flex items-center gap-2">
+                      <StatusChip status={f.status} label={ts(f.status)} />
+                      {f.operationalAt ? (
+                        <Countdown to={f.operationalAt} doneLabel="…" className="text-muted text-xs" />
+                      ) : null}
+                    </span>
+                  ) : null}
                 </span>
               </button>
             </li>
@@ -343,7 +369,7 @@ export function FacilitiesScreen() {
           <EmptyState icon={<Building2 className="size-5" />} title={t('empty')} />
         )}
       </div>
-      <span className="sr-only">{ts('OPERATIONAL')}</span>
+      <NewFacilitySection initialFamily={params.get('new')} />
     </PageBody>
   );
 }
@@ -354,7 +380,9 @@ function FacilityDetail({ facilityId }: { facilityId: string }) {
   const tc = useTranslations('common');
   const ts = useTranslations('status.facility');
   const tf = useTranslations('game.facility');
+  const tfa = useTranslations('facilities.detail');
   const tx = useI18nText();
+  const name = useCatalogName();
   const qc = useQueryClient();
   const errorMessage = useErrorMessage();
   const snapshot = useSnapshot();
@@ -364,10 +392,14 @@ function FacilityDetail({ facilityId }: { facilityId: string }) {
       ...qk.facility(careerId, facilityId),
       JSON.stringify(live?.upgrades ?? []),
       snapshot.career.level,
+      // promotion offer + upgrade caps follow the status and the type of the facility
+      live?.status,
+      live?.typeCode,
+      live?.promotion?.completeAt ?? null,
     ],
-    queryFn: () => gameApi.facility(careerId, facilityId),
+    // FacilityDetailV2Dto = FacilityDetailDto + `promotionOffer`
+    queryFn: () => facilitiesApi.detail(careerId, facilityId),
   });
-  const [missing, setMissing] = React.useState<string | null>(null);
   const buy = useMutation({
     mutationFn: (code: string) => gameApi.buyUpgrade(careerId, facilityId, code),
     onSuccess: () => {
@@ -376,7 +408,7 @@ function FacilityDetail({ facilityId }: { facilityId: string }) {
     },
     onError: (e, code) => {
       if (isApiError(e, 'INSUFFICIENT_CREDITS'))
-        setMissing(detail.data?.availableUpgrades.find((u) => u.code === code)?.price ?? '0');
+        requestCredits(detail.data?.availableUpgrades.find((u) => u.code === code)?.price ?? '0');
       else toast({ tone: 'danger', title: errorMessage(e) });
     },
   });
@@ -389,17 +421,24 @@ function FacilityDetail({ facilityId }: { facilityId: string }) {
           <div className="min-w-0 flex-1">
             <h2 className="font-display truncate text-xl font-bold">{live.name}</h2>
             <p className="text-muted truncate text-sm">
-              {detail.data?.address ?? tx({ key: `catalog.facility.${live.typeCode}.name` })}
+              {name('facility', live.typeCode)}
+              {detail.data?.address ? ` · ${detail.data.address}` : ''}
             </p>
           </div>
           <StatusChip status={live.status} label={ts(live.status)} />
         </div>
+        <ConstructionBanner facility={live} className="mt-4" />
         <div className="mt-4">
           <FacilitySummary facility={live} />
         </div>
       </Card>
       <Card>
         <SectionTitle>{t('upgrades')}</SectionTitle>
+        <p className="text-muted -mt-1 mb-3 text-xs">
+          {live.status === 'UNDER_CONSTRUCTION'
+            ? tfa('upgradesAfterConstruction')
+            : tfa('capsHint', { type: name('facility', live.typeCode) })}
+        </p>
         {!detail.data ? (
           <Skeleton className="h-32" />
         ) : (
@@ -427,6 +466,13 @@ function FacilityDetail({ facilityId }: { facilityId: string }) {
                     <p className="text-warning flex items-center gap-2 text-xs">
                       <Hammer className="size-3.5" aria-hidden />
                       {t('building')} <Countdown to={building} doneLabel="…" />
+                      <SpeedupButton
+                        target="FACILITY_UPGRADE"
+                        targetId={`${facilityId}:${u.code}`}
+                        endsAt={building}
+                        size="sm"
+                        className="ml-auto"
+                      />
                     </p>
                   ) : u.lockedReason === 'LEVEL_TOO_LOW' ? (
                     <p className="text-subtle flex items-center gap-1.5 text-xs">
@@ -435,13 +481,18 @@ function FacilityDetail({ facilityId }: { facilityId: string }) {
                     </p>
                   ) : u.lockedReason === 'MAX_LEVEL' ? (
                     <p className="text-subtle text-xs">{t('maxLevel')}</p>
+                  ) : u.lockedReason === 'FACILITY_NOT_OPERATIONAL' ? (
+                    <p className="text-subtle flex items-center gap-1.5 text-xs">
+                      <Lock className="size-3.5" aria-hidden />
+                      {tfa('notOperational')}
+                    </p>
                   ) : (
                     <Button
                       variant={tooPoor ? 'outline' : 'secondary'}
                       size="sm"
                       className="justify-between"
                       loading={buy.isPending && buy.variables === u.code}
-                      onClick={() => (tooPoor ? setMissing(u.price) : buy.mutate(u.code))}
+                      onClick={() => (tooPoor ? requestCredits(u.price) : buy.mutate(u.code))}
                     >
                       <span>
                         {t('buyUpgrade')} · {formatClock(u.buildSeconds)}
@@ -455,7 +506,9 @@ function FacilityDetail({ facilityId }: { facilityId: string }) {
           </ul>
         )}
       </Card>
-      <InsufficientCreditsDialog price={missing} onClose={() => setMissing(null)} />
+      <PromotionCard facility={live} offer={detail.data?.promotionOffer} />
+      <FacilityPersonnelSection facility={live} />
+      <FacilityStockSection facility={live} />
     </div>
   );
 }

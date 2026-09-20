@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { IntlMessageFormat } from 'intl-messageformat';
-import it_ from './it.json';
-import en from './en.json';
-import fr from './fr.json';
-import de from './de.json';
-import es from './es.json';
+import { loadMessagesSync } from '@/test/messages';
 import { ErrorCode, IncidentStatus, VehicleStatus, WeatherCode } from '@/contracts';
 import { INCIDENT_TEMPLATES, VEHICLE_TYPES, FACILITY_TYPES, CAPABILITIES } from '@/mocks/data/catalog';
 
@@ -17,8 +13,11 @@ const flatten = (t: Tree, p = '', out: Record<string, string> = {}) => {
   }
   return out;
 };
-const ref = flatten(it_ as Tree);
-const locales = { en, fr, de, es } as Record<string, Tree>;
+const ref = flatten(loadMessagesSync('it') as Tree);
+const locales = Object.fromEntries(['en', 'fr', 'de', 'es'].map((l) => [l, loadMessagesSync(l)])) as Record<
+  string,
+  Tree
+>;
 
 describe('message files', () => {
   it.each(Object.keys(locales))('%s has exactly the Italian key set', (l) => {
@@ -45,16 +44,21 @@ describe('message files', () => {
     for (const s of VehicleStatus.options) expect(ref[`status.vehicle.${s}`], s).toBeTruthy();
     for (const w of WeatherCode.options) expect(ref[`game.world.weather.${w}`], w).toBeTruthy();
   });
-  it('covers the whole mock catalog', () => {
-    for (const v of VEHICLE_TYPES) {
-      expect(ref[`catalog.vehicle.${v.code}.name`], v.code).toBeTruthy();
-      expect(ref[`catalog.vehicle.${v.code}.description`], v.code).toBeTruthy();
-    }
-    for (const f of FACILITY_TYPES) expect(ref[`catalog.facility.${f.code}.name`], f.code).toBeTruthy();
-    for (const c of CAPABILITIES) expect(ref[`catalog.capability.${c}`], c).toBeTruthy();
+  it('covers families, capabilities and domains client-side (fallback while the catalog bundle loads)', () => {
+    for (const c of CAPABILITIES) expect(ref[`catalog.capability.${c.code}`], c.code).toBeTruthy();
+    for (const f of ['FIRE', 'EMS', 'POLICE', 'WILDFIRE', 'ALPINE', 'UNG'])
+      expect(ref[`catalog.family.${f}`], f).toBeTruthy();
+  });
+  it.each(['it', 'en', 'fr', 'de', 'es'])('catalog bundle %s covers the whole catalog', async (l) => {
+    const bundle = (await import(`../mocks/data/generated/i18n/${l}.json`)) as {
+      default: { messages: Record<string, string | string[]> };
+    };
+    const m = bundle.default.messages;
+    for (const v of VEHICLE_TYPES) expect(m[`vehicle.${v.code}.name`], v.code).toBeTruthy();
+    for (const f of FACILITY_TYPES) expect(m[`facility.${f.code}.name`], f.code).toBeTruthy();
     for (const t of INCIDENT_TEMPLATES) {
-      expect(ref[`incidents.${t.code}.title`], t.code).toBeTruthy();
-      expect(ref[`incidents.${t.code}.report`], t.code).toBeTruthy();
+      expect(m[`incident.${t.code}.title`], t.code).toBeTruthy();
+      expect(Array.isArray(m[`incident.${t.code}.report.intros`]), t.code).toBe(true);
     }
   });
 });

@@ -13,7 +13,7 @@ import { qk } from '@/lib/api/query-keys';
 import { useErrorMessage } from '@/lib/api/error-message';
 import { amountRatio, formatAmount, formatDateTime } from '@/lib/format';
 import { useAuthStore } from '@/stores/auth';
-import { soundEnabled, useSettingsStore } from '@/stores/settings';
+import { useSettingsStore } from '@/stores/settings';
 import { toast } from '@/stores/toast';
 import { useIsDesktop } from '@/hooks/use-media-query';
 import { useI18nText } from '@/i18n/use-i18n-text';
@@ -21,14 +21,18 @@ import { FamilyBadge } from '@/design/icons';
 import { LanguageSelect } from '@/features/settings/language-select';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Countdown } from '@/components/ui/countdown';
 import { CreditAmount } from '@/components/ui/credit-amount';
 import { DataTable, type Column } from '@/components/ui/data-table';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Card, EmptyState, ProgressBar, SectionTitle, Skeleton, Stat } from '@/components/ui/misc';
 import { Switch } from '@/components/ui/switch';
+import { StipendCard } from '@/features/world/stipend-card';
+import { MilestonesCard, ReputationCard } from '@/features/world/progression-extras';
 import { MORE_ITEMS } from './nav';
+import { useVisibleNav } from './use-nav';
 import { DutyToggle } from './duty-toggle';
+import { PrivacyAndAppSettings, SoundSettings } from '@/features/platform/settings-sections';
+import { track } from '@/lib/analytics';
 import { useCareerId, useSnapshot } from './hooks';
 import { PageBody } from './shell';
 
@@ -81,6 +85,10 @@ export function ProgressionScreen() {
           <Stat label={t('failed')} value={progression?.incidentsFailed ?? '—'} />
         </div>
       </Card>
+      <div className="grid gap-4 md:grid-cols-2">
+        <ReputationCard />
+        <MilestonesCard />
+      </div>
       <Card>
         <SectionTitle>{t('unlocks')}</SectionTitle>
         {!unlocks ? (
@@ -139,7 +147,6 @@ export function EconomyScreen() {
     queryKey: [...qk.balance(careerId), career.credits],
     queryFn: () => gameApi.balance(careerId),
   }).data;
-  const stipend = useQuery({ queryKey: qk.stipend(careerId), queryFn: () => gameApi.stipend(careerId) }).data;
   const ledger = useInfiniteQuery({
     queryKey: [...qk.ledger(careerId), career.credits],
     initialPageParam: null as string | null,
@@ -183,24 +190,7 @@ export function EconomyScreen() {
             <Stat label={t('spent')} value={balance ? formatAmount(balance.lifetimeSpent, locale) : '—'} />
           </div>
         </Card>
-        <Card className="flex flex-col gap-3">
-          <SectionTitle>{t('stipend')}</SectionTitle>
-          <p className="text-muted text-sm">{t('stipendHint')}</p>
-          <div className="grid grid-cols-3 gap-3">
-            <Stat
-              label={t('stipendAmount')}
-              value={stipend ? <CreditAmount value={stipend.estimatedAmount} label={tc('credits')} /> : '—'}
-            />
-            <Stat
-              label={t('coverage')}
-              value={stipend?.coveragePct != null ? `${Math.round(stipend.coveragePct)}%` : '—'}
-            />
-            <Stat
-              label={t('nextPayment')}
-              value={stipend?.nextPaymentAt ? <Countdown to={stipend.nextPaymentAt} doneLabel="…" /> : '—'}
-            />
-          </div>
-        </Card>
+        <StipendCard />
       </div>
       <SectionTitle className="mt-2">{t('ledger')}</SectionTitle>
       {ledger.isLoading ? (
@@ -309,30 +299,23 @@ export function SettingsScreen() {
         <SectionTitle>{t('preferences')}</SectionTitle>
         <SettingRow title={t('language')} control={<LanguageSelect />} />
         <SettingRow
-          title={t('sound')}
-          hint={t('soundHint')}
-          control={
-            <Switch
-              checked={soundEnabled(settings.sound)}
-              onCheckedChange={settings.setSound}
-              aria-label={t('sound')}
-              data-testid="sound-toggle"
-            />
-          }
-        />
-        <SettingRow
           title={t('reducedMotion')}
           hint={t('reducedMotionHint')}
           control={
             <Switch
               checked={settings.reducedMotion}
-              onCheckedChange={settings.setReducedMotion}
+              onCheckedChange={(value) => {
+                settings.setReducedMotion(value);
+                track('settings_changed', { setting: 'reducedMotion', value });
+              }}
               aria-label={t('reducedMotion')}
               data-testid="reduced-motion-toggle"
             />
           }
         />
       </Card>
+      <SoundSettings />
+      <PrivacyAndAppSettings />
       <Card>
         <SectionTitle>{t('duty')}</SectionTitle>
         <DutyToggle />
@@ -407,10 +390,11 @@ export function SettingsScreen() {
 export function MoreScreen() {
   const t = useTranslations('game.nav');
   const { career } = useSnapshot();
+  const items = useVisibleNav(MORE_ITEMS);
   return (
     <PageBody title={t('more')} subtitle={`${career.directorName} · ${career.locationName}`}>
       <ul className="flex flex-col gap-2">
-        {MORE_ITEMS.map((item) => (
+        {items.map((item) => (
           <li key={item.href}>
             <Link
               href={item.href}

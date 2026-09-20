@@ -22,6 +22,11 @@ import { Logo } from '@/components/brand/logo';
 import { BrandSplash } from '@/components/brand/splash';
 import { LanguageSelect } from '@/features/settings/language-select';
 import { FamilyBadge } from '@/design/icons';
+import {
+  captureInviteCodeFromUrl,
+  inviteAttribution,
+  settleInviteCode,
+} from '@/features/monetization/invite-code';
 
 type Step = 'email' | 'otp' | 'profile';
 interface Challenge {
@@ -80,13 +85,19 @@ export function AuthScreen() {
     return () => clearTimeout(timer);
   }, [challenge]);
 
+  // Landing CTA: `/auth?ref=CODE` → remembered until sign-up.
+  React.useEffect(() => {
+    captureInviteCodeFromUrl(window.location.search);
+  }, []);
+
   const resendReady = !!challenge && resendReadyFor === challenge.challengeId;
 
   const requestOtp = async (email: string) => {
     setBusy(true);
     setError(null);
     try {
-      const res = await authApi.requestOtp({ email, locale });
+      // Invite hand-off (contract: `attribution.referralCode` of the OTP request).
+      const res = await authApi.requestOtp({ email, locale, ...inviteAttribution() });
       setChallenge({ ...res, email });
       setCode('');
       setStep('otp');
@@ -109,6 +120,7 @@ export function AuthScreen() {
       });
       setAccessToken(result.accessToken, result.accessTokenExpiresAt);
       setSession(result.user);
+      settleInviteCode(result.isNewUser);
       if (result.user.locale !== locale) void authApi.updateMe({ locale }).catch(() => undefined);
       router.replace(result.user.activeCareerId ? '/game' : '/onboarding');
     } catch (e) {

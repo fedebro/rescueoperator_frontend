@@ -9,6 +9,8 @@ import { GameShell } from './shell';
 import { OutcomeModal } from './outcome-modal';
 import { AwayReportDialog } from './away-report';
 import { TutorialOverlay } from './tutorial-overlay';
+import { InsufficientCreditsHost } from '@/features/monetization/insufficient-credits';
+import { FamilyUnlockCelebration } from '@/features/families/family-unlock-celebration';
 
 export function GameLayout({ children }: { children: React.ReactNode }) {
   const t = useTranslations('common');
@@ -27,6 +29,8 @@ export function GameLayout({ children }: { children: React.ReactNode }) {
       <TutorialOverlay />
       <AwayReportDialog />
       <OutcomeModal />
+      <InsufficientCreditsHost />
+      <FamilyUnlockCelebration />
     </GameRuntime>
   );
 }

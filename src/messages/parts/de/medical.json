@@ -1,0 +1,131 @@
+{
+  "medical": {
+    "patients": {
+      "title": "Patienten",
+      "count": "{count, plural, one {# Patient} other {# Patienten}}",
+      "label": "Patient {n}",
+      "loadError": "Die Patienten konnten nicht geladen werden.",
+      "triageUnknown": "Sichtung läuft",
+      "unassessedTitle": "Sichtung läuft",
+      "unassessedHint": "Die Patienten werden gesichtet, sobald das erste Rettungsmittel eintrifft.",
+      "unassessedNoMedical": "Kein Rettungsmittel vor Ort oder auf Anfahrt: Schicke einen Rettungswagen. Andernfalls übernimmt ein externer Rettungswagen – mit schlechterem Ergebnis.",
+      "profileUnknown": "Zustand noch nicht beurteilt",
+      "vehicle": "Fahrzeug",
+      "hospital": "Krankenhaus",
+      "externalAmbulance": "Externer Rettungswagen",
+      "transportNotRequired": "Kein Transport nötig",
+      "openHospital": "{hospital} auf der Karte zeigen"
+    },
+    "stability": {
+      "label": "Stabilität",
+      "value": "{value} von 100",
+      "band": {
+        "stable": "Stabil",
+        "watch": "Zu überwachen",
+        "unstable": "Instabil",
+        "critical": "Kritisch"
+      },
+      "trend": {
+        "improving": "Bessert sich",
+        "worsening": "Verschlechtert sich",
+        "steady": "Unverändert"
+      }
+    },
+    "needs": {
+      "title": "Versorgung vor Ort",
+      "met": "{capability}: abgedeckt",
+      "unmet": "{capability}: nicht abgedeckt",
+      "unmetHint": "Mit den Fahrzeugen vor Ort lässt sich der Patient hier nicht stabilisieren: Schicke ein geeignetes Fahrzeug oder transportiere ihn so bald wie möglich."
+    },
+    "phase": {
+      "assessing": "Sichtung",
+      "treating": "Versorgung",
+      "packaging": "Transportvorbereitung",
+      "toHospital": "Ankunft im Krankenhaus",
+      "handoff": "Übergabe an die Notaufnahme",
+      "done": "läuft…"
+    },
+    "transport": {
+      "title": "Transport ins Krankenhaus",
+      "loading": "Krankenhäuser werden berechnet…",
+      "loadError": "Die Krankenhäuser konnten nicht berechnet werden.",
+      "recommended": "Empfohlen",
+      "confirmRecommended": "Transport nach {hospital}",
+      "chooseOther": "Anderes Krankenhaus wählen",
+      "chooseTitle": "Krankenhaus wählen",
+      "chooseDescription": "Fahrzeit, passende Fachabteilung und Auslastung der Notaufnahme bestimmen das Ergebnis für den Patienten.",
+      "hideOptions": "Alternativen ausblenden",
+      "select": "{hospital} auswählen",
+      "confirm": "Transport bestätigen",
+      "vehicle": "Transportierendes Fahrzeug",
+      "travel": "Fahrt",
+      "handoff": "Übergabe",
+      "compatible": "Passende Abteilung",
+      "notCompatible": "Keine passende Abteilung",
+      "helipad": "Hubschrauberlandeplatz",
+      "lockedChoice": "Die manuelle Krankenhauswahl wird mit Stufe {level} freigeschaltet. Bis dahin wird das empfohlene Krankenhaus vorgeschlagen.",
+      "autoHint": "Ohne deine Wahl wird das empfohlene Krankenhaus nach kurzer Wartezeit automatisch bestätigt.",
+      "noVehicle": "Kein Fahrzeug mit Patiententransport vor Ort",
+      "noVehicleHint": "Der Patient wartet vor Ort. Schicke einen Rettungswagen: Kommt keiner, übernimmt ein externer Rettungswagen.",
+      "vehicleEnRoute": "{callSign} ist für den Transport auf Anfahrt.",
+      "send": "{callSign} schicken",
+      "noAmbulance": "Im Moment ist kein Rettungswagen verfügbar.",
+      "sent": "{callSign} für den Transport alarmiert",
+      "started": "{callSign} unterwegs nach {hospital}"
+    },
+    "reasons": {
+      "CLOSEST": "Es liegt am nächsten",
+      "SPECIALTY_AVAILABLE": "Es hat die benötigte Fachabteilung",
+      "PREFERRED_UNIT": "Es hat auch die am besten geeignete Abteilung",
+      "LOW_LOAD": "Notaufnahme normal ausgelastet",
+      "BUSY": "Volle Notaufnahme: langsamere Übergabe",
+      "SATURATED": "Überlastete Notaufnahme: sehr langsame Übergabe",
+      "NOT_COMPATIBLE": "Die benötigte Fachabteilung fehlt",
+      "NO_SPECIALTY_IN_RANGE": "Kein Krankenhaus der Umgebung hat die Spezialabteilung",
+      "CLOSED": "Nimmt derzeit keine Patienten auf"
+    },
+    "hospital": {
+      "subtitle": "Krankenhaus",
+      "load": "Auslastung der Notaufnahme",
+      "capabilities": "Fachabteilungen",
+      "helipadYes": "Hubschrauberlandeplatz vorhanden",
+      "helipadNo": "Kein Hubschrauberlandeplatz",
+      "incoming": "Patienten auf Anfahrt",
+      "incomingNone": "Keine Patienten auf Anfahrt.",
+      "notFound": "Krankenhaus nicht gefunden.",
+      "loadError": "Die Krankenhäuser konnten nicht geladen werden."
+    }
+  },
+  "status": {
+    "patient": {
+      "UNASSESSED": "Nicht gesichtet",
+      "ASSESSED": "Gesichtet",
+      "TREATING": "In Versorgung",
+      "STABILIZED": "Stabilisiert",
+      "AWAITING_TRANSPORT": "Wartet auf Transport",
+      "IN_TRANSPORT": "Im Transport",
+      "HANDOFF": "Übergabe im Krankenhaus",
+      "ADMITTED": "Dem Krankenhaus übergeben",
+      "RELEASED_ON_SCENE": "Vor Ort versorgt",
+      "DECEASED": "Nicht überlebt"
+    },
+    "hospitalLoad": {
+      "NORMAL": "Normale Auslastung",
+      "BUSY": "Voll",
+      "SATURATED": "Überlastet",
+      "CLOSED": "Nimmt keine Patienten auf"
+    }
+  },
+  "timeline": {
+    "patient_assessed": "Patient vom Rettungsdienst gesichtet",
+    "patient_stabilized": "Patient vor Ort stabilisiert",
+    "patient_released": "Patient vor Ort versorgt: kein Transport nötig",
+    "patient_transport": "{callSign} transportiert den Patienten nach {hospital}",
+    "patient_transport_auto": "{callSign} transportiert den Patienten nach {hospital} (empfohlenes Krankenhaus, automatisch bestätigt)",
+    "patient_external": "Patient einem externen Rettungswagen übergeben, Ziel {hospital}",
+    "patient_admitted": "Patient an {hospital} übergeben"
+  },
+  "notifications": {
+    "patientAwaitingTransport": "Patient wartet auf Transport in {address}"
+  }
+}

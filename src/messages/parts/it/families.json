@@ -1,0 +1,76 @@
+{
+  "families": {
+    "overview": {
+      "title": "Servizi",
+      "unlocked": "Attivo",
+      "lockedAt": "Si sblocca al livello {level}",
+      "lockedAtTerritory": "Si apre al livello {level} in questo territorio",
+      "notInTerritory": "Non disponibile in questo territorio"
+    },
+    "external": {
+      "familyTitle": "{family} — coperto dal supporto esterno",
+      "notice": "{count, plural, one {{families} non è ancora un tuo servizio: la sua parte è coperta dal supporto esterno e non pesa sulla tua valutazione.} other {{families} non sono ancora tuoi servizi: la loro parte è coperta dal supporto esterno e non pesa sulla tua valutazione.}} Invia solo i mezzi dei servizi che gestisci."
+    },
+    "attribution": {
+      "title": "Chi se ne occupa",
+      "anyFamily": "Qualsiasi servizio",
+      "external": "Supporto esterno",
+      "yours": "Tuo servizio"
+    },
+    "support": {
+      "title": "Supporto esterno",
+      "intro": "Il lavoro dei tuoi mezzi è finito. Le unità di sistema completano le operazioni: non le gestisci tu.",
+      "rewardPaid": "Ricompensa già accreditata alle {time}",
+      "empty": "In chiusura: restano da completare le ultime operazioni.",
+      "status": {
+        "REQUESTED": "Richiesta",
+        "WORKING": "Al lavoro",
+        "DONE": "Completato",
+        "CANCELLED": "Annullata"
+      },
+      "arrivesIn": "Arrivo tra",
+      "doneIn": "Fine lavori tra",
+      "roadClosed": "Strada chiusa fino al termine"
+    },
+    "unlock": {
+      "title": "Nuovo servizio: {family}",
+      "subtitle": "Hai raggiunto il livello {level}: la tua centrale si allarga.",
+      "subtitleTerritory": "Livello {level}: in questo territorio il servizio si apre adesso.",
+      "vehicles": "{count, plural, one {# modello di mezzo} other {# modelli di mezzo}} nel Centro acquisti",
+      "facilities": "{count, plural, one {# tipo di sede} other {# tipi di sede}} da acquisire e promuovere",
+      "incidents": "Le emergenze di questo servizio inizieranno ad arrivare.",
+      "nextStep": "Per iniziare: acquisisci una sede compatibile, poi acquista il primo mezzo.",
+      "later": "Più tardi",
+      "newFacility": "Scegli una sede",
+      "openShop": "Vai al Centro acquisti"
+    },
+    "shop": {
+      "domain": {
+        "ALL": "Tutti",
+        "GROUND": "Terra",
+        "AIR": "Aria",
+        "WATER": "Acqua"
+      },
+      "domainFilter": "Filtra per dominio",
+      "airNote": "Vola in linea retta a {speed} km/h: ignora strade e traffico. Richiede una sede con elisuperficie (dominio Aria).",
+      "trailerNote": "Raggiunge il posto su strada, trainato su carrello: un po’ più lento a partire.",
+      "trailerNoteWater": "Imbarcazione su carrello stradale: viaggia su strada fino all’acqua e occupa un posto d’ormeggio (dominio Acqua).",
+      "reason": {
+        "familyLocked": "Servizio bloccato: si sblocca al livello {level}",
+        "noFacility": "Nessuna sede operativa compatibile. Serve: {types}",
+        "noCapacity": "Nessun posto libero ({domain}) nelle sedi compatibili"
+      },
+      "newFacility": "Acquisisci una sede",
+      "manageFacilities": "Amplia o promuovi una sede"
+    },
+    "queue": {
+      "externalUnits": "{count, plural, one {# unità esterna al lavoro} other {# unità esterne al lavoro}}",
+      "closing": "In chiusura",
+      "column": "Servizi"
+    },
+    "outcome": {
+      "stillResolving": "L’emergenza resta aperta finché il supporto esterno non ha finito, ma la ricompensa è già tua e i tuoi mezzi stanno rientrando."
+    },
+    "radio": "Messaggio radio"
+  }
+}

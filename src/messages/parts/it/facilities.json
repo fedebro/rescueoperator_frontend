@@ -1,0 +1,103 @@
+{
+  "facilities": {
+    "site": {
+      "real": "Luogo reale",
+      "realHint": "Corrisponde a un presidio che esiste davvero sul territorio.",
+      "generated": "Sito generato",
+      "generatedHint": "Posizione proposta dal gioco per coprire meglio il territorio.",
+      "sharedFamily": "Coordinamento",
+      "acquired": "{name}: sede acquisita",
+      "acquiredHint": "Sarà operativa al termine dell’allestimento.",
+      "tier": "Grado {tier}",
+      "setup": "Allestimento",
+      "acquire": "Acquisisci",
+      "lockedFamily": "Servizio bloccato: livello {level}",
+      "alreadyOwned": "Sito già tuo",
+      "capacity": "Posti mezzi",
+      "expansion": "Ampliabilità",
+      "expansionLevel": {
+        "LOW": "Bassa",
+        "MEDIUM": "Media",
+        "HIGH": "Alta"
+      },
+      "nearest": "Dalla sede più vicina",
+      "profile": {
+        "CENTRAL": "Posizione centrale: tempi brevi nel cuore della città, poco spazio per crescere.",
+        "BALANCED": "Posizione equilibrata: buona copertura e margine di crescita.",
+        "PERIPHERAL": "Posizione periferica: più spazio, tempi più lunghi verso il centro."
+      },
+      "owned": "Hai già una sede su questo sito",
+      "openFacility": "Apri la sede",
+      "options": "Cosa puoi aprire qui"
+    },
+    "map": {
+      "modeTitle": "Nuova sede",
+      "loading": "Cerco i siti disponibili…",
+      "modeHint": "{count, plural, =0 {Nessun sito disponibile in zona} one {# sito disponibile: toccalo sulla mappa} other {# siti disponibili: toccane uno sulla mappa}}",
+      "exit": "Esci dalla modalità nuova sede",
+      "newFacility": "Nuova sede",
+      "siteGone": "Sito non più disponibile",
+      "candidateSite": "Sito disponibile"
+    },
+    "newFacility": {
+      "title": "Nuova sede",
+      "chooseOnMap": "Scegli sulla mappa",
+      "subtitle": "Siti disponibili vicino alle tue sedi. Ogni sito ammette solo alcuni tipi di sede.",
+      "filter": "Filtra per servizio",
+      "all": "Tutti",
+      "empty": "Nessun sito disponibile per questo servizio",
+      "from": "da",
+      "lockedFrom": "bloccato · da",
+      "dialogHint": "Scegli il tipo di sede da aprire su questo sito.",
+      "showOnMap": "Mostra sulla mappa"
+    },
+    "construction": {
+      "title": "Sede in allestimento",
+      "hint": "Potrai assegnare mezzi e personale quando sarà operativa.",
+      "readyIn": "Operativa tra"
+    },
+    "promotion": {
+      "title": "Promozione della sede",
+      "topOfChain": "Questa sede è già al vertice della sua catena.",
+      "hint": "Il nuovo tipo porta più capienza di base, nuovi domini e tetti più alti per gli ampliamenti. Gli ampliamenti già costruiti restano.",
+      "building": "Promozione in corso:",
+      "buildingTo": "Promozione a {type} in corso:",
+      "requirements": "Requisiti della promozione",
+      "needLevel": "Livello carriera {level}",
+      "needUpgrade": "{upgrade} al livello {level}",
+      "met": "requisito soddisfatto",
+      "missing": "requisito mancante",
+      "promote": "Promuovi",
+      "started": "Promozione avviata",
+      "waitUpgrades": "Attendi la fine dei lavori in corso",
+      "notOperational": "La sede non è ancora operativa",
+      "needUpgrades": "Completa prima gli ampliamenti richiesti"
+    },
+    "transfer": {
+      "action": "Trasferisci ad altra sede",
+      "actionFor": "Trasferisci {callSign} ad altra sede",
+      "column": "Sposta",
+      "onlyAvailable": "Si possono trasferire solo i mezzi disponibili in sede.",
+      "title": "Trasferisci {callSign}",
+      "subtitle": "Occupa {points} posti ({domain}). Solo sedi compatibili e con spazio libero.",
+      "done": "{callSign} in trasferimento verso {facility}",
+      "doneHint": "Sarà disponibile all’arrivo nella nuova sede.",
+      "state": {
+        "OK": "{free} posti liberi",
+        "CURRENT": "Sede attuale",
+        "INCOMPATIBLE": "Tipo di sede non compatibile",
+        "NOT_OPERATIONAL": "Non ancora operativa",
+        "FULL": "Nessun posto libero"
+      }
+    },
+    "detail": {
+      "upgradesAfterConstruction": "Gli ampliamenti si potranno costruire quando la sede sarà operativa.",
+      "capsHint": "I livelli massimi dipendono dal tipo di sede ({type}): promuovila per alzarli.",
+      "notOperational": "Disponibile quando la sede sarà operativa"
+    }
+  },
+  "notifications": {
+    "facilityReady": "Sede operativa: {facility}",
+    "facilityPromoted": "Promozione completata: {facility}"
+  }
+}

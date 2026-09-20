@@ -1,4 +1,4 @@
-import { AdminIncidents } from '@/features/admin/admin-pages';
+import { AdminIncidents } from '@/features/admin/incidents';
 
 export default function Page() {
   return <AdminIncidents />;

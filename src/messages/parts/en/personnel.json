@@ -1,0 +1,286 @@
+{
+  "status": {
+    "personnel": {
+      "ONBOARDING": "Onboarding",
+      "AVAILABLE": "Available",
+      "ASSIGNED": "Assigned",
+      "ON_MISSION": "On mission",
+      "RESTING": "Resting",
+      "TRAINING": "In training",
+      "INJURED": "Injured",
+      "TRANSFERRING": "Transferring",
+      "UNAVAILABLE": "Unavailable",
+      "RETIRED": "Retired"
+    },
+    "team": {
+      "READY": "Ready",
+      "PARTIAL": "Partial",
+      "ON_MISSION": "On mission",
+      "RESTING": "Resting",
+      "UNAVAILABLE": "Unavailable"
+    }
+  },
+  "notifications": {
+    "personnel": {
+      "onboarded": "{name} has finished onboarding and is on duty.",
+      "recovered": "{name} has recovered from the injury and is available again.",
+      "trainingDone": "{name} has completed the course and earned a new qualification.",
+      "restRequired": "{name} is exhausted: let them rest before the next dispatch.",
+      "injured": "{name} was injured on a mission. Nothing serious: they will be back after recovery."
+    }
+  },
+  "personnel": {
+    "title": "Personnel",
+    "subtitle": "Operators, teams, hiring and training of your control centre.",
+    "summary": {
+      "total": "Operators",
+      "ready": "Ready for duty",
+      "cost": "Cost per period"
+    },
+    "tabs": {
+      "roster": "Roster",
+      "teams": "Teams & departments",
+      "recruitment": "Recruitment",
+      "training": "Training"
+    },
+    "potential": {
+      "STANDARD": "Standard potential",
+      "PROMISING": "Promising",
+      "EXCEPTIONAL": "Exceptional talent"
+    },
+    "fatigue": {
+      "label": "Fatigue",
+      "trend": {
+        "stable": "Stable: fatigue is updated when the crew returns from the mission.",
+        "down": "Recovering: fatigue is going down.",
+        "up": "Rising: fatigue is going up."
+      }
+    },
+    "busyReason": {
+      "ONBOARDING": "Onboarding in progress",
+      "MISSION": "Out on a mission",
+      "REST": "Rest in progress",
+      "TRAINING": "Course in progress",
+      "INJURY": "Recovering from an injury",
+      "TRANSFER": "Transfer in progress"
+    },
+    "history": {
+      "HIRED": "Hired",
+      "ONBOARDED": "Onboarding completed: on duty",
+      "MISSION": "Back from a mission with {vehicle}",
+      "REST_STARTED": "Sent to rest",
+      "REST_DONE": "Rest completed",
+      "TRANSFER_STARTED": "Transferring to {facility}",
+      "TRANSFERRED": "Arrived at the new facility",
+      "RECOVERED": "Recovered: available again",
+      "TRAINING_STARTED": "Enrolled in: {course}",
+      "TRAINING_DONE": "Course completed: {course}",
+      "TRAINING_CANCELLED": "Enrollment cancelled: {course}",
+      "INJURED": "Injured on a mission ({severity})",
+      "TEAM_JOINED": "Joined team {team}"
+    },
+    "sheet": {
+      "title": "Operator sheet",
+      "restStarted": "Operator sent to rest",
+      "transferStarted": "Transfer started",
+      "dismissed": "Operator dismissed",
+      "enrolled": "Course enrollment confirmed",
+      "injury": "Injury: {severity}",
+      "injuryRecovery": "Back on duty in",
+      "fatigue": "Fatigue",
+      "facility": "Facility",
+      "team": "Team",
+      "noTeam": "No team",
+      "competence": "Competence",
+      "missions": "Missions",
+      "costPerPeriod": "Cost per period",
+      "hiredAt": "On the roster since",
+      "qualifications": "Qualifications",
+      "noQualifications": "No qualifications yet: enroll them in a course.",
+      "obtained": "obtained on {date}",
+      "expires": "expires on {date}",
+      "actions": "Actions",
+      "rest": "Send to rest",
+      "course": "Course",
+      "coursePlaceholder": "Choose a course",
+      "noCourses": "No suitable course",
+      "enroll": "Enroll",
+      "destination": "Destination facility",
+      "destinationPlaceholder": "Choose the facility",
+      "noDestination": "No other suitable facility",
+      "beds": "{count, plural, =0 {quarters full} one {# free bed} other {# free beds}}",
+      "transfer": "Transfer",
+      "dismiss": "Dismiss",
+      "dismissConfirmTitle": "Dismiss this operator?",
+      "dismissConfirmBody": "{name} will leave the control centre and the hiring cost will not be refunded.",
+      "dismissConfirm": "Yes, dismiss",
+      "history": "History"
+    },
+    "roster": {
+      "search": "Search by name",
+      "filter": {
+        "facility": "Filter by facility",
+        "family": "Filter by service",
+        "role": "Filter by role",
+        "status": "Filter by status",
+        "band": "Filter by fatigue",
+        "qualification": "Filter by qualification"
+      },
+      "all": {
+        "facility": "All facilities",
+        "family": "All services",
+        "role": "All roles",
+        "status": "All statuses",
+        "band": "Any fatigue level",
+        "qualification": "All qualifications"
+      },
+      "col": {
+        "name": "Operator",
+        "role": "Role",
+        "facility": "Facility",
+        "team": "Team",
+        "status": "Status",
+        "fatigue": "Fatigue",
+        "competence": "Skill",
+        "missions": "Missions"
+      },
+      "emptyTitle": "No operators found",
+      "emptyHint": "Widen the filters or hire new operators from the Recruitment tab.",
+      "count": "{shown} of {total} operators",
+      "caption": "Control centre roster"
+    },
+    "locked": {
+      "progress": "You are at level {level} of {required}"
+    },
+    "hire": {
+      "title": "Quick hire",
+      "subtitle": "Base roles, on the roster after a short onboarding.",
+      "role": "Role",
+      "facility": "Facility",
+      "noFacility": "No suitable facility",
+      "beds": "{count, plural, =0 {quarters full} one {# free bed} other {# free beds}}",
+      "roleFacts": "Cost per period: {cost} · onboarding: {onboarding}",
+      "count": "How many operators",
+      "fewer": "One fewer",
+      "more": "One more",
+      "total": "Total cost",
+      "submit": "{count, plural, one {Hire # operator} other {Hire # operators}}",
+      "noBeds": "Not enough quarters here: expand the quarters or pick another facility.",
+      "onboarding": "Onboarding now",
+      "hired": "{count, plural, one {# operator hired: onboarding started} other {# operators hired: onboarding started}}"
+    },
+    "market": {
+      "title": "Specialist candidates",
+      "subtitle": "Trained profiles, available for a limited time.",
+      "nextRefresh": "New candidates in",
+      "emptyTitle": "No candidates right now",
+      "emptyHint": "The list renews by itself over time: check back later.",
+      "competence": "Competence {value}",
+      "hireCost": "Hiring cost",
+      "costPerPeriod": "Per period",
+      "expires": "Expires in",
+      "expired": "expired",
+      "facility": "Assigned facility",
+      "noFacility": "No free bed",
+      "hire": "Hire",
+      "hired": "{name} hired: onboarding started",
+      "fairness": "Candidates renew only with time: there is no paid refresh."
+    },
+    "training": {
+      "cancelled": "Enrollment cancelled: half of the cost was refunded.",
+      "lockedHint": "Courses give your operators the qualifications that specialised vehicles require.",
+      "slots": "Classroom seats per facility",
+      "slotsUsed": "{used}/{total} in use",
+      "running": "Courses in progress",
+      "noneRunning": "No course in progress.",
+      "cancel": "Cancel",
+      "cancelFor": "Cancel the course of {name}",
+      "completed": "{count, plural, one {# course completed recently} other {# courses completed recently}}",
+      "catalogue": "Course catalogue",
+      "grants": "Grants: {qualification}",
+      "requires": "Requires: {qualification}",
+      "roles": "Eligible roles",
+      "enroll": "Enroll",
+      "noEligible": "No one eligible",
+      "enrollIn": "Enroll in: {course}",
+      "noCourses": "No courses in the catalogue",
+      "enrollHint": "Pick up to {max} eligible, free operators. They cannot go on missions during the course.",
+      "total": "Total cost",
+      "enrolled": "{count, plural, one {# operator enrolled in the course} other {# operators enrolled in the course}}",
+      "enrollCount": "{count, plural, =0 {Select the operators} one {Enroll # operator} other {Enroll # operators}}"
+    },
+    "teams": {
+      "warning": {
+        "NO_MEMBERS": "The team has no members.",
+        "NO_LEADER": "No team leader chosen.",
+        "NO_VEHICLE": "No vehicle assigned.",
+        "BELOW_MIN_CREW": "Below the minimum crew: the vehicle cannot leave.",
+        "BELOW_OPTIMAL_CREW": "Below the optimal crew: reduced efficiency.",
+        "FATIGUED_MEMBERS": "Some members are fatigued.",
+        "INJURED_MEMBERS": "Some members are injured.",
+        "MISSING_ROLE": "The role required by the vehicle is missing: {role}.",
+        "MISSING_QUALIFICATION": "The qualification required by the vehicle is missing: {qualification}."
+      },
+      "lockedHint": "With teams you decide who rides each vehicle and keep an eye on readiness.",
+      "departmentsLockedHint": "Departments group the teams of one service at a facility.",
+      "subtitle": "Without a team the crew is put together automatically from the free operators of the facility.",
+      "newDepartment": "New department",
+      "newTeam": "New team",
+      "emptyTitle": "No teams yet",
+      "emptyHint": "Create your first team, add members and assign a vehicle.",
+      "noDepartment": "No department",
+      "emptyDepartment": "No team in this department.",
+      "rename": "Rename the team",
+      "readiness": "Readiness",
+      "vehicle": "Assigned vehicle",
+      "noVehicle": "No vehicle",
+      "department": "Department",
+      "editMembers": "Manage members",
+      "members": "Members {count}/{max}",
+      "leader": "Team leader",
+      "noLeader": "No team leader",
+      "name": "Name",
+      "namePlaceholder": "E.g. First response",
+      "created": "Team “{name}” created",
+      "newTeamHint": "A team belongs to one facility and can have up to 12 members.",
+      "facility": "Facility",
+      "create": "Create",
+      "newDepartmentHint": "A department gathers the teams of one service at the same facility.",
+      "family": "Service",
+      "saved": "Team updated",
+      "membersOf": "Members of {name}",
+      "membersHint": "Up to {max} operators of the same facility. An operator can be in one team only.",
+      "inOtherTeam": "In another team",
+      "save": "Save the team"
+    },
+    "crew": {
+      "manage": "Manage",
+      "title": "Crew",
+      "count": "{assigned}/{optimal}",
+      "belowMin": "Below the minimum of {min}: the vehicle cannot leave.",
+      "minimum": "Minimum to leave: {min}",
+      "autoCrew": "No team assigned: the crew is put together automatically on departure.",
+      "preview": "Crew {available}/{optimal} (min {min})",
+      "efficiency": "Efficiency {pct}%",
+      "missing": "Missing: {name}",
+      "blocked": {
+        "CREW_INSUFFICIENT": "Not enough crew",
+        "CREW_UNQUALIFIED": "Crew lacks the requirements",
+        "CREW_EXHAUSTED": "Crew exhausted"
+      },
+      "fix": {
+        "CREW_INSUFFICIENT": "Hire operators",
+        "CREW_UNQUALIFIED": "Hire or train personnel",
+        "CREW_EXHAUSTED": "Send operators to rest"
+      },
+      "blockedTitle": "Vehicles held back by their crew"
+    },
+    "facility": {
+      "manage": "Manage personnel",
+      "title": "Personnel of the facility",
+      "beds": "Quarters in use",
+      "bedsCount": "{used}/{total} beds",
+      "empty": "No operators at this facility."
+    }
+  }
+}

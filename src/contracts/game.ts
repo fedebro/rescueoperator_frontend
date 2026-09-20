@@ -105,6 +105,12 @@ export const FacilityDto = z.object({
   status: FacilityStatus,
   capacities: z.array(z.object({ domain: z.union([Domain, z.enum(['PERSONNEL', 'STORAGE', 'WORKSHOP'])]), total: z.number().int(), used: z.number().int() })),
   upgrades: z.array(z.object({ code: z.string(), level: z.number().int(), buildingUntil: IsoDateTime.nullable() })),
+  /* additive (wave 2a) */
+  address: z.string().nullable().optional(),
+  headquarters: z.boolean().optional(),
+  /** UNDER_CONSTRUCTION until this instant (acquired facilities). */
+  operationalAt: IsoDateTime.nullable().optional(),
+  promotion: z.object({ toTypeCode: z.string(), completeAt: IsoDateTime }).nullable().optional(),
 });
 export type FacilityDto = z.infer<typeof FacilityDto>;
 
@@ -143,6 +149,21 @@ export const IncidentRequirementDto = z.object({
   required: z.number().int(),
   onScene: z.number().int(),
   enRoute: z.number().int(),
+  /** Family responsible for the need (wave 2a). */
+  family: ServiceFamily.nullable().optional(),
+  /** True while that family is locked for the career: the need is covered by external support and ignored in coverage. */
+  external: z.boolean().optional(),
+});
+
+/** System unit (UNG) requested while the incident is RESOLVING. It never blocks the player's reward. */
+export const ExternalSupportDto = z.object({
+  id: z.string(),
+  unitTypeCode: z.string(),
+  name: I18nText,
+  status: z.enum(['REQUESTED', 'WORKING', 'DONE', 'CANCELLED']),
+  arriveAt: IsoDateTime,
+  completeAt: IsoDateTime,
+  keepsRoadClosed: z.boolean(),
 });
 
 export const IncidentDto = z.object({
@@ -168,6 +189,18 @@ export const IncidentDto = z.object({
   patientCount: z.number().int(),
   estimatedReward: z.object({ min: Amount, max: Amount }),
   isTutorial: z.boolean(),
+  /* ── additive (wave 2a) ── */
+  /** `report.params` carries the block indexes {intro, detail, condition, closing} + {address, municipality}: the client composes the text from the catalog i18n bundle. */
+  summary: I18nText.optional(),
+  radio: I18nText.optional(),
+  icon: z.string().optional(),
+  municipality: z.string().nullable().optional(),
+  street: z.string().nullable().optional(),
+  /** Families of the template that are still locked for this career: their part is handled by external support. */
+  externalFamilies: z.array(ServiceFamily).optional(),
+  externalSupport: z.array(ExternalSupportDto).optional(),
+  /** Set once the reward was paid (an incident may stay RESOLVING afterwards while system units finish). */
+  rewardedAt: IsoDateTime.nullable().optional(),
 });
 export type IncidentDto = z.infer<typeof IncidentDto>;
 
@@ -216,16 +249,52 @@ export const VehicleTypeDto = z.object({
   deliverySeconds: z.number().int(), capabilities: z.array(CapabilityValue),
   compatibleFacilityTypes: z.array(z.string()), icon: z.string(),
   unlocked: z.boolean(), lockedReason: z.string().nullable(),
+  /* additive (wave 2a) */
+  movement: z.enum(['ROAD', 'ROAD_TRAILER', 'AIR']).optional(), airSpeedKmh: z.number().nullable().optional(), sirenFactor: z.number().optional(),
+  preparationSeconds: z.number().optional(), tags: z.array(z.string()).optional(), shortName: I18nText.optional(),
+  unlockConditions: z.array(z.record(z.unknown())).optional(),
 });
 export const FacilityTypeDto = z.object({
   code: z.string(), family: FacilityFamily, name: I18nText, description: I18nText, tier: z.number().int(),
   price: Amount, requiredLevel: z.number().int(), domains: z.array(Domain),
   baseCapacity: z.record(z.number().int()), icon: z.string(), unlocked: z.boolean(), lockedReason: z.string().nullable(),
+  /* additive (wave 2a) */
+  chain: z.string().optional(), upgradeCaps: z.record(z.number().int()).optional(), setupSeconds: z.number().int().optional(),
+  promotion: z.object({ to: z.string(), cost: Amount, buildSeconds: z.number().int(), requiredUpgradeLevels: z.record(z.number().int()) }).nullable().optional(),
+  effects: z.array(z.record(z.unknown())).optional(), unlockConditions: z.array(z.record(z.unknown())).optional(),
 });
-export const CapabilityDto = z.object({ code: z.string(), name: I18nText, icon: z.string() });
+export const CapabilityDto = z.object({ code: z.string(), name: I18nText, icon: z.string(), group: z.string().optional() });
+export const FacilityUpgradeTypeDto = z.object({
+  code: z.string(), name: I18nText, description: I18nText, requiredLevel: z.number().int(), basePrice: Amount, costGrowth: z.number(), baseBuildSeconds: z.number().int(),
+  buildGrowth: z.number(), maxLevel: z.number().int(), effect: z.object({ domain: z.string(), delta: z.number().int() }),
+});
+export const UngUnitTypeDto = z.object({ code: z.string(), name: I18nText, icon: z.string(), keepsRoadClosed: z.boolean() });
+export const IncidentTemplateSummaryDto = z.object({
+  code: z.string(), category: z.string(), primaryFamily: ServiceFamily, families: z.array(ServiceFamily), requiredLevel: z.number().int(), rarity: z.string().nullable(),
+  title: I18nText, icon: z.string(), severityMin: z.number().int(), severityMax: z.number().int(), unlocked: z.boolean(),
+});
 export const CatalogDto = z.object({
-  version: z.string(), families: z.array(z.object({ code: ServiceFamily, name: I18nText, color: z.string(), requiredLevel: z.number().int() })),
+  version: z.string(),
+  families: z.array(z.object({
+    code: ServiceFamily, name: I18nText, color: z.string(), requiredLevel: z.number().int(),
+    /* additive (wave 2a): `requiredLevel` is already resolved for THIS career (WILDFIRE/ALPINE depend on the territory). */
+    icon: z.string().optional(), playerManaged: z.boolean().optional(), unlocked: z.boolean().optional(), spawnsIncidents: z.boolean().optional(),
+  })),
   capabilities: z.array(CapabilityDto), vehicleTypes: z.array(VehicleTypeDto), facilityTypes: z.array(FacilityTypeDto),
+  /* ── additive (wave 2a) ── */
+  /** Content hash: version of `GET /public/i18n/catalog/:locale?v=<hash>`. Text keys are relative to that bundle. */
+  i18nHash: z.string().optional(),
+  facilityUpgrades: z.array(FacilityUpgradeTypeDto).optional(),
+  ungUnitTypes: z.array(UngUnitTypeDto).optional(),
+  incidentTemplates: z.array(IncidentTemplateSummaryDto).optional(),
+  levels: z.array(z.object({ level: z.number().int(), xpToNext: Amount, stipendBase: Amount, levelUpCredits: Amount, maxActiveIncidents: z.number().int() })).optional(),
+  ranks: z.array(z.object({ code: z.string(), fromLevel: z.number().int(), toLevel: z.number().int(), name: I18nText })).optional(),
+  features: z.array(z.object({ feature: z.string(), requiredLevel: z.number().int(), unlocked: z.boolean() })).optional(),
+  /** Raw catalog sections for the systems of the next wave (shape = catalog/README.md). */
+  items: z.array(z.record(z.unknown())).optional(),
+  roles: z.array(z.record(z.unknown())).optional(),
+  qualifications: z.array(z.record(z.unknown())).optional(),
+  courses: z.array(z.record(z.unknown())).optional(),
 });
 
 /** POST /careers/:id/shop/vehicles (Idempotency-Key) */
@@ -246,7 +315,17 @@ export const WorldContextDto = z.object({
   localTime: IsoDateTime, timezone: z.string(), dayPhase: DayPhase,
   weather: z.object({ code: WeatherCode, temperatureC: z.number().nullable(), windKmh: z.number().nullable(), degraded: z.boolean() }),
   trafficLevel: z.enum(['FREE_FLOW', 'LIGHT', 'MODERATE', 'HEAVY', 'SEVERE']),
-  closures: z.array(z.object({ id: z.string(), polygon: z.array(LngLat), reason: I18nText, endsAt: IsoDateTime.nullable() })),
+  closures: z.array(z.object({
+    id: z.string(), polygon: z.array(LngLat), reason: I18nText, endsAt: IsoDateTime.nullable(),
+    /* additive */ kind: z.enum(['PARTIAL', 'FULL']).optional(), multiplier: z.number().optional(), incidentId: z.string().nullable().optional(),
+  })),
+  /* ── additive (wave 2a) ── */
+  hourBand: z.string().optional(), season: z.string().optional(), weekdayType: z.string().optional(),
+  trafficMultiplier: z.number().optional(),
+  weatherCell: z.string().nullable().optional(), weatherObservedAt: IsoDateTime.nullable().optional(), weatherSource: z.string().optional(),
+  /** Dynamic risk multipliers by risk kind (road, wildfire, flood…), weather × events. */
+  riskMultipliers: z.record(z.number()).optional(),
+  events: z.array(z.object({ id: z.string(), type: z.string(), title: I18nText, startsAt: IsoDateTime, endsAt: IsoDateTime, effects: z.record(z.unknown()) })).optional(),
 });
 
 /** GET /careers/:id/sync → full operational snapshot; `seq` is the last realtime sequence included. */

@@ -65,12 +65,17 @@ export type BalanceDto = z.infer<typeof BalanceDto>;
 export const ProgressionDto = z.object({
   level: z.number().int(), xp: Amount, xpForCurrentLevel: Amount, xpForNextLevel: Amount, reputation: z.number(),
   incidentsResolved: z.number().int(), incidentsFailed: z.number().int(),
+  /* additive (wave 2a) */
+  rank: z.object({ code: z.string(), name: I18nText }).nullable().optional(),
+  maxLevel: z.number().int().optional(), maxActiveIncidents: z.number().int().optional(), stipendBase: Amount.optional(),
+  familyLevels: z.record(z.number().int()).optional(),
+  nextUnlocks: z.array(z.object({ code: z.string(), kind: z.string(), requiredLevel: z.number().int() })).optional(),
 });
 export type ProgressionDto = z.infer<typeof ProgressionDto>;
 
 /** GET /careers/:id/progression/unlocks */
 export const UnlockDto = z.object({
-  code: z.string(), kind: z.enum(['FAMILY', 'VEHICLE_TYPE', 'FACILITY_TYPE', 'FEATURE']), name: I18nText,
+  code: z.string(), kind: z.enum(['FAMILY', 'VEHICLE_TYPE', 'FACILITY_TYPE', 'FEATURE', 'UPGRADE', 'COURSE', 'INCIDENT_TEMPLATE']), name: I18nText,
   requiredLevel: z.number().int(), unlocked: z.boolean(), family: ServiceFamily.nullable().optional(),
 });
 export type UnlockDto = z.infer<typeof UnlockDto>;

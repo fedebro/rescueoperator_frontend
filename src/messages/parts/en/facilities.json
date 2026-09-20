@@ -1,0 +1,103 @@
+{
+  "facilities": {
+    "site": {
+      "real": "Real place",
+      "realHint": "Matches a station that really exists in the territory.",
+      "generated": "Generated site",
+      "generatedHint": "Location proposed by the game to cover the territory better.",
+      "sharedFamily": "Coordination",
+      "acquired": "{name}: facility acquired",
+      "acquiredHint": "It becomes operational once the fit-out is complete.",
+      "tier": "Tier {tier}",
+      "setup": "Fit-out",
+      "acquire": "Acquire",
+      "lockedFamily": "Service locked: level {level}",
+      "alreadyOwned": "You already own this site",
+      "capacity": "Vehicle slots",
+      "expansion": "Room to grow",
+      "expansionLevel": {
+        "LOW": "Low",
+        "MEDIUM": "Medium",
+        "HIGH": "High"
+      },
+      "nearest": "From your nearest facility",
+      "profile": {
+        "CENTRAL": "Central spot: short times in the heart of the city, little room to grow.",
+        "BALANCED": "Balanced spot: good coverage and room to grow.",
+        "PERIPHERAL": "Outlying spot: more space, longer times towards the centre."
+      },
+      "owned": "You already have a facility on this site",
+      "openFacility": "Open the facility",
+      "options": "What you can open here"
+    },
+    "map": {
+      "modeTitle": "New facility",
+      "loading": "Looking for available sites…",
+      "modeHint": "{count, plural, =0 {No site available in the area} one {# site available: tap it on the map} other {# sites available: tap one on the map}}",
+      "exit": "Leave new facility mode",
+      "newFacility": "New facility",
+      "siteGone": "Site no longer available",
+      "candidateSite": "Available site"
+    },
+    "newFacility": {
+      "title": "New facility",
+      "chooseOnMap": "Choose on the map",
+      "subtitle": "Available sites near your facilities. Each site only allows some facility types.",
+      "filter": "Filter by service",
+      "all": "All",
+      "empty": "No site available for this service",
+      "from": "from",
+      "lockedFrom": "locked · from",
+      "dialogHint": "Choose the facility type to open on this site.",
+      "showOnMap": "Show on the map"
+    },
+    "construction": {
+      "title": "Facility being fitted out",
+      "hint": "You can assign vehicles and personnel once it is operational.",
+      "readyIn": "Operational in"
+    },
+    "promotion": {
+      "title": "Facility promotion",
+      "topOfChain": "This facility is already at the top of its chain.",
+      "hint": "The new type brings more base capacity, new domains and higher upgrade caps. Upgrades already built are kept.",
+      "building": "Promotion in progress:",
+      "buildingTo": "Promotion to {type} in progress:",
+      "requirements": "Promotion requirements",
+      "needLevel": "Career level {level}",
+      "needUpgrade": "{upgrade} at level {level}",
+      "met": "requirement met",
+      "missing": "requirement missing",
+      "promote": "Promote",
+      "started": "Promotion started",
+      "waitUpgrades": "Wait for the works in progress to finish",
+      "notOperational": "The facility is not operational yet",
+      "needUpgrades": "Complete the required upgrades first"
+    },
+    "transfer": {
+      "action": "Transfer to another facility",
+      "actionFor": "Transfer {callSign} to another facility",
+      "column": "Move",
+      "onlyAvailable": "Only vehicles available at their facility can be transferred.",
+      "title": "Transfer {callSign}",
+      "subtitle": "Takes {points} slots ({domain}). Only compatible facilities with free space.",
+      "done": "{callSign} is moving to {facility}",
+      "doneHint": "It will be available on arrival at the new facility.",
+      "state": {
+        "OK": "{free} free slots",
+        "CURRENT": "Current facility",
+        "INCOMPATIBLE": "Facility type not compatible",
+        "NOT_OPERATIONAL": "Not operational yet",
+        "FULL": "No free slots"
+      }
+    },
+    "detail": {
+      "upgradesAfterConstruction": "Upgrades can be built once the facility is operational.",
+      "capsHint": "Maximum levels depend on the facility type ({type}): promote it to raise them.",
+      "notOperational": "Available once the facility is operational"
+    }
+  },
+  "notifications": {
+    "facilityReady": "Facility operational: {facility}",
+    "facilityPromoted": "Promotion complete: {facility}"
+  }
+}

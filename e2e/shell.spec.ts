@@ -56,7 +56,9 @@ test('keyboard: the auth form is fully operable and focus is visible', async ({ 
   expect(outline).not.toBe('');
 });
 
-test('admin: role-gated shell with live tables and the ledger form', async ({ page }) => {
+test('admin: a staff account signs in through the normal flow and reaches the role-gated shell', async ({
+  page,
+}) => {
   await page.goto('/auth');
   await page.getByLabel('Email').fill('admin@rescue-control.test');
   await page.getByLabel('Email').press('Enter');
@@ -72,17 +74,17 @@ test('admin: role-gated shell with live tables and the ledger form', async ({ pa
     await page.getByRole('button', { name: 'Crea il mio account' }).click();
   }
   await expect(page).toHaveURL(/\/(onboarding|game)$/);
+  // The admin shell does not need a career (full coverage of the panel: e2e/admin.spec.ts).
   await page.goto('/admin');
+  await expect(page.getByTestId('admin-env-banner')).toContainText('Ambiente: Simulato');
   await expect(page.getByRole('heading', { name: 'Panoramica' })).toBeVisible();
-  await expect(page.getByRole('table', { name: 'Code di lavoro' })).toBeVisible();
-  await page.getByRole('link', { name: 'Utenti' }).click();
-  await expect(
-    page.getByRole('table', { name: 'Utenti' }).getByText('admin@rescue-control.test'),
-  ).toBeVisible();
-  await page.getByRole('link', { name: 'Rettifica Crediti' }).click();
-  await page.getByRole('button', { name: 'Registra la rettifica' }).click();
-  await expect(page.getByText('Campo obbligatorio.')).toBeVisible();
-  await expect(page.getByText('Inserisci un intero diverso da zero.')).toBeVisible();
-  await page.getByRole('link', { name: 'Funzioni' }).click();
-  await expect(page.getByRole('switch', { name: 'rewardedAds' })).toBeVisible();
+  await expect(page.getByText('Code di lavoro')).toBeVisible();
+  const mobile = (page.viewportSize()?.width ?? 1440) < 1024;
+  if (mobile) await page.getByRole('button', { name: 'Apri il menu' }).click();
+  await page
+    .getByRole('navigation', { name: 'Navigazione amministrazione' })
+    .getByRole('link', { name: 'Utenti' })
+    .click();
+  await expect(page.getByRole('heading', { name: 'Utenti' })).toBeVisible();
+  await expect(page.getByText('admin@rescue-control.test').first()).toBeVisible();
 });

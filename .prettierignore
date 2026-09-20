@@ -6,3 +6,4 @@ src/contracts
 playwright-report
 test-results
 coverage
+src/mocks/data/generated

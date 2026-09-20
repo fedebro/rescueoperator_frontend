@@ -1,0 +1,185 @@
+{
+  "world": {
+    "duration": {
+      "hours": "{h} Std.",
+      "minutes": "{m} Min.",
+      "hoursMinutes": "{h} Std. {m} Min."
+    },
+    "widget": {
+      "open": "Lage im Einsatzgebiet: {weather}, {temperature}, {time} Uhr, Verkehr {traffic}. Details öffnen",
+      "title": "Lage im Einsatzgebiet",
+      "close": "Schließen",
+      "weather": "Wetter",
+      "temperature": "{value} °C",
+      "wind": "Wind {value} km/h",
+      "noData": "k. A.",
+      "degraded": "Geschätzte Wetterdaten",
+      "degradedHint": "Der Wetterdienst antwortet nicht: Bis er wieder verfügbar ist, verwenden wir eine Schätzung.",
+      "source": {
+        "simulated": "simuliertes Wetter",
+        "live": "Echtzeitdaten"
+      },
+      "localTime": "Ortszeit",
+      "traffic": {
+        "title": "Verkehr",
+        "level": {
+          "FREE_FLOW": "Frei",
+          "LIGHT": "Leicht",
+          "MODERATE": "Mäßig",
+          "HEAVY": "Dicht",
+          "SEVERE": "Stau"
+        }
+      },
+      "travelEffectNone": "Normale Fahrzeiten.",
+      "travelEffectSlower": "Straßenfahrten dauern wegen Verkehr und Wetter {percent} länger.",
+      "closuresTitle": "Straßenlage",
+      "closures": "{count, plural, =0 {Keine gesperrten Straßen} one {# gesperrte Straße} other {# gesperrte Straßen}}",
+      "closuresEffect": "Längere Routen",
+      "showClosures": "Auf der Karte zeigen"
+    },
+    "layers": {
+      "open": "Kartenebenen",
+      "button": "Ebenen",
+      "title": "Kartenebenen",
+      "close": "Schließen",
+      "layer": {
+        "hospitals": "Krankenhäuser",
+        "closures": "Gesperrte Straßen",
+        "coverage": "Abdeckung",
+        "sites": "Standorte für neue Wachen"
+      },
+      "hint": {
+        "hospitals": "Notaufnahmen und verfügbare Abteilungen",
+        "closures": "Baustellen, Veranstaltungen und von Einsatzkräften blockierte Straßen",
+        "coverage": "Geschätzte Anfahrtszeiten von deinen Wachen",
+        "sites": "Wo du eine neue Wache eröffnen kannst"
+      },
+      "coverage": {
+        "title": "Abgedeckte Bevölkerung",
+        "family": "Angezeigter Dienst",
+        "all": "Alle",
+        "inactive": "keine Fahrzeuge",
+        "threshold": "Hilfsfrist: {minutes} Min.",
+        "method": {
+          "OSRM_TABLE": "auf dem Straßennetz berechnet",
+          "STRAIGHT_LINE": "Luftlinien-Schätzung",
+          "NONE": "keine einsatzbereite Wache"
+        },
+        "stale": "Neuberechnung nach deinen letzten Änderungen…",
+        "legend": "Geschätzte Anfahrtszeit",
+        "unreachable": "Nicht erreichbar",
+        "over": "über {from} Min.",
+        "upTo": "bis {to} Min.",
+        "range": "{from}–{to} Min."
+      },
+      "closures": {
+        "title": "Aktuell gesperrte Straßen",
+        "empty": "Keine aktiven Sperrungen.",
+        "kind": {
+          "FULL": "Gesperrt",
+          "PARTIAL": "Teilweise gesperrt"
+        },
+        "effect": "+{percent} Fahrzeit bei Durchfahrt",
+        "endsIn": "Wieder frei in",
+        "reopening": "wird freigegeben",
+        "noEnd": "Bis auf Weiteres",
+        "center": "Auf der Karte zentrieren: {reason}",
+        "mapLabel": {
+          "FULL": "GESPERRT",
+          "PARTIAL": "VERENGT"
+        }
+      }
+    },
+    "closure": {
+      "ROADWORKS": "Bauarbeiten in {street}",
+      "EVENT": "Veranstaltung in {street}",
+      "EXTERNAL_SUPPORT": "{address}: Straße gesperrt, externe Einheiten im Einsatz",
+      "INCIDENT": "{address}: Straße wegen eines laufenden Einsatzes gesperrt",
+      "MANUAL": "Von der Leitstelle angeordnete Sperrung"
+    },
+    "stipend": {
+      "title": "Abdeckungszuschuss",
+      "hint": "Alle {period} erhältst du einen Zuschuss, der sich nach der Bevölkerung richtet, die du rechtzeitig erreichst. Er läuft auch in deiner Abwesenheit weiter, bis zu {cap}.",
+      "unavailable": "Die Daten zum Zuschuss sind derzeit nicht verfügbar.",
+      "next": "Nächste Auszahlung in",
+      "paying": "wird ausgezahlt…",
+      "estimate": "Geschätzter Betrag",
+      "period": "Zeitraum",
+      "accrued": "In deiner Abwesenheit angesammelt",
+      "accruedValue": "{n} von {max} Zeiträumen",
+      "accrualStops": "Wenn du nicht zurückkehrst, läuft der Zuschuss nach dem {date} nicht mehr weiter.",
+      "breakdown": "So wird gerechnet",
+      "base": "Basis für Stufe {level}",
+      "coverageMultiplier": "Abdeckung bei {pct}",
+      "reputationMultiplier": "Ansehen {value}/100",
+      "bonusMultiplier": "Bonus der Wachen",
+      "personnelCost": "Personalkosten im Zeitraum",
+      "net": "Zuschuss netto",
+      "coverage": "Abdeckung",
+      "showCoverage": "Auf der Karte ansehen",
+      "overall": "Gesamt (gewichteter Durchschnitt)",
+      "threshold": "innerhalb von {minutes} Min.",
+      "familyInactive": "Kein einsatzbereites Fahrzeug für diesen Dienst.",
+      "stale": "Abdeckung wird nach deinen letzten Änderungen neu berechnet…",
+      "history": "Verlauf",
+      "lastPayout": "Letzte Auszahlung",
+      "never": "noch keine",
+      "status": {
+        "PAID": "Ausgezahlt",
+        "SKIPPED_INACTIVE": "Nicht angesammelt (abwesend)"
+      },
+      "showLess": "Weniger anzeigen",
+      "showAll": "Alle anzeigen ({count})"
+    },
+    "milestones": {
+      "title": "Meilensteine",
+      "summary": "{done} von {total} erreicht",
+      "empty": "Keine Meilensteine verfügbar",
+      "phase": {
+        "FIRST_HOURS": "Erste Stunden",
+        "EARLY": "Karrierebeginn",
+        "MID": "Wachsendes Netz",
+        "LATE": "Großes Netz"
+      },
+      "phaseCount": "{done}/{total}",
+      "progress": "{current} von {target}",
+      "progressPercent": "{current} von {target}",
+      "progressLabel": "Fortschritt: {title}",
+      "achievedOn": "Erreicht am {date}",
+      "achieved": "Erreicht",
+      "reward": "Belohnung:",
+      "xp": "{xp} EP"
+    },
+    "reputation": {
+      "title": "Ansehen",
+      "rank": "Rang: {rank}",
+      "band": {
+        "CRITICAL": "Beschädigt",
+        "LOW": "Niedrig",
+        "FAIR": "Ordentlich",
+        "GOOD": "Gut",
+        "EXCELLENT": "Hervorragend"
+      },
+      "valueText": "{value} von 100, {band}",
+      "multiplier": "Multiplikator des Abdeckungszuschusses",
+      "effects": "Das Ansehen ist ein gleitender Durchschnitt deiner Einsätze: Es beeinflusst den Abdeckungszuschuss und einige Freischaltungen.",
+      "up": "Das hebt es",
+      "down": "Das senkt es",
+      "upItems": {
+        "fast": "Schnell am Einsatzort sein",
+        "adequate": "Alle geforderten Kräfte schicken (2–3 Sterne)",
+        "patients": "Patienten in gutem Zustand übergeben"
+      },
+      "downItems": {
+        "expired": "Unbeantwortet abgelaufene Notfälle",
+        "failed": "Gescheiterte Einsätze",
+        "under": "Zu wenige Kräfte vor Ort"
+      }
+    }
+  },
+  "notifications": {
+    "world": {
+      "milestone": "Meilenstein erreicht!"
+    }
+  }
+}

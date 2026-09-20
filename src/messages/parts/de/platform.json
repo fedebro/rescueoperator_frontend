@@ -1,0 +1,50 @@
+{
+  "platform": {
+    "a11y": {
+      "pendingIncidents": "{count, plural, one {# wartender Einsatz} other {# wartende Einsätze}}"
+    },
+    "sound": {
+      "title": "Töne",
+      "masterHint": "Kurze synthetische Signale, nie vor deiner ersten Eingabe. Auf Handys und Tablets standardmäßig aus.",
+      "volume": "Gesamtlautstärke",
+      "volumeValue": "{percent} %",
+      "alerts": "Alarme",
+      "alertsHint": "Neue Einsätze, Verschlimmerungen, kritische Meldungen, gescheiterte Missionen.",
+      "feedback": "Rückmeldungen",
+      "feedbackHint": "Ankünfte vor Ort, erfolgreiche Missionen, Stufen, Freischaltungen, Credits, Befehlsbestätigungen.",
+      "test": "Testton abspielen"
+    },
+    "privacy": {
+      "title": "Datenschutz und App",
+      "analytics": "Anonyme Nutzungsstatistiken",
+      "analyticsHint": "Sie helfen uns, das Spiel zu verbessern. Nie E-Mails, Namen oder Texte: nur Spielereignisse. Aus, bis du sie einschaltest."
+    },
+    "pwa": {
+      "title": "App installieren",
+      "install": "Installieren",
+      "installed": "Installiert",
+      "hint": "Füge Rescue Control zum Startbildschirm hinzu: Es öffnet sich im Vollbild, wie eine App.",
+      "installedHint": "Du nutzt bereits die installierte App.",
+      "unavailableHint": "Dieser Browser bietet keine Installation an. Versuche es über das Browsermenü oder mit Chrome, Edge oder Safari.",
+      "hintTitle": "Rescue Control als App",
+      "hintBody": "Installiere sie, um deine Leitstelle mit einem Tipp im Vollbild zu öffnen.",
+      "iosTitle": "Auf iPhone und iPad installieren",
+      "iosIntro": "Safari zeigt keine Installationsschaltfläche: Drei Schritte genügen.",
+      "iosStep1": "Tippe in der Safari-Leiste auf „Teilen“.",
+      "iosStep2": "Scrolle und wähle „Zum Home-Bildschirm“.",
+      "iosStep3": "Bestätige mit „Hinzufügen“: Das Symbol erscheint neben deinen anderen Apps."
+    },
+    "offline": {
+      "title": "Du bist offline",
+      "body": "Die Leitstelle braucht eine Verbindung: Die Spielwelt läuft auf dem Server und geht auch ohne dich weiter.",
+      "retry": "Erneut versuchen",
+      "safe": "Dein Fortschritt ist sicher."
+    },
+    "manifest": {
+      "description": "Simulation des Notfallmanagements auf echter Karte: Leite deine eigene Leitstelle.",
+      "shortcutMap": "Einsatzkarte",
+      "shortcutIncidents": "Einsätze",
+      "shortcutFleet": "Fuhrpark"
+    }
+  }
+}

@@ -1,0 +1,180 @@
+{
+  "notifications": {
+    "purchaseCredited": "Purchase completed: +{credits} Credits",
+    "referralRewarded": "Your network is complete: +{credits} Credits",
+    "referralWelcome": "Invitation validated: +{credits} welcome Credits"
+  },
+  "monetization": {
+    "ads": {
+      "title": "Rewarded video",
+      "active": "Active",
+      "description": "Watch a short video to the end and receive Credits. It is always optional.",
+      "reward": "Reward",
+      "watchedToday": "Today: {watched}/{limit} videos",
+      "watchedShort": "{watched}/{limit} today",
+      "watch": "Watch a video",
+      "cooldown": "Next video in",
+      "limitReached": "Today’s limit reached. It resets at {time}.",
+      "disabled": "Videos are not available right now.",
+      "unavailable": "No video available right now. Try again later.",
+      "abandoned": "Video stopped: no reward.",
+      "credited": "+{credits} Credits added",
+      "player": {
+        "title": "Video playing",
+        "simulated": "Simulation: no real advert is shown.",
+        "abandon": "Stop the video",
+        "progress": "Video progress",
+        "paused": "Paused: come back to this tab to continue.",
+        "remaining": "{seconds, plural, one {# second left} other {# seconds left}}",
+        "abandonHint": "If you stop before the end you do not get the reward."
+      }
+    },
+    "insufficient": {
+      "subtitleLocked": "Every resolved incident pays: keep handling emergencies.",
+      "covered": "You now have enough Credits. Missing",
+      "notAvailable": "Not available"
+    },
+    "speedup": {
+      "button": "Finish now",
+      "title": "Finish right away?",
+      "description": "Process: {process}",
+      "remaining": "Time left",
+      "cost": "Cost",
+      "free": "Free",
+      "rule": "Credits only speed up management processes: never travel, interventions or experience.",
+      "confirm": "Spend and finish",
+      "confirmFree": "Finish for free",
+      "done": "Process completed",
+      "alreadyDone": "The process has already finished: you spent nothing."
+    },
+    "purchaseStatus": {
+      "CREATED": "Awaiting payment",
+      "PAID": "Paid, being credited",
+      "CREDITED": "Credited",
+      "FAILED": "Failed",
+      "REFUNDED": "Refunded"
+    },
+    "shop": {
+      "title": "Credits",
+      "subtitle": "Support the game and give your control room a boost. Optional, always.",
+      "balance": "Current balance",
+      "purchasedBalance": "of which purchased: {credits} (spent last)",
+      "waiver": "I request immediate performance and waive my right of withdrawal: Credits are delivered right after payment.",
+      "waiverHint": "Digital content supplied immediately. Details in the",
+      "terms": "Terms of Service",
+      "waiverRequired": "You must tick this box to buy.",
+      "packages": "Credit packages",
+      "fairPlay": "Purchased Credits never unlock levels or experience: progression is earned by playing.",
+      "payment": "Payment happens on a secure page of our provider; prices include VAT.",
+      "highlight": {
+        "POPULAR": "Most popular",
+        "BEST_VALUE": "Best value",
+        "STARTER": "Starter"
+      },
+      "oneTime": "One time only",
+      "bonus": "{base} + {bonus} bonus",
+      "buy": "Buy · {price}",
+      "buyFor": "Buy {name} for {price}",
+      "alreadyBought": "Already purchased",
+      "unavailable": "Not available right now",
+      "history": {
+        "title": "Purchase history",
+        "empty": "No purchases yet.",
+        "date": "Date",
+        "package": "Package",
+        "price": "Price",
+        "status": "Status"
+      }
+    },
+    "checkout": {
+      "backToGame": "Back to the map",
+      "backToShop": "Back to the packages",
+      "successTitle": "Thank you for your purchase",
+      "credited": "Credits added",
+      "newBalance": "New balance:",
+      "failed": "The payment did not go through",
+      "failedHint": "You have not been charged. You can try again whenever you like.",
+      "processing": "We are confirming your payment…",
+      "processingHint": "It usually takes a few seconds. Do not close this page.",
+      "delayed": "Confirmation is taking longer than expected",
+      "delayedHint": "You can go back to playing: the Credits will arrive as soon as the payment is confirmed and will show in your purchase history.",
+      "cancelTitle": "Purchase cancelled",
+      "cancelled": "No charge",
+      "cancelledHint": "You left the payment page: you have not been charged."
+    },
+    "mockCheckout": {
+      "title": "Payment",
+      "simulation": "Simulation",
+      "notice": "This page replaces the payment provider’s checkout in the test environment: no payment data is requested and no real charge is made.",
+      "notFound": "This purchase is no longer awaiting payment.",
+      "pay": "Pay {price} (simulated)",
+      "cancel": "Cancel and return to the game"
+    },
+    "referral": {
+      "title": "Build your network",
+      "subtitle": "Invite two Directors: when they truly go on duty, both of you are rewarded.",
+      "yourCode": "Your invite code",
+      "copyCode": "Copy code",
+      "shareCta": "Share the invite",
+      "copyLink": "Copy link",
+      "linkCopied": "Link copied",
+      "codeCopied": "Code copied",
+      "copyFailed": "Copy failed: select the link and copy it manually.",
+      "progressTitle": "Activated Directors",
+      "progressLabel": "{activated} of {required} Directors activated",
+      "rewardClaimed": "Reward received",
+      "rewardReferrer": "Reward on completion:",
+      "rewardClaimedHint": "Network complete: the reward is already in your balance. You can keep inviting friends; their welcome bonus still applies.",
+      "rewardPending": "Goal reached: the reward is on its way.",
+      "progressHint": "Only those who really play count, not those who merely sign up.",
+      "rulesTitle": "How it works",
+      "rules": {
+        "share": "Share your link: whoever signs up through it becomes your invitee.",
+        "activation": "The invite is validated once the new Director resolves {missions} missions on at least {days} different days: at that moment they receive their welcome bonus.",
+        "reward": "With {required} validated Directors you receive your reward, once only.",
+        "fair": "Duplicate accounts or accounts created only to obtain the reward are invalidated."
+      },
+      "invitedTitle": "Your invitees",
+      "invitedEmpty": "No invitees yet",
+      "invitedEmptyHint": "Share the link above: Directors who sign up will appear here.",
+      "col": {
+        "director": "Director",
+        "status": "Status",
+        "joined": "Joined on"
+      },
+      "status": {
+        "REGISTERED": "Signed up",
+        "ACTIVATED": "Validated",
+        "REWARDED": "Rewarded",
+        "INVALIDATED": "Invalidated"
+      },
+      "share": {
+        "title": "Share your invite",
+        "subtitle": "Choose how to send the link.",
+        "copy": "Copy the link",
+        "whatsapp": "Send with WhatsApp",
+        "telegram": "Send with Telegram",
+        "email": "Send by email",
+        "messageTitle": "I challenge you on Rescue Control",
+        "message": "Run your city’s emergency response on a real map. Join through my invite and get {credits} welcome Credits:"
+      },
+      "mine": {
+        "title": "Your invitation",
+        "invitedBy": "You were invited by {name}.",
+        "missions": "Missions resolved: {done}/{required}",
+        "days": "Days played: {done}/{required}",
+        "bonus": "Welcome bonus on validation:",
+        "bonusReceived": "Welcome bonus received:"
+      }
+    },
+    "invite": {
+      "title": "{name} invited you to Rescue Control",
+      "pitch": "Run your city’s control room: emergencies, vehicles and crews on a real map.",
+      "bonus": "Joining through this invite earns you a welcome bonus in Credits after your first missions.",
+      "invalidTitle": "Invalid invite",
+      "invalidHint": "This link is no longer active, but you can start playing anyway.",
+      "cta": "Accept the invite and play",
+      "ctaInvalid": "Start playing"
+    }
+  }
+}

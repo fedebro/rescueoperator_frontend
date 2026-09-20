@@ -1,0 +1,103 @@
+{
+  "facilities": {
+    "site": {
+      "real": "Lieu réel",
+      "realHint": "Correspond à un site qui existe réellement sur le territoire.",
+      "generated": "Site généré",
+      "generatedHint": "Emplacement proposé par le jeu pour mieux couvrir le territoire.",
+      "sharedFamily": "Coordination partagée",
+      "acquired": "{name} : base acquise",
+      "acquiredHint": "Elle sera opérationnelle à la fin de l’aménagement.",
+      "tier": "Rang {tier}",
+      "setup": "Aménagement",
+      "acquire": "Acquérir",
+      "lockedFamily": "Service verrouillé : niveau {level}",
+      "alreadyOwned": "Ce site est déjà à vous",
+      "capacity": "Places véhicules",
+      "expansion": "Extension possible",
+      "expansionLevel": {
+        "LOW": "Faible",
+        "MEDIUM": "Moyenne",
+        "HIGH": "Élevée"
+      },
+      "nearest": "De votre base la plus proche",
+      "profile": {
+        "CENTRAL": "Emplacement central : délais courts au cœur de la ville, peu de place pour grandir.",
+        "BALANCED": "Emplacement équilibré : bonne couverture et marge de croissance.",
+        "PERIPHERAL": "Emplacement périphérique : plus d’espace, délais plus longs vers le centre."
+      },
+      "owned": "Vous avez déjà une base sur ce site",
+      "openFacility": "Ouvrir la base",
+      "options": "Ce que vous pouvez ouvrir ici"
+    },
+    "map": {
+      "modeTitle": "Nouvelle base",
+      "loading": "Recherche des sites disponibles…",
+      "modeHint": "{count, plural, =0 {Aucun site disponible dans la zone} one {# site disponible : touchez-le sur la carte} other {# sites disponibles : touchez-en un sur la carte}}",
+      "exit": "Quitter le mode nouvelle base",
+      "newFacility": "Nouvelle base",
+      "siteGone": "Site plus disponible",
+      "candidateSite": "Site disponible à l’achat"
+    },
+    "newFacility": {
+      "title": "Nouvelle base",
+      "chooseOnMap": "Choisir sur la carte",
+      "subtitle": "Sites disponibles près de vos bases. Chaque site n’admet que certains types de base.",
+      "filter": "Filtrer par service",
+      "all": "Tous",
+      "empty": "Aucun site disponible pour ce service",
+      "from": "dès",
+      "lockedFrom": "verrouillé · dès",
+      "dialogHint": "Choisissez le type de base à ouvrir sur ce site.",
+      "showOnMap": "Afficher sur la carte"
+    },
+    "construction": {
+      "title": "Base en cours d’aménagement",
+      "hint": "Vous pourrez y affecter véhicules et personnel une fois opérationnelle.",
+      "readyIn": "Opérationnelle dans"
+    },
+    "promotion": {
+      "title": "Promotion de la base",
+      "topOfChain": "Cette base est déjà au sommet de sa chaîne.",
+      "hint": "Le nouveau type apporte plus de capacité de base, de nouveaux domaines et des plafonds plus élevés. Les agrandissements déjà construits sont conservés.",
+      "building": "Promotion en cours :",
+      "buildingTo": "Promotion vers {type} en cours :",
+      "requirements": "Conditions de la promotion",
+      "needLevel": "Niveau de carrière {level}",
+      "needUpgrade": "{upgrade} au niveau {level}",
+      "met": "condition remplie",
+      "missing": "condition manquante",
+      "promote": "Promouvoir",
+      "started": "Promotion lancée",
+      "waitUpgrades": "Attendez la fin des travaux en cours",
+      "notOperational": "La base n’est pas encore opérationnelle",
+      "needUpgrades": "Terminez d’abord les agrandissements requis"
+    },
+    "transfer": {
+      "action": "Transférer vers une autre base",
+      "actionFor": "Transférer {callSign} vers une autre base",
+      "column": "Déplacer",
+      "onlyAvailable": "Seuls les véhicules disponibles à leur base peuvent être transférés.",
+      "title": "Transférer {callSign}",
+      "subtitle": "Occupe {points} places ({domain}). Uniquement les bases compatibles avec de la place.",
+      "done": "{callSign} en transfert vers {facility}",
+      "doneHint": "Il sera disponible à son arrivée à la nouvelle base.",
+      "state": {
+        "OK": "{free} places libres",
+        "CURRENT": "Base actuelle",
+        "INCOMPATIBLE": "Type de base non compatible",
+        "NOT_OPERATIONAL": "Pas encore opérationnelle",
+        "FULL": "Aucune place libre"
+      }
+    },
+    "detail": {
+      "upgradesAfterConstruction": "Les agrandissements pourront être construits une fois la base opérationnelle.",
+      "capsHint": "Les niveaux maximum dépendent du type de base ({type}) : promouvez-la pour les relever.",
+      "notOperational": "Disponible une fois la base opérationnelle"
+    }
+  },
+  "notifications": {
+    "facilityReady": "Base opérationnelle : {facility}",
+    "facilityPromoted": "Promotion terminée : {facility}"
+  }
+}

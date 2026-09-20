@@ -1,0 +1,103 @@
+{
+  "facilities": {
+    "site": {
+      "real": "Realer Ort",
+      "realHint": "Entspricht einer Wache, die es im Gebiet wirklich gibt.",
+      "generated": "Generierter Standort",
+      "generatedHint": "Vom Spiel vorgeschlagene Lage für eine bessere Abdeckung.",
+      "sharedFamily": "Koordination",
+      "acquired": "{name}: Standort erworben",
+      "acquiredHint": "Er ist nach Abschluss der Einrichtung einsatzbereit.",
+      "tier": "Rang {tier}",
+      "setup": "Einrichtung",
+      "acquire": "Erwerben",
+      "lockedFamily": "Dienst gesperrt: Stufe {level}",
+      "alreadyOwned": "Dieser Standort gehört dir bereits",
+      "capacity": "Fahrzeugplätze",
+      "expansion": "Ausbaupotenzial",
+      "expansionLevel": {
+        "LOW": "Gering",
+        "MEDIUM": "Mittel",
+        "HIGH": "Hoch"
+      },
+      "nearest": "Vom nächsten Standort",
+      "profile": {
+        "CENTRAL": "Zentrale Lage: kurze Zeiten im Stadtkern, wenig Platz zum Wachsen.",
+        "BALANCED": "Ausgewogene Lage: gute Abdeckung und Raum zum Wachsen.",
+        "PERIPHERAL": "Randlage: mehr Platz, längere Zeiten Richtung Zentrum."
+      },
+      "owned": "Du hast an diesem Ort bereits einen Standort",
+      "openFacility": "Standort öffnen",
+      "options": "Was du hier eröffnen kannst"
+    },
+    "map": {
+      "modeTitle": "Neuer Standort",
+      "loading": "Suche verfügbare Standorte…",
+      "modeHint": "{count, plural, =0 {Kein Standort in der Nähe verfügbar} one {# Standort verfügbar: Tippe ihn auf der Karte an} other {# Standorte verfügbar: Tippe einen auf der Karte an}}",
+      "exit": "Modus „Neuer Standort“ verlassen",
+      "newFacility": "Neuer Standort",
+      "siteGone": "Standort nicht mehr verfügbar",
+      "candidateSite": "Verfügbarer Standort"
+    },
+    "newFacility": {
+      "title": "Neuer Standort",
+      "chooseOnMap": "Auf der Karte wählen",
+      "subtitle": "Verfügbare Standorte in der Nähe. Jeder Ort erlaubt nur bestimmte Standorttypen.",
+      "filter": "Nach Dienst filtern",
+      "all": "Alle",
+      "empty": "Kein Standort für diesen Dienst verfügbar",
+      "from": "ab",
+      "lockedFrom": "gesperrt · ab",
+      "dialogHint": "Wähle den Standorttyp, den du hier eröffnen willst.",
+      "showOnMap": "Auf der Karte zeigen"
+    },
+    "construction": {
+      "title": "Standort wird eingerichtet",
+      "hint": "Fahrzeuge und Personal kannst du zuweisen, sobald er einsatzbereit ist.",
+      "readyIn": "Einsatzbereit in"
+    },
+    "promotion": {
+      "title": "Standort aufwerten",
+      "topOfChain": "Dieser Standort ist bereits die höchste Stufe seiner Kette.",
+      "hint": "Der neue Typ bringt mehr Grundkapazität, neue Bereiche und höhere Ausbaugrenzen. Bereits gebaute Erweiterungen bleiben erhalten.",
+      "building": "Aufwertung läuft:",
+      "buildingTo": "Aufwertung zu {type} läuft:",
+      "requirements": "Voraussetzungen der Aufwertung",
+      "needLevel": "Karrierestufe {level}",
+      "needUpgrade": "{upgrade} auf Stufe {level}",
+      "met": "Voraussetzung erfüllt",
+      "missing": "Voraussetzung fehlt",
+      "promote": "Aufwerten",
+      "started": "Aufwertung gestartet",
+      "waitUpgrades": "Warte, bis die laufenden Arbeiten fertig sind",
+      "notOperational": "Der Standort ist noch nicht einsatzbereit",
+      "needUpgrades": "Schließe zuerst die nötigen Erweiterungen ab"
+    },
+    "transfer": {
+      "action": "Zu anderem Standort verlegen",
+      "actionFor": "{callSign} zu anderem Standort verlegen",
+      "column": "Verlegen",
+      "onlyAvailable": "Nur am Standort verfügbare Fahrzeuge können verlegt werden.",
+      "title": "{callSign} verlegen",
+      "subtitle": "Belegt {points} Plätze ({domain}). Nur passende Standorte mit freiem Platz.",
+      "done": "{callSign} wird nach {facility} verlegt",
+      "doneHint": "Es ist nach Ankunft am neuen Standort verfügbar.",
+      "state": {
+        "OK": "{free} freie Plätze",
+        "CURRENT": "Aktueller Standort",
+        "INCOMPATIBLE": "Standorttyp nicht passend",
+        "NOT_OPERATIONAL": "Noch nicht einsatzbereit",
+        "FULL": "Kein freier Platz"
+      }
+    },
+    "detail": {
+      "upgradesAfterConstruction": "Erweiterungen sind möglich, sobald der Standort einsatzbereit ist.",
+      "capsHint": "Die Höchststufen hängen vom Standorttyp ab ({type}): Werte ihn auf, um sie zu erhöhen.",
+      "notOperational": "Verfügbar, sobald der Standort einsatzbereit ist"
+    }
+  },
+  "notifications": {
+    "facilityReady": "Standort einsatzbereit: {facility}",
+    "facilityPromoted": "Aufwertung abgeschlossen: {facility}"
+  }
+}

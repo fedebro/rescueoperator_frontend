@@ -1,7 +1,7 @@
 'use client';
 import * as React from 'react';
 import { useTranslations } from 'next-intl';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, LifeBuoy } from 'lucide-react';
 import type { IncidentDto } from '@/contracts';
 import { useI18nText } from '@/i18n/use-i18n-text';
 import { useUiStore } from '@/stores/ui';
@@ -11,6 +11,7 @@ import { SeverityBadge, severityColor } from '@/components/ui/severity-badge';
 import { StatusChip } from '@/components/ui/status-chip';
 import { Countdown } from '@/components/ui/countdown';
 import { EmptyState } from '@/components/ui/misc';
+import { IncidentFamilies } from '@/features/families/family-chips';
 import { SEVERITY_ORDER, useSnapshot } from './hooks';
 
 export function IncidentCard({
@@ -24,7 +25,12 @@ export function IncidentCard({
 }) {
   const t = useTranslations('game.incident');
   const ts = useTranslations('status.incident');
+  const tq = useTranslations('families.queue');
   const tx = useI18nText();
+  const resolving = incident.status === 'RESOLVING';
+  const workingUnits = (incident.externalSupport ?? []).filter(
+    (u) => u.status === 'REQUESTED' || u.status === 'WORKING',
+  ).length;
   const pending = incident.status === 'PENDING_RESPONSE';
   return (
     <button
@@ -64,10 +70,18 @@ export function IncidentCard({
             size="sm"
           />
         </span>
-        <span className="text-muted mt-0.5 block truncate text-xs">{incident.address}</span>
+        <span className="mt-0.5 flex items-center gap-2">
+          <span className="text-muted min-w-0 flex-1 truncate text-xs">{incident.address}</span>
+          <IncidentFamilies incident={incident} size={16} />
+        </span>
         <span className="mt-1.5 flex items-center justify-between gap-2">
           <StatusChip status={incident.status} label={ts(incident.status)} />
-          {pending && incident.expiresAt ? (
+          {resolving ? (
+            <span className="text-info flex items-center gap-1 text-xs" data-testid="resolving-hint">
+              <LifeBuoy className="size-3" aria-hidden />
+              {workingUnits > 0 ? tq('externalUnits', { count: workingUnits }) : tq('closing')}
+            </span>
+          ) : pending && incident.expiresAt ? (
             <Countdown
               to={incident.expiresAt}
               urgentBelowSeconds={120}

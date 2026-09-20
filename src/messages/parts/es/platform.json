@@ -1,0 +1,50 @@
+{
+  "platform": {
+    "a11y": {
+      "pendingIncidents": "{count, plural, one {# emergencia en espera} other {# emergencias en espera}}"
+    },
+    "sound": {
+      "title": "Sonidos",
+      "masterHint": "Señales sintéticas breves, nunca antes de tu primer toque. Desactivadas de inicio en móviles y tabletas.",
+      "volume": "Volumen general",
+      "volumeValue": "{percent} %",
+      "alerts": "Alarmas",
+      "alertsHint": "Nuevas emergencias, agravamientos, avisos críticos, misiones fallidas.",
+      "feedback": "Confirmaciones",
+      "feedbackHint": "Llegadas al lugar, misiones superadas, niveles, desbloqueos, Créditos, confirmaciones de órdenes.",
+      "test": "Probar el sonido"
+    },
+    "privacy": {
+      "title": "Privacidad y aplicación",
+      "analytics": "Estadísticas de uso anónimas",
+      "analyticsHint": "Nos ayudan a mejorar el juego. Nunca correos, nombres ni textos: solo eventos de juego. Desactivadas hasta que las actives."
+    },
+    "pwa": {
+      "title": "Instalar la aplicación",
+      "install": "Instalar",
+      "installed": "Instalada",
+      "hint": "Añade Rescue Control a la pantalla de inicio: se abre a pantalla completa, como una aplicación.",
+      "installedHint": "Ya estás usando la aplicación instalada.",
+      "unavailableHint": "Este navegador no ofrece la instalación. Prueba desde el menú del navegador o con Chrome, Edge o Safari.",
+      "hintTitle": "Rescue Control como aplicación",
+      "hintBody": "Instálala para abrir tu central con un toque, a pantalla completa.",
+      "iosTitle": "Instalar en iPhone y iPad",
+      "iosIntro": "Safari no muestra un botón de instalación: bastan tres pasos.",
+      "iosStep1": "Toca Compartir en la barra de Safari.",
+      "iosStep2": "Desliza y elige «Añadir a pantalla de inicio».",
+      "iosStep3": "Confirma con «Añadir»: el icono aparecerá junto a tus otras aplicaciones."
+    },
+    "offline": {
+      "title": "Estás sin conexión",
+      "body": "La central necesita conexión: el mundo del juego vive en el servidor y sigue adelante sin ti.",
+      "retry": "Reintentar",
+      "safe": "Tu progreso está a salvo."
+    },
+    "manifest": {
+      "description": "Simulador de gestión de emergencias sobre mapa real: dirige tu propia central.",
+      "shortcutMap": "Mapa operativo",
+      "shortcutIncidents": "Emergencias",
+      "shortcutFleet": "Flota"
+    }
+  }
+}

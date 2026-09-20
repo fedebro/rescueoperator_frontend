@@ -24,7 +24,7 @@ export const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      'text-muted hover:text-fg data-[state=active]:border-brand data-[state=active]:text-fg relative -mb-px inline-flex h-10 shrink-0 items-center gap-1.5 border-b-2 border-transparent px-3 text-sm font-semibold whitespace-nowrap transition-colors',
+      'text-muted hover:text-fg data-[state=active]:border-brand data-[state=active]:text-fg relative -mb-px inline-flex h-11 shrink-0 items-center gap-1.5 border-b-2 border-transparent px-3 text-sm font-semibold whitespace-nowrap transition-colors lg:h-10',
       className,
     )}
     {...props}
@@ -36,6 +36,7 @@ export const TabsContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
 >(({ className, ...props }, ref) => (
-  <TabsPrimitive.Content ref={ref} className={cn('outline-none', className)} {...props} />
+  // The panel is a tab stop (Radix): it keeps the global focus ring so keyboard users can see where they are.
+  <TabsPrimitive.Content ref={ref} className={cn('rounded-sm', className)} {...props} />
 ));
 TabsContent.displayName = 'TabsContent';

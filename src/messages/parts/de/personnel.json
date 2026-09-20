@@ -1,0 +1,286 @@
+{
+  "status": {
+    "personnel": {
+      "ONBOARDING": "Einarbeitung",
+      "AVAILABLE": "Verfügbar",
+      "ASSIGNED": "Zugeteilt",
+      "ON_MISSION": "Im Einsatz",
+      "RESTING": "In Ruhe",
+      "TRAINING": "In Ausbildung",
+      "INJURED": "Verletzt",
+      "TRANSFERRING": "In Versetzung",
+      "UNAVAILABLE": "Nicht verfügbar",
+      "RETIRED": "Ausgeschieden"
+    },
+    "team": {
+      "READY": "Bereit",
+      "PARTIAL": "Teilweise bereit",
+      "ON_MISSION": "Im Einsatz",
+      "RESTING": "In Ruhe",
+      "UNAVAILABLE": "Nicht verfügbar"
+    }
+  },
+  "notifications": {
+    "personnel": {
+      "onboarded": "{name} hat die Einarbeitung abgeschlossen und ist im Dienst.",
+      "recovered": "{name} hat sich von der Verletzung erholt und ist wieder verfügbar.",
+      "trainingDone": "{name} hat den Kurs abgeschlossen und eine neue Qualifikation erworben.",
+      "restRequired": "{name} ist erschöpft: Gönne eine Ruhepause vor dem nächsten Einsatz.",
+      "injured": "{name} wurde im Einsatz verletzt. Nichts Ernstes: Rückkehr nach der Genesung."
+    }
+  },
+  "personnel": {
+    "title": "Personalverwaltung",
+    "subtitle": "Einsatzkräfte, Teams, Einstellungen und Ausbildung deiner Leitstelle.",
+    "summary": {
+      "total": "Einsatzkräfte",
+      "ready": "Einsatzbereit",
+      "cost": "Kosten pro Periode"
+    },
+    "tabs": {
+      "roster": "Dienstplan",
+      "teams": "Teams und Abteilungen",
+      "recruitment": "Einstellungen",
+      "training": "Ausbildung"
+    },
+    "potential": {
+      "STANDARD": "Normales Potenzial",
+      "PROMISING": "Vielversprechend",
+      "EXCEPTIONAL": "Ausnahmetalent"
+    },
+    "fatigue": {
+      "label": "Ermüdung",
+      "trend": {
+        "stable": "Stabil: Die Ermüdung wird bei der Rückkehr vom Einsatz aktualisiert.",
+        "down": "Erholung: Die Ermüdung nimmt ab.",
+        "up": "Steigend: Die Ermüdung nimmt zu."
+      }
+    },
+    "busyReason": {
+      "ONBOARDING": "Einarbeitung läuft",
+      "MISSION": "Im Einsatz gebunden",
+      "REST": "Ruhepause läuft",
+      "TRAINING": "Kurs läuft",
+      "INJURY": "Genesung nach Verletzung",
+      "TRANSFER": "Versetzung läuft"
+    },
+    "history": {
+      "HIRED": "Eingestellt",
+      "ONBOARDED": "Einarbeitung abgeschlossen: im Dienst",
+      "MISSION": "Zurück vom Einsatz mit {vehicle}",
+      "REST_STARTED": "In die Ruhepause geschickt",
+      "REST_DONE": "Ruhepause beendet",
+      "TRANSFER_STARTED": "Versetzung nach {facility}",
+      "TRANSFERRED": "Am neuen Standort angekommen",
+      "RECOVERED": "Genesen: wieder verfügbar",
+      "TRAINING_STARTED": "Angemeldet für: {course}",
+      "TRAINING_DONE": "Kurs abgeschlossen: {course}",
+      "TRAINING_CANCELLED": "Anmeldung storniert: {course}",
+      "INJURED": "Verletzung im Einsatz ({severity})",
+      "TEAM_JOINED": "Dem Team {team} beigetreten"
+    },
+    "sheet": {
+      "title": "Personalakte",
+      "restStarted": "Einsatzkraft ruht sich aus",
+      "transferStarted": "Versetzung gestartet",
+      "dismissed": "Einsatzkraft entlassen",
+      "enrolled": "Kursanmeldung bestätigt",
+      "injury": "Verletzung: {severity}",
+      "injuryRecovery": "Wieder im Dienst in",
+      "fatigue": "Ermüdung",
+      "facility": "Standort",
+      "team": "Mannschaft",
+      "noTeam": "Kein Team",
+      "competence": "Kompetenz",
+      "missions": "Einsätze",
+      "costPerPeriod": "Kosten pro Periode",
+      "hiredAt": "Im Dienst seit",
+      "qualifications": "Qualifikationen",
+      "noQualifications": "Noch keine Qualifikation: Melde einen Kurs an.",
+      "obtained": "erworben am {date}",
+      "expires": "läuft ab am {date}",
+      "actions": "Aktionen",
+      "rest": "Ruhepause anordnen",
+      "course": "Kurs",
+      "coursePlaceholder": "Kurs auswählen",
+      "noCourses": "Kein passender Kurs",
+      "enroll": "Anmelden",
+      "destination": "Zielstandort",
+      "destinationPlaceholder": "Standort auswählen",
+      "noDestination": "Kein anderer passender Standort",
+      "beds": "{count, plural, =0 {Unterkünfte belegt} one {# freier Platz} other {# freie Plätze}}",
+      "transfer": "Versetzen",
+      "dismiss": "Entlassen",
+      "dismissConfirmTitle": "Diese Einsatzkraft entlassen?",
+      "dismissConfirmBody": "{name} verlässt die Leitstelle; die Einstellungskosten werden nicht erstattet.",
+      "dismissConfirm": "Ja, entlassen",
+      "history": "Verlauf"
+    },
+    "roster": {
+      "search": "Nach Namen suchen",
+      "filter": {
+        "facility": "Nach Standort filtern",
+        "family": "Nach Dienst filtern",
+        "role": "Nach Rolle filtern",
+        "status": "Nach Status filtern",
+        "band": "Nach Ermüdung filtern",
+        "qualification": "Nach Qualifikation filtern"
+      },
+      "all": {
+        "facility": "Alle Standorte",
+        "family": "Alle Dienste",
+        "role": "Alle Rollen",
+        "status": "Alle Status",
+        "band": "Jede Ermüdungsstufe",
+        "qualification": "Alle Qualifikationen"
+      },
+      "col": {
+        "name": "Einsatzkraft",
+        "role": "Rolle",
+        "facility": "Standort",
+        "team": "Mannschaft",
+        "status": "Zustand",
+        "fatigue": "Ermüdung",
+        "competence": "Komp.",
+        "missions": "Einsätze"
+      },
+      "emptyTitle": "Keine Einsatzkräfte gefunden",
+      "emptyHint": "Erweitere die Filter oder stelle im Reiter Einstellungen neue Kräfte ein.",
+      "count": "{shown} von {total} Einsatzkräften",
+      "caption": "Personal der Leitstelle"
+    },
+    "locked": {
+      "progress": "Du bist auf Stufe {level} von {required}"
+    },
+    "hire": {
+      "title": "Schnelleinstellung",
+      "subtitle": "Basisrollen, nach kurzer Einarbeitung im Dienst.",
+      "role": "Rolle",
+      "facility": "Standort",
+      "noFacility": "Kein passender Standort",
+      "beds": "{count, plural, =0 {Unterkünfte belegt} one {# freier Platz} other {# freie Plätze}}",
+      "roleFacts": "Kosten pro Periode: {cost} · Einarbeitung: {onboarding}",
+      "count": "Anzahl der Einsatzkräfte",
+      "fewer": "Eine weniger",
+      "more": "Eine mehr",
+      "total": "Gesamtkosten",
+      "submit": "{count, plural, one {# Einsatzkraft einstellen} other {# Einsatzkräfte einstellen}}",
+      "noBeds": "Zu wenig Unterkünfte: Baue die Unterkünfte aus oder wähle einen anderen Standort.",
+      "onboarding": "In Einarbeitung",
+      "hired": "{count, plural, one {# Einsatzkraft eingestellt: Einarbeitung läuft} other {# Einsatzkräfte eingestellt: Einarbeitung läuft}}"
+    },
+    "market": {
+      "title": "Fachkräfte-Bewerber",
+      "subtitle": "Ausgebildete Profile, nur für begrenzte Zeit verfügbar.",
+      "nextRefresh": "Neue Bewerber in",
+      "emptyTitle": "Derzeit keine Bewerber",
+      "emptyHint": "Die Liste erneuert sich mit der Zeit von selbst: Schau später wieder vorbei.",
+      "competence": "Kompetenz {value}",
+      "hireCost": "Einstellung",
+      "costPerPeriod": "Pro Periode",
+      "expires": "Läuft ab in",
+      "expired": "abgelaufen",
+      "facility": "Zugewiesener Standort",
+      "noFacility": "Kein freier Platz",
+      "hire": "Einstellen",
+      "hired": "{name} eingestellt: Einarbeitung läuft",
+      "fairness": "Bewerber erneuern sich nur mit der Zeit: Es gibt keine kostenpflichtige Aktualisierung."
+    },
+    "training": {
+      "cancelled": "Anmeldung storniert: Die Hälfte der Kosten wurde erstattet.",
+      "lockedHint": "Kurse verleihen deinen Kräften die Qualifikationen, die Spezialfahrzeuge verlangen.",
+      "slots": "Schulungsplätze pro Standort",
+      "slotsUsed": "{used}/{total} belegt",
+      "running": "Laufende Kurse",
+      "noneRunning": "Kein Kurs läuft gerade.",
+      "cancel": "Stornieren",
+      "cancelFor": "Kurs von {name} stornieren",
+      "completed": "{count, plural, one {# Kurs kürzlich abgeschlossen} other {# Kurse kürzlich abgeschlossen}}",
+      "catalogue": "Kurskatalog",
+      "grants": "Verleiht: {qualification}",
+      "requires": "Erfordert: {qualification}",
+      "roles": "Zugelassene Rollen",
+      "enroll": "Anmelden",
+      "noEligible": "Niemand geeignet",
+      "enrollIn": "Anmelden für: {course}",
+      "noCourses": "Keine Kurse im Katalog",
+      "enrollHint": "Wähle bis zu {max} geeignete, freie Kräfte. Während des Kurses rücken sie nicht aus.",
+      "total": "Gesamtkosten",
+      "enrolled": "{count, plural, one {# Einsatzkraft zum Kurs angemeldet} other {# Einsatzkräfte zum Kurs angemeldet}}",
+      "enrollCount": "{count, plural, =0 {Einsatzkräfte auswählen} one {# Einsatzkraft anmelden} other {# Einsatzkräfte anmelden}}"
+    },
+    "teams": {
+      "warning": {
+        "NO_MEMBERS": "Das Team hat keine Mitglieder.",
+        "NO_LEADER": "Kein Teamleiter bestimmt.",
+        "NO_VEHICLE": "Kein Fahrzeug zugeteilt.",
+        "BELOW_MIN_CREW": "Unter der Mindestbesatzung: Das Fahrzeug kann nicht ausrücken.",
+        "BELOW_OPTIMAL_CREW": "Unter der Optimalbesatzung: geringere Effizienz.",
+        "FATIGUED_MEMBERS": "Einige Mitglieder sind ermüdet.",
+        "INJURED_MEMBERS": "Einige Mitglieder sind verletzt.",
+        "MISSING_ROLE": "Die vom Fahrzeug geforderte Rolle fehlt: {role}.",
+        "MISSING_QUALIFICATION": "Die vom Fahrzeug geforderte Qualifikation fehlt: {qualification}."
+      },
+      "lockedHint": "Mit Teams legst du fest, wer auf welchem Fahrzeug fährt, und behältst die Bereitschaft im Blick.",
+      "departmentsLockedHint": "Abteilungen bündeln die Teams eines Dienstes an einem Standort.",
+      "subtitle": "Ohne Team wird die Besatzung automatisch aus den freien Kräften des Standorts gebildet.",
+      "newDepartment": "Neue Abteilung",
+      "newTeam": "Neues Team",
+      "emptyTitle": "Noch keine Teams",
+      "emptyHint": "Erstelle dein erstes Team, füge Mitglieder hinzu und teile ein Fahrzeug zu.",
+      "noDepartment": "Ohne Abteilung",
+      "emptyDepartment": "Kein Team in dieser Abteilung.",
+      "rename": "Team umbenennen",
+      "readiness": "Bereitschaft",
+      "vehicle": "Zugeteiltes Fahrzeug",
+      "noVehicle": "Kein Fahrzeug",
+      "department": "Abteilung",
+      "editMembers": "Mitglieder verwalten",
+      "members": "Mitglieder {count}/{max}",
+      "leader": "Teamleiter",
+      "noLeader": "Kein Teamleiter",
+      "name": "Bezeichnung",
+      "namePlaceholder": "z. B. Erster Abmarsch",
+      "created": "Team „{name}“ erstellt",
+      "newTeamHint": "Ein Team gehört zu einem Standort und hat bis zu 12 Mitglieder.",
+      "facility": "Standort",
+      "create": "Erstellen",
+      "newDepartmentHint": "Eine Abteilung fasst die Teams eines Dienstes am selben Standort zusammen.",
+      "family": "Dienst",
+      "saved": "Team aktualisiert",
+      "membersOf": "Mitglieder von {name}",
+      "membersHint": "Bis zu {max} Kräfte desselben Standorts. Eine Kraft gehört nur zu einem Team.",
+      "inOtherTeam": "In anderem Team",
+      "save": "Team speichern"
+    },
+    "crew": {
+      "manage": "Verwalten",
+      "title": "Besatzung",
+      "count": "{assigned}/{optimal}",
+      "belowMin": "Unter dem Minimum von {min}: Das Fahrzeug kann nicht ausrücken.",
+      "minimum": "Minimum zum Ausrücken: {min}",
+      "autoCrew": "Kein Team zugeteilt: Die Besatzung wird beim Ausrücken automatisch gebildet.",
+      "preview": "Besatzung {available}/{optimal} (mind. {min})",
+      "efficiency": "Effizienz {pct} %",
+      "missing": "Fehlt: {name}",
+      "blocked": {
+        "CREW_INSUFFICIENT": "Zu wenig Besatzung",
+        "CREW_UNQUALIFIED": "Besatzung erfüllt die Anforderungen nicht",
+        "CREW_EXHAUSTED": "Besatzung erschöpft"
+      },
+      "fix": {
+        "CREW_INSUFFICIENT": "Einsatzkräfte einstellen",
+        "CREW_UNQUALIFIED": "Personal einstellen oder ausbilden",
+        "CREW_EXHAUSTED": "Kräften eine Ruhepause geben"
+      },
+      "blockedTitle": "Wegen der Besatzung blockierte Fahrzeuge"
+    },
+    "facility": {
+      "manage": "Personal verwalten",
+      "title": "Personal des Standorts",
+      "beds": "Belegte Unterkünfte",
+      "bedsCount": "{used}/{total} Plätze",
+      "empty": "Keine Einsatzkräfte an diesem Standort."
+    }
+  }
+}

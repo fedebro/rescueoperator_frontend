@@ -1,0 +1,180 @@
+{
+  "notifications": {
+    "purchaseCredited": "Achat terminé : +{credits} Crédits",
+    "referralRewarded": "Votre réseau est complet : +{credits} Crédits",
+    "referralWelcome": "Invitation validée : +{credits} Crédits de bienvenue"
+  },
+  "monetization": {
+    "ads": {
+      "title": "Vidéo récompensée",
+      "active": "Actif",
+      "description": "Regardez une courte vidéo jusqu’au bout et recevez des Crédits. C’est toujours facultatif.",
+      "reward": "Récompense",
+      "watchedToday": "Aujourd’hui : {watched}/{limit} vidéos",
+      "watchedShort": "{watched}/{limit} aujourd’hui",
+      "watch": "Regarder une vidéo",
+      "cooldown": "Prochaine vidéo dans",
+      "limitReached": "Limite du jour atteinte. Remise à zéro à {time}.",
+      "disabled": "Les vidéos ne sont pas disponibles pour le moment.",
+      "unavailable": "Aucune vidéo disponible pour l’instant. Réessayez plus tard.",
+      "abandoned": "Vidéo interrompue : aucune récompense.",
+      "credited": "+{credits} Crédits ajoutés",
+      "player": {
+        "title": "Vidéo en cours",
+        "simulated": "Simulation : aucune vraie publicité n’est affichée.",
+        "abandon": "Arrêter la vidéo",
+        "progress": "Progression de la vidéo",
+        "paused": "En pause : revenez sur cet onglet pour continuer.",
+        "remaining": "{seconds, plural, one {Encore # seconde} other {Encore # secondes}}",
+        "abandonHint": "Si vous arrêtez avant la fin, vous ne recevez pas la récompense."
+      }
+    },
+    "insufficient": {
+      "subtitleLocked": "Chaque intervention terminée rapporte : continuez à gérer les urgences.",
+      "covered": "Vous avez maintenant assez de Crédits. Il manque",
+      "notAvailable": "Indisponible"
+    },
+    "speedup": {
+      "button": "Terminer",
+      "title": "Terminer tout de suite ?",
+      "description": "Processus : {process}",
+      "remaining": "Temps restant",
+      "cost": "Coût",
+      "free": "Gratuit",
+      "rule": "Les Crédits n’accélèrent que les processus de gestion : jamais les trajets, les interventions ni l’expérience.",
+      "confirm": "Dépenser et terminer",
+      "confirmFree": "Terminer gratuitement",
+      "done": "Processus terminé",
+      "alreadyDone": "Le processus est déjà terminé : vous n’avez rien dépensé."
+    },
+    "purchaseStatus": {
+      "CREATED": "En attente de paiement",
+      "PAID": "Payé, crédit en cours",
+      "CREDITED": "Crédité",
+      "FAILED": "Échoué",
+      "REFUNDED": "Remboursé"
+    },
+    "shop": {
+      "title": "Crédits",
+      "subtitle": "Soutenez le jeu et donnez un coup de pouce à votre centre. Facultatif, toujours.",
+      "balance": "Solde actuel",
+      "purchasedBalance": "dont achetés : {credits} (dépensés en dernier)",
+      "waiver": "Je demande l’exécution immédiate et je renonce à mon droit de rétractation : les Crédits sont livrés dès le paiement.",
+      "waiverHint": "Contenu numérique fourni immédiatement. Détails dans les",
+      "terms": "Conditions d’utilisation",
+      "waiverRequired": "Vous devez cocher cette case pour acheter.",
+      "packages": "Packs de Crédits",
+      "fairPlay": "Les Crédits achetés ne débloquent ni niveaux ni expérience : la progression se gagne en jouant.",
+      "payment": "Le paiement s’effectue sur une page sécurisée de notre prestataire ; les prix incluent la TVA.",
+      "highlight": {
+        "POPULAR": "Le plus choisi",
+        "BEST_VALUE": "Meilleure offre",
+        "STARTER": "Pour débuter"
+      },
+      "oneTime": "Une seule fois",
+      "bonus": "{base} + {bonus} offerts",
+      "buy": "Acheter · {price}",
+      "buyFor": "Acheter {name} pour {price}",
+      "alreadyBought": "Déjà acheté",
+      "unavailable": "Indisponible pour le moment",
+      "history": {
+        "title": "Historique des achats",
+        "empty": "Aucun achat pour l’instant.",
+        "date": "Date d’achat",
+        "package": "Pack",
+        "price": "Prix",
+        "status": "État"
+      }
+    },
+    "checkout": {
+      "backToGame": "Retour à la carte",
+      "backToShop": "Retour aux packs",
+      "successTitle": "Merci pour votre achat",
+      "credited": "Crédits ajoutés",
+      "newBalance": "Nouveau solde :",
+      "failed": "Le paiement n’a pas abouti",
+      "failedHint": "Rien ne vous a été débité. Vous pouvez réessayer quand vous voulez.",
+      "processing": "Nous confirmons votre paiement…",
+      "processingHint": "Cela prend généralement quelques secondes. Ne fermez pas cette page.",
+      "delayed": "La confirmation prend plus de temps que prévu",
+      "delayedHint": "Vous pouvez retourner jouer : les Crédits arriveront dès la confirmation du paiement et apparaîtront dans l’historique des achats.",
+      "cancelTitle": "Achat annulé",
+      "cancelled": "Aucun débit",
+      "cancelledHint": "Vous avez quitté la page de paiement : rien ne vous a été débité."
+    },
+    "mockCheckout": {
+      "title": "Paiement",
+      "simulation": "Simulation de test",
+      "notice": "Cette page remplace le paiement du prestataire en environnement de test : aucune donnée de paiement n’est demandée et aucun débit réel n’a lieu.",
+      "notFound": "Cet achat n’est plus en attente de paiement.",
+      "pay": "Payer {price} (simulé)",
+      "cancel": "Annuler et revenir au jeu"
+    },
+    "referral": {
+      "title": "Construisez votre réseau",
+      "subtitle": "Invitez deux Directeurs : lorsqu’ils entrent vraiment en service, vous êtes tous récompensés.",
+      "yourCode": "Votre code d’invitation",
+      "copyCode": "Copier le code",
+      "shareCta": "Partager l’invitation",
+      "copyLink": "Copier le lien",
+      "linkCopied": "Lien copié",
+      "codeCopied": "Code copié",
+      "copyFailed": "Copie impossible : sélectionnez le lien et copiez-le à la main.",
+      "progressTitle": "Directeurs activés",
+      "progressLabel": "{activated} Directeurs activés sur {required}",
+      "rewardClaimed": "Récompense reçue",
+      "rewardReferrer": "Récompense à la fin :",
+      "rewardClaimedHint": "Réseau complet : la récompense est déjà dans votre solde. Vous pouvez continuer à inviter des amis, leur bonus de bienvenue reste valable.",
+      "rewardPending": "Objectif atteint : la récompense arrive.",
+      "progressHint": "Seuls comptent ceux qui jouent vraiment, pas ceux qui s’inscrivent seulement.",
+      "rulesTitle": "Comment ça marche",
+      "rules": {
+        "share": "Partagez votre lien : toute personne qui s’inscrit par ce lien devient votre invité.",
+        "activation": "L’invitation est validée lorsque le nouveau Directeur termine {missions} missions sur au moins {days} jours différents : il reçoit alors son bonus de bienvenue.",
+        "reward": "Avec {required} Directeurs validés, vous recevez votre récompense, une seule fois.",
+        "fair": "Les comptes en double ou créés uniquement pour obtenir la récompense sont annulés."
+      },
+      "invitedTitle": "Vos invités",
+      "invitedEmpty": "Aucun invité pour l’instant",
+      "invitedEmptyHint": "Partagez le lien ci-dessus : les Directeurs inscrits apparaîtront ici.",
+      "col": {
+        "director": "Directeur",
+        "status": "État",
+        "joined": "Inscrit le"
+      },
+      "status": {
+        "REGISTERED": "Inscrit",
+        "ACTIVATED": "Validé",
+        "REWARDED": "Récompensé",
+        "INVALIDATED": "Annulé"
+      },
+      "share": {
+        "title": "Partagez votre invitation",
+        "subtitle": "Choisissez comment envoyer le lien.",
+        "copy": "Copier le lien",
+        "whatsapp": "Envoyer par WhatsApp",
+        "telegram": "Envoyer par Telegram",
+        "email": "Envoyer par e-mail",
+        "messageTitle": "Je te défie sur Rescue Control",
+        "message": "Gère les urgences de ta ville sur une vraie carte. Rejoins-moi avec mon invitation et reçois {credits} Crédits de bienvenue :"
+      },
+      "mine": {
+        "title": "Votre invitation",
+        "invitedBy": "Vous avez été invité par {name}.",
+        "missions": "Missions terminées : {done}/{required}",
+        "days": "Jours de jeu : {done}/{required}",
+        "bonus": "Bonus de bienvenue à la validation :",
+        "bonusReceived": "Bonus de bienvenue reçu :"
+      }
+    },
+    "invite": {
+      "title": "{name} vous a invité sur Rescue Control",
+      "pitch": "Dirigez le centre opérationnel de votre ville : urgences, véhicules et équipes sur une vraie carte.",
+      "bonus": "En rejoignant par cette invitation, vous recevez un bonus de bienvenue en Crédits après vos premières missions.",
+      "invalidTitle": "Invitation non valide",
+      "invalidHint": "Ce lien n’est plus actif, mais vous pouvez quand même commencer à jouer.",
+      "cta": "Accepter l’invitation et jouer",
+      "ctaInvalid": "Commencer à jouer"
+    }
+  }
+}

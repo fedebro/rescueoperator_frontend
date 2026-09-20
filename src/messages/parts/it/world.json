@@ -1,0 +1,185 @@
+{
+  "world": {
+    "duration": {
+      "hours": "{h} h",
+      "minutes": "{m} min",
+      "hoursMinutes": "{h} h {m} min"
+    },
+    "widget": {
+      "open": "Condizioni sul territorio: {weather}, {temperature}, ore {time}, traffico {traffic}. Apri i dettagli",
+      "title": "Condizioni sul territorio",
+      "close": "Chiudi",
+      "weather": "Meteo",
+      "temperature": "{value} °C",
+      "wind": "Vento a {value} km/h",
+      "noData": "n.d.",
+      "degraded": "Dati meteo stimati",
+      "degradedHint": "Il servizio meteo non risponde: usiamo una stima finché non torna disponibile.",
+      "source": {
+        "simulated": "meteo simulato",
+        "live": "dati in tempo reale"
+      },
+      "localTime": "Ora locale",
+      "traffic": {
+        "title": "Traffico",
+        "level": {
+          "FREE_FLOW": "Scorrevole",
+          "LIGHT": "Leggero",
+          "MODERATE": "Moderato",
+          "HEAVY": "Intenso",
+          "SEVERE": "Congestionato"
+        }
+      },
+      "travelEffectNone": "Tempi di percorrenza nella norma.",
+      "travelEffectSlower": "Viaggi su strada più lenti del {percent} per traffico e meteo.",
+      "closuresTitle": "Viabilità",
+      "closures": "{count, plural, =0 {Nessuna strada chiusa} one {# strada chiusa} other {# strade chiuse}}",
+      "closuresEffect": "Percorsi più lunghi",
+      "showClosures": "Mostra sulla mappa"
+    },
+    "layers": {
+      "open": "Livelli della mappa",
+      "button": "Livelli",
+      "title": "Livelli della mappa",
+      "close": "Chiudi",
+      "layer": {
+        "hospitals": "Ospedali",
+        "closures": "Strade chiuse",
+        "coverage": "Copertura",
+        "sites": "Siti per nuove sedi"
+      },
+      "hint": {
+        "hospitals": "Pronto soccorso e reparti disponibili",
+        "closures": "Cantieri, eventi e strade bloccate dai soccorsi",
+        "coverage": "Tempi di arrivo stimati dalle tue sedi",
+        "sites": "Dove puoi aprire una nuova sede"
+      },
+      "coverage": {
+        "title": "Popolazione coperta",
+        "family": "Servizio mostrato",
+        "all": "Tutti",
+        "inactive": "nessun mezzo",
+        "threshold": "Soglia di servizio: {minutes} min",
+        "method": {
+          "OSRM_TABLE": "calcolata sulla rete stradale",
+          "STRAIGHT_LINE": "stima in linea d’aria",
+          "NONE": "nessuna sede operativa"
+        },
+        "stale": "Ricalcolo in corso dopo le ultime modifiche…",
+        "legend": "Tempo di arrivo stimato",
+        "unreachable": "Non raggiungibile",
+        "over": "oltre {from} min",
+        "upTo": "fino a {to} min",
+        "range": "{from}–{to} min"
+      },
+      "closures": {
+        "title": "Strade chiuse ora",
+        "empty": "Nessuna chiusura attiva.",
+        "kind": {
+          "FULL": "Chiusa",
+          "PARTIAL": "Parzialmente chiusa"
+        },
+        "effect": "+{percent} sui tempi di chi ci passa",
+        "endsIn": "Riapre tra",
+        "reopening": "in riapertura",
+        "noEnd": "Fino a nuovo avviso",
+        "center": "Centra sulla mappa: {reason}",
+        "mapLabel": {
+          "FULL": "CHIUSA",
+          "PARTIAL": "RIDOTTA"
+        }
+      }
+    },
+    "closure": {
+      "ROADWORKS": "Lavori in corso in {street}",
+      "EVENT": "Manifestazione in {street}",
+      "EXTERNAL_SUPPORT": "{address}: strada chiusa, unità esterne al lavoro",
+      "INCIDENT": "{address}: strada chiusa per un’emergenza in corso",
+      "MANUAL": "Chiusura disposta dalla centrale"
+    },
+    "stipend": {
+      "title": "Contributo di copertura",
+      "hint": "Ogni {period} ricevi un contributo proporzionale alla popolazione che raggiungi in tempo. Matura anche mentre sei via, fino a {cap}.",
+      "unavailable": "Dati del contributo non disponibili al momento.",
+      "next": "Prossimo accredito tra",
+      "paying": "in accredito…",
+      "estimate": "Importo stimato",
+      "period": "Periodo",
+      "accrued": "Maturati in tua assenza",
+      "accruedValue": "{n} di {max} periodi",
+      "accrualStops": "Se non rientri, il contributo smette di maturare dopo il {date}.",
+      "breakdown": "Come si calcola",
+      "base": "Base del livello {level}",
+      "coverageMultiplier": "Copertura al {pct}",
+      "reputationMultiplier": "Reputazione {value}/100",
+      "bonusMultiplier": "Bonus delle sedi",
+      "personnelCost": "Costo del personale nel periodo",
+      "net": "Contributo netto",
+      "coverage": "Copertura",
+      "showCoverage": "Vedi sulla mappa",
+      "overall": "Complessiva (media pesata)",
+      "threshold": "entro {minutes} min",
+      "familyInactive": "Nessun mezzo operativo per questo servizio.",
+      "stale": "Copertura in ricalcolo dopo le ultime modifiche…",
+      "history": "Storico",
+      "lastPayout": "Ultimo accredito",
+      "never": "ancora nessuno",
+      "status": {
+        "PAID": "Accreditato",
+        "SKIPPED_INACTIVE": "Non maturato (assenza)"
+      },
+      "showLess": "Mostra meno",
+      "showAll": "Mostra tutti ({count})"
+    },
+    "milestones": {
+      "title": "Traguardi",
+      "summary": "{done} di {total} raggiunti",
+      "empty": "Nessun traguardo disponibile",
+      "phase": {
+        "FIRST_HOURS": "Prime ore",
+        "EARLY": "Inizio carriera",
+        "MID": "Rete in crescita",
+        "LATE": "Grande rete"
+      },
+      "phaseCount": "{done}/{total}",
+      "progress": "{current} di {target}",
+      "progressPercent": "{current} su {target}",
+      "progressLabel": "Avanzamento: {title}",
+      "achievedOn": "Raggiunto il {date}",
+      "achieved": "Raggiunto",
+      "reward": "Ricompensa:",
+      "xp": "{xp} XP"
+    },
+    "reputation": {
+      "title": "Reputazione",
+      "rank": "Grado: {rank}",
+      "band": {
+        "CRITICAL": "Compromessa",
+        "LOW": "Bassa",
+        "FAIR": "Discreta",
+        "GOOD": "Buona",
+        "EXCELLENT": "Eccellente"
+      },
+      "valueText": "{value} su 100, {band}",
+      "multiplier": "Moltiplicatore del contributo di copertura",
+      "effects": "La reputazione è una media mobile dei tuoi interventi: pesa sul contributo di copertura e su alcuni sblocchi.",
+      "up": "La fanno salire",
+      "down": "La fanno scendere",
+      "upItems": {
+        "fast": "Arrivare in fretta sul posto",
+        "adequate": "Inviare tutte le risorse richieste (2–3 stelle)",
+        "patients": "Consegnare i pazienti in buone condizioni"
+      },
+      "downItems": {
+        "expired": "Emergenze scadute senza risposta",
+        "failed": "Interventi falliti",
+        "under": "Risorse insufficienti sul posto"
+      }
+    }
+  },
+  "notifications": {
+    "world": {
+      "milestone": "Traguardo raggiunto!"
+    }
+  }
+}

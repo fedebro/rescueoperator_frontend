@@ -21,7 +21,8 @@
     "e2e": "playwright test",
     "sync:contracts": "node scripts/sync-contracts.mjs",
     "gen:assets": "tsx scripts/generate-assets.ts",
-    "check:i18n": "tsx scripts/check-i18n.ts"
+    "check:i18n": "tsx scripts/check-i18n.ts",
+    "gen:mock-catalog": "tsx scripts/gen-mock-catalog.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
@@ -36,8 +37,10 @@
     "@radix-ui/react-visually-hidden": "^1.2.11",
     "@tanstack/react-query": "^5.103.1",
     "@tanstack/react-virtual": "^3.14.13",
+    "ajv": "^8.20.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "h3-js": "^4",
     "lucide-react": "^1.47.0",
     "maplibre-gl": "^5",
     "next": "^16.3.5",
@@ -79,7 +82,8 @@
     "tsx": "^4.23.13",
     "typescript": "~5.9",
     "vite": "^6",
-    "vitest": "^3.2.7"
+    "vitest": "^3.2.7",
+    "yaml": "^2"
   },
   "msw": {
     "workerDirectory": [

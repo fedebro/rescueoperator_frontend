@@ -10,7 +10,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, invalid, leading, ...props }, ref) => (
     <div
       className={cn(
-        'bg-surface-2 focus-within:border-focus flex h-11 items-center gap-2 rounded-md border px-3 transition-colors',
+        'bg-surface-2 focus-within:border-focus focus-within:ring-focus/50 flex h-11 items-center gap-2 rounded-md border px-3 transition-colors focus-within:ring-2',
         invalid ? 'border-danger' : 'border-border-strong',
         className,
       )}

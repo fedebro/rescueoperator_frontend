@@ -15,13 +15,14 @@ import { soundEnabled, useSettingsStore } from '@/stores/settings';
 import { toast } from '@/stores/toast';
 import { useI18nText } from '@/i18n/use-i18n-text';
 import { cn } from '@/lib/utils';
-import { GameIcon, TopdownGlyph, capabilityIconName, isVehicleClass } from '@/design/icons';
+import { GameIcon, TopdownGlyph, capabilityIconName, vehicleClassOf } from '@/design/icons';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CapabilityBar } from '@/components/ui/capability-bar';
 import { Checkbox } from '@/components/ui/switch';
 import { EmptyState, SectionTitle, Skeleton } from '@/components/ui/misc';
 import { StatusChip } from '@/components/ui/status-chip';
+import { DispatchCrewBlocked, DispatchCrewPreview } from '@/features/personnel/slots';
 import { useCareerId, useCatalog, useSnapshot, useVehicleTypeLookup } from './hooks';
 
 export function RequirementBars({
@@ -174,6 +175,8 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
           <RequirementBars incident={incident} planned={planned} />
         </div>
       ) : null}
+      {/* Vehicles that only lack a crew explain why and how to fix it, even when nothing else can leave. */}
+      {dispatchable.size === 0 ? <DispatchCrewBlocked options={data.options} /> : null}
       {dispatchable.size === 0 && incident.assignedVehicleIds.length > 0 ? (
         <p className="text-subtle text-center text-xs">{t('noneAvailableHint')}</p>
       ) : dispatchable.size === 0 ? (
@@ -267,7 +270,7 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
                         aria-label={t('selectVehicle', { callSign: vehicle.callSign })}
                       />
                       <TopdownGlyph
-                        vehicleClass={type && isVehicleClass(type.icon) ? type.icon : 'truck'}
+                        vehicleClass={vehicleClassOf(type?.icon)}
                         family={vehicle.family}
                         size={28}
                       />
@@ -309,6 +312,7 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
                         ))}
                       </div>
                     ) : null}
+                    <DispatchCrewPreview option={o} />
                   </li>
                 );
               })}

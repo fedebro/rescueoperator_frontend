@@ -1,0 +1,57 @@
+{
+  "notificationCenter": {
+    "unread": "No leída",
+    "unreadOnly": "Solo no leídas",
+    "readAll": "Marcar todas como leídas",
+    "filterLabel": "Filtrar por categoría",
+    "listLabel": "Lista de notificaciones",
+    "loading": "Cargando notificaciones…",
+    "errorTitle": "No se pudieron cargar las notificaciones",
+    "errorBody": "Comprueba la conexión e inténtalo de nuevo.",
+    "emptyTitle": "Sin notificaciones",
+    "emptyBody": "Entregas, ampliaciones, niveles y eventos importantes aparecerán aquí.",
+    "emptyFilteredTitle": "Nada con estos filtros",
+    "emptyFilteredBody": "Cambia de categoría o muestra también las notificaciones ya leídas.",
+    "unreadAnnouncement": "{count, plural, one {# notificación sin leer} other {# notificaciones sin leer}}",
+    "category": {
+      "ALL": "Todas",
+      "OPERATIONS": "Operaciones",
+      "FLEET": "Flota",
+      "PERSONNEL": "Plantilla",
+      "FACILITIES": "Sedes",
+      "ECONOMY": "Economía",
+      "PROGRESSION": "Carrera",
+      "SYSTEM": "Avisos del sistema"
+    },
+    "priority": {
+      "CRITICAL": "Crítica",
+      "IMPORTANT": "Importante",
+      "INFO": "Información"
+    },
+    "action": {
+      "OPEN_INCIDENT": "Abrir la emergencia en el mapa",
+      "OPEN_VEHICLE": "Abrir el vehículo en el mapa",
+      "OPEN_FACILITY": "Abrir la sede",
+      "OPEN_PERSONNEL": "Abrir la ficha de personal",
+      "OPEN_SHOP": "Ir a compras",
+      "OPEN_PROGRESSION": "Ir a la carrera",
+      "NONE": "Sin acción"
+    }
+  },
+  "notifications": {
+    "qa": {
+      "OPERATIONS": "Aviso de prueba: operaciones",
+      "FLEET": "Aviso de prueba: flota",
+      "PERSONNEL": "Aviso de prueba: plantilla",
+      "FACILITIES": "Aviso de prueba: sedes",
+      "ECONOMY": "Aviso de prueba: economía",
+      "PROGRESSION": "Aviso de prueba: carrera",
+      "SYSTEM": "Aviso de prueba: sistema"
+    },
+    "qaBody": {
+      "CRITICAL": "Requiere atención inmediata.",
+      "IMPORTANT": "Conviene revisarlo en cuanto puedas.",
+      "INFO": "Solo para tu información."
+    }
+  }
+}

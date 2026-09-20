@@ -226,7 +226,11 @@
       "progression": "Career",
       "economy": "Finances",
       "settings": "Settings",
-      "more": "More"
+      "more": "More",
+      "personnel": "Personnel",
+      "logistics": "Logistics",
+      "credits": "Credit shop",
+      "network": "Your network"
     },
     "topbar": {
       "level": "Level",
@@ -341,7 +345,9 @@
         "HEALTH_LOW": "Maintenance advised",
         "NO_RELEVANT_CAPABILITY": "Little use here",
         "CREW_TIRED": "Tired crew",
-        "LONG_ETA": "Slow arrival"
+        "LONG_ETA": "Slow arrival",
+        "GROUNDED_BY_CONDITIONS": "Grounded by the current conditions",
+        "SLOW_TRAVEL_CONDITIONS": "Travel slowed by weather or traffic"
       }
     },
     "vehicle": {
@@ -373,7 +379,8 @@
         "WATER": "Moorings",
         "PERSONNEL": "Quarters",
         "STORAGE": "Storage",
-        "WORKSHOP": "Workshop"
+        "WORKSHOP": "Workshop",
+        "TRAINING": "Training seats"
       }
     },
     "incidentsPage": {
@@ -944,13 +951,15 @@
     "RECOVERY": "Vehicle recovery",
     "SUPPLIES": "Supplies",
     "SPEEDUP": "Speed-up",
-    "EXTERNAL_SUPPORT": "External support"
+    "EXTERNAL_SUPPORT": "External support",
+    "LEVEL_UP": "Level {level} reward"
   },
   "outcome": {
     "note": {
       "FAST_RESPONSE": "Fast response: promptness bonus.",
       "UNDER_RESOURCED": "Not enough resources on scene: the operation took longer than necessary.",
-      "TUTORIAL_BONUS": "First operation completed: 300 Credits welcome bonus."
+      "TUTORIAL_BONUS": "First operation completed: 450 Credits welcome bonus.",
+      "EXTERNAL_SUPPORT": "Part of the response was covered by external support."
     }
   },
   "timeline": {
@@ -962,7 +971,11 @@
     "incident_escalated": "The situation is getting worse: severity {severity}",
     "incident_resolved": "Operation complete",
     "incident_failed": "Operation failed",
-    "incident_expired": "No vehicle responded in time"
+    "incident_expired": "No vehicle responded in time",
+    "incident_resolving": "On-scene work complete: wrapping up",
+    "incident_cancelled": "Incident cancelled",
+    "ung_arrived": "External support on scene",
+    "ung_done": "External support: work completed"
   },
   "away": {
     "event": {

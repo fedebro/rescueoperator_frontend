@@ -1,0 +1,200 @@
+{
+  "logistics": {
+    "title": "Logistics",
+    "subtitle": "Stock, orders and workshops of your facilities",
+    "tabs": {
+      "warehouse": "Warehouse",
+      "orders": "Orders",
+      "workshop": "Workshop"
+    },
+    "locked": {
+      "inventory": "Stock management is not available yet",
+      "maintenance": "Vehicle maintenance is not available yet"
+    },
+    "due": {
+      "NOT_DUE": "Up to date",
+      "UPCOMING": "Service soon",
+      "DUE": "Service due",
+      "OVERDUE": "Service overdue"
+    },
+    "risk": {
+      "LOW": "Low failure risk",
+      "MEDIUM": "Medium failure risk",
+      "HIGH": "High failure risk"
+    },
+    "workStatus": {
+      "QUEUED": "Queued",
+      "IN_PROGRESS": "In progress",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled"
+    },
+    "orderStatus": {
+      "PLACED": "Placed",
+      "IN_DELIVERY": "In delivery",
+      "DELIVERED": "Delivered",
+      "CANCELLED": "Cancelled"
+    },
+    "orderSummary": "{lines, plural, one {# item} other {# items}} for {facility}",
+    "stock": {
+      "title": "Stock",
+      "low": "Low stock",
+      "ok": "Stock fine",
+      "lowAlert": "{count, plural, one {# item is below its minimum stock} other {# items are below their minimum stock}}",
+      "order": "Order supplies",
+      "empty": "No stock to manage",
+      "emptyHint": "Stock appears in the facilities of the services you have unlocked.",
+      "noneHere": "This facility does not use consumables.",
+      "inboundOrders": "{count, plural, one {# order on its way} other {# orders on their way}}",
+      "col": {
+        "facility": "Facility",
+        "item": "Item",
+        "quantity": "In stock",
+        "reserved": "Reserved",
+        "inbound": "Inbound",
+        "minimum": "Minimum",
+        "state": "State"
+      }
+    },
+    "order": {
+      "title": "Order supplies",
+      "subtitle": "Supplies come in whole packs and are delivered to the facility’s warehouse.",
+      "facility": "Deliver to",
+      "lines": "Items",
+      "suggest": "Refill low stock",
+      "pack": "Pack of {size} {unit}",
+      "inStock": "in stock: {quantity}",
+      "decrease": "One pack less of {item}",
+      "increase": "One more pack of {item}",
+      "packsOf": "{count, plural, one {# pack} other {# packs}} of {item}",
+      "storage": "Storage space",
+      "delivery": "Delivery",
+      "standard": "Standard",
+      "urgent": "Urgent",
+      "arrivesIn": "arrives in {time}",
+      "urgentHint": "Urgent delivery arrives much sooner but costs more.",
+      "submit": "Place order",
+      "placed": "Order placed"
+    },
+    "orders": {
+      "title": "Supply orders",
+      "empty": "No orders",
+      "emptyHint": "Supply orders show up here with their delivery time.",
+      "arrived": "Arrived",
+      "arriving": "arriving…",
+      "urgent": "Urgent",
+      "col": {
+        "placed": "Placed",
+        "summary": "Order",
+        "total": "Total",
+        "status": "Status",
+        "arrival": "Delivery"
+      }
+    },
+    "workshop": {
+      "sectionTitle": "Maintenance",
+      "fleet": "Vehicle condition",
+      "queue": "Workshops",
+      "quotes": "Work",
+      "empty": "No vehicles to look after",
+      "started": "{callSign} is in the workshop",
+      "noQuotes": "No work needed.",
+      "notAvailable": "The vehicle must be available at its facility to enter the workshop.",
+      "kind": {
+        "SERVICE": "Routine service",
+        "REPAIR": "Repair",
+        "FREE_EMERGENCY_REPAIR": "Free emergency repair"
+      },
+      "start": {
+        "SERVICE": "Start service",
+        "REPAIR": "Repair",
+        "FREE_EMERGENCY_REPAIR": "Repair for free"
+      },
+      "free": "Free",
+      "restoresTo": "condition back to {health}%",
+      "health": "Condition",
+      "healthValue": "Condition at {health}%",
+      "wear": "Wear",
+      "km": "Driven",
+      "kmValue": "{km} km",
+      "missions": "Missions",
+      "finishing": "almost done…",
+      "waitingSlot": "waiting for a free bay",
+      "external": "External garage",
+      "externalHint": "This facility has no workshop: work is done outside, one vehicle at a time and more slowly.",
+      "slots": "Bays {busy}/{slots}",
+      "queueEmpty": "No work in progress.",
+      "col": {
+        "vehicle": "Vehicle",
+        "facility": "Facility",
+        "status": "Status",
+        "health": "Condition",
+        "band": "Band",
+        "wear": "Wear",
+        "km": "Km",
+        "missions": "Missions",
+        "due": "Service",
+        "risk": "Risk"
+      }
+    },
+    "recovery": {
+      "title": "Vehicle recovery",
+      "automatic": "Recovery is automatic: you never lose a vehicle.",
+      "headline": {
+        "BROKEN_DOWN": "Vehicle broken down",
+        "BEING_RECOVERED": "Being towed home",
+        "REPAIR": "Under repair",
+        "AVAILABLE": "Available again"
+      },
+      "step": {
+        "BROKEN_DOWN": "Breakdown, tow truck called",
+        "BEING_RECOVERED": "Towing to the facility",
+        "REPAIR": "Repair in the workshop",
+        "AVAILABLE": "Available again"
+      },
+      "state": {
+        "done": "Done",
+        "current": "In progress",
+        "pending": "To do"
+      },
+      "towEta": "Tow truck",
+      "homeEta": "At base",
+      "arriving": "any moment…",
+      "queued": "queued"
+    },
+    "history": {
+      "title": "Vehicle history",
+      "empty": "Nothing has happened yet.",
+      "showAll": "Show all ({count})",
+      "showLess": "Show less",
+      "MISSION": "Back from a mission · {km} km",
+      "RESTOCKED": "Restocked from the warehouse ({units} units)",
+      "SERVICE_STARTED": "Service started ({cost} credits)",
+      "SERVICE_DONE": "Service completed",
+      "REPAIR_STARTED": "Repair started ({cost} credits)",
+      "REPAIR_DONE": "Repair completed",
+      "FREE_EMERGENCY_REPAIR_STARTED": "Free emergency repair started",
+      "FREE_EMERGENCY_REPAIR_DONE": "Emergency repair completed",
+      "BROKE_DOWN": "Broke down on duty",
+      "RECOVERY_STARTED": "Tow truck recovery ({cost} credits)",
+      "RECOVERY_STARTED_FREE": "Tow truck recovery (free)",
+      "RECOVERED": "Towed back to the facility"
+    }
+  },
+  "notifications": {
+    "lowStock": "Stock running low: {facility}",
+    "lowStockBody": "{count, plural, one {# item is below its minimum.} other {# items are below their minimum.}} Order a refill.",
+    "suppliesDelivered": "Supplies delivered: {facility}",
+    "maintenanceDone": "{callSign} is out of the workshop",
+    "vehicleBrokeDownBody": "Recovery and repair start on their own."
+  },
+  "timeline": {
+    "vehicle_broke_down": "{callSign} broke down: it will not arrive"
+  },
+  "game": {
+    "dispatch": {
+      "warning": {
+        "INVENTORY_LOW": "Low stock at base"
+      }
+    }
+  }
+}
