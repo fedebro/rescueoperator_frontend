@@ -57,7 +57,9 @@ test('patients: triage → hospital choice → transport → admitted', async ({
 
   await test.step('dispatch the ambulance: the patient is assessed (triage colour with icon + label)', async () => {
     await page.getByTestId('send-recommended').click();
-    await expect(page.getByTestId('toast').filter({ hasText: /Mezz[oi] inviat[oi]/ })).toBeVisible();
+    // The durable consequence, not the toast: this spec also installs an `outcome-modal` handler, and while that
+    // interception runs a transient toast can come and go unseen.
+    await expect(page.getByTestId('assigned-vehicle').first()).toBeVisible();
     const card = page.getByTestId('patient-card');
     await expect(card).not.toHaveAttribute('data-patient-status', 'UNASSESSED', { timeout: 60_000 });
     await expect(card.getByTestId('triage-chip')).toHaveText(/Rosso|Arancione|Azzurro|Verde|Bianco/);

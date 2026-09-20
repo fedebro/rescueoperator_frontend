@@ -195,13 +195,25 @@ describe('world simulation (pure)', () => {
   });
 
   it('stipend = base × g(coverage) × h(reputation) − personnel, never negative', () => {
-    expect(coverageFactor(0.49)).toBe(0.5);
-    expect(coverageFactor(0.7)).toBe(1);
-    expect(coverageFactor(1)).toBe(1.3);
-    expect(reputationFactor(0)).toBe(0.8);
-    expect(reputationFactor(50)).toBe(1);
-    expect(reputationFactor(100)).toBe(1.2);
-    expect(computeStipend({ base: 150, coveragePct: 82, reputation: 50, personnelCost: 40 }).net).toBe(110);
+    // The factors come from `economy.yaml` through the generated mock catalog and ARE retuned (backend-business
+    // halved the coverage steps): the shape of the curves is asserted, never a balance number frozen in the test.
+    const steps = ECONOMY.stipend.coverageSteps;
+    const { atZero, atHundred } = ECONOMY.stipend.reputationFactor;
+    expect(coverageFactor(0)).toBe(steps[0]!.factor);
+    expect(coverageFactor(1)).toBe(steps.at(-1)!.factor);
+    // Monotonic and strictly increasing across the configured thresholds.
+    const sampled = steps.map((s) => coverageFactor(Math.max(0, s.below - 0.01)));
+    expect(sampled).toEqual([...sampled].sort((a, b) => a - b));
+
+    expect(reputationFactor(0)).toBe(atZero);
+    expect(reputationFactor(100)).toBe(atHundred);
+    expect(reputationFactor(50)).toBe(Math.round(((atZero + atHundred) / 2) * 1000) / 1000);
+
+    // net = max(0, round(base × g × h) − personnel), and it never goes below zero.
+    const expected = Math.round(150 * coverageFactor(0.82) * reputationFactor(50));
+    expect(computeStipend({ base: 150, coveragePct: 82, reputation: 50, personnelCost: 40 }).net).toBe(
+      Math.max(0, expected - 40),
+    );
     expect(computeStipend({ base: 150, coveragePct: 82, reputation: 50, personnelCost: 4000 }).net).toBe(0);
   });
 });

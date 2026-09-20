@@ -24,7 +24,9 @@
     "check:i18n": "tsx scripts/check-i18n.ts",
     "gen:mock-catalog": "tsx scripts/gen-mock-catalog.ts",
     "e2e:real": "playwright test --config=playwright.real.config.ts",
-    "e2e:real:report": "playwright show-report playwright-report-real"
+    "e2e:real:report": "playwright show-report playwright-report-real",
+    "pretest": "pnpm gen:mock-catalog",
+    "prebuild": "pnpm gen:mock-catalog"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
