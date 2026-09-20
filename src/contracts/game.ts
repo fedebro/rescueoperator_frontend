@@ -214,6 +214,14 @@ export const DispatchOption = z.object({
   warnings: z.array(z.string()),
   contributes: z.array(CapabilityValue),
   recommended: z.boolean(),
+  /**
+   * Crew that would ride this vehicle right now (personnel wave, additive). Absent when the personnel system is off.
+   * Same shape as `CrewPreview` in depth.ts — declared inline here to keep game.ts free of a cycle with depth.ts.
+   */
+  crew: z.object({
+    available: z.number().int(), min: z.number().int(), optimal: z.number().int(),
+    missingQualifications: z.array(z.string()), maxFatigueBand: FatigueBand, efficiency: z.number(),
+  }).optional(),
 });
 export const DispatchOptionsResult = z.object({
   options: z.array(DispatchOption),

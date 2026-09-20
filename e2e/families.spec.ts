@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { bootCareer, goTo, hideDevToolsBadge, qa, trackProblems } from './helpers';
+import { bootCareer, goTo, hideDevToolsBadge, isMobile, qa, trackProblems } from './helpers';
 
 /**
  * Second family unlock and a mixed incident, in both layouts: locked EMS in the shop → level 3 → unlock celebration →
@@ -114,6 +114,10 @@ test('family unlock, mixed incident and the external-support phase', async ({ pa
   await test.step('dispatch own services → RESOLVING: system units finish, the reward is already paid', async () => {
     await page.getByTestId('send-recommended').click();
     await expect(page.getByTestId('assigned-vehicle').first()).toBeVisible();
+    // Freeze the wall-clock driver FIRST, then step the simulation by hand: RESOLVING is a transient phase, and
+    // observing it and then pausing leaves a window in which the engine can already have closed the incident.
+    // `pause` only stops the background driver, so `fastForward` still advances one deterministic step at a time.
+    await qa(page, 'pause');
     await expect
       .poll(
         async () => {
@@ -124,8 +128,6 @@ test('family unlock, mixed incident and the external-support phase', async ({ pa
         { timeout: 90_000, intervals: [400] },
       )
       .toBe('RESOLVING');
-    // Freeze the simulation: the external-support phase is transient and both layouts must be able to inspect it.
-    await qa(page, 'pause');
     const outcome = page.getByTestId('outcome-modal');
     await expect(outcome).toBeVisible();
     await expect(outcome.getByTestId('outcome-still-resolving')).toBeVisible();
@@ -139,11 +141,17 @@ test('family unlock, mixed incident and the external-support phase', async ({ pa
     );
     await expect(support.getByTestId('road-closed').first()).toBeVisible();
     await expect(page.getByTestId('send-recommended')).toHaveCount(0);
-    // The incident list page shows the queue in both layouts (on mobile the map sheet holds the inspector instead).
+    // The incident list page reports the phase in both layouts — as a table row on desktop and as a queue card on
+    // mobile (`pages-lists.tsx` switches on `useIsDesktop`), so the assertion has to switch too.
     await goTo(page, 'Emergenze');
-    await expect(
-      page.locator(`[data-testid="incident-card"][data-incident-id="${incidentId}"]`),
-    ).toHaveAttribute('data-status', 'RESOLVING');
+    if (isMobile(page))
+      await expect(
+        page.locator(`[data-testid="incident-card"][data-incident-id="${incidentId}"]`),
+      ).toHaveAttribute('data-status', 'RESOLVING');
+    else
+      await expect(page.getByRole('row').filter({ hasText: 'Incidente stradale' }).first()).toContainText(
+        'In chiusura',
+      );
     await qa(page, 'pause', false);
   });
 });

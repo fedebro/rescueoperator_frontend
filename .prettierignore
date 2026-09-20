@@ -4,6 +4,8 @@ pnpm-lock.yaml
 public
 src/contracts
 playwright-report
-test-results
+test-results*
 coverage
 src/mocks/data/generated
+.next-real
+playwright-report-real

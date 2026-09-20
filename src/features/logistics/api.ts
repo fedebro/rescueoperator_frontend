@@ -2,9 +2,14 @@
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
-import { type InventoryLineDto, ItemTypeDto, type MaintenanceStatusDto, OrderDto } from '@/contracts';
+import {
+  type InventoryLineDto,
+  InventoryOverview,
+  ItemTypeDto,
+  type MaintenanceStatusDto,
+  OrderDto,
+} from '@/contracts';
 import { api } from '@/lib/api/client';
-import { InventoryOverview } from '@/lib/api/assumed';
 import { logisticsApi } from '@/lib/api/depth';
 import { qk } from '@/lib/api/query-keys';
 import { useCareerId, useCatalog, useSnapshot } from '@/features/game/hooks';

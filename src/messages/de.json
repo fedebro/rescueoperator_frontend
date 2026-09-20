@@ -209,7 +209,9 @@
     "levelUp": "Level {level} erreicht!",
     "stipendPaid": "Abdeckungszuschuss gutgeschrieben: +{amount} Credits",
     "upgradeDone": "Ausbau abgeschlossen: {facility}",
-    "incidentExpired": "Niemand ist ausgerückt: {address}"
+    "incidentExpired": "Niemand ist ausgerückt: {address}",
+    "vehicleRerouted": "{callSign} fährt einen Umweg um eine gesperrte Straße",
+    "vehicleReroutedDelay": "Ankunft um {delay} verzögert"
   },
   "game": {
     "loadFailed": "Leitstelle konnte nicht geladen werden",
@@ -347,7 +349,13 @@
         "CREW_TIRED": "Besatzung müde",
         "LONG_ETA": "Lange Anfahrt",
         "GROUNDED_BY_CONDITIONS": "Wegen der Bedingungen am Boden",
-        "SLOW_TRAVEL_CONDITIONS": "Fahrt durch Wetter oder Verkehr verlangsamt"
+        "SLOW_TRAVEL_CONDITIONS": "Fahrt durch Wetter oder Verkehr verlangsamt",
+        "ROUTING_DEGRADED": "Route in Luftlinie geschätzt",
+        "VEHICLE_INOPERABLE": "Fahrzeug außer Betrieb: Reparatur nötig",
+        "CREW_ROLE_MISSING": "Eine Schlüsselrolle fehlt in der Besatzung",
+        "CREW_FATIGUED": "Erschöpfte Besatzung",
+        "STOCK_MISSING": "Bestand aufgebraucht: {item}",
+        "STOCK_LOW": "Bestand fast aufgebraucht: {item}"
       }
     },
     "vehicle": {

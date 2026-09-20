@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { env } from '@/lib/env';
 import { gameApi } from '@/lib/api/endpoints';
 import { qk } from '@/lib/api/query-keys';
+import { formatClock } from '@/lib/format';
 import { RealtimeController } from '@/lib/realtime/controller';
 import { connectMockBus, connectSocket } from '@/lib/realtime/transport';
 import type { Effect } from '@/lib/realtime/reconcile';
@@ -90,6 +91,21 @@ export function GameRuntime({ careerId, children }: { careerId: string; children
         cue('error');
         toast({ tone: 'danger', title: tn('vehicleBrokeDown', { callSign: effect.vehicle.callSign }) });
         break;
+      case 'vehicle.rerouted':
+        toast({
+          tone: 'warning',
+          title: tn('vehicleRerouted', { callSign: effect.vehicle.callSign }),
+          description:
+            effect.delaySeconds > 0
+              ? tn('vehicleReroutedDelay', { delay: formatClock(effect.delaySeconds) })
+              : undefined,
+          durationMs: 6000,
+        });
+        break;
+      // No toast: the tab that ordered the transfer already shows the command's own confirmation, and a second one
+      // would duplicate it. The event is here for the cache invalidations it carries (facility + personnel).
+      case 'vehicle.transferring':
+        break;
       case 'level.reached':
         cue('levelUp');
         toast({ tone: 'success', title: tn('levelUp', { level: effect.level }), durationMs: 8000 });
@@ -162,6 +178,7 @@ export function GameRuntime({ careerId, children }: { careerId: string; children
       queryClient: qc,
       connect: (handlers) => (env.apiMock ? connectMockBus(handlers) : connectSocket(careerId, handlers)),
       fetchSnapshot: () => gameApi.sync(careerId),
+      fetchDelta: (since) => gameApi.syncSince(careerId, since),
       onEffect: (e) => effectRef.current(e),
       onConnection: setConnection,
     });

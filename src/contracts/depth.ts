@@ -5,7 +5,7 @@
  */
 import { z } from 'zod';
 import { Amount, I18nText, IdPrefix, IsoDateTime, LngLat, ServiceFamily, publicId } from './common';
-import { FatigueBand, HealthBand, PatientStatus, PersonnelStatus, TriageCode } from './game';
+import { FatigueBand, HealthBand, IncidentDto, PatientStatus, PersonnelStatus, TriageCode, VehicleDto } from './game';
 
 /* ───────────── personnel ───────────── */
 
@@ -147,3 +147,44 @@ export const MaintenanceOrderDto = z.object({
 /** ★POST /vehicles/:id/maintenance  ·  ★POST /vehicles/:id/repair */
 export const MaintenanceBody = z.object({ kind: z.enum(['SERVICE', 'REPAIR', 'FREE_EMERGENCY_REPAIR']) });
 export const VehicleHistoryEntry = z.object({ at: IsoDateTime, kind: z.string(), text: I18nText });
+
+/* ───────────── additive envelopes of the depth routes (backend-depth-2) ───────────── */
+
+/** GET /personnel/:id — the operator plus its status history and the open injury. */
+export const PersonnelDetailDto = PersonnelDto.extend({
+  history: z.array(z.object({ at: IsoDateTime, kind: z.string(), text: I18nText })),
+  injury: z.object({ severity: z.enum(['MINOR', 'MODERATE']), recoversAt: IsoDateTime }).nullable(),
+});
+export type PersonnelDetailDto = z.infer<typeof PersonnelDetailDto>;
+
+/** PATCH /teams/:id */
+export const UpdateTeamBody = z.object({
+  name: z.string().min(2).max(40).optional(),
+  departmentId: publicId(IdPrefix.department).nullable().optional(),
+});
+/** POST /departments */
+export const CreateDepartmentBody = z.object({ name: z.string().min(2).max(40), family: ServiceFamily, facilityId: publicId(IdPrefix.facility) });
+
+/** GET /training/courses — the catalogue, what is running and the free slots per facility. */
+export const TrainingOverview = z.object({
+  courses: z.array(CourseDto),
+  enrollments: z.array(EnrollmentDto),
+  slots: z.array(z.object({ facilityId: publicId(IdPrefix.facility), total: z.number().int(), used: z.number().int() })),
+});
+export type TrainingOverview = z.infer<typeof TrainingOverview>;
+
+/** GET /inventory */
+export const InventoryOverview = z.object({ lines: z.array(InventoryLineDto), orders: z.array(OrderDto) });
+export type InventoryOverview = z.infer<typeof InventoryOverview>;
+
+/** GET /maintenance */
+export const MaintenanceOverview = z.object({
+  vehicles: z.array(MaintenanceStatusDto),
+  orders: z.array(MaintenanceOrderDto),
+  workshops: z.array(z.object({ facilityId: publicId(IdPrefix.facility), slots: z.number().int(), busy: z.number().int() })),
+});
+export type MaintenanceOverview = z.infer<typeof MaintenanceOverview>;
+
+/** ★POST /patients/:id/transport → the patient, the ambulance that took it and the incident it came from. */
+export const TransportPatientResult = z.object({ patient: PatientDto, vehicle: VehicleDto, incident: IncidentDto.optional() });
+export type TransportPatientResult = z.infer<typeof TransportPatientResult>;

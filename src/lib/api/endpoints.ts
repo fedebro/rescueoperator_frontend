@@ -24,8 +24,7 @@ import {
   type SupportedLocale,
 } from '@/contracts';
 import { api } from './client';
-import { NotificationDto, StipendDto } from '@/contracts';
-import { DispatchOptionsResultV2 } from './assumed';
+import { DispatchOptionsResult, NotificationDto, StipendDto, SyncDelta } from '@/contracts';
 
 const c = (careerId: string) => `/careers/${careerId}`;
 
@@ -62,6 +61,9 @@ export const onboardingApi = {
 
 export const gameApi = {
   sync: (careerId: string) => api.get(`${c(careerId)}/sync`, { schema: SyncSnapshot }),
+  /** Events missed since `seq`; `resyncRequired` means the gap is too large and `snapshot` carries the full state. */
+  syncSince: (careerId: string, since: number) =>
+    api.get(`${c(careerId)}/sync`, { query: { since }, schema: SyncDelta }),
   awayReport: (careerId: string) => api.get(`${c(careerId)}/away-report`, { schema: AwayReport.nullable() }),
   ackAwayReport: (careerId: string) => api.post<void>(`${c(careerId)}/away-report/ack`),
   setDuty: (careerId: string, onDuty: boolean) =>
@@ -78,7 +80,7 @@ export const gameApi = {
   incident: (careerId: string, id: string) =>
     api.get(`${c(careerId)}/incidents/${id}`, { schema: IncidentDto }),
   dispatchOptions: (careerId: string, incidentId: string) =>
-    api.get(`${c(careerId)}/incidents/${incidentId}/dispatch-options`, { schema: DispatchOptionsResultV2 }),
+    api.get(`${c(careerId)}/incidents/${incidentId}/dispatch-options`, { schema: DispatchOptionsResult }),
   dispatch: (careerId: string, incidentId: string, vehicleIds: string[]) =>
     api.command(
       `${c(careerId)}/incidents/${incidentId}/dispatch`,

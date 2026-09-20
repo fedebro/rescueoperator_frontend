@@ -126,7 +126,9 @@ export function SitesMapOverlay({ map }: { map: MlMap }) {
   };
   const available = (sites.data ?? []).filter((s) => !s.owned).length;
   return (
-    <div className="pointer-events-none absolute top-3 left-3 z-10 flex max-w-[calc(100%-4.5rem)]">
+    // One row below the map-layers control (`top-3` + its 44px height): both are top-left slots owned by different
+    // features, and at 375px they used to sit on top of each other.
+    <div className="pointer-events-none absolute top-[3.75rem] left-3 z-10 flex max-w-[calc(100%-4.5rem)]">
       {on ? (
         <div
           className="border-border-strong bg-surface-1/95 shadow-panel pointer-events-auto flex items-center gap-2 rounded-md border py-1.5 pr-1.5 pl-3 text-xs backdrop-blur"

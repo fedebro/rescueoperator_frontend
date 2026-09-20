@@ -209,7 +209,9 @@
     "levelUp": "¡Nivel {level} alcanzado!",
     "stipendPaid": "Subvención de cobertura abonada: +{amount} Créditos",
     "upgradeDone": "Ampliación terminada: {facility}",
-    "incidentExpired": "Nadie ha acudido a {address}"
+    "incidentExpired": "Nadie ha acudido a {address}",
+    "vehicleRerouted": "{callSign} está desviándose por una carretera cortada",
+    "vehicleReroutedDelay": "Llegada retrasada {delay}"
   },
   "game": {
     "loadFailed": "No se ha podido cargar la central",
@@ -347,7 +349,13 @@
         "CREW_TIRED": "Dotación cansada",
         "LONG_ETA": "Llegada lenta",
         "GROUNDED_BY_CONDITIONS": "En tierra por las condiciones actuales",
-        "SLOW_TRAVEL_CONDITIONS": "Trayecto ralentizado por el tiempo o el tráfico"
+        "SLOW_TRAVEL_CONDITIONS": "Trayecto ralentizado por el tiempo o el tráfico",
+        "ROUTING_DEGRADED": "Ruta estimada en línea recta",
+        "VEHICLE_INOPERABLE": "Vehículo fuera de servicio: necesita reparación",
+        "CREW_ROLE_MISSING": "Falta un rol clave en la dotación",
+        "CREW_FATIGUED": "Dotación agotada",
+        "STOCK_MISSING": "Sin existencias: {item}",
+        "STOCK_LOW": "Existencias casi agotadas: {item}"
       }
     },
     "vehicle": {

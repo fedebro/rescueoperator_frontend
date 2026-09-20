@@ -33,6 +33,10 @@ export type Effect =
   | { type: 'vehicle.arrived'; vehicle: VehicleDto }
   | { type: 'vehicle.delivered'; vehicle: VehicleDto }
   | { type: 'vehicle.broke_down'; vehicle: VehicleDto }
+  /** A closure appeared on the route: the vehicle is driving a detour and arrives `delaySeconds` later. */
+  | { type: 'vehicle.rerouted'; vehicle: VehicleDto; delaySeconds: number }
+  /** The vehicle is moving to another facility (reuses IN_DELIVERY, `transfer: true` on the event). */
+  | { type: 'vehicle.transferring'; vehicle: VehicleDto }
   | { type: 'level.reached'; level: number }
   | { type: 'unlock.granted'; codes: string[] }
   | { type: 'stipend.paid'; amount: string }
@@ -70,6 +74,10 @@ const Payload = z
     unlocks: z.array(z.string()).optional(),
     amount: z.string().optional(),
     unreadNotifications: z.number().optional(),
+    /** `vehicle.updated` flags (additive): a detour around a new closure, or a transfer between facilities. */
+    rerouted: z.boolean().optional(),
+    previousArriveAt: z.string().optional(),
+    transfer: z.boolean().optional(),
     featureFlags: z.record(z.boolean()).optional(),
     configVersion: z.string().optional(),
   })
@@ -161,6 +169,27 @@ export function applyEvent(snapshot: SyncSnapshot, envelope: RealtimeEnvelope): 
     case 'vehicle.broke_down':
       if (p.vehicle) effects.push({ type: 'vehicle.broke_down', vehicle: p.vehicle });
       effects.push({ type: 'invalidate', scope: 'maintenance' });
+      break;
+    case 'vehicle.updated':
+      if (p.vehicle && p.rerouted) {
+        const previous = p.previousArriveAt ? Date.parse(p.previousArriveAt) : NaN;
+        const now = p.vehicle.movement?.arriveAt ? Date.parse(p.vehicle.movement.arriveAt) : NaN;
+        effects.push({
+          type: 'vehicle.rerouted',
+          vehicle: p.vehicle,
+          delaySeconds:
+            Number.isNaN(previous) || Number.isNaN(now)
+              ? 0
+              : Math.max(0, Math.round((now - previous) / 1000)),
+        });
+      }
+      if (p.vehicle && p.transfer) {
+        effects.push(
+          { type: 'vehicle.transferring', vehicle: p.vehicle },
+          { type: 'invalidate', scope: 'facility' },
+          { type: 'invalidate', scope: 'personnel' },
+        );
+      }
       break;
     case 'vehicle.returned':
       effects.push(

@@ -204,7 +204,7 @@ function seed(engine: MockEngine): AdminState {
     ],
     purchases: [
       purchase(
-        'pur_0001',
+        demoPurchaseId(1),
         'giulia.r@example.com',
         'STARTER',
         '1200',
@@ -213,10 +213,46 @@ function seed(engine: MockEngine): AdminState {
         'pi_3Qx1aStarter',
         at(4),
       ),
-      purchase('pur_0002', 'marco.b@example.com', 'MEDIUM', '6500', 999, 'CREDITED', 'pi_3Qx7cMedium', at(9)),
-      purchase('pur_0003', 'marco.b@example.com', 'LARGE', '15000', 1999, 'FAILED', 'pi_3Qx9dLarge', at(9)),
-      purchase('pur_0004', 'sara.t@example.com', 'MEDIUM', '6500', 999, 'REFUNDED', 'pi_3QxB2Medium', at(11)),
-      purchase('pur_0005', 'luca.d@example.com', 'SMALL', '2800', 499, 'PAID', 'pi_3QxF5Small', at(13)),
+      purchase(
+        demoPurchaseId(2),
+        'marco.b@example.com',
+        'MEDIUM',
+        '6500',
+        999,
+        'CREDITED',
+        'pi_3Qx7cMedium',
+        at(9),
+      ),
+      purchase(
+        demoPurchaseId(3),
+        'marco.b@example.com',
+        'LARGE',
+        '15000',
+        1999,
+        'FAILED',
+        'pi_3Qx9dLarge',
+        at(9),
+      ),
+      purchase(
+        demoPurchaseId(4),
+        'sara.t@example.com',
+        'MEDIUM',
+        '6500',
+        999,
+        'REFUNDED',
+        'pi_3QxB2Medium',
+        at(11),
+      ),
+      purchase(
+        demoPurchaseId(5),
+        'luca.d@example.com',
+        'SMALL',
+        '2800',
+        499,
+        'PAID',
+        'pi_3QxF5Small',
+        at(13),
+      ),
     ],
     failedActions: [],
     closedIncidents: [],
@@ -245,6 +281,9 @@ function referral(
     reviewNote: null,
   };
 }
+/** `AdminPurchaseRow.id` is a `pur_<ULID>` in the contract: the demo rows carry real ULID-shaped ids. */
+const demoPurchaseId = (n: number): string => `pur_01M2Z${'0'.repeat(17)}${String(n).padStart(4, '0')}`;
+
 function purchase(
   id: string,
   email: string,

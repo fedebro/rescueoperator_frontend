@@ -70,12 +70,17 @@ function SpeedupDialog({
   const patchSnapshot = usePatchSnapshot();
   const catalogName = useCatalogName();
   const { career } = useSnapshot();
+  // Polling stops as soon as the process is paid for or finishes by itself: the server answers
+  // INVALID_STATE_TRANSITION for a target with nothing running, and repeating that is pure console noise.
+  const [settled, setSettled] = React.useState(false);
   const quote = useQuery({
     queryKey: qk.speedupQuote(careerId, target, targetId),
     queryFn: () => monetizationApi.speedupQuote(careerId, target, targetId),
     staleTime: 0,
     gcTime: 0,
-    refetchInterval: 5000, // the price drops as the timer runs
+    enabled: !settled,
+    retry: false,
+    refetchInterval: (q) => (q.state.status === 'error' ? false : 5000), // the price drops as the timer runs
   });
   const confirm = useMutation({
     mutationFn: () => monetizationApi.speedup(careerId, target, targetId),
@@ -114,7 +119,10 @@ function SpeedupDialog({
     if (cost !== undefined && compareAmount(career.credits, cost) < 0) {
       onClose();
       requestCredits(cost);
-    } else confirm.mutate();
+    } else {
+      setSettled(true); // the quote for this target is about to become meaningless
+      confirm.mutate();
+    }
   };
   return (
     <Dialog
@@ -129,7 +137,7 @@ function SpeedupDialog({
         closeLabel={tc('close')}
         data-testid="speedup-dialog"
       >
-        {quote.isLoading ? (
+        {quote.isLoading && !settled ? (
           <Skeleton className="h-20" />
         ) : quote.data ? (
           <dl className="border-border bg-surface-2 grid grid-cols-2 gap-3 rounded-md border p-3 text-sm">

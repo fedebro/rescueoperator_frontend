@@ -7,7 +7,7 @@ import type {
   SpeedupQuote,
   SpeedupTarget,
 } from '@/contracts';
-import type { SpeedupResult } from '@/lib/api/assumed';
+import type { SpeedupResult } from '@/contracts';
 import { ECONOMY, MANAGERIAL_SCALE } from '../data/catalog';
 import { MockError, iso, text, type Action, type MockCareer, type MockEngine } from '../engine';
 import { domainState } from './index';
@@ -60,6 +60,8 @@ interface MonetizationGlobalState {
 export const AD_PROVIDER = 'simulated';
 /** Length of the simulated video in game seconds (compressed by the mock speed, never below 2 s of wall time). */
 export const SIMULATED_AD_SECONDS = 15;
+/** Session-derived completion proof, the mock's stand-in for `SimulatedAdProvider.proofFor` on the server. */
+const adProof = (adToken: string): string => `sim-proof-${adToken}`;
 /** Where the client parks the invite code after sign-up so the in-browser mock can read it at career creation. */
 export const MOCK_INVITE_HANDOFF_KEY = 'rc-invite-code-sent';
 /** The catalog defines no one-time offer yet; the rule (bought once → unavailable) is in place for when it does. */
@@ -156,7 +158,7 @@ export interface MonetizationApi {
   purchases(career: MockCareer): Purchase[];
   webhook(body: Record<string, unknown>): { received: true };
   speedupQuote(career: MockCareer, target: unknown, targetId: unknown): z.infer<typeof SpeedupQuote>;
-  speedup(career: MockCareer, target: unknown, targetId: unknown): SpeedupResult;
+  speedup(career: MockCareer, target: unknown, targetId: unknown): z.infer<typeof SpeedupResult>;
   adsStatus(career: MockCareer): AdsStatus;
   adStart(career: MockCareer): {
     adToken: string;
@@ -341,12 +343,23 @@ export function installMonetization(engine: MockEngine): void {
     // Only the latest token stays valid: a new start voids an abandoned one.
     monetizationState(career).ads.tokens = { [adToken]: { startedAt: engine.now(), minWatchSeconds } };
     engine.save();
-    return { adToken, minWatchSeconds, provider: AD_PROVIDER, providerConfig: { simulated: true } };
+    // Like the server's SimulatedAdProvider: the proof is derived from the session, never invented by the client,
+    // and `adComplete` refuses anything else. Keeps the mock honest about the PROOF_MISMATCH path.
+    return {
+      adToken,
+      minWatchSeconds,
+      provider: AD_PROVIDER,
+      providerConfig: { simulated: true, proof: adProof(adToken) },
+    };
   };
   const adComplete: MonetizationApi['adComplete'] = (career, body) => {
     const { ads } = monetizationState(career);
     const token = typeof body.adToken === 'string' ? ads.tokens[body.adToken] : undefined;
     if (!token) throw new MockError(409, 'CONFLICT', 'Ad token unknown or already used');
+    if (body.providerProof !== undefined && body.providerProof !== adProof(String(body.adToken)))
+      throw new MockError(400, 'VALIDATION_ERROR', 'The ad completion could not be verified', {
+        fields: ['providerProof'],
+      });
     // 500 ms of tolerance for timer drift between the player and the server clock.
     if (engine.now() - token.startedAt < token.minWatchSeconds * 1000 - 500)
       throw new MockError(422, 'VALIDATION_ERROR', 'The video was not watched to the end', {

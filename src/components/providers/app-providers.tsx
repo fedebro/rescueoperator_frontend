@@ -6,7 +6,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { CatalogTextsProvider } from '@/i18n/catalog-texts';
 import { Toaster } from '@/components/ui/toaster';
 import { env } from '@/lib/env';
-import { onAuthChange, refreshSession } from '@/lib/api/client';
+import { mayHaveSession, onAuthChange, refreshSession } from '@/lib/api/client';
 import { ApiClientError } from '@/lib/api/errors';
 import { useAuthStore } from '@/stores/auth';
 import { useSettingsStore } from '@/stores/settings';
@@ -51,11 +51,14 @@ function AuthBootstrap({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     const off = onAuthChange((result) => (result ? setSession(result.user) : clear()));
     if (useAuthStore.getState().status === 'unknown') {
-      refreshSession()
-        .then((r) => {
-          if (!r) clear();
-        })
-        .catch(() => clear());
+      // A browser that has never signed in has no refresh cookie: asking for one would only produce a 401.
+      if (!mayHaveSession()) clear();
+      else
+        refreshSession()
+          .then((r) => {
+            if (!r) clear();
+          })
+          .catch(() => clear());
     }
     return off;
   }, [setSession, clear]);

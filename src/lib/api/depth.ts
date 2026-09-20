@@ -1,9 +1,10 @@
 /**
  * REST wrappers for the depth + business contract (contracts/depth.ts, business.ts, integration.ts; routes: ROUTES.md).
- * Response shapes that ROUTES.md names but the contract does not define as a schema are declared in `./assumed.ts`.
+ * Every response shape comes from the contract copy in `@/contracts` — there are no locally assumed shapes left.
  */
 import { z } from 'zod';
 import {
+  type AcquireFacilityBody,
   AdCompleteResult,
   AdStartResult,
   AdsStatusDto,
@@ -18,36 +19,33 @@ import {
   HospitalDto,
   HospitalOption,
   type InventoryLineDto,
+  InventoryOverview,
   ItemTypeDto,
   MaintenanceOrderDto,
+  MaintenanceOverview,
   type MaintenanceStatusDto,
   MilestoneDto,
   NotificationDto,
   OrderDto,
   PatientDto,
+  PersonnelDetailDto,
   PersonnelDto,
   PublicInviteDto,
   PurchaseDto,
   ReferralDto,
   SiteDto,
   SpeedupQuote,
+  SpeedupResult,
   StipendDto,
   TeamDto,
+  TrainingOverview,
   TransferVehicleResult,
+  TransportPatientResult,
   VehicleHistoryEntry,
   WorldContextDto,
   type SpeedupTarget,
 } from '@/contracts';
 import { api } from './client';
-import {
-  type AcquireFacilityBody,
-  InventoryOverview,
-  MaintenanceOverview,
-  PersonnelDetailDto,
-  SpeedupResult,
-  TrainingOverview,
-  TransportResult,
-} from './assumed';
 
 const c = (careerId: string) => `/careers/${careerId}`;
 type Target = z.infer<typeof SpeedupTarget>;
@@ -112,7 +110,7 @@ export const medicalApi = {
   hospitalOptions: (careerId: string, patientId: string) =>
     api.get(`${c(careerId)}/patients/${patientId}/hospital-options`, { schema: z.array(HospitalOption) }),
   transport: (careerId: string, patientId: string, body: { hospitalId: string; vehicleId?: string }) =>
-    api.command(`${c(careerId)}/patients/${patientId}/transport`, body, { schema: TransportResult }),
+    api.command(`${c(careerId)}/patients/${patientId}/transport`, body, { schema: TransportPatientResult }),
   hospitals: (careerId: string) => api.get(`${c(careerId)}/hospitals`, { schema: z.array(HospitalDto) }),
 };
 

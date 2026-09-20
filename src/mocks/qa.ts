@@ -18,7 +18,8 @@ export type QaHelpers = Record<string, (...args: never[]) => unknown> & {
   career: () => MockCareer;
   grant: (o: { credits?: number; xp?: number }) => void;
   setLevel: (level: number) => void;
-  spawn: (templateCode: string, severity?: number) => string;
+  /** `minDistanceMeters` forces a far spawn, so the travel phase lasts long enough to be observed. */
+  spawn: (templateCode: string, severity?: number, minDistanceMeters?: number) => string;
   fastForward: (seconds: number) => void;
   setFlag: (key: string, enabled: boolean) => void;
   /** Overridden by the personnel domain: instantly hires and onboards enough qualified crew for every owned vehicle. */
@@ -74,8 +75,8 @@ export function installQa(engine: MockEngine): void {
       if (missing > 0) engine.awardXp(career, missing);
       engine.save();
     },
-    spawn: (templateCode, severity) => {
-      const incident = engine.spawnIncident(current(), templateCode, false, { severity });
+    spawn: (templateCode, severity, minDistanceMeters) => {
+      const incident = engine.spawnIncident(current(), templateCode, false, { severity, minDistanceMeters });
       engine.save();
       return incident.id;
     },

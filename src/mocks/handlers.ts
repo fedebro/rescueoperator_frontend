@@ -33,7 +33,7 @@ const DOMAIN_HANDLERS: DomainHandlers[] = [
 export function createHandlers(engine: MockEngine, baseUrl: string): HttpHandler[] {
   installDomains(engine);
   const kit = createKit(engine, baseUrl);
-  const { url, ok, route, command, authed, careerOf, C } = kit;
+  const { url, ok, route, command, authed, careerOf, query, C } = kit;
   return [
     /* auth */
     http.post(
@@ -187,9 +187,10 @@ export function createHandlers(engine: MockEngine, baseUrl: string): HttpHandler
       url(`${C}/sync`),
       route((ctx) => {
         const c = careerOf(ctx);
-        const snap = engine.snapshot(c);
+        const since = query(ctx).get('since');
+        const body = since === null ? engine.snapshot(c) : engine.delta(c, Number(since));
         engine.touch(c);
-        return ok(snap);
+        return ok(body);
       }),
     ),
     http.get(

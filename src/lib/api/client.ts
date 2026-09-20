@@ -25,9 +25,50 @@ const tokens: TokenState = { accessToken: null, expiresAt: null };
 const authListeners = new Set<AuthListener>();
 let refreshInFlight: Promise<AuthResult | null> | null = null;
 
+/**
+ * "A session may exist in this browser" marker. The refresh token itself is HttpOnly and scoped to `/api/v1/auth`, so
+ * a script cannot tell a returning player from a brand-new visitor — and every first page load of a new visitor ended
+ * in a 401 on `POST /auth/refresh` (twice, because of the rotation retry below): two red lines in the console on the
+ * login screen.
+ *
+ * The authoritative marker is `rc_session`, a readable companion cookie the server sets and clears together with the
+ * refresh cookie (see `SESSION_FLAG_COOKIE` in the backend): same lifetime, no value beyond the flag. A `localStorage`
+ * copy is kept as a fallback for environments where the cookie is not visible (the in-browser mock backend, which has
+ * no server to set it). Either one being present only costs the usual single refresh attempt; both missing only means
+ * the visitor signs in, which they were going to do anyway.
+ */
+const SESSION_HINT_KEY = 'rc_session';
+function readSessionCookie(): boolean {
+  try {
+    return /(?:^|;\s*)rc_session=1(?:;|$)/.test(globalThis.document?.cookie ?? '');
+  } catch {
+    return false;
+  }
+}
+function readSessionHint(): boolean {
+  try {
+    return globalThis.localStorage?.getItem(SESSION_HINT_KEY) === '1';
+  } catch {
+    return true; // storage blocked (private window): fall back to always trying the cookie
+  }
+}
+export function setSessionHint(value: boolean): void {
+  try {
+    if (value) globalThis.localStorage?.setItem(SESSION_HINT_KEY, '1');
+    else globalThis.localStorage?.removeItem(SESSION_HINT_KEY);
+  } catch {
+    /* storage blocked: the hint is an optimisation, never a requirement */
+  }
+}
+/** True when a refresh cookie may exist for this browser: `AuthBootstrap` skips the boot refresh otherwise. */
+export function mayHaveSession(): boolean {
+  return readSessionCookie() || readSessionHint();
+}
+
 export function setAccessToken(token: string | null, expiresAtIso?: string | null): void {
   tokens.accessToken = token;
   tokens.expiresAt = expiresAtIso ? Date.parse(expiresAtIso) : null;
+  if (token) setSessionHint(true);
 }
 export function getAccessToken(): string | null {
   return tokens.accessToken;
@@ -144,7 +185,7 @@ export function refreshSession(): Promise<AuthResult | null> {
     try {
       let started = Date.now();
       let res = await rawFetch('/auth/refresh', { method: 'POST', auth: false }, null);
-      if (res.status === 401) {
+      if (res.status === 401 && readSessionHint()) {
         // Refresh tokens rotate: another tab may have just used ours. The server tolerates that race for a few seconds
         // and the browser already holds the new cookie — one delayed retry settles it.
         await new Promise((resolve) => setTimeout(resolve, 400));
@@ -155,6 +196,7 @@ export function refreshSession(): Promise<AuthResult | null> {
         const err = await toError(res);
         if (err.transient) throw err;
         setAccessToken(null);
+        setSessionHint(false);
         for (const l of authListeners) l(null);
         return null;
       }

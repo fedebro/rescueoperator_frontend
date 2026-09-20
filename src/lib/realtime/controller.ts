@@ -1,5 +1,5 @@
 import type { QueryClient } from '@tanstack/react-query';
-import type { SyncSnapshot } from '@/contracts';
+import type { SyncDelta, SyncSnapshot } from '@/contracts';
 import { observeServerTime } from '@/lib/clock';
 import { qk } from '@/lib/api/query-keys';
 import { applyEvent, parseEnvelope, type Effect } from './reconcile';
@@ -13,6 +13,8 @@ export interface ControllerOptions {
   connect: (handlers: TransportHandlers) => RealtimeTransport;
   /** Fetches a fresh snapshot (GET /sync). */
   fetchSnapshot: () => Promise<SyncSnapshot>;
+  /** Fetches the events missed since `seq` (GET /sync?since=). Omitted → every recovery is a full snapshot. */
+  fetchDelta?: (since: number) => Promise<SyncDelta>;
   onEffect: (effect: Effect) => void;
   onConnection: (state: ConnectionState) => void;
   pollIntervalMs?: number;
@@ -22,8 +24,11 @@ export interface ControllerOptions {
 /**
  * Glue between the realtime channel and the TanStack Query cache.
  * - validated envelopes are applied to the cached snapshot (pure reducer)
- * - a `seq` gap, or any reconnection, triggers a /sync refetch; events received meanwhile are buffered and replayed
- * - when the socket cannot connect the controller polls /sync every 10 s until the socket comes back
+ * - a `seq` gap, or any reconnection, triggers a recovery; events received meanwhile are buffered and replayed
+ * - recovery prefers `GET /sync?since=<seq>`: the missed events run through the same reducer, so the toasts, the
+ *   outcome dialog and the sounds of what happened while the tab was away still fire. Only when the server says
+ *   `resyncRequired` (gap too large, or events already pruned) is the whole snapshot replaced — which is silent.
+ * - when the socket cannot connect the controller polls every 10 s until the socket comes back
  */
 export class RealtimeController {
   private transport: RealtimeTransport | null = null;
@@ -113,14 +118,35 @@ export class RealtimeController {
     }
   }
 
+  /** Applies one recovered envelope to the cached snapshot. Duplicates are dropped; a gap cannot happen here. */
+  private applyRecovered(raw: unknown): void {
+    const key = qk.sync(this.opts.careerId);
+    const envelope = parseEnvelope(raw);
+    const snapshot = this.opts.queryClient.getQueryData<SyncSnapshot>(key);
+    if (!envelope || !snapshot) return;
+    const result = applyEvent(snapshot, envelope);
+    if (result.kind !== 'applied') return;
+    this.opts.queryClient.setQueryData(key, result.snapshot);
+    for (const effect of result.effects) this.opts.onEffect(effect);
+  }
+
   resync(): Promise<void> {
     if (this.resyncing) return this.resyncing;
     this.resyncing = (async () => {
       let ok = false;
       try {
-        const snapshot = await this.opts.fetchSnapshot();
-        if (this.closed) return;
-        this.opts.queryClient.setQueryData(qk.sync(this.opts.careerId), snapshot);
+        const key = qk.sync(this.opts.careerId);
+        const current = this.opts.queryClient.getQueryData<SyncSnapshot>(key);
+        if (this.opts.fetchDelta && current) {
+          const delta = await this.opts.fetchDelta(current.seq);
+          if (this.closed) return;
+          if (delta.resyncRequired && delta.snapshot) this.opts.queryClient.setQueryData(key, delta.snapshot);
+          else for (const event of delta.events) this.applyRecovered(event);
+        } else {
+          const snapshot = await this.opts.fetchSnapshot();
+          if (this.closed) return;
+          this.opts.queryClient.setQueryData(key, snapshot);
+        }
         ok = true;
       } catch {
         /* keep the stale snapshot and retry below */

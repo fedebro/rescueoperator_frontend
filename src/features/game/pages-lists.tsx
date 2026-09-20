@@ -459,9 +459,13 @@ function FacilityDetail({ facilityId }: { facilityId: string }) {
                     </div>
                     <Badge>{t('upgradeLevel', { level: u.currentLevel, max: u.maxLevel })}</Badge>
                   </div>
-                  <p className="text-info text-xs">
-                    +{u.effect.delta} {tf(`domain.${u.effect.domain}` as never)}
-                  </p>
+                  {/* An upgrade with no capacity domain (TRAINING_ROOM) sends delta 0: its value is in the
+                      description above, so the "+0 <domain>" line would only be misleading. */}
+                  {u.effect.delta !== 0 ? (
+                    <p className="text-info text-xs">
+                      +{u.effect.delta} {tf(`domain.${u.effect.domain}` as never)}
+                    </p>
+                  ) : null}
                   {building ? (
                     <p className="text-warning flex items-center gap-2 text-xs">
                       <Hammer className="size-3.5" aria-hidden />

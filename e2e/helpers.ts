@@ -74,9 +74,9 @@ export async function bootCareer(page: Page, projectName: string, opts: BootOpti
 export async function qa<T = unknown>(page: Page, helper: string, ...args: unknown[]): Promise<T> {
   return page.evaluate(
     ({ helper, args }) =>
-      (
-        window as unknown as { __rcMock: { qa: Record<string, (...a: unknown[]) => unknown> } }
-      ).__rcMock.qa[helper]!(...args) as never,
+      (window as unknown as { __rcMock: { qa: Record<string, (...a: unknown[]) => unknown> } }).__rcMock.qa[
+        helper
+      ]!(...args) as never,
     { helper, args },
   );
 }

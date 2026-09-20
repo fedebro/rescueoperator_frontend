@@ -6,11 +6,15 @@ const config = [
   {
     ignores: [
       '.next/**',
+      // Build output of the real-backend e2e suite (`NEXT_DIST_DIR`), and its reports.
+      '.next-real/**',
       'node_modules/**',
       'public/**',
       'src/contracts/**',
       'playwright-report/**',
+      'playwright-report-real/**',
       'test-results/**',
+      'test-results-real/**',
       'coverage/**',
       'next-env.d.ts',
       '.cache/**',

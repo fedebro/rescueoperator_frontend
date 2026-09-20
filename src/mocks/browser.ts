@@ -23,7 +23,10 @@ export function startMockBackend(): Promise<MockEngine> {
       quiet: true,
       serviceWorker: { url: '/mockServiceWorker.js' },
     });
-    setInterval(() => engine.process(), 250);
+    // `engine.paused` freezes the wall-clock driver only: explicit QA steps can still advance the simulation.
+    setInterval(() => {
+      if (!engine.paused) engine.process();
+    }, 250);
     (window as unknown as { __rcMock?: MockEngine }).__rcMock = engine;
     return engine;
   })();

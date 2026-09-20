@@ -8,7 +8,7 @@ import {
   TeamDto,
   type RealtimeEnvelope,
 } from '@/contracts';
-import { PersonnelDetailDto, TrainingOverview } from '@/lib/api/assumed';
+import { PersonnelDetailDto, TrainingOverview } from '@/contracts';
 import { VEHICLE_TYPES, xpThreshold } from '../data/catalog';
 import { PESCARA } from '../data/pescara';
 import { MockEngine, OTP_CODE, memoryStorage, type MockCareer } from '../engine';

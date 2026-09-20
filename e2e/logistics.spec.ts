@@ -61,7 +61,9 @@ test('maintenance: worn vehicle → service → done; breakdown → recovery →
   });
 
   await test.step('dispatch, then the vehicle breaks down on the road', async () => {
-    await qa(page, 'spawn', 'FIRE_TRASH_BIN', 1);
+    // Far enough that the drive is observable: at mock speed 12 a nearby spawn can go PREPARING → ON_SCENE inside a
+    // single engine tick, and the breakdown this step is about only means something while the vehicle is on the road.
+    await qa(page, 'spawn', 'FIRE_TRASH_BIN', 1, 3000);
     // Mobile: the map is the leftmost bottom-nav item, which the dev-server overlay badge can cover → direct navigation.
     if (isMobile(page)) await page.goto('/game');
     else await goTo(page, 'Centro operativo');

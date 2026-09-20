@@ -139,7 +139,15 @@ test('below the HOSPITAL_CHOICE level only the recommended hospital can be confi
   });
   await qa(page, 'giveAmbulance');
   await qa(page, 'staffAll');
-  await qa(page, 'medicalConfig', { autoTransportSeconds: 600, externalSeconds: 600, alwaysTransport: true });
+  await qa(page, 'medicalConfig', {
+    autoTransportSeconds: 600,
+    externalSeconds: 600,
+    alwaysTransport: true,
+    // Same widening as the sibling test above. Without it the handoff lasts the catalog default (45 game seconds
+    // = 3.75 s at speed 12), so IN_TRANSPORT → HANDOFF → ADMITTED can collapse into one engine tick under worker
+    // contention and the transient status below is never rendered at all.
+    handoffSeconds: 300,
+  });
   const incidentId = await qa<string>(page, 'spawn', 'MED_FALL', 2);
   await page.locator(`[data-testid="incident-card"][data-incident-id="${incidentId}"]`).click();
   await page.getByTestId('send-recommended').click();

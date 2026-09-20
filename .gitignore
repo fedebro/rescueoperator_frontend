@@ -3,10 +3,12 @@ node_modules
 out
 coverage
 playwright-report
-test-results
+test-results*
 .env
 .env.local
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store
 .cache
+.next-real
+playwright-report-real

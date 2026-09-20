@@ -13,7 +13,7 @@ import { formatClock, formatDistance } from '@/lib/format';
 import { playSound } from '@/lib/sound';
 import { soundEnabled, useSettingsStore } from '@/stores/settings';
 import { toast } from '@/stores/toast';
-import { useI18nText } from '@/i18n/use-i18n-text';
+import { useCatalogName, useI18nText } from '@/i18n/use-i18n-text';
 import { cn } from '@/lib/utils';
 import { GameIcon, TopdownGlyph, capabilityIconName, vehicleClassOf } from '@/design/icons';
 import { Button } from '@/components/ui/button';
@@ -93,6 +93,20 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
   const t = useTranslations('game.dispatch');
   const ts = useTranslations('status.vehicle');
   const tw = useTranslations('game.dispatch.warning');
+  const itemName = useCatalogName();
+  /**
+   * Warning codes are opaque strings; the stock ones carry the item code after a colon
+   * (`STOCK_LOW:FIRE_FOAM`). An unknown code falls back to itself rather than throwing, so a server that learns a new
+   * warning never breaks an old client.
+   */
+  const warningText = (code: string): string => {
+    const [key, param] = code.split(':');
+    if (param && tw.has(key as never))
+      return (tw as unknown as (k: string, v: Record<string, string>) => string)(key!, {
+        item: itemName('item', param),
+      });
+    return tw.has(code as never) ? tw(code as never) : code;
+  };
   const tx = useI18nText();
   const locale = useLocale();
   const qc = useQueryClient();
@@ -307,7 +321,7 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
                         {o.warnings.map((w) => (
                           <Badge key={w} tone="warning">
                             <AlertTriangle className="size-3" aria-hidden />
-                            {tw.has(w as never) ? tw(w as never) : w}
+                            {warningText(w)}
                           </Badge>
                         ))}
                       </div>

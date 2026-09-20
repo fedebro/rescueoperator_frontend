@@ -7,6 +7,7 @@ import type {
   IncidentOutcomeDto,
   RealtimeEnvelope,
   RealtimeEventType,
+  SyncDelta,
   SyncSnapshot,
   UserDto,
   VehicleDto,
@@ -182,6 +183,8 @@ export interface MockCareer {
   ung: Record<string, string>;
   /** Rewarded incidents still RESOLVING: the outcome was already paid. */
   rewarded: Record<string, true>;
+  /** Ring buffer of the last emitted envelopes, so `GET /sync?since=` can replay them like the real outbox does. */
+  outbox?: RealtimeEnvelope[];
 }
 
 interface MockUser {
@@ -216,6 +219,22 @@ export interface EngineOptions {
 }
 
 const STORAGE_KEY = 'rc-mock-db-v4';
+/**
+ * The mock stands in for the server, including its readable session flag (`SESSION_FLAG_COOKIE`): without it the
+ * client would skip the boot refresh and a mock session would never be restored on a reload.
+ */
+function sessionFlagCookie(present: boolean): void {
+  try {
+    if (typeof document === 'undefined') return;
+    document.cookie = present
+      ? `rc_session=1; path=/; max-age=${60 * 60 * 24 * 60}`
+      : 'rc_session=; path=/; max-age=0';
+  } catch {
+    /* no document (node tests): the localStorage hint covers it */
+  }
+}
+/** How many envelopes a career keeps for `?since=` replay. The real outbox replays at most 500 events too. */
+const OUTBOX_WINDOW = 500;
 export const localStorageAdapter = (): MockStorage => ({
   load() {
     try {
@@ -426,6 +445,7 @@ export class MockEngine {
     const sessionId = `ses_${this.id('x').slice(2)}`;
     account.sessions.push({ id: sessionId, userAgent, createdAt: iso(now), lastUsedAt: iso(now) });
     this.state.currentSession = { email: ch.email, sessionId };
+    sessionFlagCookie(true);
     this.save();
     return this.issue(account, isNewUser);
   }
@@ -459,6 +479,7 @@ export class MockEngine {
       if (a) a.sessions = a.sessions.filter((x) => x.id !== s.sessionId);
     }
     this.state.currentSession = null;
+    sessionFlagCookie(false);
     this.save();
   }
 
@@ -595,15 +616,18 @@ export class MockEngine {
   }
 
   /**
-   * Freezes the simulation: due actions stop firing while set, so e2e tests can inspect a transient
-   * phase (an incident in RESOLVING, a vehicle mid-route) without racing the clock. Anchored values
-   * the UI derives from wall time keep moving; only state transitions are held.
+   * Freezes the simulation: the wall-clock driver in `browser.ts` stops calling `process()`, so e2e tests can
+   * inspect a transient phase (an incident in RESOLVING, a vehicle mid-route) without racing the clock. Anchored
+   * values the UI derives from wall time keep moving; only state transitions are held.
+   *
+   * It deliberately does NOT disable `process()` itself: an explicit test step (`qa.fastForward`,
+   * `engine.completeNow`) must still be able to advance the simulation one deterministic step at a time while the
+   * clock is frozen. That is what makes "freeze, then step to exactly this phase" possible instead of racing.
    */
   paused = false;
 
   /** Execute everything that is due, oldest first, using each action's own due time as "now". */
   process(): void {
-    if (this.paused) return;
     const wall = this.now();
     let dirty = false;
     for (const career of Object.values(this.state.careers)) {
@@ -664,7 +688,7 @@ export class MockEngine {
   emit(career: MockCareer, type: RealtimeEventType, payload: Record<string, unknown>): void {
     career.seq += 1;
     const now = iso(this.now());
-    this.emitFn({
+    const envelope: RealtimeEnvelope = {
       type,
       v: 1,
       careerId: career.summary.id,
@@ -672,7 +696,28 @@ export class MockEngine {
       occurredAt: now,
       serverTime: now,
       payload: JSON.parse(JSON.stringify(payload)) as Record<string, unknown>,
-    });
+    };
+    (career.outbox ??= []).push(envelope);
+    if (career.outbox.length > OUTBOX_WINDOW) career.outbox.splice(0, career.outbox.length - OUTBOX_WINDOW);
+    this.emitFn(envelope);
+  }
+
+  /**
+   * `GET /sync?since=<seq>` — the same contract as the server's outbox replay: the missed events when they are all
+   * still in the window, otherwise a full snapshot with `resyncRequired`.
+   */
+  delta(career: MockCareer, since: number): SyncDelta {
+    const buffered = career.outbox ?? [];
+    const missed = buffered.filter((e) => e.seq > since);
+    const replayable = since <= career.seq && missed.length === career.seq - since;
+    if (!replayable)
+      return { seq: career.seq, events: [], resyncRequired: true, snapshot: this.snapshot(career) };
+    return {
+      seq: missed.length > 0 ? missed[missed.length - 1]!.seq : since,
+      events: missed,
+      resyncRequired: false,
+      snapshot: null,
+    };
   }
   log(
     career: MockCareer,
@@ -1033,7 +1078,7 @@ export class MockEngine {
     career: MockCareer,
     templateCode: string,
     tutorial: boolean,
-    opts: { severity?: number; position?: LngLat; address?: string } = {},
+    opts: { severity?: number; position?: LngLat; address?: string; minDistanceMeters?: number } = {},
   ): IncidentDto {
     const t = INCIDENT_TEMPLATES.find((x) => x.code === templateCode);
     if (!t) throw new MockError(404, 'NOT_FOUND', 'Unknown incident template');
@@ -1046,7 +1091,12 @@ export class MockEngine {
       ? { position: opts.position, address: opts.address ?? INCIDENT_SPOTS[0]!.address }
       : tutorial
         ? (sorted.find((s) => haversineMeters(base, s.position) > 900) ?? sorted[0]!)
-        : (spots[Math.floor(this.random() * spots.length)] ?? INCIDENT_SPOTS[0]!);
+        : // `minDistanceMeters` (QA only): the nearest spot at or beyond that distance, so a test that needs an
+          // OBSERVABLE travel phase does not depend on which random spot came out.
+          opts.minDistanceMeters !== undefined
+          ? (sorted.find((s) => haversineMeters(base, s.position) >= opts.minDistanceMeters!) ??
+            sorted[sorted.length - 1]!)
+          : (spots[Math.floor(this.random() * spots.length)] ?? INCIDENT_SPOTS[0]!);
     // Severity: weighted by the template distribution, limited to bands the career level allows.
     const allowed = Object.entries(t.distribution).filter(
       ([sev]) => bandFor(t, Number(sev)).minLevel <= career.summary.level,

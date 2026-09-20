@@ -8,7 +8,7 @@ import {
   VehicleHistoryEntry,
   type RealtimeEnvelope,
 } from '@/contracts';
-import { InventoryOverview, MaintenanceOverview } from '@/lib/api/assumed';
+import { InventoryOverview, MaintenanceOverview } from '@/contracts';
 import { ITEM_TYPES, VEHICLE_TYPES, xpThreshold } from '../data/catalog';
 import { PESCARA } from '../data/pescara';
 import { MockEngine, MockError, OTP_CODE, memoryStorage, type MockCareer } from '../engine';

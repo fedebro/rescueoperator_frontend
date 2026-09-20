@@ -209,7 +209,9 @@
     "levelUp": "Niveau {level} atteint !",
     "stipendPaid": "Dotation de couverture versée : +{amount} Crédits",
     "upgradeDone": "Agrandissement terminé : {facility}",
-    "incidentExpired": "Personne n’est intervenu : {address}"
+    "incidentExpired": "Personne n’est intervenu : {address}",
+    "vehicleRerouted": "{callSign} contourne une route fermée",
+    "vehicleReroutedDelay": "Arrivée retardée de {delay}"
   },
   "game": {
     "loadFailed": "Impossible de charger le centre opérationnel",
@@ -347,7 +349,13 @@
         "CREW_TIRED": "Équipage fatigué",
         "LONG_ETA": "Arrivée tardive",
         "GROUNDED_BY_CONDITIONS": "Cloué au sol par les conditions actuelles",
-        "SLOW_TRAVEL_CONDITIONS": "Trajet ralenti par la météo ou le trafic"
+        "SLOW_TRAVEL_CONDITIONS": "Trajet ralenti par la météo ou le trafic",
+        "ROUTING_DEGRADED": "Itinéraire estimé à vol d’oiseau",
+        "VEHICLE_INOPERABLE": "Véhicule hors service : réparation nécessaire",
+        "CREW_ROLE_MISSING": "Un rôle clé manque dans l’équipage",
+        "CREW_FATIGUED": "Équipage épuisé",
+        "STOCK_MISSING": "Stock épuisé : {item}",
+        "STOCK_LOW": "Stock presque épuisé : {item}"
       }
     },
     "vehicle": {

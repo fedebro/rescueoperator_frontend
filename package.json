@@ -22,7 +22,9 @@
     "sync:contracts": "node scripts/sync-contracts.mjs",
     "gen:assets": "tsx scripts/generate-assets.ts",
     "check:i18n": "tsx scripts/check-i18n.ts",
-    "gen:mock-catalog": "tsx scripts/gen-mock-catalog.ts"
+    "gen:mock-catalog": "tsx scripts/gen-mock-catalog.ts",
+    "e2e:real": "playwright test --config=playwright.real.config.ts",
+    "e2e:real:report": "playwright show-report playwright-report-real"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { HospitalDto, HospitalOption, PatientDto, type RealtimeEnvelope } from '@/contracts';
-import { TransportResult } from '@/lib/api/assumed';
+import { TransportPatientResult } from '@/contracts';
 import { MockEngine, MockError, memoryStorage, type MockCareer } from '../engine';
 import { installDomains } from './index';
 import {
@@ -179,7 +179,7 @@ describe('medical domain', () => {
     const recommended = options.find((o) => o.recommended)!;
     expect(recommended.reasons.length).toBeGreaterThan(0);
     const result = w.medical.transport(w.career, p.dto.id, { hospitalId: recommended.hospitalId });
-    expect(TransportResult.safeParse(result).success).toBe(true);
+    expect(TransportPatientResult.safeParse(result).success).toBe(true);
     expect(result.vehicle).toMatchObject({ status: 'TRANSPORTING', incidentId });
     expect(result.vehicle.movement?.purpose).toBe('TO_HOSPITAL');
     expect(result.patient).toMatchObject({ status: 'IN_TRANSPORT', assignedVehicleId: vehicleId });

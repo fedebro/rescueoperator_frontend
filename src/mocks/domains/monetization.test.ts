@@ -10,7 +10,7 @@ import {
   ReferralDto,
   SpeedupQuote,
 } from '@/contracts';
-import { SpeedupResult } from '@/lib/api/assumed';
+import { SpeedupResult } from '@/contracts';
 import { MockEngine, MockError, OTP_CODE, memoryStorage, type MockCareer } from '../engine';
 import { ECONOMY } from '../data/catalog';
 import { PESCARA } from '../data/pescara';

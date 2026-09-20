@@ -61,13 +61,24 @@ export function useWatchProgress(minWatchSeconds: number, active: boolean) {
   return { ratio: Math.min(1, watchedMs / totalMs), done: watchedMs >= totalMs, paused, watchedMs };
 }
 
+/**
+ * The proof is NOT invented here: the server's simulated provider derives it from its own session id and puts it in
+ * `providerConfig.proof`, exactly where a real SDK would hand it back. Echoing it is the whole contract; a made-up
+ * value is refused with `PROOF_MISMATCH`. When the payload carries none, the completion is sent without a proof
+ * (the server then relies on the token alone, which is single-use and time-checked anyway).
+ */
+function proofOf(config: RewardedAdConfig): string | undefined {
+  const proof = (config.providerConfig as { proof?: unknown } | undefined)?.proof;
+  return typeof proof === 'string' ? proof : undefined;
+}
+
 function Player({ config, onEnd }: { config: RewardedAdConfig; onEnd: (o: RewardedAdOutcome) => void }) {
   const t = useTranslations('monetization.ads.player');
   const { ratio, done, paused, watchedMs } = useWatchProgress(config.minWatchSeconds, true);
   const remaining = Math.max(0, Math.ceil(config.minWatchSeconds - watchedMs / 1000));
   React.useEffect(() => {
-    if (done) onEnd({ completed: true, proof: `simulated:${config.adToken}` });
-  }, [done, onEnd, config.adToken]);
+    if (done) onEnd({ completed: true, proof: proofOf(config) });
+  }, [done, onEnd, config]);
   return (
     <Dialog
       open

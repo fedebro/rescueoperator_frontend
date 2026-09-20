@@ -154,6 +154,8 @@ export function DataTable<T>({
                     <div
                       key={key}
                       role="row"
+                      // Stable hook for tests and for scrolling a specific row into view.
+                      data-row-key={key}
                       aria-rowindex={vi.index + 2}
                       aria-selected={selectedKey === key || undefined}
                       tabIndex={clickable ? (vi.index === tabStop ? 0 : -1) : undefined}

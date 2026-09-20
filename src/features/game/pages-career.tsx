@@ -8,7 +8,7 @@ import { CheckCircle2, ChevronRight, Lock, LogOut, Trash2 } from 'lucide-react';
 import type { LedgerEntryDto } from '@/lib/api/types';
 import type { UnlockDto } from '@/contracts';
 import { authApi, gameApi } from '@/lib/api/endpoints';
-import { setAccessToken } from '@/lib/api/client';
+import { setAccessToken, setSessionHint } from '@/lib/api/client';
 import { qk } from '@/lib/api/query-keys';
 import { useErrorMessage } from '@/lib/api/error-message';
 import { amountRatio, formatAmount, formatDateTime } from '@/lib/format';
@@ -267,6 +267,7 @@ export function SettingsScreen() {
 
   const signOut = () => {
     setAccessToken(null);
+    setSessionHint(false);
     clearAuth();
     qc.clear();
     router.replace('/auth');

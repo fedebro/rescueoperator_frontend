@@ -209,7 +209,9 @@
     "levelUp": "Livello {level} raggiunto!",
     "stipendPaid": "Contributo di copertura accreditato: +{amount} Crediti",
     "upgradeDone": "Ampliamento completato: {facility}",
-    "incidentExpired": "Nessuno è intervenuto in {address}"
+    "incidentExpired": "Nessuno è intervenuto in {address}",
+    "vehicleRerouted": "{callSign} sta deviando per una strada chiusa",
+    "vehicleReroutedDelay": "Arrivo ritardato di {delay}"
   },
   "game": {
     "loadFailed": "Impossibile caricare la centrale",
@@ -347,7 +349,13 @@
         "CREW_TIRED": "Equipaggio stanco",
         "LONG_ETA": "Arrivo lento",
         "GROUNDED_BY_CONDITIONS": "Non può volare con queste condizioni",
-        "SLOW_TRAVEL_CONDITIONS": "Viaggio rallentato da meteo o traffico"
+        "SLOW_TRAVEL_CONDITIONS": "Viaggio rallentato da meteo o traffico",
+        "ROUTING_DEGRADED": "Percorso stimato in linea d’aria",
+        "VEHICLE_INOPERABLE": "Mezzo fuori uso: serve una riparazione",
+        "CREW_ROLE_MISSING": "Manca un ruolo chiave nell’equipaggio",
+        "CREW_FATIGUED": "Equipaggio affaticato",
+        "STOCK_MISSING": "Scorta esaurita: {item}",
+        "STOCK_LOW": "Scorta quasi esaurita: {item}"
       }
     },
     "vehicle": {

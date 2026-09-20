@@ -209,7 +209,9 @@
     "levelUp": "Level {level} reached!",
     "stipendPaid": "Coverage grant paid: +{amount} Credits",
     "upgradeDone": "Upgrade complete: {facility}",
-    "incidentExpired": "Nobody responded at {address}"
+    "incidentExpired": "Nobody responded at {address}",
+    "vehicleRerouted": "{callSign} is detouring around a closed road",
+    "vehicleReroutedDelay": "Arrival delayed by {delay}"
   },
   "game": {
     "loadFailed": "Unable to load the control room",
@@ -347,7 +349,13 @@
         "CREW_TIRED": "Tired crew",
         "LONG_ETA": "Slow arrival",
         "GROUNDED_BY_CONDITIONS": "Grounded by the current conditions",
-        "SLOW_TRAVEL_CONDITIONS": "Travel slowed by weather or traffic"
+        "SLOW_TRAVEL_CONDITIONS": "Travel slowed by weather or traffic",
+        "ROUTING_DEGRADED": "Route estimated as the crow flies",
+        "VEHICLE_INOPERABLE": "Vehicle out of service: repair needed",
+        "CREW_ROLE_MISSING": "A key role is missing from the crew",
+        "CREW_FATIGUED": "Fatigued crew",
+        "STOCK_MISSING": "Out of stock: {item}",
+        "STOCK_LOW": "Running low: {item}"
       }
     },
     "vehicle": {

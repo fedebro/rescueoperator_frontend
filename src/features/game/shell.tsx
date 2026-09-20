@@ -29,6 +29,7 @@ function LevelMeter({ compact }: { compact?: boolean }) {
       className="hover:bg-surface-3 flex min-h-11 items-center gap-2 rounded-md px-1.5 py-1 lg:min-h-0"
       aria-label={t('levelAria', { level: career.level, percent: Math.round(ratio * 100) })}
       data-testid="level-meter"
+      data-level={career.level}
     >
       <span className="tabular border-xp text-fg grid size-7 place-items-center rounded-full border-2 text-xs font-bold">
         {career.level}

@@ -138,17 +138,20 @@ test('coverage stipend: card with countdown and breakdown → payout → toast, 
   await expect(card.locator('[data-testid="stipend-family"][data-family="FIRE"]')).toContainText(
     'entro 12 min',
   );
-  const net = (await card.getByTestId('stipend-net').innerText()).replace(/\D/g, '');
-  expect(Number(net)).toBeGreaterThan(0);
+  // The card shows an ESTIMATE, recomputed from live state (reputation drops by 2 whenever a background incident
+  // expires, and the query key only refreshes on the rounded value). It is asserted as plausible, never used as the
+  // expected ledger amount: the payout below returns the authoritative row.
+  const estimate = (await card.getByTestId('stipend-net').innerText()).replace(/\D/g, '');
+  expect(Number(estimate)).toBeGreaterThan(0);
 
-  await qa(page, 'payStipend');
+  const paid = await qa<{ net: string }>(page, 'payStipend');
   await expect(
     page.getByTestId('toast').filter({ hasText: 'Contributo di copertura accreditato' }),
   ).toBeVisible();
   await expect
     .poll(async () => Number((await page.getByTestId('credits').innerText()).replace(/\D/g, '')))
-    .toBe(1000 + Number(net));
-  await expect(card.getByTestId('stipend-last')).toContainText(`+${net}`);
+    .toBe(1000 + Number(paid.net));
+  await expect(card.getByTestId('stipend-last')).toContainText(`+${paid.net}`);
   await expect(card.getByTestId('stipend-history')).toContainText('Accreditato');
   // The ledger (table on desktop, cards on mobile) lists the movement.
   await expect(page.getByText('Contributo di copertura', { exact: true }).last()).toBeVisible();
