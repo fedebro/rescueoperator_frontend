@@ -78,10 +78,13 @@ test('maintenance: worn vehicle → service → done; breakdown → recovery →
     const inspector = page.getByTestId('vehicle-inspector');
     await expect(inspector).toBeVisible();
     await qa(page, 'breakDown');
-    await expect(inspector).toHaveAttribute('data-vehicle-status', 'BROKEN_DOWN');
+    // BROKEN_DOWN lasts only until the automatic recovery starts, so the assertions below are on what the panel
+    // shows in BOTH phases: the tow was called, and the player is told they never lose a vehicle. The phase itself
+    // is asserted in the next step, where it is stable.
     const steps = inspector.getByTestId('recovery-steps');
     await expect(steps).toBeVisible();
-    await expect(steps).toContainText('Mezzo in avaria');
+    await expect(inspector).toHaveAttribute('data-vehicle-status', /BROKEN_DOWN|BEING_RECOVERED/);
+    await expect(steps).toContainText('Guasto, carro attrezzi chiamato');
     await expect(steps).toContainText('Il recupero è automatico');
   });
 

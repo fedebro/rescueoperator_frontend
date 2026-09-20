@@ -99,10 +99,13 @@ test('patients: triage → hospital choice → transport → admitted', async ({
       'data-patient-status',
       /IN_TRANSPORT|HANDOFF/,
     );
-    await expect(page.getByTestId('assigned-vehicle')).toHaveAttribute(
-      'data-vehicle-status',
-      /TRANSPORTING|AT_HOSPITAL/,
-    );
+    // More than one vehicle can be assigned (the fire engine may still be returning): assert that the AMBULANCE is
+    // the one carrying the patient, by its status, rather than assuming a single row.
+    await expect(
+      page.locator(
+        '[data-testid="assigned-vehicle"][data-vehicle-status="TRANSPORTING"], [data-testid="assigned-vehicle"][data-vehicle-status="AT_HOSPITAL"]',
+      ),
+    ).toHaveCount(1);
     expect(await vehicleStatus(page, vehicleId)).toMatch(/TRANSPORTING|AT_HOSPITAL/);
   });
 

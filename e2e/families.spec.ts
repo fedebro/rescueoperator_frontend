@@ -134,7 +134,23 @@ test('family unlock, mixed incident and the external-support phase', async ({ pa
     await page.getByTestId('outcome-continue').click();
     const support = page.getByTestId('external-support');
     await expect(support).toHaveAttribute('data-phase', 'RESOLVING');
-    await expect(support.getByTestId('reward-paid')).toContainText('Ricompensa già accreditata');
+    // The reward is paid at the RESOLVING transition — UNLESS the medical system is holding it back because the
+    // incident still has open patients (the server does the same). Assert the panel against the engine's own truth
+    // instead of assuming which of the two legitimate cases this generated incident fell into.
+    const rewarded = await page.evaluate(
+      (id) =>
+        !!(
+          window as unknown as {
+            __rcMock: { qa: { career: () => { incidents: { id: string; rewardedAt: string | null }[] } } };
+          }
+        ).__rcMock.qa
+          .career()
+          .incidents.find((i) => i.id === id)?.rewardedAt,
+      incidentId,
+    );
+    if (rewarded)
+      await expect(support.getByTestId('reward-paid')).toContainText('Ricompensa già accreditata');
+    else await expect(support.getByTestId('reward-paid')).toHaveCount(0);
     await expect(support.getByTestId('external-unit').first()).toHaveAttribute(
       'data-unit-status',
       /REQUESTED|WORKING/,
