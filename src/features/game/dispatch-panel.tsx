@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { AlertTriangle, Send, Sparkles, Truck } from 'lucide-react';
-import type { IncidentDto } from '@/contracts';
+import type { IncidentDto, ServiceFamily } from '@/contracts';
 import { gameApi } from '@/lib/api/endpoints';
 import { qk } from '@/lib/api/query-keys';
 import { isApiError, type ApiErrorCode } from '@/lib/api/errors';
@@ -16,7 +16,7 @@ import { soundEnabled, useSettingsStore } from '@/stores/settings';
 import { toast } from '@/stores/toast';
 import { useCatalogName, useI18nText } from '@/i18n/use-i18n-text';
 import { cn } from '@/lib/utils';
-import { GameIcon, TopdownGlyph, capabilityIconName, vehicleClassOf } from '@/design/icons';
+import { FamilyBadge, GameIcon, TopdownGlyph, capabilityIconName, vehicleClassOf } from '@/design/icons';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CapabilityBar } from '@/components/ui/capability-bar';
@@ -26,7 +26,10 @@ import { StatusChip } from '@/components/ui/status-chip';
 import { DispatchCrewBlocked, DispatchCrewPreview, crewBlockOf } from '@/features/personnel/slots';
 import { WarningNextAction, warningNextAction } from '@/features/coaching/warning-next-action';
 import { CoachMark } from '@/features/coaching/coach-mark';
+import { useFamilyLabel } from '@/features/facilities/site-details';
 import { useCareerId, useCatalog, useSnapshot, useVehicleTypeLookup } from './hooks';
+
+type FamilyFilter = 'ALL' | ServiceFamily;
 
 export function RequirementBars({
   incident,
@@ -162,6 +165,7 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
   const errorMessage = useErrorMessage();
   const { vehicles, facilities } = useSnapshot();
   const typeOf = useVehicleTypeLookup();
+  const familyLabel = useFamilyLabel();
   const facilityNameOf = (facilityId: string): string =>
     facilities.find((f) => f.id === facilityId)?.name ?? '—';
   // Options depend on which vehicles are free: refetch whenever the fleet's status signature changes.
@@ -173,8 +177,24 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
     placeholderData: (prev) => prev,
   });
   const [manual, setManual] = React.useState<Set<string> | null>(null);
+  const [familyFilter, setFamilyFilter] = React.useState<FamilyFilter>('ALL');
 
   const data = options.data;
+  const families = React.useMemo(() => {
+    const set = new Set<ServiceFamily>();
+    for (const o of data?.options ?? []) {
+      const family = vehicles.find((v) => v.id === o.vehicleId)?.family;
+      if (family) set.add(family);
+    }
+    return [...set];
+  }, [data, vehicles]);
+  const visibleOptions = React.useMemo(
+    () =>
+      (data?.options ?? []).filter(
+        (o) => familyFilter === 'ALL' || vehicles.find((v) => v.id === o.vehicleId)?.family === familyFilter,
+      ),
+    [data, vehicles, familyFilter],
+  );
   const recommended = React.useMemo(() => new Set(data?.recommendedVehicleIds ?? []), [data]);
   const dispatchable = React.useMemo(
     () => new Set((data?.options ?? []).filter((o) => o.dispatchable).map((o) => o.vehicleId)),
@@ -337,86 +357,118 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
 
           <div>
             <SectionTitle>{t('options')}</SectionTitle>
-            <ul className="flex flex-col gap-1.5">
-              {data.options.map((o) => {
-                const vehicle = vehicles.find((v) => v.id === o.vehicleId);
-                if (!vehicle) return null;
-                const type = typeOf(vehicle.typeCode);
-                const checked = selected.has(o.vehicleId);
-                const id = `opt-${o.vehicleId}`;
-                return (
-                  <li
-                    key={o.vehicleId}
+            {families.length > 1 ? (
+              <div
+                role="group"
+                aria-label={t('filterByFamily')}
+                className="mt-2 mb-2 flex gap-1.5 overflow-x-auto pb-1"
+                data-testid="dispatch-family-filter"
+              >
+                {(['ALL', ...families] as FamilyFilter[]).map((f) => (
+                  <button
+                    key={f}
+                    type="button"
+                    aria-pressed={familyFilter === f}
+                    onClick={() => setFamilyFilter(f)}
                     className={cn(
-                      'bg-surface-2 rounded-md border p-2.5',
-                      checked ? 'border-focus' : 'border-border',
-                      !o.dispatchable && 'opacity-60',
+                      'flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold',
+                      familyFilter === f
+                        ? 'border-focus bg-surface-3 text-fg'
+                        : 'border-border text-muted hover:bg-surface-3',
                     )}
-                    data-testid="dispatch-option"
+                    data-testid="dispatch-family-chip"
+                    data-family={f}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <Checkbox
-                        id={id}
-                        checked={checked}
-                        disabled={!o.dispatchable}
-                        onCheckedChange={() => toggle(o.vehicleId)}
-                        aria-label={t('selectVehicle', { callSign: vehicle.callSign })}
-                      />
-                      <TopdownGlyph
-                        vehicleClass={vehicleClassOf(type?.icon)}
-                        family={vehicle.family}
-                        size={28}
-                      />
-                      <label htmlFor={id} className="min-w-0 flex-1 cursor-pointer">
-                        <span className="flex items-center gap-1.5">
-                          <span className="text-fg truncate text-sm font-semibold">{vehicle.callSign}</span>
-                          {o.recommended ? <Badge tone="brand">{t('recommended')}</Badge> : null}
-                        </span>
-                        <span className="text-muted block truncate text-xs">
-                          {type ? tx(type.name) : vehicle.typeCode}
-                        </span>
-                        <span
-                          className="text-subtle block truncate text-xs"
-                          data-testid="dispatch-option-facility"
-                        >
-                          {facilityNameOf(vehicle.facilityId)}
-                        </span>
-                      </label>
-                      {o.dispatchable ? (
-                        <span className="text-right">
-                          <span className="tabular text-fg block text-sm font-semibold">
-                            {formatClock(o.etaSeconds)}
-                          </span>
-                          <span className="tabular text-subtle block text-[11px]">
-                            {formatDistance(o.distanceMeters, locale)}
-                          </span>
-                        </span>
-                      ) : (
-                        <StatusChip status={vehicle.status} label={ts(vehicle.status)} />
+                    {f === 'ALL' ? null : <FamilyBadge family={f} size={18} />}
+                    {f === 'ALL' ? t('allFamilies') : familyLabel(f)}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+            {visibleOptions.length === 0 ? (
+              <EmptyState title={t('filterEmpty')} />
+            ) : (
+              <ul className="flex flex-col gap-1.5">
+                {visibleOptions.map((o) => {
+                  const vehicle = vehicles.find((v) => v.id === o.vehicleId);
+                  if (!vehicle) return null;
+                  const type = typeOf(vehicle.typeCode);
+                  const checked = selected.has(o.vehicleId);
+                  const id = `opt-${o.vehicleId}`;
+                  return (
+                    <li
+                      key={o.vehicleId}
+                      className={cn(
+                        'bg-surface-2 rounded-md border p-2.5',
+                        checked ? 'border-focus' : 'border-border',
+                        !o.dispatchable && 'opacity-60',
                       )}
-                    </div>
-                    {o.contributes.length > 0 || o.warnings.length > 0 ? (
-                      <div className="mt-2 flex flex-wrap gap-1 pl-[30px]">
-                        {o.contributes.map((c) => (
-                          <Badge key={c.code} tone="neutral">
-                            <GameIcon name={capabilityIconName(c.code)} size={12} />
-                            {c.value}
-                          </Badge>
-                        ))}
-                        {o.warnings.map((w) => (
-                          <Badge key={w} tone="warning">
-                            <AlertTriangle className="size-3" aria-hidden />
-                            {warningText(w)}
-                          </Badge>
-                        ))}
+                      data-testid="dispatch-option"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Checkbox
+                          id={id}
+                          checked={checked}
+                          disabled={!o.dispatchable}
+                          onCheckedChange={() => toggle(o.vehicleId)}
+                          aria-label={t('selectVehicle', { callSign: vehicle.callSign })}
+                        />
+                        <TopdownGlyph
+                          vehicleClass={vehicleClassOf(type?.icon)}
+                          family={vehicle.family}
+                          size={28}
+                        />
+                        <label htmlFor={id} className="min-w-0 flex-1 cursor-pointer">
+                          <span className="flex items-center gap-1.5">
+                            <span className="text-fg truncate text-sm font-semibold">{vehicle.callSign}</span>
+                            {o.recommended ? <Badge tone="brand">{t('recommended')}</Badge> : null}
+                          </span>
+                          <span className="text-muted block truncate text-xs">
+                            {type ? tx(type.name) : vehicle.typeCode}
+                          </span>
+                          <span
+                            className="text-subtle block truncate text-xs"
+                            data-testid="dispatch-option-facility"
+                          >
+                            {facilityNameOf(vehicle.facilityId)}
+                          </span>
+                        </label>
+                        {o.dispatchable ? (
+                          <span className="text-right">
+                            <span className="tabular text-fg block text-sm font-semibold">
+                              {formatClock(o.etaSeconds)}
+                            </span>
+                            <span className="tabular text-subtle block text-[11px]">
+                              {formatDistance(o.distanceMeters, locale)}
+                            </span>
+                          </span>
+                        ) : (
+                          <StatusChip status={vehicle.status} label={ts(vehicle.status)} />
+                        )}
                       </div>
-                    ) : null}
-                    <DispatchEligibilityBlock option={o} />
-                    <DispatchCrewPreview option={o} />
-                  </li>
-                );
-              })}
-            </ul>
+                      {o.contributes.length > 0 || o.warnings.length > 0 ? (
+                        <div className="mt-2 flex flex-wrap gap-1 pl-[30px]">
+                          {o.contributes.map((c) => (
+                            <Badge key={c.code} tone="neutral">
+                              <GameIcon name={capabilityIconName(c.code)} size={12} />
+                              {c.value}
+                            </Badge>
+                          ))}
+                          {o.warnings.map((w) => (
+                            <Badge key={w} tone="warning">
+                              <AlertTriangle className="size-3" aria-hidden />
+                              {warningText(w)}
+                            </Badge>
+                          ))}
+                        </div>
+                      ) : null}
+                      <DispatchEligibilityBlock option={o} />
+                      <DispatchCrewPreview option={o} />
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
         </>
       )}

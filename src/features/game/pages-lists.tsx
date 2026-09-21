@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { Building2, Hammer, Lock, Truck } from 'lucide-react';
-import type { IncidentDto, VehicleDto } from '@/contracts';
+import type { FacilityFamily, IncidentDto, VehicleDto } from '@/contracts';
 import { gameApi } from '@/lib/api/endpoints';
 import { facilitiesApi } from '@/lib/api/depth';
 import { qk } from '@/lib/api/query-keys';
@@ -15,6 +15,7 @@ import { toast } from '@/stores/toast';
 import { useUiStore } from '@/stores/ui';
 import { useIsDesktop } from '@/hooks/use-media-query';
 import { useCatalogName, useI18nText } from '@/i18n/use-i18n-text';
+import { cn } from '@/lib/utils';
 import { FamilyBadge, TopdownGlyph, vehicleClassOf } from '@/design/icons';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -35,6 +36,7 @@ import { requestCredits } from '@/features/monetization/insufficient-credits';
 import { ConstructionBanner, PromotionCard } from '@/features/facilities/facility-extras';
 import { NewFacilitySection } from '@/features/facilities/new-facility-section';
 import { TransferVehicleButton } from '@/features/facilities/transfer-vehicle';
+import { useFamilyLabel } from '@/features/facilities/site-details';
 import { IncidentFamilies } from '@/features/families/family-chips';
 import { SectionHelpButton, SectionPrimer } from '@/features/coaching/section-primer';
 import { PageBody } from './shell';
@@ -369,6 +371,8 @@ export function FleetScreen() {
 }
 
 /* ───────────────────────────── facilities ───────────────────────────── */
+type FamilyFilter = 'ALL' | FacilityFamily;
+
 export function FacilitiesScreen() {
   const t = useTranslations('game.facilitiesPage');
   const ts = useTranslations('status.facility');
@@ -376,9 +380,13 @@ export function FacilitiesScreen() {
   const tfac = useTranslations('coaching.sections.facilities');
   const tco = useTranslations('coaching');
   const name = useCatalogName();
+  const familyLabel = useFamilyLabel();
   const { facilities } = useSnapshot();
   const params = useSearchParams();
   const router = useRouter();
+  const [familyFilter, setFamilyFilter] = React.useState<FamilyFilter>('ALL');
+  const families = React.useMemo(() => [...new Set(facilities.map((f) => f.family))], [facilities]);
+  const visibleFacilities = facilities.filter((f) => familyFilter === 'ALL' || f.family === familyFilter);
   const selectedId = params.get('id') ?? facilities[0]?.id ?? null;
   const selected = facilities.find((f) => f.id === selectedId) ?? null;
   const facilitiesContent = {
@@ -401,36 +409,66 @@ export function FacilitiesScreen() {
     >
       <SectionPrimer content={facilitiesContent} />
       <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
-        <ul className="flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible" aria-label={t('title')}>
-          {facilities.map((f) => (
-            <li key={f.id} className="shrink-0 lg:shrink">
-              <button
-                type="button"
-                aria-pressed={f.id === selectedId}
-                onClick={() => router.replace(`/game/facilities?id=${f.id}`)}
-                className={`bg-surface-2 flex w-64 items-center gap-3 rounded-md border p-3 text-left lg:w-full ${f.id === selectedId ? 'border-focus' : 'border-border'}`}
-              >
-                <FamilyBadge family={f.family} size={36} title={name('facility', f.typeCode)} />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold" title={f.name}>
-                    {f.name}
-                  </span>
-                  <span className="text-muted block truncate text-xs" title={name('facility', f.typeCode)}>
-                    {name('facility', f.typeCode)}
-                  </span>
-                  {f.status !== 'OPERATIONAL' ? (
-                    <span className="mt-1 flex items-center gap-2">
-                      <StatusChip status={f.status} label={ts(f.status)} />
-                      {f.operationalAt ? (
-                        <Countdown to={f.operationalAt} doneLabel="…" className="text-muted text-xs" />
-                      ) : null}
+        <div className="flex flex-col gap-2">
+          {families.length > 1 ? (
+            <div
+              role="group"
+              aria-label={t('filterByFamily')}
+              className="flex gap-1.5 overflow-x-auto pb-1"
+              data-testid="facilities-family-filter"
+            >
+              {(['ALL', ...families] as FamilyFilter[]).map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  aria-pressed={familyFilter === f}
+                  onClick={() => setFamilyFilter(f)}
+                  className={cn(
+                    'flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold',
+                    familyFilter === f
+                      ? 'border-focus bg-surface-3 text-fg'
+                      : 'border-border text-muted hover:bg-surface-3',
+                  )}
+                  data-testid="facilities-family-chip"
+                  data-family={f}
+                >
+                  {f === 'ALL' ? null : <FamilyBadge family={f} size={18} />}
+                  {f === 'ALL' ? t('allFamilies') : familyLabel(f)}
+                </button>
+              ))}
+            </div>
+          ) : null}
+          <ul className="flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible" aria-label={t('title')}>
+            {visibleFacilities.map((f) => (
+              <li key={f.id} className="shrink-0 lg:shrink">
+                <button
+                  type="button"
+                  aria-pressed={f.id === selectedId}
+                  onClick={() => router.replace(`/game/facilities?id=${f.id}`)}
+                  className={`bg-surface-2 flex w-64 items-center gap-3 rounded-md border p-3 text-left lg:w-full ${f.id === selectedId ? 'border-focus' : 'border-border'}`}
+                >
+                  <FamilyBadge family={f.family} size={36} title={name('facility', f.typeCode)} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold" title={f.name}>
+                      {f.name}
                     </span>
-                  ) : null}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
+                    <span className="text-muted block truncate text-xs" title={name('facility', f.typeCode)}>
+                      {name('facility', f.typeCode)}
+                    </span>
+                    {f.status !== 'OPERATIONAL' ? (
+                      <span className="mt-1 flex items-center gap-2">
+                        <StatusChip status={f.status} label={ts(f.status)} />
+                        {f.operationalAt ? (
+                          <Countdown to={f.operationalAt} doneLabel="…" className="text-muted text-xs" />
+                        ) : null}
+                      </span>
+                    ) : null}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
         {selected ? (
           <FacilityDetail key={selected.id} facilityId={selected.id} />
         ) : (
