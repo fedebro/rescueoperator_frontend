@@ -7,7 +7,7 @@ import { AlertTriangle, Send, Sparkles, Truck } from 'lucide-react';
 import type { IncidentDto } from '@/contracts';
 import { gameApi } from '@/lib/api/endpoints';
 import { qk } from '@/lib/api/query-keys';
-import { isApiError } from '@/lib/api/errors';
+import { isApiError, type ApiErrorCode } from '@/lib/api/errors';
 import { useErrorMessage } from '@/lib/api/error-message';
 import { formatClock, formatDistance } from '@/lib/format';
 import { playSound } from '@/lib/sound';
@@ -89,6 +89,22 @@ export function RequirementBars({
   );
 }
 
+/**
+ * Codes the dispatch command can still throw for a vehicle that `dispatch-options` marked `dispatchable: true`: the
+ * options list checks each vehicle on its own, but crew and consumables are a shared pool per facility, so two
+ * vehicles that each look sendable in isolation can still compete for the same operator or the same last box of
+ * supplies once they are sent together — and conditions/incident/vehicle state can also simply move on between the
+ * fetch and the click. Either way the option list is now stale: clear the manual pick and refetch it.
+ */
+const DISPATCH_STALE_CODES: ReadonlySet<ApiErrorCode> = new Set([
+  'VEHICLE_NOT_AVAILABLE',
+  'INCIDENT_NOT_DISPATCHABLE',
+  'CREW_INSUFFICIENT',
+  'CREW_UNQUALIFIED',
+  'CREW_EXHAUSTED',
+  'INVENTORY_INSUFFICIENT',
+]);
+
 /** Assisted but fully editable dispatch: one tap sends the recommended set, no confirmation step (Spec 05 §13). */
 export function DispatchPanel({ incident }: { incident: IncidentDto }) {
   const careerId = useCareerId();
@@ -169,7 +185,7 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
     },
     onError: (e) => {
       toast({ tone: 'danger', title: errorMessage(e) });
-      if (isApiError(e, 'VEHICLE_NOT_AVAILABLE')) {
+      if (isApiError(e) && DISPATCH_STALE_CODES.has(e.code)) {
         setManual(null);
         void options.refetch();
       }
