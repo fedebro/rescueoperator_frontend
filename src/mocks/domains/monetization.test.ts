@@ -167,6 +167,43 @@ describe('credit shop', () => {
   });
 });
 
+describe('saved card', () => {
+  let w: ReturnType<typeof world>;
+  let career: MockCareer;
+  beforeEach(() => {
+    w = world();
+    career = w.newCareer('savedcard@example.com', 'Saver');
+    w.organicPurchase(career);
+  });
+  it('has no saved card by default, then saves one and charges it with no checkout redirect', () => {
+    expect(w.api.savedPaymentMethod(career)).toMatchObject({ present: false, brand: null, last4: null });
+    const saved = w.api.saveCard(career);
+    expect(saved.setupUrl).toContain('cardSetup=success');
+    expect(w.api.savedPaymentMethod(career)).toMatchObject({ present: true, brand: 'visa', last4: '4242' });
+
+    const before = balance(career);
+    const result = w.api.checkoutSaved(career, { packageId: 'PACK_M', withdrawalWaiverAccepted: true });
+    expect(result).toMatchObject({ status: 'CHARGED', checkoutUrl: null });
+    expect(balance(career) - before).toBe(2800n);
+    expect(w.api.purchases(career)[0]).toMatchObject({ status: 'CREDITED', packageId: 'PACK_M' });
+  });
+  it('refuses to charge a card that was never saved, or one that was removed', () => {
+    expect(
+      code(() => w.api.checkoutSaved(career, { packageId: 'PACK_S', withdrawalWaiverAccepted: true })),
+    ).toBe('NOT_FOUND');
+    w.api.saveCard(career);
+    w.api.removeSavedCard(career);
+    expect(w.api.savedPaymentMethod(career).present).toBe(false);
+    expect(
+      code(() => w.api.checkoutSaved(career, { packageId: 'PACK_S', withdrawalWaiverAccepted: true })),
+    ).toBe('NOT_FOUND');
+  });
+  it('requires the withdrawal waiver on a saved-card charge too', () => {
+    w.api.saveCard(career);
+    expect(code(() => w.api.checkoutSaved(career, { packageId: 'PACK_S' }))).toBe('VALIDATION_ERROR');
+  });
+});
+
 describe('speed-ups', () => {
   it('prices by catalog minutes, with a minimum and a free tail', () => {
     expect(speedupCost('VEHICLE_DELIVERY', ECONOMY.speedup.freeBelowSeconds - 1)).toBe(0);

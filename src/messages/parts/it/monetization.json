@@ -91,6 +91,23 @@
         "package": "Pacchetto",
         "price": "Prezzo",
         "status": "Stato"
+      },
+      "savedCard": {
+        "title": "Carta salvata",
+        "none": "Nessuna carta salvata",
+        "noneHint": "Salva una carta per acquistare Crediti con un tocco, senza tornare sulla pagina di pagamento.",
+        "save": "Salva una carta",
+        "saved": "Carta che termina con {last4}",
+        "remove": "Rimuovi",
+        "removeConfirmTitle": "Rimuovere la carta salvata?",
+        "removeConfirmBody": "Potrai salvarne una nuova in qualsiasi momento.",
+        "removed": "Carta rimossa",
+        "saveSuccess": "Carta salvata: ora puoi acquistare con un tocco.",
+        "saveCancelled": "Salvataggio della carta annullato.",
+        "buyWithSaved": "Paga con la carta salvata",
+        "charged": "Pagamento riuscito con la carta salvata",
+        "declined": "La carta salvata è stata rifiutata. Riprova o usa un’altra carta.",
+        "requiresCheckout": "La tua banca richiede una conferma: completa il pagamento nella pagina sicura."
       }
     },
     "checkout": {

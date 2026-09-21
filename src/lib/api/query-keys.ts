@@ -45,6 +45,7 @@ export const qk = {
   monetizationRoot: (id: string) => ['career', id, 'monetization'] as const,
   packages: (id: string) => ['career', id, 'monetization', 'packages'] as const,
   purchases: (id: string) => ['career', id, 'monetization', 'purchases'] as const,
+  savedPaymentMethod: (id: string) => ['career', id, 'monetization', 'payment-method'] as const,
   adsStatus: (id: string) => ['career', id, 'monetization', 'ads'] as const,
   referrals: (id: string) => ['career', id, 'monetization', 'referrals'] as const,
   speedupQuote: (id: string, target: string, targetId: string) =>

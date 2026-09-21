@@ -15,6 +15,7 @@ export const monetizationHandlers: DomainHandlers = ({
   command,
   careerOf,
   query,
+  noContent,
   C,
 }) => {
   const api = () => monetizationApiOf(engine);
@@ -30,6 +31,25 @@ export const monetizationHandlers: DomainHandlers = ({
     http.get(
       url(`${C}/shop/purchases`),
       route((ctx) => ok(api().purchases(careerOf(ctx)))),
+    ),
+    http.get(
+      url(`${C}/shop/payment-method`),
+      route((ctx) => ok(api().savedPaymentMethod(careerOf(ctx)))),
+    ),
+    http.post(
+      url(`${C}/shop/payment-method`),
+      command((_ctx, _body, career) => api().saveCard(career)),
+    ),
+    http.delete(
+      url(`${C}/shop/payment-method`),
+      route((ctx) => {
+        api().removeSavedCard(careerOf(ctx));
+        return noContent();
+      }),
+    ),
+    http.post(
+      url(`${C}/shop/checkout-saved`),
+      command((_ctx, body, career) => api().checkoutSaved(career, body)),
     ),
     http.post(
       url('/webhooks/stripe'),

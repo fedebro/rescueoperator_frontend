@@ -91,6 +91,23 @@
         "package": "Pack",
         "price": "Prix",
         "status": "État"
+      },
+      "savedCard": {
+        "title": "Carte enregistrée",
+        "none": "Aucune carte enregistrée",
+        "noneHint": "Enregistrez une carte pour acheter des Crédits en un geste, sans revenir sur la page de paiement.",
+        "save": "Enregistrer une carte",
+        "saved": "Carte se terminant par {last4}",
+        "remove": "Supprimer",
+        "removeConfirmTitle": "Supprimer la carte enregistrée ?",
+        "removeConfirmBody": "Vous pourrez en enregistrer une nouvelle à tout moment.",
+        "removed": "Carte supprimée",
+        "saveSuccess": "Carte enregistrée : vous pouvez acheter en un geste.",
+        "saveCancelled": "Enregistrement de la carte annulé.",
+        "buyWithSaved": "Payer avec la carte enregistrée",
+        "charged": "Paiement réussi avec la carte enregistrée",
+        "declined": "La carte enregistrée a été refusée. Réessayez ou utilisez une autre carte.",
+        "requiresCheckout": "Votre banque demande une confirmation supplémentaire : terminez le paiement sur la page sécurisée."
       }
     },
     "checkout": {

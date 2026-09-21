@@ -260,3 +260,26 @@ export const AdminQueueList = z.array(AdminQueueStats);
 
 /** POST /webhooks/stripe · POST /webhooks/simulated-payment */
 export const WebhookAck = z.object({ received: z.boolean(), duplicate: z.boolean().optional(), handled: z.string().optional() });
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * Additive extensions: saved card (save once via Checkout, charge again without a redirect).
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+/** GET /shop/payment-method */
+export const SavedPaymentMethodDto = z.object({
+  present: z.boolean(),
+  brand: z.string().nullable(),
+  last4: z.string().nullable(),
+  expMonth: z.number().int().nullable(),
+  expYear: z.number().int().nullable(),
+});
+/** ★POST /shop/payment-method — opens a Checkout Session in `setup` mode to save a card for later. */
+export const SaveCardResult = z.object({ setupUrl: z.string().url() });
+/** ★POST /shop/checkout-saved — charge the saved card off-session, or fall back to a hosted checkout when it cannot. */
+export const ChargeSavedCardBody = z.object({ packageId: z.string(), withdrawalWaiverAccepted: z.literal(true) });
+export const ChargeSavedCardResult = z.object({
+  status: z.enum(['CHARGED', 'REQUIRES_CHECKOUT', 'DECLINED']),
+  purchaseId: publicId(IdPrefix.purchase),
+  /** Present only when `status` is REQUIRES_CHECKOUT: the card needed interactive authentication (SCA). */
+  checkoutUrl: z.string().url().nullable(),
+});

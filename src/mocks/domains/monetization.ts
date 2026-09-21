@@ -39,6 +39,8 @@ export interface MonetizationCareerState {
     tokens: Record<string, AdToken>;
   };
   referralRewardClaimed: boolean;
+  /** Saved card (server: `saved_payment_methods`). The mock skips the hosted setup page and saves it synchronously. */
+  savedCard: { status: 'NONE' | 'ACTIVE'; brand: string | null; last4: string | null };
 }
 interface ReferralRow {
   id: string;
@@ -91,6 +93,7 @@ export const monetizationState = (career: MockCareer): MonetizationCareerState =
     purchasedBalance: '0',
     ads: { dayKey: '', watchedToday: 0, nextAvailableAt: null, tokens: {} },
     referralRewardClaimed: false,
+    savedCard: { status: 'NONE', brand: null, last4: null },
   }));
 const globalState = (engine: MockEngine): MonetizationGlobalState =>
   (engine.state.ext.monetization ??= { codes: {}, referrals: [] }) as MonetizationGlobalState;
@@ -157,6 +160,19 @@ export interface MonetizationApi {
   checkout(career: MockCareer, body: Record<string, unknown>): { purchaseId: string; checkoutUrl: string };
   purchases(career: MockCareer): Purchase[];
   webhook(body: Record<string, unknown>): { received: true };
+  savedPaymentMethod(career: MockCareer): {
+    present: boolean;
+    brand: string | null;
+    last4: string | null;
+    expMonth: number | null;
+    expYear: number | null;
+  };
+  saveCard(career: MockCareer): { setupUrl: string };
+  removeSavedCard(career: MockCareer): void;
+  checkoutSaved(
+    career: MockCareer,
+    body: Record<string, unknown>,
+  ): { status: 'CHARGED' | 'REQUIRES_CHECKOUT' | 'DECLINED'; purchaseId: string; checkoutUrl: string | null };
   speedupQuote(career: MockCareer, target: unknown, targetId: unknown): z.infer<typeof SpeedupQuote>;
   speedup(career: MockCareer, target: unknown, targetId: unknown): z.infer<typeof SpeedupResult>;
   adsStatus(career: MockCareer): AdsStatus;
@@ -273,6 +289,62 @@ export function installMonetization(engine: MockEngine): void {
     const balance = BigInt(career.summary.credits);
     if (BigInt(state.purchasedBalance) > balance) state.purchasedBalance = String(balance);
   });
+
+  /* ───────────── saved card ─────────────
+   * The mock skips the hosted `mode: 'setup'` Checkout page (there is no card to enter) and saves the fake card
+   * synchronously; the client still reads `setupUrl` and navigates there, landing straight on the success state.
+   */
+  const savedPaymentMethod: MonetizationApi['savedPaymentMethod'] = (career) => {
+    const card = monetizationState(career).savedCard;
+    return {
+      present: card.status === 'ACTIVE',
+      brand: card.brand,
+      last4: card.last4,
+      expMonth: card.status === 'ACTIVE' ? 12 : null,
+      expYear: card.status === 'ACTIVE' ? new Date(engine.now()).getFullYear() + 3 : null,
+    };
+  };
+  const saveCard: MonetizationApi['saveCard'] = (career) => {
+    requireOpen(career, 'creditShop');
+    monetizationState(career).savedCard = { status: 'ACTIVE', brand: 'visa', last4: '4242' };
+    engine.save();
+    return { setupUrl: `${origin()}/game/credits?cardSetup=success` };
+  };
+  const removeSavedCard: MonetizationApi['removeSavedCard'] = (career) => {
+    monetizationState(career).savedCard = { status: 'NONE', brand: null, last4: null };
+    engine.save();
+  };
+  const checkoutSaved: MonetizationApi['checkoutSaved'] = (career, body) => {
+    requireOpen(career, 'creditShop');
+    if (body.withdrawalWaiverAccepted !== true)
+      throw new MockError(422, 'VALIDATION_ERROR', 'The withdrawal waiver must be accepted', {
+        fields: ['withdrawalWaiverAccepted'],
+      });
+    const state = monetizationState(career);
+    if (state.savedCard.status !== 'ACTIVE')
+      throw new MockError(404, 'NOT_FOUND', 'Saved payment method not found');
+    const pack = packages(career).find((p) => p.id === body.packageId);
+    if (!pack) throw new MockError(404, 'PACKAGE_NOT_FOUND', 'Unknown package');
+    if (!pack.available) throw new MockError(409, 'CONFLICT', 'Package not available any more');
+    const credits = String(BigInt(pack.credits) + BigInt(pack.bonusCredits));
+    const purchase: Purchase = {
+      id: engine.id('pur'),
+      packageId: pack.id,
+      credits,
+      priceMinor: pack.priceMinor,
+      currency: pack.currency,
+      status: 'CREATED',
+      createdAt: iso(engine.now()),
+      completedAt: null,
+    };
+    state.purchases.unshift(purchase);
+    // The mock always confirms off-session (no SCA simulation): good enough for dev/demo purposes.
+    engine.credit(career, Number(credits), 'PURCHASE');
+    state.purchasedBalance = String(BigInt(state.purchasedBalance) + BigInt(credits));
+    Object.assign(purchase, { status: 'CREDITED', completedAt: iso(engine.now()) });
+    engine.save();
+    return { status: 'CHARGED', purchaseId: purchase.id, checkoutUrl: null };
+  };
 
   /* ───────────── speed-ups ───────────── */
   const parseTarget = (target: unknown, targetId: unknown): { target: Target; targetId: string } => {
@@ -516,6 +588,10 @@ export function installMonetization(engine: MockEngine): void {
     checkout,
     purchases: (career) => monetizationState(career).purchases,
     webhook,
+    savedPaymentMethod,
+    saveCard,
+    removeSavedCard,
+    checkoutSaved,
     speedupQuote: (career, target, targetId) => quote(career, target, targetId).quote,
     speedup,
     adsStatus,

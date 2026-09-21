@@ -91,6 +91,23 @@
         "package": "Paquete",
         "price": "Precio",
         "status": "Estado"
+      },
+      "savedCard": {
+        "title": "Tarjeta guardada",
+        "none": "Ninguna tarjeta guardada",
+        "noneHint": "Guarda una tarjeta para comprar Créditos con un toque, sin volver a la página de pago.",
+        "save": "Guardar una tarjeta",
+        "saved": "Tarjeta terminada en {last4}",
+        "remove": "Quitar",
+        "removeConfirmTitle": "¿Quitar la tarjeta guardada?",
+        "removeConfirmBody": "Podrás guardar una nueva en cualquier momento.",
+        "removed": "Tarjeta eliminada",
+        "saveSuccess": "Tarjeta guardada: ya puedes comprar con un toque.",
+        "saveCancelled": "Guardado de la tarjeta cancelado.",
+        "buyWithSaved": "Pagar con la tarjeta guardada",
+        "charged": "Pago realizado con la tarjeta guardada",
+        "declined": "La tarjeta guardada fue rechazada. Vuelve a intentarlo o usa otra tarjeta.",
+        "requiresCheckout": "Tu banco pide una confirmación adicional: completa el pago en la página segura."
       }
     },
     "checkout": {

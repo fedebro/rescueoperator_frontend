@@ -9,6 +9,7 @@ import {
   AdStartResult,
   AdsStatusDto,
   CandidatesResult,
+  ChargeSavedCardResult,
   CheckoutResult,
   type CourseDto,
   CoverageDto,
@@ -33,6 +34,8 @@ import {
   PublicInviteDto,
   PurchaseDto,
   ReferralDto,
+  SavedPaymentMethodDto,
+  SaveCardResult,
   SiteDto,
   SpeedupQuote,
   SpeedupResult,
@@ -153,6 +156,17 @@ export const monetizationApi = {
       { schema: CheckoutResult },
     ),
   purchases: (careerId: string) => api.get(`${c(careerId)}/shop/purchases`, { schema: z.array(PurchaseDto) }),
+  savedPaymentMethod: (careerId: string) =>
+    api.get(`${c(careerId)}/shop/payment-method`, { schema: SavedPaymentMethodDto }),
+  saveCard: (careerId: string) =>
+    api.command(`${c(careerId)}/shop/payment-method`, {}, { schema: SaveCardResult }),
+  removeSavedCard: (careerId: string) => api.delete(`${c(careerId)}/shop/payment-method`),
+  checkoutSaved: (careerId: string, packageId: string) =>
+    api.command(
+      `${c(careerId)}/shop/checkout-saved`,
+      { packageId, withdrawalWaiverAccepted: true },
+      { schema: ChargeSavedCardResult },
+    ),
   /** Quote = GET with the same target query; buy = ★POST. */
   speedupQuote: (careerId: string, target: Target, targetId: string) =>
     api.get(`${c(careerId)}/speedups/quote`, { query: { target, targetId }, schema: SpeedupQuote }),

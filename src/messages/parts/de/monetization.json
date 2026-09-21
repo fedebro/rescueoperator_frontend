@@ -91,6 +91,23 @@
         "package": "Paket",
         "price": "Preis",
         "status": "Zustand"
+      },
+      "savedCard": {
+        "title": "Gespeicherte Karte",
+        "none": "Keine gespeicherte Karte",
+        "noneHint": "Speichere eine Karte, um Guthaben mit einem Tippen zu kaufen, ohne zur Zahlungsseite zurückzukehren.",
+        "save": "Karte speichern",
+        "saved": "Karte endet auf {last4}",
+        "remove": "Entfernen",
+        "removeConfirmTitle": "Gespeicherte Karte entfernen?",
+        "removeConfirmBody": "Du kannst jederzeit eine neue speichern.",
+        "removed": "Karte entfernt",
+        "saveSuccess": "Karte gespeichert: Du kannst jetzt mit einem Tippen kaufen.",
+        "saveCancelled": "Speichern der Karte abgebrochen.",
+        "buyWithSaved": "Mit gespeicherter Karte zahlen",
+        "charged": "Zahlung mit der gespeicherten Karte erfolgreich",
+        "declined": "Die gespeicherte Karte wurde abgelehnt. Versuche es erneut oder nutze eine andere Karte.",
+        "requiresCheckout": "Deine Bank verlangt eine zusätzliche Bestätigung: Schließe die Zahlung auf der sicheren Seite ab."
       }
     },
     "checkout": {

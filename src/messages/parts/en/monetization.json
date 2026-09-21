@@ -91,6 +91,23 @@
         "package": "Package",
         "price": "Price",
         "status": "Status"
+      },
+      "savedCard": {
+        "title": "Saved card",
+        "none": "No saved card",
+        "noneHint": "Save a card to buy credits with one tap, without going back to the payment page.",
+        "save": "Save a card",
+        "saved": "Card ending in {last4}",
+        "remove": "Remove",
+        "removeConfirmTitle": "Remove the saved card?",
+        "removeConfirmBody": "You can save a new one at any time.",
+        "removed": "Card removed",
+        "saveSuccess": "Card saved: you can now buy with one tap.",
+        "saveCancelled": "Card save cancelled.",
+        "buyWithSaved": "Pay with saved card",
+        "charged": "Payment successful with the saved card",
+        "declined": "The saved card was declined. Try again or use another card.",
+        "requiresCheckout": "Your bank needs extra confirmation: complete the payment on the secure page."
       }
     },
     "checkout": {
