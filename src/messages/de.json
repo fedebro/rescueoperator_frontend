@@ -310,6 +310,7 @@
       "report": "Notruf",
       "received": "Eingegangen um",
       "patients": "Patienten",
+      "patientsWaiting": "{count, plural, one {# Patient wartet auf Transport} other {# Patienten warten auf Transport}}",
       "estimatedReward": "Geschätzte Belohnung",
       "requirements": "Was gebraucht wird",
       "timelineEmpty": "Noch keine Ereignisse",

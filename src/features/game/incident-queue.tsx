@@ -2,7 +2,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { CheckCircle2, LifeBuoy } from 'lucide-react';
+import { Ambulance, CheckCircle2, LifeBuoy } from 'lucide-react';
 import type { IncidentDto } from '@/contracts';
 import { useI18nText } from '@/i18n/use-i18n-text';
 import { useUiStore } from '@/stores/ui';
@@ -77,6 +77,16 @@ export function IncidentCard({
         </span>
         <span className="mt-0.5 flex items-center gap-2">
           <span className="text-muted min-w-0 flex-1 truncate text-xs">{incident.address}</span>
+          {resolving && incident.patientCount > 0 ? (
+            <span
+              className="text-warning flex shrink-0 items-center gap-1 text-xs font-semibold"
+              title={t('patientsWaiting', { count: incident.patientCount })}
+              data-testid="incident-patients-waiting"
+            >
+              <Ambulance className="size-3.5" aria-hidden />
+              {incident.patientCount}
+            </span>
+          ) : null}
           <IncidentFamilies incident={incident} size={16} />
         </span>
         <span className="mt-1.5 flex items-center justify-between gap-2">

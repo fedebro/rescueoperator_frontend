@@ -310,6 +310,7 @@
       "report": "Aviso",
       "received": "Recibido a las",
       "patients": "Pacientes",
+      "patientsWaiting": "{count, plural, one {# paciente a la espera de traslado} other {# pacientes a la espera de traslado}}",
       "estimatedReward": "Recompensa estimada",
       "requirements": "Qué hace falta",
       "timelineEmpty": "Todavía no hay eventos",
