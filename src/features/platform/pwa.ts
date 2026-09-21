@@ -80,6 +80,38 @@ export async function registerServiceWorker(input: {
   }
 }
 
+let reloadedForUpdate = false;
+
+/**
+ * `public/sw.js` calls `skipWaiting()` on install and `clients.claim()` on activate, so a new version takes over
+ * immediately — but the tab that's already open keeps running the OLD html/js in memory until it reloads. Without
+ * this, a player who leaves the game open for days behind a PWA icon never actually gets the update they think
+ * they have. Game state is server-authoritative (the reload itself is already covered by the core-loop e2e test),
+ * so a full reload the instant a new worker takes control is safe, not just convenient.
+ */
+export function watchForUpdates(registration: ServiceWorkerRegistration): () => void {
+  if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return () => undefined;
+  const onControllerChange = () => {
+    if (reloadedForUpdate) return; // a broken deploy must not reload-loop the player forever
+    reloadedForUpdate = true;
+    window.location.reload();
+  };
+  navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
+  // The browser only checks for a new sw.js on its own around normal navigations, which a long-lived game tab
+  // (installed as a PWA, left open for a session) may not do for a long time — ask it directly instead.
+  const checkForUpdate = () => void registration.update().catch(() => undefined);
+  const onVisibility = () => {
+    if (document.visibilityState === 'visible') checkForUpdate();
+  };
+  document.addEventListener('visibilitychange', onVisibility);
+  const interval = window.setInterval(checkForUpdate, 60 * 60 * 1000);
+  return () => {
+    navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
+    document.removeEventListener('visibilitychange', onVisibility);
+    window.clearInterval(interval);
+  };
+}
+
 /** Captures the install prompt and the `appinstalled` event. Returns the cleanup. */
 export function listenForInstall(): () => void {
   if (typeof window === 'undefined') return () => undefined;

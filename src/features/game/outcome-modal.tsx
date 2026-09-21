@@ -52,10 +52,15 @@ export function OutcomeModal() {
     >
       <DialogContent
         title={t(`title.${outcome.result}`)}
-        description={t('subtitle')}
+        description={outcome.templateName ? tx(outcome.templateName) : t('subtitle')}
         closeLabel={tc('close')}
         data-testid="outcome-modal"
       >
+        {outcome.address ? (
+          <p className="text-muted -mt-1 text-sm" data-testid="outcome-address">
+            {outcome.address}
+          </p>
+        ) : null}
         <div className="flex flex-col items-center gap-2 py-2">
           <div
             role="img"

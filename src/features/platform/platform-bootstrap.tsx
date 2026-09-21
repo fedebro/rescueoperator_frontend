@@ -7,7 +7,7 @@ import { setAnalyticsSink } from '@/lib/analytics';
 import { installSoundUnlock } from '@/lib/sound';
 import { analyticsAllowed, useSettingsStore } from '@/stores/settings';
 import { AnalyticsClient, createTransport } from './analytics-client';
-import { isStandalone, listenForInstall, registerServiceWorker } from './pwa';
+import { isStandalone, listenForInstall, registerServiceWorker, watchForUpdates } from './pwa';
 
 /** Server-side kill switch (feature flag `analytics` of the snapshot). Unknown before the game loads → allowed. */
 let analyticsFlag = true;
@@ -61,12 +61,18 @@ export function PlatformBootstrap() {
     });
     const stopSound = installSoundUnlock();
     const stopInstall = listenForInstall();
-    void registerServiceWorker({ apiMock: env.apiMock, nodeEnv: process.env.NODE_ENV });
+    let stopUpdates: (() => void) | undefined;
+    void registerServiceWorker({ apiMock: env.apiMock, nodeEnv: process.env.NODE_ENV }).then(
+      (registration) => {
+        if (registration) stopUpdates = watchForUpdates(registration);
+      },
+    );
     return () => {
       stopClient();
       stopConsent();
       stopSound();
       stopInstall();
+      stopUpdates?.();
       setAnalyticsSink(() => undefined);
       activeClient = null;
     };

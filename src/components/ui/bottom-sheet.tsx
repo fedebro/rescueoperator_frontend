@@ -120,8 +120,10 @@ export function BottomSheet({
     drag.current = null;
     if (!d) return;
     if (d.moved && dragHeight !== null) onSnapChange(resolveSnap(dragHeight, d.velocity, heights));
+    // A plain tap anywhere in the drag strip cycles the sheet too, not just the small handle: dragging is easy to
+    // miss as a gesture, and a tap is a far bigger, more discoverable target than the pill on its own.
     // Pointer capture retargets the click away from the handle, so a tap is resolved here.
-    else if (!d.moved && d.fromHandle) cycle();
+    else if (!d.moved) cycle();
     setDragHeight(null);
   };
   const onKeyDown = (e: React.KeyboardEvent) => {

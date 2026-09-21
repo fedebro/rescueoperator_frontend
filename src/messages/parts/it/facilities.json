@@ -36,6 +36,8 @@
       "modeHint": "{count, plural, =0 {Nessun sito disponibile in zona} one {# sito disponibile: toccalo sulla mappa} other {# siti disponibili: toccane uno sulla mappa}}",
       "exit": "Esci dalla modalità nuova sede",
       "newFacility": "Nuova sede",
+      "filterByFamily": "Filtra per servizio",
+      "allFamilies": "Tutti",
       "siteGone": "Sito non più disponibile",
       "candidateSite": "Sito disponibile"
     },

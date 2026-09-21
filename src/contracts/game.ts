@@ -293,6 +293,9 @@ export const IncidentOutcomeDto = z.object({
   xp: Amount,
   reputationDelta: z.number(),
   notes: z.array(I18nText),
+  /* additive: which incident this refers to — the outcome can outlive the incident's own entry in the active list */
+  address: z.string().optional(),
+  templateName: I18nText.optional(),
 });
 export type IncidentOutcomeDto = z.infer<typeof IncidentOutcomeDto>;
 

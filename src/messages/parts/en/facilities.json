@@ -36,6 +36,8 @@
       "modeHint": "{count, plural, =0 {No site available in the area} one {# site available: tap it on the map} other {# sites available: tap one on the map}}",
       "exit": "Leave new facility mode",
       "newFacility": "New facility",
+      "filterByFamily": "Filter by service",
+      "allFamilies": "All",
       "siteGone": "Site no longer available",
       "candidateSite": "Available site"
     },

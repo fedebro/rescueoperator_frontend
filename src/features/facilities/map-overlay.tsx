@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Building2, Crosshair, MapPinPlus, X } from 'lucide-react';
 import type { SiteDto } from '@/contracts';
 import { track } from '@/lib/analytics';
+import { cn } from '@/lib/utils';
 import { useUiStore } from '@/stores/ui';
 import { FamilyBadge } from '@/design/icons';
 import { registerClickableLayer } from '@/features/map/game-layers';
@@ -14,6 +15,8 @@ import { Button, IconButton } from '@/components/ui/button';
 import { EmptyState, Skeleton } from '@/components/ui/misc';
 import { SiteDetails, SiteOriginBadge, siteFamily, useFamilyLabel } from './site-details';
 import { useSites } from './use-sites';
+
+type FamilyFilter = 'ALL' | ReturnType<typeof siteFamily>;
 
 const SOURCE = 'rc-sites';
 const LAYER_ICON = 'rc-sites-icon';
@@ -54,6 +57,14 @@ export function SitesMapOverlay({ map }: { map: MlMap }) {
   const focusOn = useUiStore((s) => s.focusOn);
   const sites = useSites(on);
   const selectedId = selection?.kind === 'site' ? selection.id : null;
+  const familyLabel = useFamilyLabel();
+  const [familyFilter, setFamilyFilter] = React.useState<FamilyFilter>('ALL');
+  const candidates = React.useMemo(() => (sites.data ?? []).filter((s) => !s.owned), [sites.data]);
+  const families = React.useMemo(() => [...new Set(candidates.map(siteFamily))], [candidates]);
+  const filtered = React.useMemo(
+    () => candidates.filter((s) => familyFilter === 'ALL' || siteFamily(s) === familyFilter),
+    [candidates, familyFilter],
+  );
 
   React.useEffect(() => {
     if (!on) return;
@@ -109,8 +120,8 @@ export function SitesMapOverlay({ map }: { map: MlMap }) {
 
   React.useEffect(() => {
     if (!on) return;
-    (map.getSource(SOURCE) as GeoJSONSource | undefined)?.setData(siteFeatures(sites.data ?? [], selectedId));
-  }, [map, on, sites.data, selectedId]);
+    (map.getSource(SOURCE) as GeoJSONSource | undefined)?.setData(siteFeatures(filtered, selectedId));
+  }, [map, on, filtered, selectedId]);
 
   // The selection ring of non-snapshot entities follows the last focus request (operations-map): give it the site.
   const selectedSite = selectedId ? sites.data?.find((s) => s.id === selectedId) : undefined;
@@ -124,27 +135,54 @@ export function SitesMapOverlay({ map }: { map: MlMap }) {
     if (selectedId) clearSelection();
     setMapLayer('sites', false);
   };
-  const available = (sites.data ?? []).filter((s) => !s.owned).length;
   return (
     // One row below the map-layers control (`top-3` + its 44px height): both are top-left slots owned by different
     // features, and at 375px they used to sit on top of each other.
     <div className="pointer-events-none absolute top-[3.75rem] left-3 z-10 flex max-w-[calc(100%-4.5rem)]">
       {on ? (
-        <div
-          className="border-border-strong bg-surface-1/95 shadow-panel pointer-events-auto flex items-center gap-2 rounded-md border py-1.5 pr-1.5 pl-3 text-xs backdrop-blur"
-          role="status"
-          data-testid="new-facility-banner"
-        >
-          <MapPinPlus className="text-info size-4 shrink-0" aria-hidden />
-          <span className="min-w-0">
-            <span className="block font-semibold">{t('modeTitle')}</span>
-            <span className="text-muted block truncate">
-              {sites.isLoading ? t('loading') : t('modeHint', { count: available })}
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <div
+            className="border-border-strong bg-surface-1/95 shadow-panel pointer-events-auto flex items-center gap-2 rounded-md border py-1.5 pr-1.5 pl-3 text-xs backdrop-blur"
+            role="status"
+            data-testid="new-facility-banner"
+          >
+            <MapPinPlus className="text-info size-4 shrink-0" aria-hidden />
+            <span className="min-w-0">
+              <span className="block font-semibold">{t('modeTitle')}</span>
+              <span className="text-muted block truncate">
+                {sites.isLoading ? t('loading') : t('modeHint', { count: filtered.length })}
+              </span>
             </span>
-          </span>
-          <IconButton label={t('exit')} size="sm" onClick={exit} data-testid="new-facility-exit">
-            <X className="size-4" aria-hidden />
-          </IconButton>
+            <IconButton label={t('exit')} size="sm" onClick={exit} data-testid="new-facility-exit">
+              <X className="size-4" aria-hidden />
+            </IconButton>
+          </div>
+          {families.length > 1 ? (
+            <div
+              role="group"
+              aria-label={t('filterByFamily')}
+              className="pointer-events-auto flex gap-1.5 overflow-x-auto"
+              data-testid="new-facility-family-filter"
+            >
+              {(['ALL', ...families] as FamilyFilter[]).map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  aria-pressed={familyFilter === f}
+                  onClick={() => setFamilyFilter(f)}
+                  className={cn(
+                    'border-border-strong bg-surface-1/95 shadow-panel flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-2.5 text-xs font-semibold backdrop-blur',
+                    familyFilter === f ? 'border-focus text-fg' : 'text-muted hover:bg-surface-3',
+                  )}
+                  data-testid="new-facility-family-chip"
+                  data-family={f}
+                >
+                  {f === 'ALL' ? null : <FamilyBadge family={f} size={16} />}
+                  {f === 'ALL' ? t('allFamilies') : familyLabel(f)}
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
       ) : (
         <Button

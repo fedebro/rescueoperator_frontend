@@ -36,6 +36,8 @@
       "modeHint": "{count, plural, =0 {Kein Standort in der Nähe verfügbar} one {# Standort verfügbar: Tippe ihn auf der Karte an} other {# Standorte verfügbar: Tippe einen auf der Karte an}}",
       "exit": "Modus „Neuer Standort“ verlassen",
       "newFacility": "Neuer Standort",
+      "filterByFamily": "Nach Dienst filtern",
+      "allFamilies": "Alle",
       "siteGone": "Standort nicht mehr verfügbar",
       "candidateSite": "Verfügbarer Standort"
     },

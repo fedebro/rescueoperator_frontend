@@ -36,6 +36,8 @@
       "modeHint": "{count, plural, =0 {Aucun site disponible dans la zone} one {# site disponible : touchez-le sur la carte} other {# sites disponibles : touchez-en un sur la carte}}",
       "exit": "Quitter le mode nouvelle base",
       "newFacility": "Nouvelle base",
+      "filterByFamily": "Filtrer par service",
+      "allFamilies": "Toutes",
       "siteGone": "Site plus disponible",
       "candidateSite": "Site disponible à l’achat"
     },

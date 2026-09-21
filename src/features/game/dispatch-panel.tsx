@@ -282,7 +282,9 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
             ) : null}
           </div>
 
-          <div>
+          {/* Stuck to the top of the tab's own scroll container while the option list below scrolls, so the
+              coverage you're building stays visible without scrolling back up after each pick. */}
+          <div className="border-border bg-surface-1 sticky top-0 z-10 -mx-4 border-b px-4 pb-3">
             <SectionTitle>{t('requirements')}</SectionTitle>
             <RequirementBars incident={incident} planned={planned} />
           </div>
@@ -326,10 +328,12 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
                         </span>
                         <span className="text-muted block truncate text-xs">
                           {type ? tx(type.name) : vehicle.typeCode}
-                          <span aria-hidden> · </span>
-                          <span data-testid="dispatch-option-facility">
-                            {facilityNameOf(vehicle.facilityId)}
-                          </span>
+                        </span>
+                        <span
+                          className="text-subtle block truncate text-xs"
+                          data-testid="dispatch-option-facility"
+                        >
+                          {facilityNameOf(vehicle.facilityId)}
                         </span>
                       </label>
                       {o.dispatchable ? (
