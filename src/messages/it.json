@@ -185,7 +185,9 @@
       "MAINTENANCE": "In manutenzione",
       "BROKEN_DOWN": "In avaria",
       "BEING_RECOVERED": "In recupero",
-      "OUT_OF_SERVICE": "Fuori servizio"
+      "OUT_OF_SERVICE": "Fuori servizio",
+      "TAXIING": "In rullaggio",
+      "TAKING_OFF": "In decollo"
     },
     "facility": {
       "OPERATIONAL": "Operativa",

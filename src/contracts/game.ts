@@ -15,6 +15,8 @@ export const VehicleStatus = z.enum([
   'RETURNING', 'RESTOCKING', 'MAINTENANCE', 'BROKEN_DOWN', 'BEING_RECOVERED', 'OUT_OF_SERVICE',
   /* water-supply aircraft refill (additive): the water run between two drops on the same incident. */
   'TO_WATER_SOURCE', 'AT_WATER_SOURCE',
+  /* AIR-domain taxi + takeoff (additive): between PREPARING and EN_ROUTE, only for helicopters/planes. */
+  'TAXIING', 'TAKING_OFF',
 ]);
 export type VehicleStatus = z.infer<typeof VehicleStatus>;
 
@@ -22,6 +24,7 @@ export const DispatchVehicleStatus = z.enum([
   'PREPARING', 'EN_ROUTE', 'ON_SCENE', 'TRANSPORTING', 'AT_HOSPITAL', 'RETURNING',
   'DONE', 'RECALLED', 'BROKEN_DOWN', 'CANCELLED',
   'TO_WATER_SOURCE', 'AT_WATER_SOURCE',
+  'TAXIING', 'TAKING_OFF',
 ]);
 
 export const PersonnelStatus = z.enum([
@@ -123,7 +126,7 @@ export const MovementDto = z.object({
   departAt: IsoDateTime,
   arriveAt: IsoDateTime,
   distanceMeters: z.number(),
-  purpose: z.enum(['TO_INCIDENT', 'TO_HOSPITAL', 'TO_BASE', 'DELIVERY', 'RECOVERY', 'TO_WATER_SOURCE']),
+  purpose: z.enum(['TO_INCIDENT', 'TO_HOSPITAL', 'TO_BASE', 'DELIVERY', 'RECOVERY', 'TO_WATER_SOURCE', 'TAXIING']),
 });
 export type MovementDto = z.infer<typeof MovementDto>;
 

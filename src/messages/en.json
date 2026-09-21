@@ -185,7 +185,9 @@
       "MAINTENANCE": "In maintenance",
       "BROKEN_DOWN": "Broken down",
       "BEING_RECOVERED": "Being recovered",
-      "OUT_OF_SERVICE": "Out of service"
+      "OUT_OF_SERVICE": "Out of service",
+      "TAXIING": "Taxiing",
+      "TAKING_OFF": "Taking off"
     },
     "facility": {
       "OPERATIONAL": "Operational",
