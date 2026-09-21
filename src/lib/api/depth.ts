@@ -34,6 +34,7 @@ import {
   PublicInviteDto,
   PurchaseDto,
   ReferralDto,
+  RunwayDto,
   SavedPaymentMethodDto,
   SaveCardResult,
   SiteDto,
@@ -70,6 +71,15 @@ export const facilitiesApi = {
       { facilityId },
       { schema: TransferVehicleResult },
     ),
+};
+
+/**
+ * Real runway/taxiway centerlines (airport-runway-map). Rendering-only world overlay: no ownership, no gate — the
+ * bbox mirrors `facilitiesApi.sites`, so the same "pad the career bounds a little" helper works for both.
+ */
+export const worldGeometryApi = {
+  runways: (careerId: string, bbox: [number, number, number, number]) =>
+    api.get(`${c(careerId)}/runways`, { query: { bbox: bbox.join(',') }, schema: z.array(RunwayDto) }),
 };
 
 export const personnelApi = {

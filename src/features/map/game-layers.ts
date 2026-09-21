@@ -1,14 +1,15 @@
 import type { FilterSpecification, GeoJSONSource, Map as MlMap, MapMouseEvent } from 'maplibre-gl';
 import type { Feature, FeatureCollection, LineString, Point } from 'geojson';
-import type { FacilityDto, IncidentDto, VehicleDto } from '@/contracts';
+import type { FacilityDto, IncidentDto, RunwayDto, VehicleDto } from '@/contracts';
 import { movementProgress, pointAlong, remainingPath, type LngLat } from '@/lib/geo';
 import { FAMILY_COLORS } from '@/design/icons';
 import type { Selection } from '@/stores/ui';
-import { GAME_LABEL_FONT } from './style';
+import { GAME_LABEL_FONT, MAP_PALETTE } from './style';
 
 /** Everything the game draws on the map: GeoJSON sources on WebGL layers — never DOM markers. */
 export const SRC = {
   facilities: 'rc-facilities',
+  runways: 'rc-runways',
   incidents: 'rc-incidents',
   vehicles: 'rc-vehicles',
   routes: 'rc-routes',
@@ -17,6 +18,7 @@ export const SRC = {
 export const LAYER = {
   routes: 'rc-routes-line',
   routesSelected: 'rc-routes-selected',
+  runways: 'rc-runways-line',
   facilities: 'rc-facilities-icon',
   facilityLabels: 'rc-facilities-label',
   incidentPulse: 'rc-incidents-pulse',
@@ -98,6 +100,21 @@ export function facilityFeatures(
         parked: vehicles.filter((v) => v.facilityId === f.id && v.movement === null && v.incidentId === null)
           .length,
       },
+    })),
+  };
+}
+
+/**
+ * Real runway/taxiway centerlines (airport-runway-map). Ground markings, not a selectable entity: no `id`/`kind`
+ * that would make `bindInteractions` treat a click on the line as a selection.
+ */
+export function runwayFeatures(runways: readonly RunwayDto[]): FeatureCollection<LineString> {
+  return {
+    type: 'FeatureCollection',
+    features: runways.map((r) => ({
+      type: 'Feature',
+      geometry: { type: 'LineString', coordinates: r.path },
+      properties: { runwayKind: r.kind },
     })),
   };
 }
@@ -189,6 +206,7 @@ export function vehicleFeatures(
 
 export function addGameLayers(map: MlMap): void {
   map.addSource(SRC.routes, { type: 'geojson', data: empty() });
+  map.addSource(SRC.runways, { type: 'geojson', data: empty() });
   map.addSource(SRC.facilities, { type: 'geojson', data: empty() });
   map.addSource(SRC.incidents, {
     type: 'geojson',
@@ -235,6 +253,32 @@ export function addGameLayers(map: MlMap): void {
       'circle-color': 'rgba(124,192,255,0.12)',
       'circle-stroke-color': '#7CC0FF',
       'circle-stroke-width': 2.5,
+    },
+  });
+
+  // Ground markings (airport-runway-map): a real runway/taxiway centerline, drawn under every marker/icon layer so
+  // it reads as pavement rather than competing with them. Same muted, desaturated blues the basemap already uses
+  // for the road network (MAP_PALETTE.primary/minor) — the runway sits stylistically with roads, not with the
+  // bright per-family gameplay colours. No `minzoom`: visible whenever the facility built on it would be.
+  map.addLayer({
+    id: LAYER.runways,
+    type: 'line',
+    source: SRC.runways,
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: {
+      'line-color': ['match', ['get', 'runwayKind'], 'RUNWAY', MAP_PALETTE.primary, MAP_PALETTE.minor],
+      'line-width': [
+        'interpolate',
+        ['linear'],
+        ['zoom'],
+        9,
+        ['match', ['get', 'runwayKind'], 'RUNWAY', 1.4, 0.7],
+        14,
+        ['match', ['get', 'runwayKind'], 'RUNWAY', 5, 2],
+        17,
+        ['match', ['get', 'runwayKind'], 'RUNWAY', 11, 4],
+      ] as never,
+      'line-opacity': 0.85,
     },
   });
 

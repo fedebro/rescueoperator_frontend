@@ -43,6 +43,7 @@ export const qk = {
   worldRoot: (id: string) => ['career', id, 'world'] as const,
   coverage: (id: string) => ['career', id, 'world', 'coverage'] as const,
   sites: (id: string, bbox: string) => ['career', id, 'world', 'sites', bbox] as const,
+  runways: (id: string, bbox: string) => ['career', id, 'world', 'runways', bbox] as const,
   monetizationRoot: (id: string) => ['career', id, 'monetization'] as const,
   packages: (id: string) => ['career', id, 'monetization', 'packages'] as const,
   purchases: (id: string) => ['career', id, 'monetization', 'purchases'] as const,

@@ -4,7 +4,7 @@
  * Backend may extend additively; never rename or remove fields.
  */
 import { z } from 'zod';
-import { Amount, I18nText, IdPrefix, IsoDateTime, LngLat, ServiceFamily, publicId } from './common';
+import { Amount, I18nText, IdPrefix, IsoDateTime, LineCoords, LngLat, ServiceFamily, publicId } from './common';
 import { FatigueBand, HealthBand, IncidentDto, PatientStatus, PersonnelStatus, TriageCode, VehicleDto } from './game';
 
 /* ───────────── personnel ───────────── */
@@ -113,6 +113,23 @@ export const HospitalDto = z.object({
   id: publicId(IdPrefix.hospital), name: z.string(), position: LngLat,
   capabilities: z.array(z.string()), load: HospitalLoad, hasHelipad: z.boolean(),
 });
+/**
+ * GET /careers/:id/runways — real runway/taxiway centerlines (tools/geodata `runways.ndjson`, airport-runway-map)
+ * of the AIR-capable facility sites in the career area. `id` is the geodata `external_key` (stable across releases),
+ * never a purchasable/actionable entity: rendering-only, additive.
+ */
+export const RunwayKind = z.enum(['RUNWAY', 'TAXIWAY']);
+export const RunwayDto = z.object({
+  id: z.string(),
+  airportName: z.string().nullable(),
+  kind: RunwayKind,
+  path: LineCoords,
+  lengthM: z.number().int().nonnegative(),
+  widthM: z.number().positive().nullable(),
+  surface: z.string().nullable(),
+});
+export type RunwayDto = z.infer<typeof RunwayDto>;
+
 export const HospitalOption = z.object({
   hospitalId: publicId(IdPrefix.hospital), etaSeconds: z.number().int(), compatible: z.boolean(),
   load: HospitalLoad, expectedHandoffSeconds: z.number().int(), score: z.number(), recommended: z.boolean(), reasons: z.array(I18nText),

@@ -9,6 +9,7 @@ import {
   bindInteractions,
   facilityFeatures,
   incidentFeatures,
+  runwayFeatures,
   setData,
   setPulsePhase,
   setVehicleUrgentPulsePhase,
@@ -21,6 +22,7 @@ import { useLatest } from '@/hooks/use-latest';
 import { useSettingsStore } from '@/stores/settings';
 import { useUiStore } from '@/stores/ui';
 import { MapLayersControl, WorldMapOverlay } from '@/features/world/map-overlay';
+import { useRunways } from '@/features/world/use-runways';
 import { HospitalsMapOverlay } from '@/features/medical/map-overlay';
 import { SitesMapOverlay } from '@/features/facilities/map-overlay';
 import { useSnapshot, useVehicleTypeLookup } from './hooks';
@@ -123,6 +125,11 @@ export function OperationsMap({ bottomPadding = 0 }: { bottomPadding?: number })
   React.useEffect(() => {
     if (ready && mapRef.current) setData(mapRef.current, SRC.incidents, incidentFeatures(snapshot.incidents));
   }, [ready, snapshot.incidents]);
+  // Real runway/taxiway ground markings (airport-runway-map): static world geometry, always on, no gameplay state.
+  const runways = useRunways();
+  React.useEffect(() => {
+    if (ready && mapRef.current) setData(mapRef.current, SRC.runways, runwayFeatures(runways.data ?? []));
+  }, [ready, runways.data]);
 
   // Camera requests (queue click, "centre on map", toast action).
   const focusRequest = useUiStore((s) => s.focusRequest);
