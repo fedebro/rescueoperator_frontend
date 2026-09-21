@@ -3,7 +3,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
-import { AlertTriangle, Send, Sparkles, Truck } from 'lucide-react';
+import { AlertTriangle, Radar, Send, Sparkles, Truck } from 'lucide-react';
 import type { IncidentDto, ServiceFamily } from '@/contracts';
 import { gameApi } from '@/lib/api/endpoints';
 import { qk } from '@/lib/api/query-keys';
@@ -142,6 +142,7 @@ function DispatchEligibilityBlock({ option }: { option: DispatchOptionsResult['o
 export function DispatchPanel({ incident }: { incident: IncidentDto }) {
   const careerId = useCareerId();
   const t = useTranslations('game.dispatch');
+  const tv = useTranslations('game.vehicle');
   const ts = useTranslations('status.vehicle');
   const tw = useTranslations('game.dispatch.warning');
   const tci = useTranslations('coaching.marks.crewInsufficient');
@@ -435,6 +436,12 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
                           <span className="flex items-center gap-1.5">
                             <span className="text-fg truncate text-sm font-semibold">{vehicle.callSign}</span>
                             {o.recommended ? <Badge tone="brand">{t('recommended')}</Badge> : null}
+                            {vehicle.movement?.purpose === 'PATROLLING' ? (
+                              <Badge tone="info" data-testid="dispatch-option-patrolling">
+                                <Radar className="size-3" aria-hidden />
+                                {tv('patrol.onPatrol')}
+                              </Badge>
+                            ) : null}
                           </span>
                           <span className="text-muted block truncate text-xs">
                             {type ? tx(type.name) : vehicle.typeCode}

@@ -177,3 +177,55 @@ describe('DispatchPanel — a vehicle that is ineligible by nature', () => {
     expect(screen.queryByTestId('dispatch-ineligible')).not.toBeInTheDocument();
   });
 });
+
+/**
+ * Owner-reported gap: the option list showed nothing indicating a vehicle was already out on patrol, even though the
+ * vehicle inspector got this right (`movement.purpose === 'PATROLLING'`). The option row joins the same snapshot
+ * `vehicles` array the inspector reads (`vehicles.find((v) => v.id === o.vehicleId)`), so the fix is a badge keyed
+ * off that same field — this locks the join in place.
+ */
+describe('DispatchPanel — patrol status indicator', () => {
+  const patrolling = {
+    ...vehicle,
+    movement: {
+      path: [
+        [14.2, 42.46],
+        [14.21, 42.47],
+      ],
+      departAt: '2026-01-01T00:00:00.000Z',
+      arriveAt: '2026-01-01T00:05:00.000Z',
+      distanceMeters: 500,
+      purpose: 'PATROLLING',
+    },
+  };
+
+  beforeEach(() => {
+    vi.mocked(gameApi.catalog).mockResolvedValue({ vehicleTypes: [] } as never);
+    vi.mocked(gameApi.dispatchOptions).mockResolvedValue({
+      options: [dispatchableOption],
+      recommendedVehicleIds: [],
+      recommendationCoversRequired: true,
+    } as never);
+  });
+  afterEach(() => vi.clearAllMocks());
+
+  it('shows an on-patrol badge for an option whose vehicle is currently patrolling', async () => {
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    qc.setQueryData(qk.sync(CAREER_ID), { vehicles: [patrolling], facilities: [facility] });
+    renderWithIntl(
+      <QueryClientProvider client={qc}>
+        <CareerProvider value={CAREER_ID}>
+          <DispatchPanel incident={incident as never} />
+        </CareerProvider>
+      </QueryClientProvider>,
+    );
+    await screen.findByRole('checkbox', { name: /VF-1/ });
+    expect(await screen.findByTestId('dispatch-option-patrolling')).toBeInTheDocument();
+  });
+
+  it('shows no on-patrol badge for a vehicle that is not currently patrolling', async () => {
+    renderPanel();
+    await screen.findByRole('checkbox', { name: /VF-1/ });
+    expect(screen.queryByTestId('dispatch-option-patrolling')).not.toBeInTheDocument();
+  });
+});
