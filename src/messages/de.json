@@ -64,7 +64,7 @@
     "HOSPITAL_NOT_COMPATIBLE": "Das gewählte Krankenhaus kann diesen Patienten nicht aufnehmen.",
     "INVALID_STATE_TRANSITION": "Diese Aktion ist im Moment nicht möglich.",
     "FEATURE_DISABLED": "Diese Funktion ist noch nicht aktiv.",
-    "VEHICLE_DOMAIN_MISMATCH": "Ein Wasserfahrzeug kann nur zu einem Einsatz auf dem Wasser geschickt werden.",
+    "VEHICLE_DOMAIN_MISMATCH": "Dieses Fahrzeug erreicht diesen Einsatzort nicht: Land und Wasser brauchen unterschiedliche Fahrzeuge.",
     "AIR_SUPPORT_NOT_NEEDED": "Dieser Einsatz verlangt kein Luftfahrzeug."
   },
   "errorBoundary": {
@@ -367,7 +367,7 @@
         "STOCK_LOW": "Bestand fast aufgebraucht: {item}"
       },
       "ineligible": {
-        "VEHICLE_DOMAIN_MISMATCH": "Wasserfahrzeug: nur bei Einsätzen auf dem Wasser einsetzbar",
+        "VEHICLE_DOMAIN_MISMATCH": "Nicht geeignet für diesen Ort: Land und Wasser brauchen unterschiedliche Fahrzeuge",
         "AIR_SUPPORT_NOT_NEEDED": "Luftfahrzeug: dieser Einsatz verlangt keine Luftunterstützung"
       }
     },

@@ -64,7 +64,7 @@
     "HOSPITAL_NOT_COMPATIBLE": "L’ospedale scelto non può accogliere questo paziente.",
     "INVALID_STATE_TRANSITION": "Operazione non consentita in questo momento.",
     "FEATURE_DISABLED": "Questa funzione non è ancora attiva.",
-    "VEHICLE_DOMAIN_MISMATCH": "Un mezzo nautico può essere inviato solo a un’emergenza in acqua.",
+    "VEHICLE_DOMAIN_MISMATCH": "Questo mezzo non può raggiungere questo tipo di luogo: terra e acqua richiedono mezzi diversi.",
     "AIR_SUPPORT_NOT_NEEDED": "Questa emergenza non richiede un mezzo aereo."
   },
   "errorBoundary": {
@@ -367,7 +367,7 @@
         "STOCK_LOW": "Scorta quasi esaurita: {item}"
       },
       "ineligible": {
-        "VEHICLE_DOMAIN_MISMATCH": "Mezzo nautico: può intervenire solo su emergenze in acqua",
+        "VEHICLE_DOMAIN_MISMATCH": "Non adatto a questo luogo: terra e acqua richiedono mezzi diversi",
         "AIR_SUPPORT_NOT_NEEDED": "Mezzo aereo: questa emergenza non richiede supporto aereo"
       }
     },

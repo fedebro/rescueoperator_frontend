@@ -64,7 +64,7 @@
     "HOSPITAL_NOT_COMPATIBLE": "L’hôpital choisi ne peut pas accueillir ce patient.",
     "INVALID_STATE_TRANSITION": "Opération non autorisée pour le moment.",
     "FEATURE_DISABLED": "Cette fonctionnalité n’est pas encore active.",
-    "VEHICLE_DOMAIN_MISMATCH": "Un moyen nautique ne peut être envoyé que sur une urgence en milieu aquatique.",
+    "VEHICLE_DOMAIN_MISMATCH": "Ce moyen ne peut pas atteindre ce type de lieu : la terre et l’eau demandent des moyens différents.",
     "AIR_SUPPORT_NOT_NEEDED": "Cette urgence ne demande aucun moyen aérien."
   },
   "errorBoundary": {
@@ -367,7 +367,7 @@
         "STOCK_LOW": "Stock presque épuisé : {item}"
       },
       "ineligible": {
-        "VEHICLE_DOMAIN_MISMATCH": "Moyen nautique : il ne peut intervenir que sur l’eau",
+        "VEHICLE_DOMAIN_MISMATCH": "Non adapté à ce lieu : la terre et l’eau demandent des moyens différents",
         "AIR_SUPPORT_NOT_NEEDED": "Moyen aérien : cette urgence ne demande aucun appui aérien"
       }
     },
