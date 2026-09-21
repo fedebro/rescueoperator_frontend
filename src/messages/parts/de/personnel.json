@@ -280,7 +280,8 @@
       "title": "Personal des Standorts",
       "beds": "Belegte Unterkünfte",
       "bedsCount": "{used}/{total} Plätze",
-      "empty": "Keine Einsatzkräfte an diesem Standort."
+      "empty": "Keine Einsatzkräfte an diesem Standort.",
+      "teamMembers": "{count, plural, one {# Einsatzkraft} other {# Einsatzkräfte}}"
     }
   }
 }

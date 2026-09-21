@@ -203,6 +203,8 @@ export function DispatchCrewBlocked({ options }: { options: DispatchOptionRow[] 
 /** SLOT — operators and teams based at a facility (facility page). */
 export function FacilityPersonnelSection({ facility }: { facility: FacilityDto }) {
   const t = useTranslations('personnel.facility');
+  const tt = useTranslations('personnel.teams');
+  const { vehicles } = useSnapshot();
   const people = (usePersonnel().data ?? []).filter((p) => p.facilityId === facility.id);
   const teams = (useTeams(useFeature('TEAMS').unlocked).data ?? []).filter(
     (x) => x.facilityId === facility.id,
@@ -246,16 +248,29 @@ export function FacilityPersonnelSection({ facility }: { facility: FacilityDto }
         </ul>
       )}
       {teams.length > 0 ? (
-        <ul className="mt-3 flex flex-col gap-1.5">
-          {teams.map((team) => (
-            <li key={team.id} className="flex items-center gap-2 text-sm">
-              <span className="min-w-0 flex-1 truncate font-semibold" title={team.name}>
-                {team.name}
-              </span>
-              <span className="tabular text-muted text-xs">{Math.round(team.readiness * 100)}%</span>
-              <TeamStatusChip status={team.status} />
-            </li>
-          ))}
+        <ul className="mt-3 flex flex-col gap-1" data-testid="facility-teams">
+          {teams.map((team) => {
+            const teamVehicle = vehicles.find((v) => v.id === team.vehicleId);
+            return (
+              <li
+                key={team.id}
+                className="border-border bg-surface-2 flex flex-col gap-0.5 rounded-md border p-2"
+              >
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="min-w-0 flex-1 truncate font-semibold" title={team.name}>
+                    {team.name}
+                  </span>
+                  <span className="tabular text-muted text-xs">{Math.round(team.readiness * 100)}%</span>
+                  <TeamStatusChip status={team.status} />
+                </div>
+                <p className="text-subtle truncate text-xs">
+                  {t('teamMembers', { count: team.memberIds.length })}
+                  {' · '}
+                  {teamVehicle ? teamVehicle.callSign : tt('noVehicle')}
+                </p>
+              </li>
+            );
+          })}
         </ul>
       ) : null}
     </Card>

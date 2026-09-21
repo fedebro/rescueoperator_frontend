@@ -7,6 +7,7 @@ import {
   Anchor,
   Crosshair,
   Hammer,
+  Info,
   MapPin,
   Package,
   Plane,
@@ -45,6 +46,7 @@ import { SeverityBadge } from '@/components/ui/severity-badge';
 import { StatusChip } from '@/components/ui/status-chip';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Timeline } from '@/components/ui/timeline';
+import { Tooltip } from '@/components/ui/tooltip';
 import { useServerNow } from '@/hooks/use-server-now';
 import { useCareerId, useSnapshot, useVehicleTypeLookup } from './hooks';
 import { DispatchPanel, RequirementBars } from './dispatch-panel';
@@ -402,6 +404,11 @@ export function VehicleInspector({ vehicle }: { vehicle: VehicleDto }) {
         }
       />
       <div className="scroll-y flex min-h-0 flex-1 flex-col gap-5 p-4">
+        {type?.description ? (
+          <p className="text-muted text-sm" data-testid="vehicle-description">
+            {tx(type.description)}
+          </p>
+        ) : null}
         {recallable ? (
           <Button
             variant="danger"
@@ -439,16 +446,29 @@ export function VehicleInspector({ vehicle }: { vehicle: VehicleDto }) {
         <div>
           <SectionTitle>{t('capabilities')}</SectionTitle>
           <ul className="flex flex-col gap-2">
-            {vehicle.capabilities.map((c) => (
-              <li key={c.code} className="flex items-center gap-2 text-xs">
-                <GameIcon name={capabilityIconName(c.code)} size={16} className="text-muted" />
-                <span className="min-w-0 flex-1 truncate" title={tx({ key: `catalog.capability.${c.code}` })}>
-                  {tx({ key: `catalog.capability.${c.code}` })}
-                </span>
-                <ProgressBar value={c.value / 100} label={c.code} tone="info" className="w-24" />
-                <span className="tabular text-muted w-7 text-right">{c.value}</span>
-              </li>
-            ))}
+            {vehicle.capabilities.map((c) => {
+              const capabilityName = tx({ key: `catalog.capability.${c.code}` });
+              return (
+                <li key={c.code} className="flex items-center gap-2 text-xs">
+                  <GameIcon name={capabilityIconName(c.code)} size={16} className="text-muted" />
+                  <span className="min-w-0 flex-1 truncate" title={capabilityName}>
+                    {capabilityName}
+                  </span>
+                  <Tooltip content={tx({ key: `catalog.capabilityHelp.${c.code}` })}>
+                    <button
+                      type="button"
+                      className="text-subtle hover:text-fg shrink-0"
+                      aria-label={t('capabilityInfo', { capability: capabilityName })}
+                      data-testid="capability-info"
+                    >
+                      <Info className="size-3.5" aria-hidden />
+                    </button>
+                  </Tooltip>
+                  <ProgressBar value={c.value / 100} label={capabilityName} tone="info" className="w-24" />
+                  <span className="tabular text-muted w-7 text-right">{c.value}</span>
+                </li>
+              );
+            })}
           </ul>
         </div>
         <VehicleCrewSection vehicle={vehicle} />

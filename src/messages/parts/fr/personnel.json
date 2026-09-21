@@ -280,7 +280,8 @@
       "title": "Personnel du site",
       "beds": "Logements occupés",
       "bedsCount": "{used}/{total} places",
-      "empty": "Aucun opérateur sur ce site."
+      "empty": "Aucun opérateur sur ce site.",
+      "teamMembers": "{count, plural, one {# opérateur} other {# opérateurs}}"
     }
   }
 }

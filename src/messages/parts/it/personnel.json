@@ -280,7 +280,8 @@
       "title": "Personale della sede",
       "beds": "Alloggi occupati",
       "bedsCount": "{used}/{total} posti",
-      "empty": "Nessun operatore in questa sede."
+      "empty": "Nessun operatore in questa sede.",
+      "teamMembers": "{count, plural, one {# operatore} other {# operatori}}"
     }
   }
 }

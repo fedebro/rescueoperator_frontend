@@ -280,7 +280,8 @@
       "title": "Personnel of the facility",
       "beds": "Quarters in use",
       "bedsCount": "{used}/{total} beds",
-      "empty": "No operators at this facility."
+      "empty": "No operators at this facility.",
+      "teamMembers": "{count, plural, one {# operator} other {# operators}}"
     }
   }
 }

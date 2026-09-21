@@ -280,7 +280,8 @@
       "title": "Plantilla de la sede",
       "beds": "Alojamientos ocupados",
       "bedsCount": "{used}/{total} plazas",
-      "empty": "Ningún operador en esta sede."
+      "empty": "Ningún operador en esta sede.",
+      "teamMembers": "{count, plural, one {# operador} other {# operadores}}"
     }
   }
 }
