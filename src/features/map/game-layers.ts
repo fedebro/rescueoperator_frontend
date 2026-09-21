@@ -169,15 +169,19 @@ export function vehicleFeatures(
       const p = pointAlong(v.movement.path, t);
       position = p.position;
       bearing = p.bearing;
-      routes.push({
-        type: 'Feature',
-        geometry: { type: 'LineString', coordinates: remainingPath(v.movement.path, t) },
-        properties: {
-          id: v.id,
-          color: FAMILY_COLORS[v.family].primary,
-          returning: v.movement.purpose === 'TO_BASE' ? 1 : 0,
-        },
-      });
+      // A patrol's route is deliberately not drawn: the car should read as ambling around on its own, not as
+      // committed to a visible, predictable path the way a real dispatch leg is.
+      if (v.movement.purpose !== 'PATROLLING') {
+        routes.push({
+          type: 'Feature',
+          geometry: { type: 'LineString', coordinates: remainingPath(v.movement.path, t) },
+          properties: {
+            id: v.id,
+            color: FAMILY_COLORS[v.family].primary,
+            returning: v.movement.purpose === 'TO_BASE' ? 1 : 0,
+          },
+        });
+      }
     } else if (v.incidentId === null && !OFF_BASE_STATUSES.has(v.status)) {
       positions.set(v.id, position);
       continue;
