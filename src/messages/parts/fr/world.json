@@ -77,7 +77,8 @@
         "empty": "Aucune fermeture active.",
         "kind": {
           "FULL": "Fermée",
-          "PARTIAL": "Partiellement fermée"
+          "PARTIAL": "Partiellement fermée",
+          "WILDFIRE": "Zone d’incendie"
         },
         "effect": "+{percent} de temps pour y passer",
         "endsIn": "Réouverture dans",
@@ -86,7 +87,8 @@
         "center": "Centrer sur la carte : {reason}",
         "mapLabel": {
           "FULL": "FERMÉE",
-          "PARTIAL": "RÉDUITE"
+          "PARTIAL": "RÉDUITE",
+          "WILDFIRE": "INCENDIE"
         }
       }
     },
@@ -95,6 +97,7 @@
       "EVENT": "Manifestation, {street}",
       "EXTERNAL_SUPPORT": "{address} : route fermée, unités externes au travail",
       "INCIDENT": "{address} : route fermée pour une urgence en cours",
+      "WILDFIRE": "{address} : feu de forêt en cours, zone touchée par les flammes",
       "MANUAL": "Fermeture décidée par le centre opérationnel"
     },
     "stipend": {

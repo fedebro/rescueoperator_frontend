@@ -1,7 +1,16 @@
 'use client';
 import * as React from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Construction, Crosshair, Hexagon, Hospital, Layers, MapPinned, RefreshCw } from 'lucide-react';
+import {
+  Construction,
+  Crosshair,
+  Flame,
+  Hexagon,
+  Hospital,
+  Layers,
+  MapPinned,
+  RefreshCw,
+} from 'lucide-react';
 import type { ServiceFamily, SyncSnapshot } from '@/contracts';
 import { boundsOf, type LngLat } from '@/lib/geo';
 import { formatPercent } from '@/lib/format';
@@ -230,6 +239,7 @@ function ClosureRow({ closure }: { closure: Closure }) {
   const setLayersOpen = useWorldUi((s) => s.setLayersOpen);
   const reason = tx(closure.reason);
   const kind = closure.kind ?? 'FULL';
+  const isWildfire = closure.hazard === 'WILDFIRE';
 
   const center = () => {
     const box = boundsOf(closure.polygon as LngLat[]);
@@ -254,8 +264,12 @@ function ClosureRow({ closure }: { closure: Closure }) {
         <p className="text-sm font-semibold">{reason}</p>
         <div className="text-muted mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
           <Badge tone={kind === 'FULL' ? 'danger' : 'warning'}>
-            <Construction className="size-3" aria-hidden />
-            {t(`kind.${kind}`)}
+            {isWildfire ? (
+              <Flame className="size-3" aria-hidden />
+            ) : (
+              <Construction className="size-3" aria-hidden />
+            )}
+            {isWildfire ? t('kind.WILDFIRE') : t(`kind.${kind}`)}
           </Badge>
           {closure.multiplier && closure.multiplier > 1 ? (
             <span className="tabular">

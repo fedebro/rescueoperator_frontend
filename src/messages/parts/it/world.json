@@ -77,7 +77,8 @@
         "empty": "Nessuna chiusura attiva.",
         "kind": {
           "FULL": "Chiusa",
-          "PARTIAL": "Parzialmente chiusa"
+          "PARTIAL": "Parzialmente chiusa",
+          "WILDFIRE": "Area dell’incendio"
         },
         "effect": "+{percent} sui tempi di chi ci passa",
         "endsIn": "Riapre tra",
@@ -86,7 +87,8 @@
         "center": "Centra sulla mappa: {reason}",
         "mapLabel": {
           "FULL": "CHIUSA",
-          "PARTIAL": "RIDOTTA"
+          "PARTIAL": "RIDOTTA",
+          "WILDFIRE": "INCENDIO"
         }
       }
     },
@@ -95,6 +97,7 @@
       "EVENT": "Manifestazione in {street}",
       "EXTERNAL_SUPPORT": "{address}: strada chiusa, unità esterne al lavoro",
       "INCIDENT": "{address}: strada chiusa per un’emergenza in corso",
+      "WILDFIRE": "{address}: incendio boschivo in corso, area interessata dalle fiamme",
       "MANUAL": "Chiusura disposta dalla centrale"
     },
     "stipend": {

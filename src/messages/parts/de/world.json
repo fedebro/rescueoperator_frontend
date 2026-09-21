@@ -77,7 +77,8 @@
         "empty": "Keine aktiven Sperrungen.",
         "kind": {
           "FULL": "Gesperrt",
-          "PARTIAL": "Teilweise gesperrt"
+          "PARTIAL": "Teilweise gesperrt",
+          "WILDFIRE": "Brandgebiet"
         },
         "effect": "+{percent} Fahrzeit bei Durchfahrt",
         "endsIn": "Wieder frei in",
@@ -86,7 +87,8 @@
         "center": "Auf der Karte zentrieren: {reason}",
         "mapLabel": {
           "FULL": "GESPERRT",
-          "PARTIAL": "VERENGT"
+          "PARTIAL": "VERENGT",
+          "WILDFIRE": "BRAND"
         }
       }
     },
@@ -95,6 +97,7 @@
       "EVENT": "Veranstaltung in {street}",
       "EXTERNAL_SUPPORT": "{address}: Straße gesperrt, externe Einheiten im Einsatz",
       "INCIDENT": "{address}: Straße wegen eines laufenden Einsatzes gesperrt",
+      "WILDFIRE": "{address}: Waldbrand im Gange, Gebiet von den Flammen betroffen",
       "MANUAL": "Von der Leitstelle angeordnete Sperrung"
     },
     "stipend": {

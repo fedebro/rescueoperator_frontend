@@ -30,7 +30,14 @@ export const WORLD_LAYER = {
   closureLine: 'rc-world-closures-line',
   closureLabel: 'rc-world-closures-label',
 } as const;
-const IMAGE = { closure: 'rc-world-hatch-closure', unreachable: 'rc-world-hatch-unreachable' } as const;
+const IMAGE = {
+  closure: 'rc-world-hatch-closure',
+  unreachable: 'rc-world-hatch-unreachable',
+  wildfire: 'rc-world-hatch-wildfire',
+} as const;
+/** WILDFIRE family colour (analisi/AGENT_BRIEF.md branding), used to tell a fire's own burn area apart from the
+ * generic grey/red road closure at a glance — the player asked to actually SEE it as fire, not as "a shut road". */
+const WILDFIRE_COLOR = '#FF8A1F';
 const COVERAGE_LAYERS = [
   WORLD_LAYER.coverageFill,
   WORLD_LAYER.coverageUnreachable,
@@ -91,6 +98,8 @@ export function WorldMapOverlay({ map }: { map: MlMap }) {
       map.addImage(IMAGE.closure, hatchImage([242, 85, 74, 235]), { pixelRatio: 2 });
     if (!map.hasImage(IMAGE.unreachable))
       map.addImage(IMAGE.unreachable, hatchImage([132, 146, 166, 200]), { pixelRatio: 2 });
+    if (!map.hasImage(IMAGE.wildfire))
+      map.addImage(IMAGE.wildfire, hatchImage([255, 138, 31, 235]), { pixelRatio: 2 });
     map.addLayer(
       {
         id: WORLD_LAYER.tint,
@@ -158,7 +167,7 @@ export function WorldMapOverlay({ map }: { map: MlMap }) {
         source: WORLD_SRC.closures,
         layout: hidden,
         paint: {
-          'fill-color': '#F2554A',
+          'fill-color': ['case', ['==', ['get', 'hazard'], 'WILDFIRE'], WILDFIRE_COLOR, '#F2554A'],
           'fill-opacity': ['case', ['==', ['get', 'kind'], 'FULL'], 0.28, 0.14],
         },
       },
@@ -170,7 +179,9 @@ export function WorldMapOverlay({ map }: { map: MlMap }) {
         type: 'fill',
         source: WORLD_SRC.closures,
         layout: hidden,
-        paint: { 'fill-pattern': IMAGE.closure },
+        paint: {
+          'fill-pattern': ['case', ['==', ['get', 'hazard'], 'WILDFIRE'], IMAGE.wildfire, IMAGE.closure],
+        },
       },
       beforeId,
     );
@@ -181,7 +192,7 @@ export function WorldMapOverlay({ map }: { map: MlMap }) {
         source: WORLD_SRC.closures,
         layout: hidden,
         paint: {
-          'line-color': '#F2554A',
+          'line-color': ['case', ['==', ['get', 'hazard'], 'WILDFIRE'], WILDFIRE_COLOR, '#F2554A'],
           'line-width': ['case', ['==', ['get', 'highlighted'], 1], 4, 2],
           // Full closure = solid outline, partial = dashed: the kind is readable without colour.
           'line-dasharray': [
@@ -208,7 +219,11 @@ export function WorldMapOverlay({ map }: { map: MlMap }) {
           'text-letter-spacing': 0.06,
           'text-allow-overlap': true,
         },
-        paint: { 'text-color': '#FFD9D6', 'text-halo-color': '#3A0D0A', 'text-halo-width': 1.6 },
+        paint: {
+          'text-color': ['case', ['==', ['get', 'hazard'], 'WILDFIRE'], '#FFE3C2', '#FFD9D6'],
+          'text-halo-color': ['case', ['==', ['get', 'hazard'], 'WILDFIRE'], '#3A2308', '#3A0D0A'],
+          'text-halo-width': 1.6,
+        },
       },
       beforeId,
     );
@@ -266,7 +281,9 @@ export function WorldMapOverlay({ map }: { map: MlMap }) {
             properties: {
               id: c.id,
               kind,
-              label: t(`closures.mapLabel.${kind}`),
+              hazard: c.hazard ?? null,
+              label:
+                c.hazard === 'WILDFIRE' ? t('closures.mapLabel.WILDFIRE') : t(`closures.mapLabel.${kind}`),
               reason: tx(c.reason),
               highlighted: c.id === highlighted ? 1 : 0,
             },

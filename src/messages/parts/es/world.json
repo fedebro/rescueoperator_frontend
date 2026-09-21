@@ -77,7 +77,8 @@
         "empty": "No hay cortes activos.",
         "kind": {
           "FULL": "Cortada",
-          "PARTIAL": "Parcialmente cortada"
+          "PARTIAL": "Parcialmente cortada",
+          "WILDFIRE": "Zona de incendio"
         },
         "effect": "+{percent} de tiempo al atravesarla",
         "endsIn": "Reabre en",
@@ -86,7 +87,8 @@
         "center": "Centrar en el mapa: {reason}",
         "mapLabel": {
           "FULL": "CORTADA",
-          "PARTIAL": "REDUCIDA"
+          "PARTIAL": "REDUCIDA",
+          "WILDFIRE": "INCENDIO"
         }
       }
     },
@@ -95,6 +97,7 @@
       "EVENT": "Evento público en {street}",
       "EXTERNAL_SUPPORT": "{address}: calle cortada, unidades externas trabajando",
       "INCIDENT": "{address}: calle cortada por una emergencia en curso",
+      "WILDFIRE": "{address}: incendio forestal en curso, zona afectada por las llamas",
       "MANUAL": "Corte ordenado por la central"
     },
     "stipend": {

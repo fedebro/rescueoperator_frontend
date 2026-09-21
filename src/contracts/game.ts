@@ -383,6 +383,8 @@ export const WorldContextDto = z.object({
   closures: z.array(z.object({
     id: z.string(), polygon: z.array(LngLat), reason: I18nText, endsAt: IsoDateTime.nullable(),
     /* additive */ kind: z.enum(['PARTIAL', 'FULL']).optional(), multiplier: z.number().optional(), incidentId: z.string().nullable().optional(),
+    /** A large wildfire's own evolving burn area, rendered distinctly from a generic road closure. */
+    hazard: z.enum(['WILDFIRE']).optional(),
   })),
   /* ── additive (wave 2a) ── */
   hourBand: z.string().optional(), season: z.string().optional(), weekdayType: z.string().optional(),

@@ -77,7 +77,8 @@
         "empty": "No active closures.",
         "kind": {
           "FULL": "Closed",
-          "PARTIAL": "Partially closed"
+          "PARTIAL": "Partially closed",
+          "WILDFIRE": "Fire area"
         },
         "effect": "+{percent} travel time through it",
         "endsIn": "Reopens in",
@@ -86,7 +87,8 @@
         "center": "Centre on the map: {reason}",
         "mapLabel": {
           "FULL": "CLOSED",
-          "PARTIAL": "REDUCED"
+          "PARTIAL": "REDUCED",
+          "WILDFIRE": "FIRE"
         }
       }
     },
@@ -95,6 +97,7 @@
       "EVENT": "Public event in {street}",
       "EXTERNAL_SUPPORT": "{address}: road closed, external units at work",
       "INCIDENT": "{address}: road closed for an ongoing emergency",
+      "WILDFIRE": "{address}: wildfire in progress, area affected by the flames",
       "MANUAL": "Closure ordered by the control room"
     },
     "stipend": {
