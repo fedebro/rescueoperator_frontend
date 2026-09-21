@@ -110,7 +110,7 @@ function CoverageSection() {
             onClick={() => choose(f.family)}
             testId={`coverage-family-${f.family}`}
           >
-            <FamilyBadge family={f.family as ServiceFamily} size={18} />
+            <FamilyBadge family={f.family as ServiceFamily} size={18} title={name('family', f.family)} />
             {name('family', f.family, 'short')}
             {f.active === false ? <span className="text-subtle font-normal">· {t('inactive')}</span> : null}
           </FamilyChip>

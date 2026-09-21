@@ -54,6 +54,7 @@
     "INCIDENT_NOT_DISPATCHABLE": "Zu diesem Einsatz können keine Fahrzeuge mehr entsandt werden.",
     "VEHICLE_NOT_AVAILABLE": "Eines der Fahrzeuge ist nicht mehr verfügbar. Der Vorschlag wurde aktualisiert.",
     "VEHICLE_NOT_RECALLABLE": "Dieses Fahrzeug kann gerade nicht zurückgerufen werden.",
+    "VEHICLE_NOT_CHAINABLE": "Dieses Fahrzeug kann gerade nicht an einen neuen Einsatz verkettet werden: nutze die normale Entsendung.",
     "CREW_INSUFFICIENT": "Zu wenig Besatzung, um auszurücken.",
     "CREW_UNQUALIFIED": "Der Besatzung fehlen die nötigen Qualifikationen.",
     "CREW_EXHAUSTED": "Die Besatzung ist zu erschöpft und braucht eine Pause.",
@@ -446,6 +447,8 @@
       "space": "Plätze",
       "delivery": "Lieferung",
       "lockedFamily": "Dienst noch nicht freigeschaltet",
+      "crewGapWarning": "Die Besatzung benötigt {roles}, die du derzeit weder im Personal noch unter den Kandidaten hast.",
+      "crewGapWarningLink": "Zum Personal",
       "bought": "{callSign} bestellt",
       "boughtHint": "Nach der Lieferung ist es einsatzbereit.",
       "insufficient": {
@@ -456,6 +459,10 @@
         "watchAd": "Video ansehen und Credits erhalten",
         "buyCredits": "Credits kaufen",
         "soon": "Bald"
+      },
+      "tutorialComplete": {
+        "title": "Tutorial abgeschlossen!",
+        "body": "Die Leitstelle gehört jetzt dir: Einsätze, Fahrzeuge, Personal und Wachstum liegen in deiner Hand."
       }
     },
     "outcome": {

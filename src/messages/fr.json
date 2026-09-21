@@ -54,6 +54,7 @@
     "INCIDENT_NOT_DISPATCHABLE": "Cette urgence ne peut plus recevoir de véhicules.",
     "VEHICLE_NOT_AVAILABLE": "L’un des véhicules n’est plus disponible. La proposition a été mise à jour.",
     "VEHICLE_NOT_RECALLABLE": "Ce véhicule ne peut pas être rappelé pour le moment.",
+    "VEHICLE_NOT_CHAINABLE": "Ce véhicule ne peut pas être enchaîné vers une nouvelle intervention pour le moment : utilisez l’envoi normal.",
     "CREW_INSUFFICIENT": "Équipage insuffisant pour faire partir le véhicule.",
     "CREW_UNQUALIFIED": "L’équipage n’a pas les qualifications requises.",
     "CREW_EXHAUSTED": "L’équipage est épuisé et doit se reposer.",
@@ -446,6 +447,8 @@
       "space": "Places",
       "delivery": "Livraison",
       "lockedFamily": "Service pas encore débloqué",
+      "crewGapWarning": "Son équipage aura besoin de {roles}, que vous n’avez actuellement ni en poste ni parmi les candidats.",
+      "crewGapWarningLink": "Aller au Personnel",
       "bought": "{callSign} commandé",
       "boughtHint": "Il sera opérationnel une fois la livraison terminée.",
       "insufficient": {
@@ -456,6 +459,10 @@
         "watchAd": "Regardez une vidéo et recevez des Crédits",
         "buyCredits": "Acheter des Crédits",
         "soon": "Bientôt"
+      },
+      "tutorialComplete": {
+        "title": "Tutoriel terminé !",
+        "body": "La caserne est maintenant entre vos mains : interventions, véhicules, personnel et croissance dépendent de vous."
       }
     },
     "outcome": {

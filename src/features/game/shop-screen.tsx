@@ -1,12 +1,19 @@
 'use client';
 import * as React from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Anchor, Building2, Lock, Plane, Truck } from 'lucide-react';
-import { ServiceFamily as ServiceFamilySchema, type FacilityDto, type ServiceFamily } from '@/contracts';
+import { z } from 'zod';
+import { Anchor, Building2, Lock, Plane, Truck, Users } from 'lucide-react';
+import {
+  ServiceFamily as ServiceFamilySchema,
+  VehicleCrewGapDto,
+  type FacilityDto,
+  type ServiceFamily,
+} from '@/contracts';
 import type { CatalogDto } from '@/lib/api/types';
+import { api } from '@/lib/api/client';
 import { gameApi } from '@/lib/api/endpoints';
 import { isApiError } from '@/lib/api/errors';
 import { useErrorMessage } from '@/lib/api/error-message';
@@ -25,6 +32,10 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { requestCredits } from '@/features/monetization/insufficient-credits';
 import { FamiliesOverview } from '@/features/families/families-overview';
 import { useFamilies } from '@/features/families/use-families';
+import { CoachMark } from '@/features/coaching/coach-mark';
+import { SectionHelpButton, SectionPrimer } from '@/features/coaching/section-primer';
+import { pickIdleSuggestion } from '@/features/coaching/idle-suggestion';
+import { useIdleSuggestionCopy } from '@/features/coaching/idle-suggestion-copy';
 import { useCareerId, useCatalog, useSnapshot } from './hooks';
 import { PageBody } from './shell';
 
@@ -64,18 +75,33 @@ export function resolveHost(
   };
 }
 
-function VehicleOffer({
+/**
+ * Per vehicle type: the specialist (candidate-market-only) roles its crew needs that the career can genuinely not
+ * hire right now (owns zero, no current candidate either) — `personnel.service.ts#vehicleCrewGaps`. Purely a
+ * heads-up for the shop card; it never blocks a purchase (the player may reasonably want to buy ahead of the hire).
+ */
+function useVehicleCrewGaps(careerId: string) {
+  return useQuery({
+    queryKey: ['career', careerId, 'personnel', 'crew-gaps'] as const,
+    queryFn: () =>
+      api.get(`/careers/${careerId}/personnel/vehicle-crew-gaps`, { schema: z.array(VehicleCrewGapDto) }),
+  });
+}
+
+export function VehicleOffer({
   type,
   onBuy,
   busy,
   host,
   familyLevel,
+  missingCrewRoles,
 }: {
   type: VehicleType;
   onBuy: (type: VehicleType, facility: FacilityDto) => void;
   busy: boolean;
   host: HostState;
   familyLevel: number;
+  missingCrewRoles?: readonly string[];
 }) {
   const t = useTranslations('game.shop');
   const tf = useTranslations('families.shop');
@@ -106,8 +132,12 @@ function VehicleOffer({
           <GameIcon name={vehicleIconName(type.icon)} size={26} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">{tx(type.name)}</p>
-          <p className="text-muted line-clamp-2 text-xs">{tx(type.description)}</p>
+          <p className="truncate text-sm font-semibold" title={tx(type.name)}>
+            {tx(type.name)}
+          </p>
+          <p className="text-muted line-clamp-2 text-xs" title={tx(type.description)}>
+            {tx(type.description)}
+          </p>
         </div>
         <Badge tone={type.domain === 'GROUND' ? 'neutral' : 'info'}>
           <DomainIcon className="size-3" aria-hidden />
@@ -157,11 +187,34 @@ function VehicleOffer({
           <dd className="tabular text-fg">{formatClock(type.deliverySeconds)}</dd>
         </div>
       </dl>
+      {missingCrewRoles && missingCrewRoles.length > 0 ? (
+        <p
+          className="border-warning/40 bg-warning/10 text-warning flex items-start gap-2 rounded-md border px-2.5 py-2 text-xs"
+          data-testid="crew-gap-warning"
+          data-roles={missingCrewRoles.join(',')}
+        >
+          <Users className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+          <span>
+            {t('crewGapWarning', { roles: missingCrewRoles.map((code) => name('role', code)).join(', ') })}{' '}
+            <Link
+              href="/game/personnel?tab=recruitment"
+              className="font-semibold underline underline-offset-4"
+            >
+              {t('crewGapWarningLink')}
+            </Link>
+          </span>
+        </p>
+      ) : null}
       {!type.unlocked ? (
         <p
           className="border-border-strong text-muted flex min-h-10 items-center justify-between gap-2 rounded-md border border-dashed px-3 py-1.5 text-xs"
           data-testid="locked-reason"
           data-reason={type.lockedReason ?? undefined}
+          title={
+            type.lockedReason === 'NOT_UNLOCKED'
+              ? tf('reason.familyLocked', { level: familyLevel })
+              : tc('requiresLevel', { level: type.requiredLevel })
+          }
         >
           <span className="flex items-center gap-1.5">
             <Lock className="size-3.5 shrink-0" aria-hidden />
@@ -176,6 +229,7 @@ function VehicleOffer({
           <p
             className="text-subtle -mb-1 flex items-center gap-1.5 truncate text-[11px]"
             data-testid="delivery-target"
+            title={`${t('deliverTo')}: ${host.facility.name}`}
           >
             <Building2 className="size-3 shrink-0" aria-hidden />
             <span className="truncate">
@@ -199,6 +253,16 @@ function VehicleOffer({
           className="border-border-strong text-muted flex flex-col gap-1.5 rounded-md border border-dashed px-3 py-2 text-xs"
           data-testid="blocked-reason"
           data-reason={host.kind}
+          title={
+            host.kind === 'NO_FACILITY'
+              ? tf('reason.noFacility', {
+                  types: type.compatibleFacilityTypes
+                    .slice(0, 2)
+                    .map((code) => name('facility', code))
+                    .join(', '),
+                })
+              : tf('reason.noCapacity', { domain: td(`domain.${type.domain}`) })
+          }
         >
           <span className="flex items-start gap-1.5">
             <Building2 className="mt-0.5 size-3.5 shrink-0" aria-hidden />
@@ -249,25 +313,52 @@ function ShopContent({ initialFamily }: { initialFamily: ServiceFamily }) {
   const careerId = useCareerId();
   const t = useTranslations('game.shop');
   const tf = useTranslations('families.shop');
+  const tc = useTranslations('common');
+  const tco = useTranslations('coaching');
+  const tsh = useTranslations('coaching.sections.shop');
+  const tlf = useTranslations('coaching.marks.lockedFamily');
   const errorMessage = useErrorMessage();
   const catalog = useCatalog();
   const { facilities, career } = useSnapshot();
   const families = useFamilies();
+  const crewGaps = useVehicleCrewGaps(careerId).data ?? [];
+  const name = useCatalogName();
   const [family, setFamily] = React.useState<ServiceFamily>(initialFamily);
   const [domain, setDomain] = React.useState<DomainFilter>('ALL');
   const [facilityId, setFacilityId] = React.useState<string | undefined>(undefined);
 
   const buy = useMutation({
-    mutationFn: ({ type, facility }: { type: VehicleType; facility: FacilityDto }) =>
-      gameApi.buyVehicle(careerId, { vehicleTypeCode: type.code, facilityId: facility.id }),
-    onSuccess: (vehicle, { type }) => {
+    mutationFn: ({
+      type,
+      facility,
+      completesTutorial,
+    }: {
+      type: VehicleType;
+      facility: FacilityDto;
+      completesTutorial: boolean;
+    }) =>
+      gameApi
+        .buyVehicle(careerId, { vehicleTypeCode: type.code, facilityId: facility.id })
+        .then((vehicle) => ({ vehicle, completesTutorial })),
+    onSuccess: ({ vehicle, completesTutorial }, { type }) => {
       track('vehicle_purchased', { type: type.code, family: type.family, domain: type.domain });
       toast({
         tone: 'success',
         title: t('bought', { callSign: vehicle.callSign }),
         description: t('boughtHint'),
       });
-      if (!career.tutorial.completed) void gameApi.tutorialAdvance(careerId, 'DONE').catch(() => undefined);
+      // A distinct, non-blocking announcement so the end of the guided tutorial is unmistakable — it must never
+      // be a modal here: the very next thing a tutorial player often does is buy again and hit the credits dialog.
+      if (completesTutorial) {
+        track('tutorial_completed', {});
+        toast({
+          tone: 'success',
+          title: t('tutorialComplete.title'),
+          description: t('tutorialComplete.body'),
+          durationMs: 8000,
+        });
+        void gameApi.tutorialAdvance(careerId, 'DONE').catch(() => undefined);
+      }
     },
     onError: (e, { type }) => {
       if (isApiError(e, 'INSUFFICIENT_CREDITS')) requestCredits(type.price);
@@ -276,7 +367,12 @@ function ShopContent({ initialFamily }: { initialFamily: ServiceFamily }) {
   });
   const onBuy = (type: VehicleType, facility: FacilityDto) => {
     if (compareAmount(career.credits, type.price) < 0) requestCredits(type.price);
-    else buy.mutate({ type, facility });
+    else
+      buy.mutate({
+        type,
+        facility,
+        completesTutorial: career.tutorial.step === 'BUY_VEHICLE' && !career.tutorial.completed,
+      });
   };
 
   const familyTypes = (catalog?.vehicleTypes ?? []).filter((v) => v.family === family);
@@ -294,7 +390,31 @@ function ShopContent({ initialFamily }: { initialFamily: ServiceFamily }) {
       f.status === 'OPERATIONAL' && familyTypes.some((v) => v.compatibleFacilityTypes.includes(f.typeCode)),
   );
   const preferred = hosts.find((f) => f.id === facilityId) ?? hosts[0];
-  const familyLevel = families.find((f) => f.code === family)?.requiredLevel ?? 1;
+  const familyInfo = families.find((f) => f.code === family);
+  const familyLevel = familyInfo?.requiredLevel ?? 1;
+  const shopContent = {
+    sectionKey: `shop:${family}`,
+    title: tsh('title', { family: name('family', family) }),
+    body: tsh('body'),
+    tips: [tsh('tip1'), tsh('tip2')],
+  };
+  const hasLockedOffer = types.some((v) => v.lockedReason === 'NOT_UNLOCKED');
+  // Nothing to show in this family/domain filter: suggest a concrete alternative from the player's real state.
+  const idleSuggestion =
+    types.length === 0
+      ? pickIdleSuggestion({
+          vehicleTypes: catalog?.vehicleTypes,
+          families,
+          credits: career.credits,
+          level: career.level,
+        })
+      : null;
+  const idleCopy = useIdleSuggestionCopy(idleSuggestion);
+  const idleAction = idleCopy ? (
+    <Button asChild variant="secondary">
+      <Link href={idleCopy.href}>{idleCopy.label}</Link>
+    </Button>
+  ) : undefined;
   const freeOf = (f: FacilityDto) =>
     (['GROUND', 'AIR', 'WATER'] as const)
       .map((d) => {
@@ -309,20 +429,31 @@ function ShopContent({ initialFamily }: { initialFamily: ServiceFamily }) {
       title={t('title')}
       subtitle={t('subtitle')}
       actions={
-        hosts.length > 0 ? (
-          <div className="flex items-center gap-2">
-            <span className="text-muted text-xs font-semibold">{t('deliverTo')}</span>
-            <Select
-              label={t('deliverTo')}
-              value={preferred?.id}
-              onValueChange={setFacilityId}
-              options={hosts.map((f) => ({ value: f.id, label: `${f.name} — ${freeOf(f)}` }))}
-              className="max-w-72"
-            />
-          </div>
-        ) : null
+        <div className="flex items-center gap-2">
+          {hosts.length > 0 ? (
+            <>
+              <span className="text-muted text-xs font-semibold">{t('deliverTo')}</span>
+              <Select
+                label={t('deliverTo')}
+                value={preferred?.id}
+                onValueChange={setFacilityId}
+                options={hosts.map((f) => ({ value: f.id, label: `${f.name} — ${freeOf(f)}` }))}
+                className="max-w-72"
+              />
+            </>
+          ) : null}
+          <SectionHelpButton content={shopContent} label={tco('help.buttonLabel')} closeLabel={tc('close')} />
+        </div>
       }
     >
+      {familyInfo?.unlocked ? <SectionPrimer content={shopContent} /> : null}
+      <CoachMark
+        id="lockedFamily"
+        when={hasLockedOffer}
+        selector='[data-testid="locked-reason"]'
+        title={tlf('title')}
+        body={tlf('body')}
+      />
       <FamiliesOverview
         value={family}
         onChange={(next) => {
@@ -353,7 +484,7 @@ function ShopContent({ initialFamily }: { initialFamily: ServiceFamily }) {
           ))}
         </div>
       ) : types.length === 0 ? (
-        <EmptyState title={t('empty')} />
+        <EmptyState title={t('empty')} description={idleCopy?.text} action={idleAction} />
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {types.map((type) => (
@@ -364,6 +495,7 @@ function ShopContent({ initialFamily }: { initialFamily: ServiceFamily }) {
               busy={buy.isPending && buy.variables?.type.code === type.code}
               host={resolveHost(type, facilities, preferred?.id)}
               familyLevel={familyLevel}
+              missingCrewRoles={crewGaps.find((g) => g.vehicleTypeCode === type.code)?.missingRoles}
             />
           ))}
         </ul>

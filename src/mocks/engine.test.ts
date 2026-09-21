@@ -195,7 +195,7 @@ describe('mock core loop', () => {
     career.summary.credits = '1200';
     const bought = w.engine.buyVehicle(career, { vehicleTypeCode: 'FIRE_4X4', facilityId });
     expect(bought.status).toBe('IN_DELIVERY');
-    expect(career.summary.credits).toBe('100');
+    expect(career.summary.credits).toBe('50'); // FIRE_4X4 costs 1150 after the price rebalance (was 1100)
     w.advance(61_000);
     expect(career.vehicles.find((v) => v.id === bought.id)!.status).toBe('AVAILABLE');
   });

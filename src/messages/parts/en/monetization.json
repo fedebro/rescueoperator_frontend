@@ -45,7 +45,14 @@
       "confirm": "Spend and finish",
       "confirmFree": "Finish for free",
       "done": "Process completed",
-      "alreadyDone": "The process has already finished: you spent nothing."
+      "alreadyDone": "The process has already finished: you spent nothing.",
+      "allButton": "Finish all now ({count})",
+      "allTitle": "Finish everything right away?",
+      "allDescription": "You are about to finish {count} processes in progress.",
+      "allCost": "Total cost",
+      "allDone": "{count, plural, one {Process completed} other {# processes completed}}",
+      "allPartial": "{done} of {count} completed",
+      "allFailed": "No process could be completed."
     },
     "purchaseStatus": {
       "CREATED": "Awaiting payment",

@@ -17,6 +17,7 @@ import { Field, Input } from '@/components/ui/input';
 import { Card, EmptyState, ProgressBar, SectionTitle, Skeleton } from '@/components/ui/misc';
 import { Select } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/switch';
+import { WarningNextAction } from '@/features/coaching/warning-next-action';
 import { useCareerId, useSnapshot } from '@/features/game/hooks';
 import { FatigueBandLabel } from './fatigue-gauge';
 import { bandOf, fatigueAt } from './fatigue';
@@ -54,6 +55,7 @@ export function useTeamWarning(): (warning: string) => string {
 
 export function TeamsTab({ onSelect }: { onSelect: (id: string) => void }) {
   const t = useTranslations('personnel.teams');
+  const name = useCatalogName();
   const teamsFeature = useFeature('TEAMS');
   const departmentsFeature = useFeature('DEPARTMENTS');
   const teams = useTeams(teamsFeature.unlocked);
@@ -126,7 +128,11 @@ export function TeamsTab({ onSelect }: { onSelect: (id: string) => void }) {
                 <SectionTitle>
                   {g.department ? (
                     <span className="inline-flex items-center gap-1.5">
-                      <FamilyBadge family={g.department.family} size={16} />
+                      <FamilyBadge
+                        family={g.department.family}
+                        size={16}
+                        title={name('family', g.department.family)}
+                      />
                       {g.department.name} ·{' '}
                       {facilities.find((f) => f.id === g.department?.facilityId)?.name ?? '—'}
                     </span>
@@ -238,8 +244,13 @@ function TeamCard({
     <Card className="flex h-full flex-col gap-3" data-testid="team-card" data-team-status={team.status}>
       <div className="flex items-center gap-2">
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-base font-bold">{team.name}</h3>
-          <p className="text-muted truncate text-xs">
+          <h3 className="truncate text-base font-bold" title={team.name}>
+            {team.name}
+          </h3>
+          <p
+            className="text-muted truncate text-xs"
+            title={facilities.find((f) => f.id === team.facilityId)?.name ?? '—'}
+          >
             {facilities.find((f) => f.id === team.facilityId)?.name ?? '—'}
           </p>
         </div>
@@ -267,9 +278,15 @@ function TeamCard({
       {team.warnings.length > 0 ? (
         <ul className="flex flex-col gap-1" data-testid="team-warnings">
           {team.warnings.map((w) => (
-            <li key={w} className="text-warning flex items-start gap-1.5 text-xs">
-              <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-              {warningText(w)}
+            <li key={w} className="text-warning flex flex-wrap items-start gap-x-1.5 gap-y-0.5 text-xs">
+              <span className="flex items-start gap-1.5">
+                <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                {warningText(w)}
+              </span>
+              <WarningNextAction
+                code={w}
+                className="text-skyline ml-5 inline-flex items-center gap-1 font-semibold hover:underline"
+              />
             </li>
           ))}
         </ul>
@@ -322,7 +339,9 @@ function TeamCard({
           {members.map((p) => (
             <li key={p.id} className="flex items-center gap-2 text-sm">
               {team.leaderId === p.id ? (
-                <Crown className="text-credits size-3.5 shrink-0" aria-label={t('leader')} />
+                <span className="shrink-0" title={t('leader')}>
+                  <Crown className="text-credits size-3.5" aria-label={t('leader')} />
+                </span>
               ) : (
                 <span className="size-3.5 shrink-0" aria-hidden />
               )}
@@ -330,6 +349,7 @@ function TeamCard({
                 type="button"
                 className="min-w-0 flex-1 truncate text-left hover:underline"
                 onClick={() => onSelect(p.id)}
+                title={`${p.firstName} ${p.lastName} · ${name('role', p.roleCode)}`}
               >
                 {p.firstName} {p.lastName}
                 <span className="text-muted"> · {name('role', p.roleCode)}</span>
@@ -584,10 +604,12 @@ function MembersForm({ team, people, onClose }: { team: Team; people: PersonnelD
                 aria-label={`${p.firstName} ${p.lastName}`}
               />
               <label htmlFor={id} className="min-w-0 flex-1 cursor-pointer text-sm">
-                <span className="block truncate font-semibold">
+                <span className="block truncate font-semibold" title={`${p.firstName} ${p.lastName}`}>
                   {p.firstName} {p.lastName}
                 </span>
-                <span className="text-muted block truncate text-xs">{name('role', p.roleCode)}</span>
+                <span className="text-muted block truncate text-xs" title={name('role', p.roleCode)}>
+                  {name('role', p.roleCode)}
+                </span>
               </label>
               {elsewhere ? <Badge tone="warning">{t('inOtherTeam')}</Badge> : null}
               <PersonnelStatusChip status={p.status} className="max-sm:hidden" />

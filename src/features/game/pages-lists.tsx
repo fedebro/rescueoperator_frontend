@@ -36,6 +36,7 @@ import { ConstructionBanner, PromotionCard } from '@/features/facilities/facilit
 import { NewFacilitySection } from '@/features/facilities/new-facility-section';
 import { TransferVehicleButton } from '@/features/facilities/transfer-vehicle';
 import { IncidentFamilies } from '@/features/families/family-chips';
+import { SectionHelpButton, SectionPrimer } from '@/features/coaching/section-primer';
 import { PageBody } from './shell';
 
 /* ───────────────────────────── incidents ───────────────────────────── */
@@ -69,7 +70,11 @@ export function IncidentsScreen() {
       id: 'title',
       header: t('col.title'),
       width: 'minmax(180px,2fr)',
-      cell: (i) => <span className="font-semibold">{tx(i.title)}</span>,
+      cell: (i) => (
+        <span className="font-semibold" title={tx(i.title)}>
+          {tx(i.title)}
+        </span>
+      ),
       sortValue: (i) => tx(i.title),
     },
     {
@@ -82,7 +87,11 @@ export function IncidentsScreen() {
       id: 'address',
       header: t('col.address'),
       width: 'minmax(180px,2fr)',
-      cell: (i) => <span className="text-muted">{i.address}</span>,
+      cell: (i) => (
+        <span className="text-muted" title={i.address}>
+          {i.address}
+        </span>
+      ),
     },
     {
       id: 'status',
@@ -156,10 +165,18 @@ export function FleetScreen() {
   const th = useTranslations('status.health');
   const tc = useTranslations('common');
   const ttr = useTranslations('facilities.transfer');
+  const tf = useTranslations('coaching.sections.fleet');
+  const tco = useTranslations('coaching');
   const tx = useI18nText();
   const desktop = useIsDesktop();
   const router = useRouter();
   const { vehicles, facilities } = useSnapshot();
+  const fleetContent = {
+    sectionKey: 'fleet',
+    title: tf('title'),
+    body: tf('body'),
+    tips: [tf('tip1'), tf('tip2')],
+  };
   const typeOf = useVehicleTypeLookup();
   const select = useUiStore((s) => s.select);
   const [filter, setFilter] = React.useState<'all' | 'available' | 'busy'>('all');
@@ -170,13 +187,15 @@ export function FleetScreen() {
     select({ kind: 'vehicle', id: v.id }, { focus: v.position });
     router.push('/game');
   };
-  const glyph = (v: VehicleDto) => {
-    const ty = typeOf(v.typeCode);
-    return <TopdownGlyph vehicleClass={vehicleClassOf(ty?.icon)} family={v.family} size={24} />;
-  };
   const typeName = (v: VehicleDto) => {
     const ty = typeOf(v.typeCode);
     return ty ? tx(ty.name) : v.typeCode;
+  };
+  const glyph = (v: VehicleDto) => {
+    const ty = typeOf(v.typeCode);
+    return (
+      <TopdownGlyph vehicleClass={vehicleClassOf(ty?.icon)} family={v.family} size={24} title={typeName(v)} />
+    );
   };
   const columns: Column<VehicleDto>[] = [
     {
@@ -186,7 +205,9 @@ export function FleetScreen() {
       cell: (v) => (
         <span className="flex items-center gap-2 font-semibold">
           {glyph(v)}
-          {v.callSign}
+          <span className="truncate" title={v.callSign}>
+            {v.callSign}
+          </span>
         </span>
       ),
       sortValue: (v) => v.callSign,
@@ -195,7 +216,11 @@ export function FleetScreen() {
       id: 'type',
       header: t('col.type'),
       width: 'minmax(170px,2fr)',
-      cell: (v) => <span className="text-muted">{typeName(v)}</span>,
+      cell: (v) => (
+        <span className="text-muted truncate" title={typeName(v)}>
+          {typeName(v)}
+        </span>
+      ),
       sortValue: typeName,
     },
     {
@@ -209,7 +234,14 @@ export function FleetScreen() {
       id: 'facility',
       header: t('col.facility'),
       width: 'minmax(160px,1.6fr)',
-      cell: (v) => facilities.find((f) => f.id === v.facilityId)?.name ?? '—',
+      cell: (v) => {
+        const facilityName = facilities.find((f) => f.id === v.facilityId)?.name ?? '—';
+        return (
+          <span className="block truncate" title={facilityName}>
+            {facilityName}
+          </span>
+        );
+      },
     },
     {
       id: 'crew',
@@ -259,19 +291,27 @@ export function FleetScreen() {
         available: vehicles.filter((v) => v.status === 'AVAILABLE').length,
       })}
       actions={
-        <Button asChild variant="secondary">
-          <a
-            href="/game/shop"
-            onClick={(e) => {
-              e.preventDefault();
-              router.push('/game/shop');
-            }}
-          >
-            {t('buy')}
-          </a>
-        </Button>
+        <>
+          <SectionHelpButton
+            content={fleetContent}
+            label={tco('help.buttonLabel')}
+            closeLabel={tc('close')}
+          />
+          <Button asChild variant="secondary">
+            <a
+              href="/game/shop"
+              onClick={(e) => {
+                e.preventDefault();
+                router.push('/game/shop');
+              }}
+            >
+              {t('buy')}
+            </a>
+          </Button>
+        </>
       }
     >
+      <SectionPrimer content={fleetContent} />
       <Tabs value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
         <TabsList>
           <TabsTrigger value="all">{t('filter.all')}</TabsTrigger>
@@ -303,8 +343,12 @@ export function FleetScreen() {
               >
                 {glyph(v)}
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold">{v.callSign}</span>
-                  <span className="text-muted block truncate text-xs">{typeName(v)}</span>
+                  <span className="block truncate text-sm font-semibold" title={v.callSign}>
+                    {v.callSign}
+                  </span>
+                  <span className="text-muted block truncate text-xs" title={typeName(v)}>
+                    {typeName(v)}
+                  </span>
                 </span>
                 <span className="flex flex-col items-end gap-1">
                   <StatusChip status={v.status} label={ts(v.status)} />
@@ -328,14 +372,34 @@ export function FleetScreen() {
 export function FacilitiesScreen() {
   const t = useTranslations('game.facilitiesPage');
   const ts = useTranslations('status.facility');
+  const tc = useTranslations('common');
+  const tfac = useTranslations('coaching.sections.facilities');
+  const tco = useTranslations('coaching');
   const name = useCatalogName();
   const { facilities } = useSnapshot();
   const params = useSearchParams();
   const router = useRouter();
   const selectedId = params.get('id') ?? facilities[0]?.id ?? null;
   const selected = facilities.find((f) => f.id === selectedId) ?? null;
+  const facilitiesContent = {
+    sectionKey: 'facilities',
+    title: tfac('title'),
+    body: tfac('body'),
+    tips: [tfac('tip1'), tfac('tip2')],
+  };
   return (
-    <PageBody title={t('title')} subtitle={t('subtitle', { count: facilities.length })}>
+    <PageBody
+      title={t('title')}
+      subtitle={t('subtitle', { count: facilities.length })}
+      actions={
+        <SectionHelpButton
+          content={facilitiesContent}
+          label={tco('help.buttonLabel')}
+          closeLabel={tc('close')}
+        />
+      }
+    >
+      <SectionPrimer content={facilitiesContent} />
       <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
         <ul className="flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible" aria-label={t('title')}>
           {facilities.map((f) => (
@@ -346,10 +410,14 @@ export function FacilitiesScreen() {
                 onClick={() => router.replace(`/game/facilities?id=${f.id}`)}
                 className={`bg-surface-2 flex w-64 items-center gap-3 rounded-md border p-3 text-left lg:w-full ${f.id === selectedId ? 'border-focus' : 'border-border'}`}
               >
-                <FamilyBadge family={f.family} size={36} />
+                <FamilyBadge family={f.family} size={36} title={name('facility', f.typeCode)} />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold">{f.name}</span>
-                  <span className="text-muted block truncate text-xs">{name('facility', f.typeCode)}</span>
+                  <span className="block truncate text-sm font-semibold" title={f.name}>
+                    {f.name}
+                  </span>
+                  <span className="text-muted block truncate text-xs" title={name('facility', f.typeCode)}>
+                    {name('facility', f.typeCode)}
+                  </span>
                   {f.status !== 'OPERATIONAL' ? (
                     <span className="mt-1 flex items-center gap-2">
                       <StatusChip status={f.status} label={ts(f.status)} />
@@ -417,10 +485,15 @@ function FacilityDetail({ facilityId }: { facilityId: string }) {
     <div className="flex flex-col gap-4" data-testid="facility-detail">
       <Card>
         <div className="flex flex-wrap items-center gap-3">
-          <FamilyBadge family={live.family} size={44} />
+          <FamilyBadge family={live.family} size={44} title={name('facility', live.typeCode)} />
           <div className="min-w-0 flex-1">
-            <h2 className="font-display truncate text-xl font-bold">{live.name}</h2>
-            <p className="text-muted truncate text-sm">
+            <h2 className="font-display truncate text-xl font-bold" title={live.name}>
+              {live.name}
+            </h2>
+            <p
+              className="text-muted truncate text-sm"
+              title={`${name('facility', live.typeCode)}${detail.data?.address ? ` · ${detail.data.address}` : ''}`}
+            >
               {name('facility', live.typeCode)}
               {detail.data?.address ? ` · ${detail.data.address}` : ''}
             </p>

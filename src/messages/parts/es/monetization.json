@@ -45,7 +45,14 @@
       "confirm": "Gastar y terminar",
       "confirmFree": "Terminar gratis",
       "done": "Proceso completado",
-      "alreadyDone": "El proceso ya ha terminado: no has gastado nada."
+      "alreadyDone": "El proceso ya ha terminado: no has gastado nada.",
+      "allButton": "Terminar todo ahora ({count})",
+      "allTitle": "¿Terminar todo ahora mismo?",
+      "allDescription": "Estás a punto de terminar {count} procesos en curso.",
+      "allCost": "Coste total",
+      "allDone": "{count, plural, one {Proceso completado} other {# procesos completados}}",
+      "allPartial": "{done} de {count} completados",
+      "allFailed": "No se pudo completar ningún proceso."
     },
     "purchaseStatus": {
       "CREATED": "Pendiente de pago",

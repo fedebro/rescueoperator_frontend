@@ -7,6 +7,7 @@ import type { PersonnelDto } from '@/contracts';
 import { personnelApi } from '@/lib/api/depth';
 import { track } from '@/lib/analytics';
 import { compareAmount, formatClock } from '@/lib/format';
+import { cn } from '@/lib/utils';
 import { toast } from '@/stores/toast';
 import { useCatalogName, useI18nText } from '@/i18n/use-i18n-text';
 import { FamilyBadge } from '@/design/icons';
@@ -17,7 +18,7 @@ import { CreditAmount } from '@/components/ui/credit-amount';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Card, EmptyState, SectionTitle, Skeleton } from '@/components/ui/misc';
 import { Checkbox } from '@/components/ui/switch';
-import { SpeedupButton } from '@/features/monetization/speedup-button';
+import { SpeedupAllButton, SpeedupButton } from '@/features/monetization/speedup-button';
 import { requestCredits } from '@/features/monetization/insufficient-credits';
 import { useCareerId, useSnapshot } from '@/features/game/hooks';
 import { eligibleCourses } from './operator-sheet';
@@ -32,6 +33,15 @@ import {
 } from './queries';
 
 const MAX_TRAINEES = 20;
+
+/** Free training slots left in a facility once the trainees already picked in this dialog are counted too;
+ * unbounded when the facility has no slot data yet (mirrors the server, which only rejects a facility it knows). */
+export function remainingTrainingSlots(
+  slot: { total: number; used: number } | undefined,
+  alreadyPicked: number,
+): number {
+  return slot ? slot.total - slot.used - alreadyPicked : Infinity;
+}
 
 export function TrainingTab({ onSelect }: { onSelect: (id: string) => void }) {
   const careerId = useCareerId();
@@ -88,7 +98,13 @@ export function TrainingTab({ onSelect }: { onSelect: (id: string) => void }) {
       </section>
 
       <section data-testid="enrollments">
-        <SectionTitle>{t('running')}</SectionTitle>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <SectionTitle>{t('running')}</SectionTitle>
+          <SpeedupAllButton
+            items={running.map((e) => ({ target: 'TRAINING' as const, targetId: e.id, endsAt: e.endsAt }))}
+            onDone={() => void invalidate()}
+          />
+        </div>
         {running.length === 0 ? (
           <p className="text-muted text-sm">{t('noneRunning')}</p>
         ) : (
@@ -216,24 +232,30 @@ export function TrainingTab({ onSelect }: { onSelect: (id: string) => void }) {
         ) : null}
       </section>
 
-      <EnrollDialog course={enrolling} people={people} onClose={() => setEnrolling(null)} />
+      <EnrollDialog course={enrolling} people={people} slots={slots} onClose={() => setEnrolling(null)} />
     </div>
   );
 }
 
+type TrainingSlot = { facilityId: string; total: number; used: number };
+
 function EnrollDialog({
   course,
   people,
+  slots,
   onClose,
 }: {
   course: Course | null;
   people: PersonnelDto[];
+  slots: TrainingSlot[];
   onClose: () => void;
 }) {
   return (
     <Dialog open={course !== null} onOpenChange={(open) => !open && onClose()}>
       {/* keyed by course: the selection starts empty every time the dialog opens for another course */}
-      {course ? <EnrollForm key={course.code} course={course} people={people} onClose={onClose} /> : null}
+      {course ? (
+        <EnrollForm key={course.code} course={course} people={people} slots={slots} onClose={onClose} />
+      ) : null}
     </Dialog>
   );
 }
@@ -241,10 +263,12 @@ function EnrollDialog({
 function EnrollForm({
   course,
   people,
+  slots,
   onClose,
 }: {
   course: Course;
   people: PersonnelDto[];
+  slots: TrainingSlot[];
   onClose: () => void;
 }) {
   const careerId = useCareerId();
@@ -260,6 +284,18 @@ function EnrollForm({
   const candidates = people.filter(
     (p) => (p.status === 'AVAILABLE' || p.status === 'ASSIGNED') && eligibleCourses(p, [course]).length > 0,
   );
+  const pickedByFacility = React.useMemo(() => {
+    const map = new Map<string, number>();
+    for (const pid of picked) {
+      const p = people.find((x) => x.id === pid);
+      if (p) map.set(p.facilityId, (map.get(p.facilityId) ?? 0) + 1);
+    }
+    return map;
+  }, [picked, people]);
+  const slotFor = (facilityId: string) => slots.find((s) => s.facilityId === facilityId);
+  const remainingSlots = (facilityId: string) =>
+    remainingTrainingSlots(slotFor(facilityId), pickedByFacility.get(facilityId) ?? 0);
+  const involvedFacilities = [...new Set(candidates.map((p) => p.facilityId))];
   const total = BigInt(course.cost) * BigInt(picked.size);
   const enroll = useMutation({
     mutationFn: (v: { courseCode: string; personnelIds: string[] }) => personnelApi.enroll(careerId, v),
@@ -276,11 +312,11 @@ function EnrollForm({
     if (compareAmount(career.credits, total) < 0) requestCredits(total);
     else enroll.mutate({ courseCode: course.code, personnelIds: [...picked] });
   };
-  const toggle = (id: string) =>
+  const toggle = (p: PersonnelDto) =>
     setPicked((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else if (next.size < MAX_TRAINEES) next.add(id);
+      if (next.has(p.id)) next.delete(p.id);
+      else if (next.size < MAX_TRAINEES && remainingSlots(p.facilityId) > 0) next.add(p.id);
       return next;
     });
 
@@ -290,18 +326,43 @@ function EnrollForm({
       description={t('enrollHint', { max: MAX_TRAINEES })}
       closeLabel={tc('close')}
     >
+      {involvedFacilities.length > 0 ? (
+        <ul className="mb-2 flex flex-wrap gap-1.5" data-testid="enroll-slots">
+          {involvedFacilities.flatMap((facilityId) => {
+            const s = slotFor(facilityId);
+            if (!s) return [];
+            const used = s.used + (pickedByFacility.get(facilityId) ?? 0);
+            return (
+              <li key={facilityId}>
+                <Badge tone={used >= s.total ? 'warning' : 'neutral'} className="text-[11px]">
+                  <GraduationCap className="size-3" aria-hidden />
+                  {facilities.find((f) => f.id === facilityId)?.name ?? '—'} ·{' '}
+                  {t('slotsUsed', { used, total: s.total })}
+                </Badge>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
       <ul className="flex flex-col gap-1.5" data-testid="enroll-list">
         {candidates.map((p) => {
           const id = `trainee-${p.id}`;
+          const full =
+            !picked.has(p.id) && (picked.size >= MAX_TRAINEES || remainingSlots(p.facilityId) <= 0);
           return (
             <li
               key={p.id}
-              className="bg-surface-2 border-border flex items-center gap-2.5 rounded-md border p-2.5"
+              className={cn(
+                'bg-surface-2 border-border flex items-center gap-2.5 rounded-md border p-2.5',
+                full && 'opacity-60',
+              )}
+              data-full={full}
             >
               <Checkbox
                 id={id}
                 checked={picked.has(p.id)}
-                onCheckedChange={() => toggle(p.id)}
+                disabled={full}
+                onCheckedChange={() => toggle(p)}
                 aria-label={`${p.firstName} ${p.lastName}`}
               />
               <label htmlFor={id} className="min-w-0 flex-1 cursor-pointer text-sm">

@@ -57,6 +57,12 @@ export const CandidateDto = z.object({
 });
 export const CandidatesResult = z.object({ candidates: z.array(CandidateDto), nextRefreshAt: IsoDateTime });
 
+/** GET /personnel/vehicle-crew-gaps — one entry per catalog vehicle type whose crew needs at least one specialist
+ * (candidate-market-only) role the career can genuinely not hire right now: owns zero AND has zero current
+ * candidates of it. Used by the shop to warn before a purchase, never to block it. */
+export const VehicleCrewGapDto = z.object({ vehicleTypeCode: z.string(), missingRoles: z.array(z.string()) });
+export type VehicleCrewGapDto = z.infer<typeof VehicleCrewGapDto>;
+
 /** ★POST /personnel/hire — quick hire of a base role. */
 export const QuickHireBody = z.object({ roleCode: z.string(), facilityId: publicId(IdPrefix.facility), count: z.number().int().min(1).max(10).default(1) });
 /** ★POST /candidates/:id/hire */

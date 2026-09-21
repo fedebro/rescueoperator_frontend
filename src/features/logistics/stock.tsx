@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { DataTable, type Column } from '@/components/ui/data-table';
 import { Card, EmptyState, SectionTitle, Skeleton } from '@/components/ui/misc';
 import { useSnapshot } from '@/features/game/hooks';
+import { CoachMark } from '@/features/coaching/coach-mark';
 import { useInventory } from './api';
 import { OrderDialog } from './order-dialog';
 import { StockChip } from './visuals';
@@ -16,6 +17,7 @@ import { StockChip } from './visuals';
 /** Low-stock alert: icon + sentence, never colour alone. */
 export function LowStockAlert({ count, onOrder }: { count: number; onOrder?: () => void }) {
   const t = useTranslations('logistics.stock');
+  const tls = useTranslations('coaching.marks.lowStock');
   if (count === 0) return null;
   return (
     <div
@@ -23,6 +25,13 @@ export function LowStockAlert({ count, onOrder }: { count: number; onOrder?: () 
       data-testid="low-stock-alert"
       className="border-warning/40 bg-warning/10 text-warning flex flex-wrap items-center gap-3 rounded-md border px-3 py-2.5 text-sm font-semibold"
     >
+      <CoachMark
+        id="lowStock"
+        when
+        selector='[data-testid="low-stock-alert"]'
+        title={tls('title')}
+        body={tls('body')}
+      />
       <AlertTriangle className="size-4 shrink-0" aria-hidden />
       <span className="min-w-0 flex-1">{t('lowAlert', { count })}</span>
       {onOrder ? (

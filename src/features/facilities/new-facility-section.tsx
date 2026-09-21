@@ -127,8 +127,13 @@ export function NewFacilitySection({ initialFamily }: { initialFamily?: string |
                 >
                   <FamilyBadge family={siteFamily(s)} size={36} title={familyLabel(siteFamily(s))} />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold">{s.name}</span>
-                    <span className="text-muted block truncate text-xs">
+                    <span className="block truncate text-sm font-semibold" title={s.name}>
+                      {s.name}
+                    </span>
+                    <span
+                      className="text-muted block truncate text-xs"
+                      title={`${formatDistance(distanceOf(s), locale)} · ${s.address ?? '—'}`}
+                    >
                       {formatDistance(distanceOf(s), locale)} · {s.address ?? '—'}
                     </span>
                     <span className="mt-1 flex flex-wrap items-center gap-1.5">

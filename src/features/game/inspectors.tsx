@@ -82,11 +82,15 @@ function InspectorHeader({
       <div className="flex items-start gap-3">
         <span className="mt-0.5 shrink-0">{icon}</span>
         <div className="min-w-0 flex-1">
-          <h2 className="font-display truncate text-lg leading-tight font-bold" data-testid="inspector-title">
+          <h2
+            className="font-display truncate text-lg leading-tight font-bold"
+            data-testid="inspector-title"
+            title={title}
+          >
             {title}
           </h2>
           {subtitle ? (
-            <p className="text-muted mt-0.5 flex items-center gap-1 truncate text-xs">
+            <p className="text-muted mt-0.5 flex items-center gap-1 truncate text-xs" title={subtitle}>
               <MapPin className="size-3 shrink-0" aria-hidden />
               {subtitle}
             </p>
@@ -224,7 +228,9 @@ export function IncidentInspector({ incident }: { incident: IncidentDto }) {
                           data-testid="assigned-vehicle"
                           data-vehicle-status={v.status}
                         >
-                          <span className="min-w-0 flex-1 truncate text-sm font-semibold">{v.callSign}</span>
+                          <span className="min-w-0 flex-1 truncate text-sm font-semibold" title={v.callSign}>
+                            {v.callSign}
+                          </span>
                           <StatusChip status={v.status} label={tsv(v.status)} />
                           {v.movement ? (
                             <Eta
@@ -357,7 +363,14 @@ export function VehicleInspector({ vehicle }: { vehicle: VehicleDto }) {
       data-vehicle-status={vehicle.status}
     >
       <InspectorHeader
-        icon={<TopdownGlyph vehicleClass={vehicleClassOf(type?.icon)} family={vehicle.family} size={40} />}
+        icon={
+          <TopdownGlyph
+            vehicleClass={vehicleClassOf(type?.icon)}
+            family={vehicle.family}
+            size={40}
+            title={type ? tx(type.name) : vehicle.typeCode}
+          />
+        }
         title={vehicle.callSign}
         subtitle={facility?.name}
         onFocus={() => focusOn(currentPosition(), 15)}
@@ -427,7 +440,9 @@ export function VehicleInspector({ vehicle }: { vehicle: VehicleDto }) {
             {vehicle.capabilities.map((c) => (
               <li key={c.code} className="flex items-center gap-2 text-xs">
                 <GameIcon name={capabilityIconName(c.code)} size={16} className="text-muted" />
-                <span className="min-w-0 flex-1 truncate">{tx({ key: `catalog.capability.${c.code}` })}</span>
+                <span className="min-w-0 flex-1 truncate" title={tx({ key: `catalog.capability.${c.code}` })}>
+                  {tx({ key: `catalog.capability.${c.code}` })}
+                </span>
                 <ProgressBar value={c.value / 100} label={c.code} tone="info" className="w-24" />
                 <span className="tabular text-muted w-7 text-right">{c.value}</span>
               </li>
@@ -547,7 +562,9 @@ function VehicleChips({ vehicles }: { vehicles: VehicleDto[] }) {
             className="border-border bg-surface-2 hover:bg-surface-3 flex w-full items-center gap-2 rounded-md border px-2.5 py-2 text-left"
             onClick={() => select({ kind: 'vehicle', id: v.id })}
           >
-            <span className="min-w-0 flex-1 truncate text-sm font-semibold">{v.callSign}</span>
+            <span className="min-w-0 flex-1 truncate text-sm font-semibold" title={v.callSign}>
+              {v.callSign}
+            </span>
             <StatusChip status={v.status} label={ts(v.status)} />
           </button>
         </li>
@@ -569,7 +586,7 @@ export function FacilityInspector({ facility }: { facility: FacilityDto }) {
       data-facility-status={facility.status}
     >
       <InspectorHeader
-        icon={<FamilyBadge family={facility.family} size={40} />}
+        icon={<FamilyBadge family={facility.family} size={40} title={name('facility', facility.typeCode)} />}
         title={facility.name}
         subtitle={name('facility', facility.typeCode)}
         onFocus={() => focusOn(facility.position, 15)}

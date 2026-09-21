@@ -135,26 +135,37 @@ function QuickHire({ onSelect }: { onSelect: (id: string) => void }) {
           </p>
         ) : null}
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-1" role="group" aria-label={t('count')}>
-            <IconButton
-              label={t('fewer')}
-              variant="secondary"
-              onClick={() => setCount((c) => Math.max(1, c - 1))}
-              disabled={count <= 1}
-            >
-              <Minus className="size-4" aria-hidden />
-            </IconButton>
-            <output className="tabular w-10 text-center text-lg font-bold" data-testid="hire-count">
-              {count}
-            </output>
-            <IconButton
-              label={t('more')}
-              variant="secondary"
-              onClick={() => setCount((c) => Math.min(MAX_QUICK_HIRE, Math.max(1, beds), c + 1))}
-              disabled={count >= Math.min(MAX_QUICK_HIRE, beds)}
-            >
-              <Plus className="size-4" aria-hidden />
-            </IconButton>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1" role="group" aria-label={t('count')}>
+              <IconButton
+                label={t('fewer')}
+                variant="secondary"
+                onClick={() => setCount((c) => Math.max(1, c - 1))}
+                disabled={count <= 1}
+              >
+                <Minus className="size-4" aria-hidden />
+              </IconButton>
+              <output className="tabular w-10 text-center text-lg font-bold" data-testid="hire-count">
+                {count}
+              </output>
+              <IconButton
+                label={t('more')}
+                variant="secondary"
+                onClick={() => setCount((c) => Math.min(MAX_QUICK_HIRE, Math.max(1, beds), c + 1))}
+                disabled={count >= Math.min(MAX_QUICK_HIRE, beds)}
+              >
+                <Plus className="size-4" aria-hidden />
+              </IconButton>
+            </div>
+            {facility ? (
+              <span
+                className="text-subtle tabular text-center text-[11px]"
+                aria-live="polite"
+                data-testid="hire-beds-remaining"
+              >
+                {t('beds', { count: Math.max(0, beds - count) })}
+              </span>
+            ) : null}
           </div>
           <div className="min-w-0 flex-1 text-sm">
             <span className="text-subtle block text-[11px] font-semibold tracking-wide uppercase">
@@ -191,11 +202,12 @@ function QuickHire({ onSelect }: { onSelect: (id: string) => void }) {
                 className="bg-surface-2 border-border flex flex-wrap items-center gap-2 rounded-md border p-2.5"
                 data-testid="onboarding-row"
               >
-                <FamilyBadge family={p.family} size={24} />
+                <FamilyBadge family={p.family} size={24} title={name('family', p.family)} />
                 <button
                   type="button"
                   className="min-w-0 flex-1 truncate text-left text-sm font-semibold hover:underline"
                   onClick={() => onSelect(p.id)}
+                  title={`${p.firstName} ${p.lastName} · ${name('role', p.roleCode)}`}
                 >
                   {p.firstName} {p.lastName}
                   <span className="text-muted font-normal"> · {name('role', p.roleCode)}</span>
@@ -293,10 +305,12 @@ function CandidatesMarket() {
                   <div className="flex items-center gap-2.5">
                     <FamilyBadge family={c.family} size={32} title={name('family', c.family)} />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold">
+                      <p className="truncate text-sm font-semibold" title={`${c.firstName} ${c.lastName}`}>
                         {c.firstName} {c.lastName}
                       </p>
-                      <p className="text-muted truncate text-xs">{name('role', c.roleCode)}</p>
+                      <p className="text-muted truncate text-xs" title={name('role', c.roleCode)}>
+                        {name('role', c.roleCode)}
+                      </p>
                     </div>
                     <PotentialBadge potential={c.potential} />
                   </div>

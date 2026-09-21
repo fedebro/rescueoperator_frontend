@@ -21,7 +21,10 @@ export function LockedFeature({
   const { career } = useSnapshot();
   return (
     <Card className="flex items-start gap-3" data-testid={`locked-${feature}`}>
-      <span className="bg-surface-3 text-subtle grid size-10 shrink-0 place-items-center rounded-full">
+      <span
+        className="bg-surface-3 text-subtle grid size-10 shrink-0 place-items-center rounded-full"
+        title={tc('locked')}
+      >
         <Lock className="size-5" aria-label={tc('locked')} />
       </span>
       <div className="min-w-0 flex-1">

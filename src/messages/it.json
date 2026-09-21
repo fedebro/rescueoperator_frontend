@@ -54,6 +54,7 @@
     "INCIDENT_NOT_DISPATCHABLE": "Questa emergenza non può più ricevere mezzi.",
     "VEHICLE_NOT_AVAILABLE": "Uno dei mezzi non è più disponibile. La proposta è stata aggiornata.",
     "VEHICLE_NOT_RECALLABLE": "Questo mezzo non può essere richiamato ora.",
+    "VEHICLE_NOT_CHAINABLE": "Questo mezzo non può essere concatenato a una nuova emergenza ora: usa l’invio normale.",
     "CREW_INSUFFICIENT": "Equipaggio insufficiente per far partire il mezzo.",
     "CREW_UNQUALIFIED": "L’equipaggio non ha le qualifiche richieste.",
     "CREW_EXHAUSTED": "L’equipaggio è troppo affaticato e deve riposare.",
@@ -446,6 +447,8 @@
       "space": "Posti",
       "delivery": "Consegna",
       "lockedFamily": "Servizio non ancora sbloccato",
+      "crewGapWarning": "L’equipaggio richiederà {roles}, che al momento non hai né in organico né tra i candidati.",
+      "crewGapWarningLink": "Vai al Personale",
       "bought": "{callSign} ordinato",
       "boughtHint": "Sarà operativo al termine della consegna.",
       "insufficient": {
@@ -456,6 +459,10 @@
         "watchAd": "Guarda un video e ricevi Crediti",
         "buyCredits": "Acquista Crediti",
         "soon": "Presto"
+      },
+      "tutorialComplete": {
+        "title": "Tutorial completato!",
+        "body": "Ora la centrale è tutta tua: emergenze, mezzi, personale e crescita dipendono dalle tue decisioni."
       }
     },
     "outcome": {

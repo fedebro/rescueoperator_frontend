@@ -33,6 +33,7 @@ import { useVisibleNav } from './use-nav';
 import { DutyToggle } from './duty-toggle';
 import { PrivacyAndAppSettings, SoundSettings } from '@/features/platform/settings-sections';
 import { track } from '@/lib/analytics';
+import { SectionHelpButton, SectionPrimer } from '@/features/coaching/section-primer';
 import { useCareerId, useSnapshot } from './hooks';
 import { PageBody } from './shell';
 
@@ -41,9 +42,17 @@ export function ProgressionScreen() {
   const careerId = useCareerId();
   const t = useTranslations('game.progression');
   const tc = useTranslations('common');
+  const tp = useTranslations('coaching.sections.progression');
+  const tco = useTranslations('coaching');
   const tx = useI18nText();
   const locale = useLocale();
   const { career } = useSnapshot();
+  const progressionContent = {
+    sectionKey: 'progression',
+    title: tp('title'),
+    body: tp('body'),
+    tips: [tp('tip1'), tp('tip2')],
+  };
   const progression = useQuery({
     queryKey: [...qk.progression(careerId), career.xp],
     queryFn: () => gameApi.progression(careerId),
@@ -60,7 +69,18 @@ export function ProgressionScreen() {
     return [...m.entries()].sort((a, b) => a[0] - b[0]);
   }, [unlocks]);
   return (
-    <PageBody title={t('title')} subtitle={t('subtitle')}>
+    <PageBody
+      title={t('title')}
+      subtitle={t('subtitle')}
+      actions={
+        <SectionHelpButton
+          content={progressionContent}
+          label={tco('help.buttonLabel')}
+          closeLabel={tc('close')}
+        />
+      }
+    >
+      <SectionPrimer content={progressionContent} />
       <Card className="flex flex-col gap-4">
         <div className="flex items-center gap-4">
           <span
@@ -259,6 +279,7 @@ export function SettingsScreen() {
   const router = useRouter();
   const qc = useQueryClient();
   const errorMessage = useErrorMessage();
+  const tk = useTranslations('coaching');
   const user = useAuthStore((s) => s.user);
   const clearAuth = useAuthStore((s) => s.clear);
   const settings = useSettingsStore();
@@ -311,6 +332,21 @@ export function SettingsScreen() {
               }}
               aria-label={t('reducedMotion')}
               data-testid="reduced-motion-toggle"
+            />
+          }
+        />
+        <SettingRow
+          title={tk('toggle.label')}
+          hint={tk('toggle.hint')}
+          control={
+            <Switch
+              checked={settings.tutorialHints}
+              onCheckedChange={(value) => {
+                settings.setTutorialHints(value);
+                track('settings_changed', { setting: 'tutorialHints', value });
+              }}
+              aria-label={tk('toggle.label')}
+              data-testid="coaching-toggle"
             />
           }
         />

@@ -97,8 +97,27 @@ export interface ApiResponse<T> {
   meta: z.infer<typeof Meta>;
 }
 
+/**
+ * The refresh token is an HttpOnly cookie, and browsers scope `SameSite=Lax` cookies to the page's "site" (registrable
+ * domain, ignoring port) — not to whatever CORS allows. In dev, `NEXT_PUBLIC_API_URL` names one fixed host (e.g. a LAN
+ * IP for phone testing), so opening the app from a *different* host (e.g. `localhost`) silently makes every refresh
+ * cross-site: the cookie never leaves the browser, `/auth/refresh` 401s, and the session drops on every reload. Since
+ * the API always runs on the same machine as the page in dev, swap in the page's own hostname (keep the configured
+ * port) so the two are always same-site, whichever host the player used to open the app. Production points at a real,
+ * separate API domain by design (`SameSite=None; Secure`), so this only ever applies outside production. Gated on
+ * `development` specifically (not just "not production") so it never fires under `NODE_ENV=test`, where jsdom's
+ * `window.location.hostname` (`localhost`) would silently redirect requests away from whatever host the mocked
+ * fetch/MSW handlers expect.
+ */
+function resolveApiOrigin(): string {
+  const base = new URL(env.apiUrl);
+  if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined')
+    base.hostname = window.location.hostname;
+  return base.origin;
+}
+
 export function apiUrl(path: string, query?: RequestOptions<unknown>['query']): string {
-  const url = new URL(`${env.apiUrl.replace(/\/$/, '')}${API_PREFIX}${path}`);
+  const url = new URL(`${resolveApiOrigin()}${API_PREFIX}${path}`);
   if (query) {
     for (const [k, v] of Object.entries(query))
       if (v !== undefined && v !== null) url.searchParams.set(k, String(v));

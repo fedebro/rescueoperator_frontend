@@ -24,10 +24,31 @@ export const LAYER = {
   incidents: 'rc-incidents-icon',
   clusters: 'rc-incidents-cluster',
   clusterCount: 'rc-incidents-cluster-count',
+  vehicleUrgentPulse: 'rc-vehicles-urgent-beacon',
+  vehicleSceneRing: 'rc-vehicles-scene-ring',
+  vehicleTroubleRing: 'rc-vehicles-trouble-ring',
   vehicles: 'rc-vehicles-icon',
   vehicleLabels: 'rc-vehicles-label',
   selection: 'rc-selection-ring',
 } as const;
+
+/**
+ * Visual state of a vehicle marker (distinct from `VehicleStatus`, D-64/analisi/07: "lights and siren" while racing to an
+ * incident or a hospital, dimmed while returning, a steady ring while working on scene, a warning ring while broken down).
+ * A vehicle at its facility with nothing going on is not drawn as its own marker at all (see `vehicleFeatures`).
+ */
+type VehicleMapState = 'URGENT' | 'RETURNING' | 'ON_SCENE' | 'TROUBLE' | 'NEUTRAL';
+
+function vehicleMapState(v: VehicleDto): VehicleMapState {
+  if (v.movement) {
+    if (v.movement.purpose === 'TO_INCIDENT' || v.movement.purpose === 'TO_HOSPITAL') return 'URGENT';
+    if (v.movement.purpose === 'TO_BASE') return 'RETURNING';
+    return 'NEUTRAL'; // DELIVERY, RECOVERY: moving, but nothing urgent for the player right now
+  }
+  if (v.status === 'ON_SCENE' || v.status === 'AT_HOSPITAL') return 'ON_SCENE';
+  if (v.status === 'BROKEN_DOWN' || v.status === 'BEING_RECOVERED') return 'TROUBLE';
+  return 'NEUTRAL';
+}
 
 const SEVERITY_EXPR = [
   'interpolate',
@@ -141,6 +162,8 @@ export function vehicleFeatures(
         bearing,
         callSign: v.callSign,
         moving: v.movement ? 1 : 0,
+        state: vehicleMapState(v),
+        stateColor: FAMILY_COLORS[v.family].primary,
       },
     });
   }
@@ -305,6 +328,32 @@ export function addGameLayers(map: MlMap): void {
     paint: { 'text-color': '#FFFFFF' },
   });
 
+  // Working on scene / at the hospital: a steady ring in the vehicle's own service colour — present, not racing.
+  map.addLayer({
+    id: LAYER.vehicleSceneRing,
+    type: 'circle',
+    source: SRC.vehicles,
+    filter: ['==', ['get', 'state'], 'ON_SCENE'],
+    paint: {
+      'circle-radius': 9,
+      'circle-color': 'transparent',
+      'circle-stroke-color': ['get', 'stateColor'] as never,
+      'circle-stroke-width': 2,
+    },
+  });
+  // Broken down / awaiting recovery: a steady amber warning ring — needs the player's attention, but is not moving.
+  map.addLayer({
+    id: LAYER.vehicleTroubleRing,
+    type: 'circle',
+    source: SRC.vehicles,
+    filter: ['==', ['get', 'state'], 'TROUBLE'],
+    paint: {
+      'circle-radius': 10,
+      'circle-color': 'transparent',
+      'circle-stroke-color': '#F5B63C',
+      'circle-stroke-width': 2.5,
+    },
+  });
   map.addLayer({
     id: LAYER.vehicles,
     type: 'symbol',
@@ -316,6 +365,34 @@ export function addGameLayers(map: MlMap): void {
       'icon-size': ['interpolate', ['linear'], ['zoom'], 9, 0.55, 14, 0.95, 17, 1.25],
       'icon-allow-overlap': true,
       'icon-ignore-placement': true,
+    },
+    // Dimmed while returning to base (matches the trailing route line's own opacity drop below); full brightness
+    // for every other state, including the urgent/on-scene/trouble rings drawn underneath.
+    paint: {
+      'icon-opacity': ['match', ['get', 'state'], 'RETURNING', 0.5, 1],
+    },
+  });
+  // Real light: a hard on/off beacon in the vehicle's OWN colour, sitting on top of the icon (not underneath it,
+  // so it is never hidden by it) for a vehicle racing to an incident or a hospital transport (URGENT).
+  // Centred exactly on the vehicle (no screen-space offset): the icon rotates to face its heading via
+  // `icon-rotate`/`icon-rotation-alignment: map`, but a circle layer's `circle-translate` is a fixed SCREEN
+  // offset that does NOT turn with it — any non-zero offset here would drift off the vehicle as it turns.
+  // Reads correctly for a top-down pictogram anyway: a rooftop light seen from directly above sits at the
+  // vehicle's own centre. `setVehicleUrgentPulsePhase` snaps its opacity between fully lit and fully off — a
+  // genuine blink, not a fade — on a fast, fixed cycle. Under prefers-reduced-motion it is simply never called,
+  // so the beacon freezes lit (still unmistakably an emergency light, just not flashing).
+  map.addLayer({
+    id: LAYER.vehicleUrgentPulse,
+    type: 'circle',
+    source: SRC.vehicles,
+    filter: ['==', ['get', 'state'], 'URGENT'],
+    paint: {
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 9, 3.5, 14, 5, 17, 6.5],
+      'circle-color': ['get', 'stateColor'] as never,
+      'circle-stroke-color': '#0A1220',
+      'circle-stroke-width': 1.25,
+      'circle-opacity': 1,
+      'circle-stroke-opacity': 1,
     },
   });
   map.addLayer({
@@ -376,6 +453,20 @@ export function setPulsePhase(map: MlMap, phase: number): void {
   if (!map.getLayer(LAYER.incidentPulse)) return;
   map.setPaintProperty(LAYER.incidentPulse, 'circle-radius', 16 + phase * 22);
   map.setPaintProperty(LAYER.incidentPulse, 'circle-opacity', 0.45 * (1 - phase));
+}
+
+/**
+ * Real light for vehicles racing to an incident or a hospital (state URGENT): a beacon in the vehicle's OWN
+ * colour that hard-blinks on/off — no fade — like an actual emergency light, driven by wall time (`phase` is one
+ * blink cycle, 0↔1; on for the first third, off for the rest, which reads as a crisper flash than a 50/50 blink).
+ * Caller skips this entirely under prefers-reduced-motion, leaving the beacon lit (still unmistakably a light,
+ * just frozen instead of flashing).
+ */
+export function setVehicleUrgentPulsePhase(map: MlMap, phase: number): void {
+  if (!map.getLayer(LAYER.vehicleUrgentPulse)) return;
+  const lit = phase < 0.35;
+  map.setPaintProperty(LAYER.vehicleUrgentPulse, 'circle-opacity', lit ? 1 : 0);
+  map.setPaintProperty(LAYER.vehicleUrgentPulse, 'circle-stroke-opacity', lit ? 1 : 0);
 }
 
 /**

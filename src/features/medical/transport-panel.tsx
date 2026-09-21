@@ -30,6 +30,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/misc';
+import { CoachMark } from '@/features/coaching/coach-mark';
 import { useCareerId, usePatchSnapshot, useSnapshot } from '@/features/game/hooks';
 import { TRANSPORT_CAPABILITY, hasCapability, useHospitalChoice, useHospitals } from './hooks';
 import { LOAD_VISUALS, MedicalChip } from './visuals';
@@ -212,6 +213,7 @@ export function SendVehicleList({
 export function TransportPanel({ patient, incident }: { patient: PatientDto; incident: IncidentDto }) {
   const t = useTranslations('medical.transport');
   const tc = useTranslations('common');
+  const tht = useTranslations('coaching.marks.hospitalTransport');
   const careerId = useCareerId();
   const isDesktop = useIsDesktop();
   const { vehicles } = useSnapshot();
@@ -327,6 +329,15 @@ export function TransportPanel({ patient, incident }: { patient: PatientDto; inc
       className="border-border bg-surface-2 flex flex-col gap-3 rounded-md border p-3"
       data-testid="transport-panel"
     >
+      <CoachMark
+        id="hospitalTransport"
+        when
+        // The header, not the whole (tall) panel: spotlighting the full panel would let the coach mark's own card
+        // cover the "choose another hospital" / confirm buttons further down, blocking the very thing it explains.
+        selector='[data-testid="transport-panel"] h4'
+        title={tht('title')}
+        body={tht('body')}
+      />
       <h4 className="text-subtle text-[11px] font-bold tracking-[0.08em] uppercase">{t('title')}</h4>
       <OptionSummary option={recommended} hospital={hospitals.find((h) => h.id === recommended.hospitalId)} />
       <div className="flex flex-col gap-1">

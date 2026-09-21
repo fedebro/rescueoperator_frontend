@@ -15,6 +15,7 @@ import type { Course } from './queries';
 import { EMPTY_FILTERS, filterRoster } from './roster-tab';
 import { DispatchCrewPreview, crewBlockOf } from './slots';
 import { PersonnelStatusChip, TeamStatusChip } from './status';
+import { remainingTrainingSlots } from './training-tab';
 
 const T0 = '2026-03-01T09:00:00.000Z';
 const BUNDLE = {
@@ -128,6 +129,19 @@ describe('filterRoster', () => {
     expect(ids({ role: 'DRIVER_OPERATOR', status: 'RESTING', band: 'FATIGUED' })).toEqual(['per_2']);
     expect(ids({ qualification: 'HEAVY_VEHICLE_LICENSE', family: 'FIRE' })).toEqual(['per_2']);
     expect(ids({ band: 'REST_REQUIRED' })).toEqual([]);
+  });
+});
+
+describe('remainingTrainingSlots', () => {
+  it('subtracts what is already occupied and what this dialog already picked from the facility', () => {
+    expect(remainingTrainingSlots({ total: 5, used: 3 }, 0)).toBe(2);
+    expect(remainingTrainingSlots({ total: 5, used: 3 }, 2)).toBe(0);
+  });
+  it('goes negative once oversubscribed, so a caller checking > 0 correctly blocks it', () => {
+    expect(remainingTrainingSlots({ total: 5, used: 5 }, 1)).toBe(-1);
+  });
+  it('never blocks a facility the server has not reported slots for', () => {
+    expect(remainingTrainingSlots(undefined, 0)).toBe(Infinity);
   });
 });
 

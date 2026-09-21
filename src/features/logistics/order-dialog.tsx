@@ -36,6 +36,21 @@ export function suggestedPacks(line: InventoryLine, packSize: number): number {
   return Math.max(0, Math.ceil((target - line.quantity - line.inbound) / packSize));
 }
 
+/**
+ * The most packs of ONE item the warehouse can still hold: `freePoints` is what is left once every OTHER selected
+ * line's storage cost is subtracted, so this line's own current packs must be added back before dividing. Mirrors the
+ * server's `storagePoints` formula (whole packs × `storagePointsPerPack`), capped at the order-line UI limit.
+ */
+export function maxPacksForStorage(
+  currentPacks: number,
+  storagePointsPerPack: number,
+  freePoints: number,
+): number {
+  if (storagePointsPerPack <= 0) return 99;
+  const roomForMore = Math.floor((freePoints + currentPacks * storagePointsPerPack) / storagePointsPerPack);
+  return Math.min(99, Math.max(0, roomForMore));
+}
+
 export function OrderDialog({
   open,
   onOpenChange,
@@ -92,9 +107,15 @@ function OrderForm({ facilityId: initialFacilityId, onDone }: { facilityId?: str
   const active = urgent ? quote.urgent : quote.standard;
   const storage = inventory.data?.storage?.find((s) => s.facilityId === activeFacilityId);
   const addedPacks = chosen.reduce((s, r) => s + r.packs, 0);
+  const storagePoints = (item: ItemType, itemPacks: number) => itemPacks * (item.storagePointsPerPack ?? 1);
+  const addedPoints = chosen.reduce((s, r) => s + storagePoints(r.item, r.packs), 0);
+  const freePoints = storage ? Math.max(0, storage.capacity - storage.used - addedPoints) : Infinity;
+
+  const maxPacksFor = (item: ItemType) =>
+    maxPacksForStorage(packs[item.code] ?? 0, item.storagePointsPerPack ?? 1, freePoints);
 
   const setItemPacks = (item: ItemType, value: number) =>
-    setPacks((p) => ({ ...p, [item.code]: Math.max(0, Math.min(99, value)) }));
+    setPacks((p) => ({ ...p, [item.code]: Math.max(0, Math.min(maxPacksFor(item), value)) }));
 
   const order = useMutation({
     mutationFn: () =>
@@ -200,6 +221,7 @@ function OrderForm({ facilityId: initialFacilityId, onDone }: { facilityId?: str
                 <IconButton
                   label={t('increase', { item: itemName })}
                   variant="secondary"
+                  disabled={count >= maxPacksFor(item)}
                   onClick={() => setItemPacks(item, count + 1)}
                 >
                   <Plus className="size-4" aria-hidden />
@@ -210,17 +232,17 @@ function OrderForm({ facilityId: initialFacilityId, onDone }: { facilityId?: str
         })}
       </ul>
       {storage ? (
-        <div className="mt-3">
+        <div className="mt-3" data-testid="order-storage">
           <div className="text-muted mb-1 flex items-center justify-between text-xs">
             <span>{t('storage')}</span>
             <span className="tabular">
-              {storage.used + addedPacks}/{storage.capacity}
+              {storage.used + addedPoints}/{storage.capacity}
             </span>
           </div>
           <ProgressBar
-            value={storage.capacity ? (storage.used + addedPacks) / storage.capacity : 0}
+            value={storage.capacity ? (storage.used + addedPoints) / storage.capacity : 0}
             label={t('storage')}
-            tone={storage.used + addedPacks > storage.capacity ? 'warning' : 'info'}
+            tone={storage.used + addedPoints > storage.capacity ? 'warning' : 'info'}
           />
         </div>
       ) : null}

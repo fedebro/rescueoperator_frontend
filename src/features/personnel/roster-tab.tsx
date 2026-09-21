@@ -1,5 +1,6 @@
 'use client';
 import * as React from 'react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Search, Users } from 'lucide-react';
 import type { PersonnelDto } from '@/contracts';
@@ -7,16 +8,19 @@ import { useIsDesktop } from '@/hooks/use-media-query';
 import { useServerNow } from '@/hooks/use-server-now';
 import { useCatalogName } from '@/i18n/use-i18n-text';
 import { FamilyBadge } from '@/design/icons';
+import { Button } from '@/components/ui/button';
 import { Countdown } from '@/components/ui/countdown';
 import { DataTable, type Column } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import { EmptyState, Skeleton } from '@/components/ui/misc';
 import { Select } from '@/components/ui/select';
 import { useSnapshot } from '@/features/game/hooks';
+import { pickIdleSuggestion } from '@/features/coaching/idle-suggestion';
+import { useIdleSuggestionCopy } from '@/features/coaching/idle-suggestion-copy';
 import { FATIGUE_BANDS, bandOf, fatigueAt } from './fatigue';
 import { FatigueGauge } from './fatigue-gauge';
 import { PersonnelStatusChip } from './status';
-import { usePersonnel, useTeams, useFeature } from './queries';
+import { usePersonnel, useTeams, useFeature, useCandidates } from './queries';
 
 const ALL = 'ALL';
 export interface RosterFilters {
@@ -69,6 +73,7 @@ export function RosterTab({
   const { facilities } = useSnapshot();
   const people = usePersonnel();
   const teams = useTeams(useFeature('TEAMS').unlocked).data;
+  const candidates = useCandidates();
   // Bands move with time: re-evaluate the band filter every few seconds, not on every frame.
   const now = useServerNow(5000);
   const [filters, setFilters] = React.useState<RosterFilters>({
@@ -155,8 +160,8 @@ export function RosterTab({
       width: 'minmax(180px,2fr)',
       cell: (p) => (
         <span className="flex min-w-0 items-center gap-2">
-          <FamilyBadge family={p.family} size={18} />
-          <span className="truncate font-semibold">
+          <FamilyBadge family={p.family} size={18} title={name('family', p.family)} />
+          <span className="truncate font-semibold" title={`${p.firstName} ${p.lastName}`}>
             {p.firstName} {p.lastName}
           </span>
         </span>
@@ -167,21 +172,33 @@ export function RosterTab({
       id: 'role',
       header: t('col.role'),
       width: 'minmax(130px,1.4fr)',
-      cell: (p) => <span className="text-muted truncate">{name('role', p.roleCode)}</span>,
+      cell: (p) => (
+        <span className="text-muted truncate" title={name('role', p.roleCode)}>
+          {name('role', p.roleCode)}
+        </span>
+      ),
       sortValue: (p) => p.roleCode,
     },
     {
       id: 'facility',
       header: t('col.facility'),
       width: 'minmax(130px,1.4fr)',
-      cell: (p) => <span className="truncate">{facilityName(p.facilityId)}</span>,
+      cell: (p) => (
+        <span className="truncate" title={facilityName(p.facilityId)}>
+          {facilityName(p.facilityId)}
+        </span>
+      ),
       sortValue: (p) => facilityName(p.facilityId),
     },
     {
       id: 'team',
       header: t('col.team'),
       width: 'minmax(100px,1fr)',
-      cell: (p) => <span className="text-muted truncate">{teamName(p.teamId)}</span>,
+      cell: (p) => (
+        <span className="text-muted truncate" title={teamName(p.teamId)}>
+          {teamName(p.teamId)}
+        </span>
+      ),
       sortValue: (p) => teamName(p.teamId),
     },
     {
@@ -221,8 +238,25 @@ export function RosterTab({
     },
   ];
 
+  // No one hired at all: point at a candidate about to expire when there is one, instead of generic copy.
+  const idleSuggestion =
+    all.length === 0
+      ? pickIdleSuggestion({ candidates: candidates.data?.candidates, credits: '0', level: 1 })
+      : null;
+  const idleCopy = useIdleSuggestionCopy(idleSuggestion);
   const empty = (
-    <EmptyState icon={<Users className="size-5" />} title={t('emptyTitle')} description={t('emptyHint')} />
+    <EmptyState
+      icon={<Users className="size-5" />}
+      title={t('emptyTitle')}
+      description={idleCopy?.text ?? t('emptyHint')}
+      action={
+        idleCopy ? (
+          <Button asChild variant="secondary" size="sm" data-testid="idle-suggestion-action">
+            <Link href={idleCopy.href}>{idleCopy.label}</Link>
+          </Button>
+        ) : undefined
+      }
+    />
   );
   return (
     <div className="flex flex-col gap-3">
@@ -256,12 +290,18 @@ export function RosterTab({
                 data-testid="operator-card"
               >
                 <span className="flex items-center gap-2.5">
-                  <FamilyBadge family={p.family} size={32} />
+                  <FamilyBadge family={p.family} size={32} title={name('family', p.family)} />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold">
+                    <span
+                      className="block truncate text-sm font-semibold"
+                      title={`${p.firstName} ${p.lastName}`}
+                    >
                       {p.firstName} {p.lastName}
                     </span>
-                    <span className="text-muted block truncate text-xs">
+                    <span
+                      className="text-muted block truncate text-xs"
+                      title={`${name('role', p.roleCode)} · ${facilityName(p.facilityId)}`}
+                    >
                       {name('role', p.roleCode)} · {facilityName(p.facilityId)}
                     </span>
                   </span>

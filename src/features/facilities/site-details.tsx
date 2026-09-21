@@ -118,10 +118,13 @@ function OptionRow({
       data-available={option.available}
     >
       <div className="flex items-start gap-2.5">
-        <FamilyBadge family={option.family} size={32} />
+        <FamilyBadge family={option.family} size={32} title={name('family', option.family)} />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold">{name('facility', option.facilityTypeCode)}</p>
-          <p className="text-muted line-clamp-2 text-xs">
+          <p
+            className="text-muted line-clamp-2 text-xs"
+            title={name('facility', option.facilityTypeCode, 'description')}
+          >
             {name('facility', option.facilityTypeCode, 'description')}
           </p>
         </div>

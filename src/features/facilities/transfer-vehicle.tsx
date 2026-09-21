@@ -157,7 +157,9 @@ export function TransferVehicleButton({
                   >
                     <FamilyBadge family={facility.family} size={32} />
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-semibold">{facility.name}</span>
+                      <span className="block truncate text-sm font-semibold" title={facility.name}>
+                        {facility.name}
+                      </span>
                       <span className="text-muted flex items-center gap-1 text-xs">
                         <Icon className="size-3 shrink-0" aria-hidden />
                         {state === 'OK' ? t('state.OK', { free }) : t(`state.${state}`)}

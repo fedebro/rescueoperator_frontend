@@ -10,6 +10,7 @@ import { useI18nText } from '@/i18n/use-i18n-text';
 import { Button } from '@/components/ui/button';
 import { Card, SectionTitle, Skeleton } from '@/components/ui/misc';
 import { Timeline, type TimelineItem } from '@/components/ui/timeline';
+import { CoachMark } from '@/features/coaching/coach-mark';
 import { useCareerId, useSnapshot } from '@/features/game/hooks';
 import { useFeatureGate, useInventory, useMaintenance, useVehicleHistory } from './api';
 import { CareSummary, QuoteList, WorkOrderRow } from './maintenance';
@@ -71,6 +72,7 @@ function VehicleHistory({ vehicle }: { vehicle: VehicleDto }) {
 export function VehicleMaintenanceSection({ vehicle }: { vehicle: VehicleDto }) {
   const t = useTranslations('logistics.workshop');
   const th = useTranslations('logistics.history');
+  const tvb = useTranslations('coaching.marks.vehicleBreakdown');
   const careerId = useCareerId();
   const qc = useQueryClient();
   const gate = useFeatureGate('MAINTENANCE');
@@ -95,6 +97,17 @@ export function VehicleMaintenanceSection({ vehicle }: { vehicle: VehicleDto }) 
 
   return (
     <section data-testid="vehicle-maintenance" className="flex flex-col gap-3">
+      <CoachMark
+        id="vehicleBreakdown"
+        when={broken}
+        // The recovery-steps card, not the whole (tall) maintenance section: a big spotlighted target would let the
+        // coach mark's own card cover the quote/work-order buttons further down.
+        selector='[data-testid="recovery-steps"]'
+        title={tvb('title')}
+        body={tvb('body')}
+        actionLabel={tvb('action')}
+        actionHref="/game/logistics"
+      />
       <SectionTitle>{t('sectionTitle')}</SectionTitle>
       {!enabled ? (
         <LockedRow level={gate.requiredLevel} />

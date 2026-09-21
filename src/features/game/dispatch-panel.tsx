@@ -22,7 +22,9 @@ import { CapabilityBar } from '@/components/ui/capability-bar';
 import { Checkbox } from '@/components/ui/switch';
 import { EmptyState, SectionTitle, Skeleton } from '@/components/ui/misc';
 import { StatusChip } from '@/components/ui/status-chip';
-import { DispatchCrewBlocked, DispatchCrewPreview } from '@/features/personnel/slots';
+import { DispatchCrewBlocked, DispatchCrewPreview, crewBlockOf } from '@/features/personnel/slots';
+import { WarningNextAction, warningNextAction } from '@/features/coaching/warning-next-action';
+import { CoachMark } from '@/features/coaching/coach-mark';
 import { useCareerId, useCatalog, useSnapshot, useVehicleTypeLookup } from './hooks';
 
 export function RequirementBars({
@@ -93,6 +95,7 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
   const t = useTranslations('game.dispatch');
   const ts = useTranslations('status.vehicle');
   const tw = useTranslations('game.dispatch.warning');
+  const tci = useTranslations('coaching.marks.crewInsufficient');
   const itemName = useCatalogName();
   /**
    * Warning codes are opaque strings; the stock ones carry the item code after a colon
@@ -111,8 +114,10 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
   const locale = useLocale();
   const qc = useQueryClient();
   const errorMessage = useErrorMessage();
-  const { vehicles } = useSnapshot();
+  const { vehicles, facilities } = useSnapshot();
   const typeOf = useVehicleTypeLookup();
+  const facilityNameOf = (facilityId: string): string =>
+    facilities.find((f) => f.id === facilityId)?.name ?? '—';
   // Options depend on which vehicles are free: refetch whenever the fleet's status signature changes.
   const signature = vehicles.map((v) => `${v.id}:${v.status}`).join('|');
   const options = useQuery({
@@ -129,9 +134,14 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
     () => new Set((data?.options ?? []).filter((o) => o.dispatchable).map((o) => o.vehicleId)),
     [data],
   );
+  /**
+   * The manual checklist starts empty, not pre-filled with the recommendation: "Invia il mezzo consigliato" already
+   * covers the one-tap recommended send, so this list is for building a selection from scratch, not editing a
+   * recommended baseline the player didn't ask to see pre-ticked.
+   */
   const selected = React.useMemo(
-    () => new Set([...(manual ?? recommended)].filter((id) => dispatchable.has(id))),
-    [manual, recommended, dispatchable],
+    () => new Set([...(manual ?? [])].filter((id) => dispatchable.has(id))),
+    [manual, dispatchable],
   );
   const planned = React.useMemo(() => {
     const m = new Map<string, number>();
@@ -143,6 +153,10 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
   const insufficient = incident.requirements.some(
     (r) => r.level === 'REQUIRED' && r.onScene + r.enRoute + (planned.get(r.capability) ?? 0) < r.required,
   );
+  // The first option warning with a known "go fix it" destination — one concrete next action, not one per badge.
+  const actionableWarning = (data?.options ?? [])
+    .flatMap((o) => o.warnings)
+    .find((w) => warningNextAction(w));
 
   const mutation = useMutation({
     mutationFn: (ids: string[]) => gameApi.dispatch(careerId, incident.id, ids),
@@ -164,7 +178,7 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
 
   const toggle = (id: string) =>
     setManual((prev) => {
-      const next = new Set(prev ?? recommended);
+      const next = new Set(prev ?? []);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
@@ -183,6 +197,15 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
 
   return (
     <div className="flex flex-col gap-4 p-4" data-testid="dispatch-panel">
+      <CoachMark
+        id="crewInsufficient"
+        when={data.options.some((o) => crewBlockOf(o) === 'CREW_INSUFFICIENT')}
+        selector='[data-blocked="CREW_INSUFFICIENT"]'
+        title={tci('title')}
+        body={tci('body')}
+        actionLabel={tci('action')}
+        actionHref="/game/personnel?tab=recruitment"
+      />
       {dispatchable.size === 0 ? (
         <div>
           <SectionTitle>{t('requirements')}</SectionTitle>
@@ -219,7 +242,7 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
               <Sparkles className="size-5" aria-hidden />
               {t('sendRecommended', { count: recommended.size })}
             </Button>
-            {!sameAsRecommended ? (
+            {manual !== null && !sameAsRecommended ? (
               <Button
                 size="lg"
                 variant="secondary"
@@ -233,7 +256,7 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
                 {t('sendSelected', { count: selected.size })}
               </Button>
             ) : null}
-            {!data.recommendationCoversRequired && sameAsRecommended ? (
+            {!data.recommendationCoversRequired && manual === null ? (
               <p className="text-warning flex items-start gap-2 text-xs">
                 <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
                 {t('recommendationPartial')}
@@ -242,11 +265,19 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
             {insufficient && !sameAsRecommended && selected.size > 0 ? (
               <p
                 role="status"
-                className="text-warning flex items-start gap-2 text-xs"
+                className="text-warning flex flex-wrap items-start gap-x-2 gap-y-1 text-xs"
                 data-testid="insufficient-warning"
               >
-                <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-                {t('insufficient')}
+                <span className="flex items-start gap-2">
+                  <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                  {t('insufficient')}
+                </span>
+                {actionableWarning ? (
+                  <WarningNextAction
+                    code={actionableWarning}
+                    className="text-skyline ml-5 inline-flex items-center gap-1 font-semibold hover:underline"
+                  />
+                ) : null}
               </p>
             ) : null}
           </div>
@@ -295,6 +326,10 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
                         </span>
                         <span className="text-muted block truncate text-xs">
                           {type ? tx(type.name) : vehicle.typeCode}
+                          <span aria-hidden> · </span>
+                          <span data-testid="dispatch-option-facility">
+                            {facilityNameOf(vehicle.facilityId)}
+                          </span>
                         </span>
                       </label>
                       {o.dispatchable ? (

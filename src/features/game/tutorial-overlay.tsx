@@ -9,6 +9,7 @@ import { useUiStore } from '@/stores/ui';
 import { useLatest } from '@/hooks/use-latest';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useTargetRect } from '@/features/coaching/target-rect';
 import { useCareerId, usePatchSnapshot, useSnapshot } from './hooks';
 
 export const TUTORIAL_STEPS = [
@@ -28,38 +29,6 @@ const TARGET: Partial<Record<TutorialStep, string>> = {
   DISPATCH: '[data-tutorial="send-recommended"]',
   BUY_VEHICLE: '[data-tutorial="buy-vehicle"], [data-tutorial="nav-shop"]',
 };
-
-function useTargetRect(selector: string | undefined): DOMRect | null {
-  const [rect, setRect] = React.useState<DOMRect | null>(null);
-  React.useEffect(() => {
-    if (!selector) return;
-    const measure = () => {
-      const el = Array.from(document.querySelectorAll<HTMLElement>(selector)).find(
-        (e) => e.offsetParent !== null && e.getBoundingClientRect().width > 0,
-      );
-      const r = el?.getBoundingClientRect() ?? null;
-      setRect((prev) =>
-        prev &&
-        r &&
-        Math.abs(prev.x - r.x) < 1 &&
-        Math.abs(prev.y - r.y) < 1 &&
-        Math.abs(prev.width - r.width) < 1 &&
-        Math.abs(prev.height - r.height) < 1
-          ? prev
-          : r,
-      );
-    };
-    const first = requestAnimationFrame(measure);
-    const timer = setInterval(measure, 300);
-    window.addEventListener('resize', measure);
-    return () => {
-      cancelAnimationFrame(first);
-      clearInterval(timer);
-      window.removeEventListener('resize', measure);
-    };
-  }, [selector]);
-  return selector ? rect : null;
-}
 
 /**
  * Guided tutorial: a spotlight (pure box-shadow cut-out, pointer-events: none — the real control stays clickable)

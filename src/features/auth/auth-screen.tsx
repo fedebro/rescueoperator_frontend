@@ -21,6 +21,7 @@ import { Countdown } from '@/components/ui/countdown';
 import { Logo } from '@/components/brand/logo';
 import { BrandSplash } from '@/components/brand/splash';
 import { LanguageSelect } from '@/features/settings/language-select';
+import { useCatalogName } from '@/i18n/use-i18n-text';
 import { FamilyBadge } from '@/design/icons';
 import {
   captureInviteCodeFromUrl,
@@ -49,6 +50,7 @@ export function AuthScreen() {
   const allowed = useSessionGate('anonymous-only');
   const t = useTranslations('auth');
   const tc = useTranslations('common');
+  const name = useCatalogName();
   const locale = useLocale() as SupportedLocale;
   const router = useRouter();
   const errorMessage = useErrorMessage();
@@ -166,7 +168,7 @@ export function AuthScreen() {
           <ul className="mt-5 flex gap-2" aria-label={t('families')}>
             {(['FIRE', 'EMS', 'POLICE', 'WILDFIRE', 'ALPINE'] as const).map((f) => (
               <li key={f}>
-                <FamilyBadge family={f} size={36} />
+                <FamilyBadge family={f} size={36} title={name('family', f)} />
               </li>
             ))}
           </ul>

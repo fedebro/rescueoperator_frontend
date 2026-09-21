@@ -197,10 +197,12 @@ function OperatorDetail({ personnelId, onClose }: { personnelId: string; onClose
       <header className="flex items-center gap-3">
         <FamilyBadge family={op.family} size={40} title={name('family', op.family)} />
         <div className="min-w-0 flex-1">
-          <h2 className="font-display truncate text-lg font-bold">
+          <h2 className="font-display truncate text-lg font-bold" title={`${op.firstName} ${op.lastName}`}>
             {op.firstName} {op.lastName}
           </h2>
-          <p className="text-muted truncate text-sm">{name('role', op.roleCode)}</p>
+          <p className="text-muted truncate text-sm" title={name('role', op.roleCode)}>
+            {name('role', op.roleCode)}
+          </p>
         </div>
         <PersonnelStatusChip status={op.status} />
       </header>

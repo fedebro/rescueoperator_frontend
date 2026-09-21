@@ -11,6 +11,7 @@ import {
   incidentFeatures,
   setData,
   setPulsePhase,
+  setVehicleUrgentPulsePhase,
   setSelectionRing,
   vehicleFeatures,
 } from '@/features/map/game-layers';
@@ -95,7 +96,10 @@ export function OperationsMap({ bottomPadding = 0 }: { bottomPadding?: number })
           position = s.facilities.find((f) => f.id === selection.id)?.position ?? null;
         else if (selection) position = useUiStore.getState().focusRequest?.center ?? null;
         setSelectionRing(map, selection, position);
-        if (!reduced) setPulsePhase(map, (ts % 1600) / 1600);
+        if (!reduced) {
+          setPulsePhase(map, (ts % 1600) / 1600);
+          setVehicleUrgentPulsePhase(map, (ts % 500) / 500);
+        }
       };
       raf = requestAnimationFrame(frame);
       setReady(true);

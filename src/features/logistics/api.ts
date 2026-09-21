@@ -24,6 +24,7 @@ export type MaintenanceStatus = z.infer<typeof MaintenanceStatusDto>;
 
 export const ItemTypeV2 = ItemTypeDto.extend({
   packSize: z.number().int().positive().optional(),
+  storagePointsPerPack: z.number().min(0).optional(),
   family: z.string().optional(),
   requiredLevel: z.number().int().optional(),
   unlocked: z.boolean().optional(),
@@ -77,7 +78,10 @@ export function useItemTypes(enabled = true) {
       const fromCatalog = raw.get(item.code);
       const packSize =
         item.packSize ?? (Number(fromCatalog?.packSize) > 0 ? Number(fromCatalog?.packSize) : 1);
-      return { ...item, packSize };
+      const storagePointsPerPack =
+        item.storagePointsPerPack ??
+        (Number(fromCatalog?.storagePointsPerPack) >= 0 ? Number(fromCatalog?.storagePointsPerPack) : 1);
+      return { ...item, packSize, storagePointsPerPack };
     });
   }, [query.data, catalog]);
   return { ...query, items };

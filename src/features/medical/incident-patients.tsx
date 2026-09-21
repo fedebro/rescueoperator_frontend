@@ -9,6 +9,7 @@ import { GameIcon, capabilityIconName } from '@/design/icons';
 import { Countdown } from '@/components/ui/countdown';
 import { SectionTitle, Skeleton } from '@/components/ui/misc';
 import { Badge } from '@/components/ui/badge';
+import { SectionPrimer } from '@/features/coaching/section-primer';
 import { useSnapshot } from '@/features/game/hooks';
 import { MEDICAL_CAPABILITIES, hasCapability, useHospitals, usePatients } from './hooks';
 import { StabilityGauge } from './stability-gauge';
@@ -173,8 +174,15 @@ function PatientCard({
 /** SLOT (owner: medical agent) — patients list + hospital choice inside the incident inspector. */
 export function IncidentPatients({ incident }: { incident: IncidentDto }) {
   const t = useTranslations('medical.patients');
+  const tm = useTranslations('coaching.sections.medical');
   const { vehicles } = useSnapshot();
   const patients = usePatients(incident);
+  const medicalContent = {
+    sectionKey: 'medical',
+    title: tm('title'),
+    body: tm('body'),
+    tips: [tm('tip1'), tm('tip2')],
+  };
   if (incident.patientCount === 0) return null;
 
   const list = patients.data ?? [];
@@ -197,6 +205,7 @@ export function IncidentPatients({ incident }: { incident: IncidentDto }) {
       >
         {t('title')}
       </SectionTitle>
+      <SectionPrimer content={medicalContent} />
       {patients.isLoading ? (
         <Skeleton className="h-20" />
       ) : patients.isError && list.length === 0 ? (

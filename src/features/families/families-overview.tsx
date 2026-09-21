@@ -44,9 +44,16 @@ export function FamiliesOverview({
             value === f.code ? 'border-focus' : 'border-border',
           )}
         >
-          <FamilyBadge family={f.code} size={36} className={f.unlocked ? '' : 'opacity-50 grayscale'} />
+          <FamilyBadge
+            family={f.code}
+            size={36}
+            title={tx(f.name)}
+            className={f.unlocked ? '' : 'opacity-50 grayscale'}
+          />
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-semibold">{tx(f.name)}</span>
+            <span className="block truncate text-sm font-semibold" title={tx(f.name)}>
+              {tx(f.name)}
+            </span>
             <span
               className={cn(
                 'mt-0.5 flex items-start gap-1 text-[11px] leading-tight',

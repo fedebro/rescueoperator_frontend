@@ -7,6 +7,7 @@ import { formatAmount } from '@/lib/format';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, Stat } from '@/components/ui/misc';
 import { PageBody } from '@/features/game/shell';
+import { SectionHelpButton, SectionPrimer } from '@/features/coaching/section-primer';
 import { OperatorSheet } from './operator-sheet';
 import { usePersonnel } from './queries';
 import { RecruitmentTab } from './recruitment-tab';
@@ -25,6 +26,8 @@ const isTab = (value: string | null): value is TabId => TABS.includes(value as T
 export function PersonnelScreen() {
   const t = useTranslations('personnel');
   const tc = useTranslations('common');
+  const tp = useTranslations('coaching.sections.personnel');
+  const tco = useTranslations('coaching');
   const locale = useLocale();
   const params = useSearchParams();
   const requestedTab = params.get('tab');
@@ -34,9 +37,26 @@ export function PersonnelScreen() {
 
   const ready = people?.filter((p) => p.status === 'AVAILABLE' || p.status === 'ASSIGNED').length;
   const cost = people?.reduce((sum, p) => sum + BigInt(p.costPerPeriod), 0n);
+  const personnelContent = {
+    sectionKey: 'personnel',
+    title: tp('title'),
+    body: tp('body'),
+    tips: [tp('tip1'), tp('tip2')],
+  };
 
   return (
-    <PageBody title={t('title')} subtitle={t('subtitle')}>
+    <PageBody
+      title={t('title')}
+      subtitle={t('subtitle')}
+      actions={
+        <SectionHelpButton
+          content={personnelContent}
+          label={tco('help.buttonLabel')}
+          closeLabel={tc('close')}
+        />
+      }
+    >
+      <SectionPrimer content={personnelContent} />
       <Card className="grid grid-cols-3 gap-3">
         <Stat label={t('summary.total')} value={people?.length ?? '—'} />
         <Stat label={t('summary.ready')} value={ready ?? '—'} />

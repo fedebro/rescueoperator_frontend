@@ -145,6 +145,7 @@ const push = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }), usePathname: () => '/game/economy' }));
 vi.mock('@/features/game/hooks', () => ({
   useCareerId: () => 'car_TEST',
+  useCareerIdOptional: () => 'car_TEST',
   useSnapshot: () => ({
     world,
     career: {

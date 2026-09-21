@@ -15,6 +15,7 @@ import { Countdown } from '@/components/ui/countdown';
 import { CreditAmount } from '@/components/ui/credit-amount';
 import { Card, ProgressBar, SectionTitle, Skeleton, Stat } from '@/components/ui/misc';
 import { useSnapshot } from '@/features/game/hooks';
+import { CoachMark } from '@/features/coaching/coach-mark';
 import { durationParts, useAt, useCoverage, useStipend } from './use-world';
 
 const HISTORY_PREVIEW = 4;
@@ -33,6 +34,7 @@ const multiplier = (value: number, locale: string) =>
 export function StipendCard() {
   const t = useTranslations('world.stipend');
   const tc = useTranslations('common');
+  const tcs = useTranslations('coaching.marks.coverageStipend');
   const locale = useLocale();
   const router = useRouter();
   const duration = useDuration();
@@ -94,6 +96,15 @@ export function StipendCard() {
 
   return (
     <Card className="flex flex-col gap-4" data-testid="stipend-card">
+      <CoachMark
+        id="coverageStipend"
+        when
+        // The card's own title, not the whole (long) card: it holds the countdown, the breakdown, coverage by
+        // family and history below — spotlighting all of it would let the coach mark's card cover those controls.
+        selector='[data-testid="stipend-card"] h2'
+        title={tcs('title')}
+        body={tcs('body')}
+      />
       <div>
         <SectionTitle>{t('title')}</SectionTitle>
         <p className="text-muted text-sm">

@@ -7,6 +7,7 @@ import type { AdsStatusDto, CreditPackageDto, ReferralDto } from '@/contracts';
 import { CatalogTextsOverride } from '@/i18n/catalog-texts';
 import { renderWithIntl } from '@/test/render';
 import { snapshot } from '@/test/fixtures';
+import { useToastStore } from '@/stores/toast';
 
 const state = vi.hoisted(() => ({
   snapshot: null as unknown,
@@ -39,7 +40,7 @@ import { InsufficientCreditsHost, requestCredits, useInsufficientCredits } from 
 import { PackageCard } from './credits-screen';
 import { PurchaseStatusChip } from './purchase-status';
 import { InvitedList, MyInvitationCard, NetworkProgressCard } from './referral-screen';
-import { SpeedupButton } from './speedup-button';
+import { SpeedupAllButton, SpeedupButton } from './speedup-button';
 import { useWatchProgress } from './ads/simulated-player';
 
 type AdsStatus = z.infer<typeof AdsStatusDto>;
@@ -246,6 +247,93 @@ describe('SpeedupButton', () => {
     const dialog = await screen.findByTestId('speedup-dialog');
     await waitFor(() => expect(within(dialog).getByTestId('speedup-cost')).toHaveTextContent('Gratis'));
     expect(within(dialog).getByTestId('speedup-confirm')).toHaveTextContent('Termina gratis');
+  });
+});
+
+describe('SpeedupAllButton', () => {
+  it('stays hidden below the minimum of two running items', () => {
+    state.snapshot = world({ unlocked: true });
+    const { container } = ui(
+      <SpeedupAllButton items={[{ target: 'TRAINING', targetId: 'enr_1', endsAt: future(125) }]} />,
+    );
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('ignores items whose timer already passed when counting and quoting', () => {
+    state.snapshot = world({ unlocked: true });
+    const { container } = ui(
+      <SpeedupAllButton
+        items={[
+          { target: 'TRAINING', targetId: 'enr_1', endsAt: future(125) },
+          { target: 'TRAINING', targetId: 'enr_2', endsAt: new Date(Date.now() - 1000).toISOString() },
+        ]}
+      />,
+    );
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('sums every item quote, finishes them all in one go and reports success', async () => {
+    state.snapshot = world({ unlocked: true, credits: '500' });
+    state.speedupQuote.mockImplementation((_career: string, target: string, targetId: string) =>
+      Promise.resolve({ target, targetId, remainingSeconds: 100, cost: targetId === 'enr_1' ? '20' : '30' }),
+    );
+    state.speedup.mockImplementation((_career: string, target: string, targetId: string) =>
+      Promise.resolve({ target, targetId, cost: targetId === 'enr_1' ? '20' : '30' }),
+    );
+    const onDone = vi.fn();
+    ui(
+      <SpeedupAllButton
+        items={[
+          { target: 'TRAINING', targetId: 'enr_1', endsAt: future(100) },
+          { target: 'TRAINING', targetId: 'enr_2', endsAt: future(140) },
+        ]}
+        onDone={onDone}
+      />,
+    );
+    fireEvent.click(screen.getByTestId('speedup-all-button'));
+    const dialog = await screen.findByTestId('speedup-all-dialog');
+    await waitFor(() => expect(within(dialog).getByTestId('speedup-all-cost')).toHaveTextContent('50'));
+    fireEvent.click(within(dialog).getByTestId('speedup-all-confirm'));
+    await waitFor(() => expect(onDone).toHaveBeenCalled());
+    expect(state.speedup).toHaveBeenCalledWith('car_TEST', 'TRAINING', 'enr_1');
+    expect(state.speedup).toHaveBeenCalledWith('car_TEST', 'TRAINING', 'enr_2');
+    expect(useToastStore.getState().toasts.at(-1)).toMatchObject({
+      tone: 'success',
+      title: '2 processi completati',
+    });
+  });
+
+  it('keeps going when one item fails and reports a partial result', async () => {
+    state.snapshot = world({ unlocked: true, credits: '500' });
+    state.speedupQuote.mockResolvedValue({
+      target: 'TRAINING',
+      targetId: 'x',
+      remainingSeconds: 60,
+      cost: '10',
+    });
+    state.speedup.mockImplementation((_career: string, target: string, targetId: string) =>
+      targetId === 'enr_1'
+        ? Promise.resolve({ target, targetId, cost: '10' })
+        : Promise.reject(new Error('boom')),
+    );
+    ui(
+      <SpeedupAllButton
+        items={[
+          { target: 'TRAINING', targetId: 'enr_1', endsAt: future(60) },
+          { target: 'TRAINING', targetId: 'enr_2', endsAt: future(60) },
+        ]}
+      />,
+    );
+    fireEvent.click(screen.getByTestId('speedup-all-button'));
+    const dialog = await screen.findByTestId('speedup-all-dialog');
+    await waitFor(() => expect(within(dialog).getByTestId('speedup-all-cost')).toHaveTextContent('20'));
+    fireEvent.click(within(dialog).getByTestId('speedup-all-confirm'));
+    await waitFor(() => expect(screen.queryByTestId('speedup-all-dialog')).toBeNull());
+    expect(state.speedup).toHaveBeenCalledTimes(2);
+    expect(useToastStore.getState().toasts.at(-1)).toMatchObject({
+      tone: 'info',
+      title: '1 di 2 completati',
+    });
   });
 });
 

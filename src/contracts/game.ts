@@ -222,6 +222,36 @@ export const DispatchOption = z.object({
     available: z.number().int(), min: z.number().int(), optimal: z.number().int(),
     missingQualifications: z.array(z.string()), maxFatigueBand: FatigueBand, efficiency: z.number(),
   }).optional(),
+  /**
+   * Chaining (additive). Present for every vehicle that is NOT `AVAILABLE` right now and is on a mission or returning
+   * (`PREPARING|EN_ROUTE|ON_SCENE|TRANSPORTING|AT_HOSPITAL|RETURNING|RESTOCKING`) — absent for `AVAILABLE` vehicles
+   * (already fully described by the fields above) and for `MAINTENANCE|BROKEN_DOWN|BEING_RECOVERED|OUT_OF_SERVICE|IN_DELIVERY`.
+   * `dispatchable`/`blockedReason` above still describe "can this vehicle be sent right now" (always false here);
+   * `chain` describes what `★POST /vehicles/:vehicleId/chain` would do for THIS incident if called now.
+   */
+  chain: z.object({
+    vehicleStatus: VehicleStatus,
+    /** True only when the vehicle is `RETURNING` AND all three chaining conditions hold: calling `chain` now redirects it immediately. */
+    redirectEligible: z.boolean(),
+    /** Why `redirectEligible` is false: `VEHICLE_NOT_RETURNING` (still outbound/on scene/transporting — not yet at the fork in the road),
+     * `VEHICLE_INOPERABLE`, `MAINTENANCE_DUE`, `GROUNDED_BY_CONDITIONS`, `INVENTORY_NEEDS_RESTOCK`, or a crew reason
+     * (`CREW_INSUFFICIENT`/`CREW_UNQUALIFIED`/`CREW_EXHAUSTED`). `null` when `redirectEligible` is true. */
+    blockedReason: z.string().nullable(),
+    /** Always true for a vehicle in the tracked set: `chain` always either redirects or queues. */
+    queueable: z.boolean(),
+    /** Best-effort ISO instant this vehicle is expected to reach AVAILABLE on its own. Known precisely only while
+     * RETURNING (its planned return arrival, before any RESTOCKING stop); `null` otherwise (depends on future work). */
+    availableAt: IsoDateTime.nullable(),
+    /** This vehicle's crew projected through the current mission's fatigue load, against ITS OWN vehicle type's crew
+     * requirement — the same `CrewPreview` shape used for an idle vehicle, so `efficiency` is directly comparable.
+     * `null` when the personnel system is off. */
+    crew: z.object({
+      available: z.number().int(), min: z.number().int(), optimal: z.number().int(),
+      missingQualifications: z.array(z.string()), maxFatigueBand: FatigueBand, efficiency: z.number(),
+    }).nullable(),
+    /** This vehicle's current queue slot, if any (set by a previous `chain` call that queued instead of redirecting). */
+    queuedIncidentId: publicId(IdPrefix.incident).nullable(),
+  }).optional(),
 });
 export const DispatchOptionsResult = z.object({
   options: z.array(DispatchOption),
@@ -232,6 +262,24 @@ export const DispatchOptionsResult = z.object({
 /** POST /careers/:id/incidents/:incidentId/dispatch (Idempotency-Key) */
 export const DispatchBody = z.object({ vehicleIds: z.array(publicId(IdPrefix.vehicle)).min(1).max(50) });
 /** POST /careers/:id/vehicles/:vehicleId/recall */
+
+/**
+ * ★POST /careers/:id/vehicles/:vehicleId/chain (Idempotency-Key) — ONE UI action ("send this busy vehicle to a new
+ * call"), driven by `DispatchOption.chain` above. The server decides the mode: `REDIRECTED` when the vehicle was
+ * RETURNING and every chaining condition held at commit time (the vehicle diverts immediately, rerouted from its
+ * actual current position); `QUEUED` otherwise (the vehicle keeps doing what it is doing; the moment it becomes
+ * AVAILABLE again — after return and, if needed, RESTOCKING — it auto-dispatches here through the normal dispatch
+ * path, which re-checks everything). Only one queue slot per vehicle: calling this again replaces it.
+ */
+export const ChainVehicleBody = z.object({ incidentId: publicId(IdPrefix.incident) });
+export const ChainVehicleResult = z.object({
+  mode: z.enum(['REDIRECTED', 'QUEUED']),
+  vehicle: VehicleDto,
+  /** Present when `mode === 'REDIRECTED'`: the new incident, already updated with this vehicle responding. */
+  incident: IncidentDto.optional(),
+  /** Present when `mode === 'QUEUED'`: this vehicle's (only) queue slot. */
+  queue: z.object({ incidentId: publicId(IdPrefix.incident), queuedAt: IsoDateTime }).optional(),
+});
 
 export const IncidentOutcomeDto = z.object({
   incidentId: publicId(IdPrefix.incident),

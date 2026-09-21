@@ -10,6 +10,7 @@ import { useCatalog, useSnapshot } from '@/features/game/hooks';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, ProgressBar, SectionTitle } from '@/components/ui/misc';
+import { WarningNextAction } from '@/features/coaching/warning-next-action';
 import { FatigueBandLabel } from './fatigue-gauge';
 import { PersonnelStatusChip, TeamStatusChip } from './status';
 import { useFeature, usePersonnel, useTeams } from './queries';
@@ -69,20 +70,31 @@ export function VehicleCrewSection({ vehicle }: { vehicle: VehicleDto }) {
       {team ? (
         <div className="border-border bg-surface-2 mt-2 flex flex-col gap-1.5 rounded-md border p-2.5">
           <div className="flex items-center gap-2">
-            <span className="min-w-0 flex-1 truncate text-sm font-semibold">{team.name}</span>
+            <span className="min-w-0 flex-1 truncate text-sm font-semibold" title={team.name}>
+              {team.name}
+            </span>
             <span className="tabular text-muted text-xs">{Math.round(team.readiness * 100)}%</span>
             <TeamStatusChip status={team.status} />
           </div>
           {team.warnings.map((w) => (
-            <p key={w} className="text-warning flex items-start gap-1.5 text-xs">
-              <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-              {warningText(w)}
+            <p key={w} className="text-warning flex flex-wrap items-start gap-x-1.5 gap-y-0.5 text-xs">
+              <span className="flex items-start gap-1.5">
+                <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                {warningText(w)}
+              </span>
+              <WarningNextAction
+                code={w}
+                className="text-skyline ml-5 inline-flex items-center gap-1 font-semibold hover:underline"
+              />
             </p>
           ))}
           <ul className="flex flex-col gap-1">
             {members.map((p) => (
               <li key={p.id} className="flex items-center gap-2 text-xs">
-                <span className="min-w-0 flex-1 truncate">
+                <span
+                  className="min-w-0 flex-1 truncate"
+                  title={`${p.firstName} ${p.lastName} · ${name('role', p.roleCode)}`}
+                >
                   {p.firstName} {p.lastName}
                   <span className="text-muted"> · {name('role', p.roleCode)}</span>
                 </span>
@@ -237,7 +249,9 @@ export function FacilityPersonnelSection({ facility }: { facility: FacilityDto }
         <ul className="mt-3 flex flex-col gap-1.5">
           {teams.map((team) => (
             <li key={team.id} className="flex items-center gap-2 text-sm">
-              <span className="min-w-0 flex-1 truncate font-semibold">{team.name}</span>
+              <span className="min-w-0 flex-1 truncate font-semibold" title={team.name}>
+                {team.name}
+              </span>
               <span className="tabular text-muted text-xs">{Math.round(team.readiness * 100)}%</span>
               <TeamStatusChip status={team.status} />
             </li>

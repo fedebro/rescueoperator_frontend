@@ -137,16 +137,21 @@ export function TopdownGlyph({
   vehicleClass,
   family,
   size = 32,
+  title,
   className,
 }: {
   vehicleClass: VehicleClass;
   family: ServiceFamily;
   size?: number;
+  title?: string;
   className?: string;
 }) {
   return (
     <span
-      aria-hidden
+      role={title ? 'img' : undefined}
+      aria-label={title}
+      aria-hidden={title ? undefined : true}
+      title={title}
       className={cn('inline-block shrink-0', className)}
       style={{ width: size, height: size }}
       dangerouslySetInnerHTML={{ __html: topdownSvg(vehicleClass, family, size) }}

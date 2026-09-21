@@ -10,10 +10,17 @@ import { useAuthStore } from '@/stores/auth';
 const CareerContext = React.createContext<string | null>(null);
 export const CareerProvider = CareerContext.Provider;
 
-export function useCareerId(): string {
+/** Same resolution as {@link useCareerId}, but `null` outside of a career instead of throwing — for UI (like the
+ * contextual-coaching primers/coach marks) that can legitimately render in both game and career-less screens (e.g.
+ * `/admin` for a staff-only account with no active career of their own). */
+export function useCareerIdOptional(): string | null {
   const fromContext = React.useContext(CareerContext);
   const fromUser = useAuthStore((s) => s.user?.activeCareerId ?? null);
-  const id = fromContext ?? fromUser;
+  return fromContext ?? fromUser;
+}
+
+export function useCareerId(): string {
+  const id = useCareerIdOptional();
   if (!id) throw new Error('useCareerId used outside of a career');
   return id;
 }

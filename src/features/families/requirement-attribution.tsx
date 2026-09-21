@@ -29,8 +29,13 @@ export function RequirementAttribution({ incident }: { incident: IncidentDto }) 
             data-external={external || undefined}
           >
             <div className="flex items-center gap-2">
-              {family === 'NONE' ? null : <FamilyBadge family={family} size={22} />}
-              <span className="min-w-0 flex-1 truncate text-sm font-semibold">
+              {family === 'NONE' ? null : (
+                <FamilyBadge family={family} size={22} title={name('family', family)} />
+              )}
+              <span
+                className="min-w-0 flex-1 truncate text-sm font-semibold"
+                title={family === 'NONE' ? t('anyFamily') : name('family', family)}
+              >
                 {family === 'NONE' ? t('anyFamily') : name('family', family)}
               </span>
               {external ? (

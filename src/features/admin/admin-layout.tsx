@@ -39,6 +39,7 @@ import { Drawer } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/ui/misc';
 import { cn } from '@/lib/utils';
+import { SectionHelpButton, SectionPrimer } from '@/features/coaching/section-primer';
 import { resolveEnvironment, type AdminEnvironment } from './environment';
 
 const ITEMS = [
@@ -111,10 +112,18 @@ function Shell({ children }: { children: React.ReactNode }) {
   const t = useTranslations('admin.nav');
   const ts = useTranslations('admin.shell');
   const tc = useTranslations('common');
+  const ta = useTranslations('coaching.sections.admin');
+  const tco = useTranslations('coaching');
   const pathname = usePathname();
   const desktop = useIsDesktop();
   const user = useAuthStore((s) => s.user);
   const [menuOpen, setMenuOpen] = React.useState(false);
+  const adminContent = {
+    sectionKey: 'admin',
+    title: ta('title'),
+    body: ta('body'),
+    tips: [ta('tip1'), ta('tip2')],
+  };
 
   const nav = (
     <nav aria-label={t('label')}>
@@ -199,8 +208,16 @@ function Shell({ children }: { children: React.ReactNode }) {
           <div className="mx-auto flex max-w-7xl flex-col gap-4 p-4 lg:p-6">
             <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
               <Breadcrumb pathname={pathname} />
-              <GlobalSearch />
+              <div className="flex items-center gap-2">
+                <GlobalSearch />
+                <SectionHelpButton
+                  content={adminContent}
+                  label={tco('help.buttonLabel')}
+                  closeLabel={tc('close')}
+                />
+              </div>
             </div>
+            <SectionPrimer content={adminContent} />
             {children}
           </div>
         </main>

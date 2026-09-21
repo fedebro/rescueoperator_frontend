@@ -45,7 +45,14 @@
       "confirm": "Ausgeben und abschließen",
       "confirmFree": "Kostenlos abschließen",
       "done": "Vorgang abgeschlossen",
-      "alreadyDone": "Der Vorgang ist bereits beendet: Du hast nichts ausgegeben."
+      "alreadyDone": "Der Vorgang ist bereits beendet: Du hast nichts ausgegeben.",
+      "allButton": "Jetzt alle abschließen ({count})",
+      "allTitle": "Jetzt alles abschließen?",
+      "allDescription": "Du bist dabei, {count} laufende Vorgänge sofort abzuschließen.",
+      "allCost": "Gesamtkosten",
+      "allDone": "{count, plural, one {Vorgang abgeschlossen} other {# Vorgänge abgeschlossen}}",
+      "allPartial": "{done} von {count} abgeschlossen",
+      "allFailed": "Kein Vorgang konnte abgeschlossen werden."
     },
     "purchaseStatus": {
       "CREATED": "Wartet auf Zahlung",

@@ -54,6 +54,7 @@
     "INCIDENT_NOT_DISPATCHABLE": "Esta emergencia ya no admite más vehículos.",
     "VEHICLE_NOT_AVAILABLE": "Uno de los vehículos ya no está disponible. La propuesta se ha actualizado.",
     "VEHICLE_NOT_RECALLABLE": "Este vehículo no se puede retirar ahora.",
+    "VEHICLE_NOT_CHAINABLE": "Este vehículo no se puede encadenar a una nueva emergencia ahora: usa el envío normal.",
     "CREW_INSUFFICIENT": "Dotación insuficiente para que el vehículo salga.",
     "CREW_UNQUALIFIED": "La dotación no tiene la cualificación necesaria.",
     "CREW_EXHAUSTED": "La dotación está agotada y necesita descansar.",
@@ -446,6 +447,8 @@
       "space": "Plazas",
       "delivery": "Entrega",
       "lockedFamily": "Servicio aún no desbloqueado",
+      "crewGapWarning": "Su dotación necesitará {roles}, que ahora mismo no tienes ni en plantilla ni entre los candidatos.",
+      "crewGapWarningLink": "Ir a Personal",
       "bought": "{callSign} pedido",
       "boughtHint": "Estará operativo cuando termine la entrega.",
       "insufficient": {
@@ -456,6 +459,10 @@
         "watchAd": "Mira un vídeo y recibe Créditos",
         "buyCredits": "Comprar Créditos",
         "soon": "Pronto"
+      },
+      "tutorialComplete": {
+        "title": "¡Tutorial completado!",
+        "body": "Ahora la central es toda tuya: emergencias, vehículos, personal y crecimiento dependen de ti."
       }
     },
     "outcome": {

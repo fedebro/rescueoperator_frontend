@@ -1,5 +1,6 @@
 'use client';
 import * as React from 'react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { CheckCircle2, LifeBuoy } from 'lucide-react';
 import type { IncidentDto } from '@/contracts';
@@ -10,9 +11,13 @@ import { GameIcon, categoryIconName } from '@/design/icons';
 import { SeverityBadge, severityColor } from '@/components/ui/severity-badge';
 import { StatusChip } from '@/components/ui/status-chip';
 import { Countdown } from '@/components/ui/countdown';
+import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/misc';
 import { IncidentFamilies } from '@/features/families/family-chips';
-import { SEVERITY_ORDER, useSnapshot } from './hooks';
+import { useFamilies } from '@/features/families/use-families';
+import { pickIdleSuggestion } from '@/features/coaching/idle-suggestion';
+import { useIdleSuggestionCopy } from '@/features/coaching/idle-suggestion-copy';
+import { SEVERITY_ORDER, useCatalog, useSnapshot } from './hooks';
 
 export function IncidentCard({
   incident,
@@ -112,7 +117,9 @@ export function IncidentQueue({
   onSelected?: (incident: IncidentDto) => void;
   className?: string;
 }) {
-  const { incidents, career } = useSnapshot();
+  const { incidents, vehicles, career } = useSnapshot();
+  const catalog = useCatalog();
+  const families = useFamilies();
   const t = useTranslations('game.queue');
   const selection = useUiStore((s) => s.selection);
   const select = useUiStore((s) => s.select);
@@ -121,6 +128,19 @@ export function IncidentQueue({
     select({ kind: 'incident', id: incident.id }, { focus: incident.position });
     onSelected?.(incident);
   };
+  // "What should I do now": an idle Operations screen picks ONE concrete next action from real career state
+  // (a broken-down vehicle, an affordable upgrade, a family close to unlocking) instead of generic copy.
+  const idleSuggestion =
+    sorted.length === 0
+      ? pickIdleSuggestion({
+          vehicles,
+          vehicleTypes: catalog?.vehicleTypes,
+          families,
+          credits: career.credits,
+          level: career.level,
+        })
+      : null;
+  const idleCopy = useIdleSuggestionCopy(idleSuggestion);
   return (
     <section
       aria-label={t('title')}
@@ -132,7 +152,14 @@ export function IncidentQueue({
         <EmptyState
           icon={<CheckCircle2 className="size-5" />}
           title={t('emptyTitle')}
-          description={career.onDuty ? t('emptyOnDuty') : t('emptyOffDuty')}
+          description={idleCopy?.text ?? (career.onDuty ? t('emptyOnDuty') : t('emptyOffDuty'))}
+          action={
+            idleCopy ? (
+              <Button asChild variant="secondary" size="sm" data-testid="idle-suggestion-action">
+                <Link href={idleCopy.href}>{idleCopy.label}</Link>
+              </Button>
+            ) : undefined
+          }
         />
       ) : (
         <ul className="flex flex-col gap-2">

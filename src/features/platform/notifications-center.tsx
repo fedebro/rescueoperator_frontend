@@ -37,6 +37,7 @@ import { Button } from '@/components/ui/button';
 import { Drawer } from '@/components/ui/drawer';
 import { EmptyState, Skeleton } from '@/components/ui/misc';
 import { Switch } from '@/components/ui/switch';
+import { SectionHelpButton, SectionPrimer } from '@/features/coaching/section-primer';
 import { useCareerId, useSnapshot } from '@/features/game/hooks';
 import {
   CATEGORIES,
@@ -279,6 +280,15 @@ function FilterChip({
 function NotificationsPanel({ onNavigate }: { onNavigate: () => void }) {
   const t = useTranslations('notificationCenter');
   const tg = useTranslations('game');
+  const tc = useTranslations('common');
+  const tn = useTranslations('coaching.sections.notifications');
+  const tco = useTranslations('coaching');
+  const notificationsContent = {
+    sectionKey: 'notifications',
+    title: tn('title'),
+    body: tn('body'),
+    tips: [tn('tip1'), tn('tip2')],
+  };
   const careerId = useCareerId();
   const now = useServerNow(30_000);
   const runAction = useNotificationAction();
@@ -310,6 +320,7 @@ function NotificationsPanel({ onNavigate }: { onNavigate: () => void }) {
   return (
     <div className="flex h-full min-h-0 flex-col" data-testid="notifications-panel">
       <div className="border-border flex shrink-0 flex-col gap-2 border-b px-4 py-3">
+        <SectionPrimer content={notificationsContent} />
         <div className="flex items-center justify-between gap-3">
           <label htmlFor={unreadSwitchId} className="flex min-h-11 items-center gap-2 text-sm lg:min-h-0">
             <Switch
@@ -320,6 +331,11 @@ function NotificationsPanel({ onNavigate }: { onNavigate: () => void }) {
             />
             {t('unreadOnly')}
           </label>
+          <SectionHelpButton
+            content={notificationsContent}
+            label={tco('help.buttonLabel')}
+            closeLabel={tc('close')}
+          />
           <Button
             variant="outline"
             size="sm"

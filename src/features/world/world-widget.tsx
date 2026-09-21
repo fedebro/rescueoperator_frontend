@@ -30,6 +30,7 @@ import { useUiStore } from '@/stores/ui';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { SectionPrimer } from '@/features/coaching/section-primer';
 import { useWorld } from './use-world';
 import { useWorldUi } from './world-ui';
 import { Popover } from './popover';
@@ -187,6 +188,7 @@ export function WorldDetails({
 }) {
   const t = useTranslations('world.widget');
   const tw = useTranslations('game.world');
+  const twc = useTranslations('coaching.sections.world');
   const locale = useLocale();
   const name = useCatalogName();
   const router = useRouter();
@@ -196,6 +198,12 @@ export function WorldDetails({
   const WeatherIcon = WEATHER_ICON[world.weather.code];
   const PhaseIcon = PHASE_ICON[world.dayPhase];
   const delay = travelDelay(world);
+  const worldContent = {
+    sectionKey: 'world',
+    title: twc('title'),
+    body: twc('body'),
+    tips: [twc('tip1'), twc('tip2')],
+  };
 
   const showClosures = () => {
     setMapLayer('closures', true);
@@ -206,6 +214,7 @@ export function WorldDetails({
 
   return (
     <div className="flex flex-col gap-4 text-sm">
+      <SectionPrimer content={worldContent} />
       <Row icon={<WeatherIcon className="size-5" />} title={t('weather')}>
         <p className="font-semibold">
           {tw(`weather.${world.weather.code}`)}

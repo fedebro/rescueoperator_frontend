@@ -54,6 +54,7 @@
     "INCIDENT_NOT_DISPATCHABLE": "This emergency can no longer receive vehicles.",
     "VEHICLE_NOT_AVAILABLE": "One of the vehicles is no longer available. The suggestion has been updated.",
     "VEHICLE_NOT_RECALLABLE": "This vehicle can’t be recalled right now.",
+    "VEHICLE_NOT_CHAINABLE": "This vehicle can’t be chained to a new incident right now: use the normal dispatch instead.",
     "CREW_INSUFFICIENT": "Not enough crew to send this vehicle out.",
     "CREW_UNQUALIFIED": "The crew doesn’t have the required qualifications.",
     "CREW_EXHAUSTED": "The crew is exhausted and needs to rest.",
@@ -446,6 +447,8 @@
       "space": "Bays",
       "delivery": "Delivery",
       "lockedFamily": "Service not unlocked yet",
+      "crewGapWarning": "Its crew will need {roles}, which you currently have neither on staff nor among the candidates.",
+      "crewGapWarningLink": "Go to Personnel",
       "bought": "{callSign} ordered",
       "boughtHint": "It will be operational once delivered.",
       "insufficient": {
@@ -456,6 +459,10 @@
         "watchAd": "Watch a video and earn Credits",
         "buyCredits": "Buy Credits",
         "soon": "Soon"
+      },
+      "tutorialComplete": {
+        "title": "Tutorial complete!",
+        "body": "The station is all yours now: incidents, vehicles, personnel and growth are up to you."
       }
     },
     "outcome": {
