@@ -63,7 +63,9 @@
     "ROUTE_UNAVAILABLE": "Aucun itinéraire disponible vers la destination.",
     "HOSPITAL_NOT_COMPATIBLE": "L’hôpital choisi ne peut pas accueillir ce patient.",
     "INVALID_STATE_TRANSITION": "Opération non autorisée pour le moment.",
-    "FEATURE_DISABLED": "Cette fonctionnalité n’est pas encore active."
+    "FEATURE_DISABLED": "Cette fonctionnalité n’est pas encore active.",
+    "VEHICLE_DOMAIN_MISMATCH": "Un moyen nautique ne peut être envoyé que sur une urgence en milieu aquatique.",
+    "AIR_SUPPORT_NOT_NEEDED": "Cette urgence ne demande aucun moyen aérien."
   },
   "errorBoundary": {
     "title": "Une erreur s’est produite",
@@ -358,6 +360,10 @@
         "CREW_FATIGUED": "Équipage épuisé",
         "STOCK_MISSING": "Stock épuisé : {item}",
         "STOCK_LOW": "Stock presque épuisé : {item}"
+      },
+      "ineligible": {
+        "VEHICLE_DOMAIN_MISMATCH": "Moyen nautique : il ne peut intervenir que sur l’eau",
+        "AIR_SUPPORT_NOT_NEEDED": "Moyen aérien : cette urgence ne demande aucun appui aérien"
       }
     },
     "vehicle": {

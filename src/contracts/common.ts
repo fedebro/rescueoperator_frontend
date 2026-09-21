@@ -69,6 +69,10 @@ export const ErrorCode = z.enum([
   'VEHICLE_NOT_AVAILABLE',
   'VEHICLE_NOT_RECALLABLE',
   'VEHICLE_NOT_CHAINABLE',
+  /** A WATER-domain vehicle (boat, ship) sent to an incident that is not on or at the water. */
+  'VEHICLE_DOMAIN_MISMATCH',
+  /** An aircraft sent to an incident none of whose requirements it can contribute anything to. */
+  'AIR_SUPPORT_NOT_NEEDED',
   'CREW_INSUFFICIENT',
   'CREW_UNQUALIFIED',
   'CREW_EXHAUSTED',

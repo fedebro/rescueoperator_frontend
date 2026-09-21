@@ -63,7 +63,9 @@
     "ROUTE_UNAVAILABLE": "Keine Route zum Ziel verfügbar.",
     "HOSPITAL_NOT_COMPATIBLE": "Das gewählte Krankenhaus kann diesen Patienten nicht aufnehmen.",
     "INVALID_STATE_TRANSITION": "Diese Aktion ist im Moment nicht möglich.",
-    "FEATURE_DISABLED": "Diese Funktion ist noch nicht aktiv."
+    "FEATURE_DISABLED": "Diese Funktion ist noch nicht aktiv.",
+    "VEHICLE_DOMAIN_MISMATCH": "Ein Wasserfahrzeug kann nur zu einem Einsatz auf dem Wasser geschickt werden.",
+    "AIR_SUPPORT_NOT_NEEDED": "Dieser Einsatz verlangt kein Luftfahrzeug."
   },
   "errorBoundary": {
     "title": "Ein Fehler ist aufgetreten",
@@ -358,6 +360,10 @@
         "CREW_FATIGUED": "Erschöpfte Besatzung",
         "STOCK_MISSING": "Bestand aufgebraucht: {item}",
         "STOCK_LOW": "Bestand fast aufgebraucht: {item}"
+      },
+      "ineligible": {
+        "VEHICLE_DOMAIN_MISMATCH": "Wasserfahrzeug: nur bei Einsätzen auf dem Wasser einsetzbar",
+        "AIR_SUPPORT_NOT_NEEDED": "Luftfahrzeug: dieser Einsatz verlangt keine Luftunterstützung"
       }
     },
     "vehicle": {

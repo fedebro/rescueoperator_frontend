@@ -137,6 +137,14 @@ const INCIDENTS: Record<string, PictogramName> = {
   'incident-multi-gas-leak': 'cat_gas_leak',
   'incident-multi-severe-weather': 'cat_weather',
   'incident-multi-person-in-water': 'cat_water_rescue',
+  // Water incidents (catalog/data/incident-templates/marine.yaml): all rescues on or from the water, so they share the
+  // water-rescue glyph; the burning hull is the one that reads better as a vehicle fire.
+  'incident-tech-vessel-adrift': 'cat_water_rescue',
+  'incident-fire-vessel-blaze': 'cat_fire_vehicle',
+  'incident-med-swimmer-distress': 'cat_water_rescue',
+  'incident-med-lake-rescue': 'cat_water_rescue',
+  'incident-multi-capsized-boat': 'cat_water_rescue',
+  'incident-multi-person-overboard': 'cat_water_rescue',
   'incident-multi-hazmat-spill': 'inc_multi_hazmat_spill',
   'incident-multi-building-collapse': 'inc_multi_building_collapse',
   'incident-pol-brawl': 'inc_pol_brawl',

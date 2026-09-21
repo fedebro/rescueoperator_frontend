@@ -8,6 +8,7 @@ import type { IncidentDto } from '@/contracts';
 import { gameApi } from '@/lib/api/endpoints';
 import { qk } from '@/lib/api/query-keys';
 import { isApiError, type ApiErrorCode } from '@/lib/api/errors';
+import type { DispatchOptionsResult } from '@/lib/api/types';
 import { useErrorMessage } from '@/lib/api/error-message';
 import { formatClock, formatDistance } from '@/lib/format';
 import { playSound } from '@/lib/sound';
@@ -104,6 +105,35 @@ const DISPATCH_STALE_CODES: ReadonlySet<ApiErrorCode> = new Set([
   'CREW_EXHAUSTED',
   'INVENTORY_INSUFFICIENT',
 ]);
+
+/**
+ * Blocks that describe what a vehicle *is* rather than what it is doing: a boat cannot be sent inland, an aircraft is
+ * not launched for an incident it would contribute nothing to. Unlike a crew or stock block there is nothing to fix
+ * and nothing to wait for, so the row shows the reason on its own, with no "how to fix it" link.
+ */
+const ELIGIBILITY_BLOCKS = ['VEHICLE_DOMAIN_MISMATCH', 'AIR_SUPPORT_NOT_NEEDED'] as const;
+type EligibilityBlock = (typeof ELIGIBILITY_BLOCKS)[number];
+export const eligibilityBlockOf = (
+  option: DispatchOptionsResult['options'][number],
+): EligibilityBlock | null => ELIGIBILITY_BLOCKS.find((code) => code === option.blockedReason) ?? null;
+
+/** Reason line for a vehicle that is ineligible by nature; mirrors the crew block's wording and styling. */
+function DispatchEligibilityBlock({ option }: { option: DispatchOptionsResult['options'][number] }) {
+  const t = useTranslations('game.dispatch.ineligible');
+  const block = eligibilityBlockOf(option);
+  if (!block) return null;
+  return (
+    <p
+      className="text-danger mt-2 flex items-center gap-1 pl-[30px] text-xs font-semibold"
+      role="status"
+      data-testid="dispatch-ineligible"
+      data-blocked={block}
+    >
+      <AlertTriangle className="size-3.5 shrink-0" aria-hidden />
+      {t(block)}
+    </p>
+  );
+}
 
 /** Assisted but fully editable dispatch: one tap sends the recommended set, no confirmation step (Spec 05 §13). */
 export function DispatchPanel({ incident }: { incident: IncidentDto }) {
@@ -381,6 +411,7 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
                         ))}
                       </div>
                     ) : null}
+                    <DispatchEligibilityBlock option={o} />
                     <DispatchCrewPreview option={o} />
                   </li>
                 );

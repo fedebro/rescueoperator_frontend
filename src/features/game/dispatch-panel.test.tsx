@@ -120,3 +120,60 @@ describe('DispatchPanel — dispatch command rejects an option the list marked d
     expect(screen.getByTestId('send-selected')).toBeInTheDocument();
   });
 });
+
+/**
+ * The boat that could be sent to a city flood, and the helicopter that could be sent to a bin fire: the server now
+ * refuses both outright, and the row has to say why. There is nothing the player can buy or rest to unblock these,
+ * so the reason stands on its own with no "fix it" link — unlike a crew block.
+ *
+ * Each case needs a second, sendable vehicle: with nothing dispatchable the panel replaces the whole option list
+ * with the "no vehicles available" empty state, and no row would be rendered at all.
+ */
+describe('DispatchPanel — a vehicle that is ineligible by nature', () => {
+  const peer = { ...vehicle, id: 'veh_01HZZZZZZZZZZZZZZZZZZZZZZ2', callSign: 'VF-2' };
+  const peerOption = { ...dispatchableOption, vehicleId: peer.id };
+
+  const renderWithBlocked = (blockedReason: string) => {
+    vi.mocked(gameApi.dispatchOptions).mockResolvedValue({
+      options: [{ ...dispatchableOption, dispatchable: false, blockedReason }, peerOption],
+      recommendedVehicleIds: [],
+      recommendationCoversRequired: false,
+    } as never);
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    qc.setQueryData(qk.sync(CAREER_ID), { vehicles: [vehicle, peer], facilities: [facility] });
+    return renderWithIntl(
+      <QueryClientProvider client={qc}>
+        <CareerProvider value={CAREER_ID}>
+          <DispatchPanel incident={incident as never} />
+        </CareerProvider>
+      </QueryClientProvider>,
+    );
+  };
+
+  beforeEach(() => {
+    vi.mocked(gameApi.catalog).mockResolvedValue({ vehicleTypes: [] } as never);
+  });
+  afterEach(() => vi.clearAllMocks());
+
+  it.each([
+    ['VEHICLE_DOMAIN_MISMATCH', /solo su emergenze in acqua/i],
+    ['AIR_SUPPORT_NOT_NEEDED', /non richiede supporto aereo/i],
+  ] as const)('disables the vehicle and explains %s', async (code, text) => {
+    renderWithBlocked(code);
+
+    expect(await screen.findByRole('checkbox', { name: /VF-1/ })).toBeDisabled();
+    expect(screen.getByRole('checkbox', { name: /VF-2/ })).not.toBeDisabled();
+    const reason = await screen.findByTestId('dispatch-ineligible');
+    expect(reason).toHaveAttribute('data-blocked', code);
+    expect(reason.textContent).toMatch(text);
+    // The crew block's "how to fix it" link must not appear: there is nothing to fix here.
+    expect(screen.queryByTestId('crew-fix-link')).not.toBeInTheDocument();
+  });
+
+  it('says nothing extra for a vehicle that is simply busy', async () => {
+    renderWithBlocked('VEHICLE_NOT_AVAILABLE');
+
+    expect(await screen.findByRole('checkbox', { name: /VF-1/ })).toBeDisabled();
+    expect(screen.queryByTestId('dispatch-ineligible')).not.toBeInTheDocument();
+  });
+});

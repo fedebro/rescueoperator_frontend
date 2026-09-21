@@ -63,7 +63,9 @@
     "ROUTE_UNAVAILABLE": "No hay ninguna ruta disponible hasta el destino.",
     "HOSPITAL_NOT_COMPATIBLE": "El hospital elegido no puede atender a este paciente.",
     "INVALID_STATE_TRANSITION": "Operación no permitida en este momento.",
-    "FEATURE_DISABLED": "Esta función todavía no está activa."
+    "FEATURE_DISABLED": "Esta función todavía no está activa.",
+    "VEHICLE_DOMAIN_MISMATCH": "Un medio náutico solo puede enviarse a una emergencia en el agua.",
+    "AIR_SUPPORT_NOT_NEEDED": "Esta emergencia no requiere un medio aéreo."
   },
   "errorBoundary": {
     "title": "Se ha producido un error",
@@ -358,6 +360,10 @@
         "CREW_FATIGUED": "Dotación agotada",
         "STOCK_MISSING": "Sin existencias: {item}",
         "STOCK_LOW": "Existencias casi agotadas: {item}"
+      },
+      "ineligible": {
+        "VEHICLE_DOMAIN_MISMATCH": "Medio náutico: solo puede intervenir en emergencias en el agua",
+        "AIR_SUPPORT_NOT_NEEDED": "Medio aéreo: esta emergencia no requiere apoyo aéreo"
       }
     },
     "vehicle": {

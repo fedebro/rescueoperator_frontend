@@ -63,7 +63,9 @@
     "ROUTE_UNAVAILABLE": "No route available to the destination.",
     "HOSPITAL_NOT_COMPATIBLE": "The chosen hospital can’t admit this patient.",
     "INVALID_STATE_TRANSITION": "This action isn’t allowed right now.",
-    "FEATURE_DISABLED": "This feature isn’t active yet."
+    "FEATURE_DISABLED": "This feature isn’t active yet.",
+    "VEHICLE_DOMAIN_MISMATCH": "A marine vehicle can only be sent to an incident on the water.",
+    "AIR_SUPPORT_NOT_NEEDED": "This emergency does not call for an aircraft."
   },
   "errorBoundary": {
     "title": "An error occurred",
@@ -358,6 +360,10 @@
         "CREW_FATIGUED": "Fatigued crew",
         "STOCK_MISSING": "Out of stock: {item}",
         "STOCK_LOW": "Running low: {item}"
+      },
+      "ineligible": {
+        "VEHICLE_DOMAIN_MISMATCH": "Marine vehicle: it can only work incidents on the water",
+        "AIR_SUPPORT_NOT_NEEDED": "Aircraft: this emergency does not call for air support"
       }
     },
     "vehicle": {
