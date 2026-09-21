@@ -200,3 +200,46 @@ export type MaintenanceOverview = z.infer<typeof MaintenanceOverview>;
 /** ★POST /patients/:id/transport → the patient, the ambulance that took it and the incident it came from. */
 export const TransportPatientResult = z.object({ patient: PatientDto, vehicle: VehicleDto, incident: IncidentDto.optional() });
 export type TransportPatientResult = z.infer<typeof TransportPatientResult>;
+
+/* ───────────── water sources: where a water-supply aircraft refills (additive) ───────────── */
+
+/** `WATER` = inland water body or major river, `COAST` = sea. Both come from the imported geodata (no new source). */
+export const WaterSourceKind = z.enum(['WATER', 'COAST']);
+export type WaterSourceKind = z.infer<typeof WaterSourceKind>;
+
+/**
+ * One refill point. `id` is the geodata's stable external key (not a ULID): it survives re-imports of the same feature.
+ * `name` is the OSM feature name when the map has one ("Lago di Bomba", "Fino"); when it has none the client composes a
+ * label from `kind` + `locality` (the municipality the point belongs to), which is why both travel separately.
+ */
+export const WaterSourceDto = z.object({
+  id: z.string().min(1).max(96),
+  kind: WaterSourceKind,
+  name: z.string().nullable(),
+  locality: z.string().nullable(),
+  position: LngLat,
+});
+export type WaterSourceDto = z.infer<typeof WaterSourceDto>;
+
+export const WaterSourceOption = WaterSourceDto.extend({
+  /** Straight-line distance from the incident (aircraft fly direct). */
+  distanceMeters: z.number().int(),
+  /** Game seconds for the whole run from the scene: out + scoop + back. */
+  runSeconds: z.number().int(),
+  /** The nearest one — what the server uses when the player never chooses. Exactly one option carries it. */
+  recommended: z.boolean(),
+  /** The player's explicit choice for this incident, if any. */
+  selected: z.boolean(),
+});
+export type WaterSourceOption = z.infer<typeof WaterSourceOption>;
+
+/** GET /incidents/:incidentId/water-sources */
+export const WaterSourcesResult = z.object({
+  options: z.array(WaterSourceOption),
+  selectedId: z.string().nullable(),
+});
+export type WaterSourcesResult = z.infer<typeof WaterSourcesResult>;
+
+/** ★POST /incidents/:incidentId/water-source */
+export const ChooseWaterSourceBody = z.object({ waterSourceId: z.string().min(1).max(96) });
+export type ChooseWaterSourceBody = z.infer<typeof ChooseWaterSourceBody>;

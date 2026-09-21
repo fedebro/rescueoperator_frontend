@@ -55,6 +55,7 @@ import { ConstructionBanner } from '@/features/facilities/facility-extras';
 import { TransferVehicleButton } from '@/features/facilities/transfer-vehicle';
 import { SiteInspector } from '@/features/facilities/map-overlay';
 import { IncidentPatients } from '@/features/medical/incident-patients';
+import { WaterSourcePanel } from '@/features/water/water-source-panel';
 import { HospitalInspector } from '@/features/medical/map-overlay';
 import { VehicleCrewSection } from '@/features/personnel/slots';
 import { VehicleMaintenanceSection } from '@/features/logistics/slots';
@@ -248,6 +249,7 @@ export function IncidentInspector({ incident }: { incident: IncidentDto }) {
               </div>
             ) : null}
             <IncidentExternalSupport incident={incident} />
+            <WaterSourcePanel incident={incident} />
             <IncidentPatients incident={incident} />
             {incident.status === 'RESOLVING' ? null : <DispatchPanel incident={incident} />}
           </TabsContent>

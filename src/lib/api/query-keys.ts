@@ -34,6 +34,7 @@ export const qk = {
   hospitalOptions: (id: string, patientId: string) =>
     ['career', id, 'medical', 'options', patientId] as const,
   hospitals: (id: string) => ['career', id, 'medical', 'hospitals'] as const,
+  waterSources: (id: string, incidentId: string) => ['career', id, 'water-sources', incidentId] as const,
   inventory: (id: string) => ['career', id, 'inventory'] as const,
   inventoryItems: (id: string) => ['career', id, 'inventory', 'items'] as const,
   maintenance: (id: string) => ['career', id, 'maintenance'] as const,

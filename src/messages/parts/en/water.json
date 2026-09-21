@@ -1,0 +1,30 @@
+{
+  "water": {
+    "title": "Water pickup",
+    "hint": "{count, plural, one {The water bomber reloads here} other {The water bombers reload here}} between drops.",
+    "nearest": "Nearest",
+    "distance": "Distance",
+    "run": "Round trip",
+    "chooseOther": "Choose another source",
+    "hideOptions": "Hide the alternatives",
+    "chooseTitle": "Where to reload",
+    "select": "Choose {source}",
+    "chosen": "Reloading at {source}",
+    "loading": "Loading the water sources",
+    "none": "No water within operational range: the aircraft stay on the fire.",
+    "sea": "Sea",
+    "water": "Body of water",
+    "seaNear": "Sea off {locality}",
+    "waterNear": "Body of water near {locality}"
+  },
+  "status": {
+    "vehicle": {
+      "TO_WATER_SOURCE": "To the water",
+      "AT_WATER_SOURCE": "Taking on water"
+    }
+  },
+  "timeline": {
+    "vehicle_water_run_started": "{callSign} is going to reload water at {waterSource}",
+    "vehicle_water_run_done": "{callSign} has taken on water and is heading back to the fire"
+  }
+}

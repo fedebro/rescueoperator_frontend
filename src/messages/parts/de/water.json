@@ -1,0 +1,30 @@
+{
+  "water": {
+    "title": "Wasseraufnahme",
+    "hint": "{count, plural, one {Das Löschflugzeug nimmt hier zwischen den Abwürfen Wasser auf} other {Die Löschflugzeuge nehmen hier zwischen den Abwürfen Wasser auf}}.",
+    "nearest": "Am nächsten",
+    "distance": "Entfernung",
+    "run": "Hin und zurück",
+    "chooseOther": "Andere Quelle wählen",
+    "hideOptions": "Alternativen ausblenden",
+    "chooseTitle": "Wo Wasser aufgenommen wird",
+    "select": "{source} wählen",
+    "chosen": "Wasseraufnahme an {source}",
+    "loading": "Wasserquellen werden geladen",
+    "none": "Kein Gewässer in Reichweite: die Luftfahrzeuge bleiben am Brand.",
+    "sea": "Meer",
+    "water": "Gewässer",
+    "seaNear": "Meer vor {locality}",
+    "waterNear": "Gewässer bei {locality}"
+  },
+  "status": {
+    "vehicle": {
+      "TO_WATER_SOURCE": "Auf dem Weg zum Wasser",
+      "AT_WATER_SOURCE": "Nimmt Wasser auf"
+    }
+  },
+  "timeline": {
+    "vehicle_water_run_started": "{callSign} fliegt zur Wasseraufnahme nach {waterSource}",
+    "vehicle_water_run_done": "{callSign} hat Wasser aufgenommen und kehrt zum Brand zurück"
+  }
+}

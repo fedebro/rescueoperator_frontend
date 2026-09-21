@@ -1,0 +1,30 @@
+{
+  "water": {
+    "title": "Rifornimento d’acqua",
+    "hint": "{count, plural, one {Il velivolo antincendio si rifornisce qui} other {I velivoli antincendio si riforniscono qui}} fra un lancio e l’altro.",
+    "nearest": "Più vicino",
+    "distance": "Distanza",
+    "run": "Andata e ritorno",
+    "chooseOther": "Scegli un’altra fonte",
+    "hideOptions": "Nascondi le alternative",
+    "chooseTitle": "Dove fare rifornimento",
+    "select": "Scegli {source}",
+    "chosen": "Rifornimento a {source}",
+    "loading": "Caricamento delle fonti d’acqua",
+    "none": "Nessuno specchio d’acqua nel raggio operativo: i velivoli restano sul posto.",
+    "sea": "Mare",
+    "water": "Specchio d’acqua",
+    "seaNear": "Mare presso {locality}",
+    "waterNear": "Specchio d’acqua presso {locality}"
+  },
+  "status": {
+    "vehicle": {
+      "TO_WATER_SOURCE": "Verso il rifornimento",
+      "AT_WATER_SOURCE": "Rifornimento d’acqua"
+    }
+  },
+  "timeline": {
+    "vehicle_water_run_started": "{callSign} va a rifornirsi d’acqua a {waterSource}",
+    "vehicle_water_run_done": "{callSign} ha caricato acqua e torna sull’incendio"
+  }
+}

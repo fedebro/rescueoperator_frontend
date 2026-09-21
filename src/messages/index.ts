@@ -17,6 +17,7 @@ export const MESSAGE_PARTS = [
   'platform',
   'admin',
   'coaching',
+  'water',
 ] as const;
 
 export type MessageTree = { [key: string]: MessageTree | string };

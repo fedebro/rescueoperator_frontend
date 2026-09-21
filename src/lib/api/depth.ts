@@ -44,6 +44,7 @@ import {
   TrainingOverview,
   TransferVehicleResult,
   TransportPatientResult,
+  WaterSourcesResult,
   VehicleHistoryEntry,
   WorldContextDto,
   type SpeedupTarget,
@@ -115,6 +116,18 @@ export const medicalApi = {
   transport: (careerId: string, patientId: string, body: { hospitalId: string; vehicleId?: string }) =>
     api.command(`${c(careerId)}/patients/${patientId}/transport`, body, { schema: TransportPatientResult }),
   hospitals: (careerId: string) => api.get(`${c(careerId)}/hospitals`, { schema: z.array(HospitalDto) }),
+};
+
+/** Where a water bomber refills: the nearest source is used automatically, this is only for the manual choice. */
+export const waterApi = {
+  sources: (careerId: string, incidentId: string) =>
+    api.get(`${c(careerId)}/incidents/${incidentId}/water-sources`, { schema: WaterSourcesResult }),
+  choose: (careerId: string, incidentId: string, waterSourceId: string) =>
+    api.command(
+      `${c(careerId)}/incidents/${incidentId}/water-source`,
+      { waterSourceId },
+      { schema: WaterSourcesResult },
+    ),
 };
 
 export const logisticsApi = {

@@ -1,0 +1,30 @@
+{
+  "water": {
+    "title": "Ravitaillement en eau",
+    "hint": "{count, plural, one {L’avion bombardier d’eau se ravitaille ici} other {Les avions bombardiers d’eau se ravitaillent ici}} entre deux largages.",
+    "nearest": "Le plus proche",
+    "distance": "Distance",
+    "run": "Aller-retour",
+    "chooseOther": "Choisir une autre source",
+    "hideOptions": "Masquer les alternatives",
+    "chooseTitle": "Où se ravitailler",
+    "select": "Choisir {source}",
+    "chosen": "Ravitaillement à {source}",
+    "loading": "Chargement des points d’eau",
+    "none": "Aucun point d’eau dans le rayon opérationnel : les appareils restent sur le feu.",
+    "sea": "Mer",
+    "water": "Plan d’eau",
+    "seaNear": "Mer au large de {locality}",
+    "waterNear": "Plan d’eau près de {locality}"
+  },
+  "status": {
+    "vehicle": {
+      "TO_WATER_SOURCE": "Vers le point d’eau",
+      "AT_WATER_SOURCE": "Écopage en cours"
+    }
+  },
+  "timeline": {
+    "vehicle_water_run_started": "{callSign} part se ravitailler en eau à {waterSource}",
+    "vehicle_water_run_done": "{callSign} a fait le plein d’eau et retourne sur le feu"
+  }
+}

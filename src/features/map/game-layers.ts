@@ -41,11 +41,17 @@ type VehicleMapState = 'URGENT' | 'RETURNING' | 'ON_SCENE' | 'TROUBLE' | 'NEUTRA
 
 function vehicleMapState(v: VehicleDto): VehicleMapState {
   if (v.movement) {
-    if (v.movement.purpose === 'TO_INCIDENT' || v.movement.purpose === 'TO_HOSPITAL') return 'URGENT';
+    if (
+      v.movement.purpose === 'TO_INCIDENT' ||
+      v.movement.purpose === 'TO_HOSPITAL' ||
+      v.movement.purpose === 'TO_WATER_SOURCE'
+    )
+      return 'URGENT';
     if (v.movement.purpose === 'TO_BASE') return 'RETURNING';
     return 'NEUTRAL'; // DELIVERY, RECOVERY: moving, but nothing urgent for the player right now
   }
-  if (v.status === 'ON_SCENE' || v.status === 'AT_HOSPITAL') return 'ON_SCENE';
+  if (v.status === 'ON_SCENE' || v.status === 'AT_HOSPITAL' || v.status === 'AT_WATER_SOURCE')
+    return 'ON_SCENE';
   if (v.status === 'BROKEN_DOWN' || v.status === 'BEING_RECOVERED') return 'TROUBLE';
   return 'NEUTRAL';
 }
@@ -115,7 +121,14 @@ export function incidentFeatures(incidents: readonly IncidentDto[]): FeatureColl
 }
 
 /** Stationary vehicles that are NOT at their facility even without an incident (broken down on the road, at the hospital). */
-const OFF_BASE_STATUSES = new Set(['BROKEN_DOWN', 'BEING_RECOVERED', 'AT_HOSPITAL', 'TRANSPORTING']);
+const OFF_BASE_STATUSES = new Set([
+  'BROKEN_DOWN',
+  'BEING_RECOVERED',
+  'AT_HOSPITAL',
+  'TRANSPORTING',
+  'TO_WATER_SOURCE',
+  'AT_WATER_SOURCE',
+]);
 
 /** Vehicles away from their base (moving or on scene). Parked vehicles are represented by the facility marker. */
 export function vehicleFeatures(

@@ -1,0 +1,30 @@
+{
+  "water": {
+    "title": "Recarga de agua",
+    "hint": "{count, plural, one {El avión contraincendios recarga aquí} other {Los aviones contraincendios recargan aquí}} entre descarga y descarga.",
+    "nearest": "Más cercano",
+    "distance": "Distancia",
+    "run": "Ida y vuelta",
+    "chooseOther": "Elegir otra fuente",
+    "hideOptions": "Ocultar las alternativas",
+    "chooseTitle": "Dónde recargar",
+    "select": "Elegir {source}",
+    "chosen": "Recarga en {source}",
+    "loading": "Cargando las fuentes de agua",
+    "none": "No hay agua dentro del radio operativo: las aeronaves se quedan en el incendio.",
+    "sea": "Mar",
+    "water": "Masa de agua",
+    "seaNear": "Mar frente a {locality}",
+    "waterNear": "Masa de agua cerca de {locality}"
+  },
+  "status": {
+    "vehicle": {
+      "TO_WATER_SOURCE": "Hacia el agua",
+      "AT_WATER_SOURCE": "Cargando agua"
+    }
+  },
+  "timeline": {
+    "vehicle_water_run_started": "{callSign} va a recargar agua en {waterSource}",
+    "vehicle_water_run_done": "{callSign} ha cargado agua y vuelve al incendio"
+  }
+}
