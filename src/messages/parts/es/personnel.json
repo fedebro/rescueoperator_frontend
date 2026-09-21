@@ -263,8 +263,10 @@
       "preview": "Dotación {available}/{optimal} (mín. {min})",
       "efficiency": "Eficiencia {pct} %",
       "missing": "Falta: {name}",
+      "missingRole": "Falta (recomendado): {name}",
+      "restIn": "Disponible de nuevo en {duration}",
       "blocked": {
-        "CREW_INSUFFICIENT": "Dotación insuficiente",
+        "CREW_INSUFFICIENT": "{short, plural, one {Falta # operador para el mínimo de {min}} other {Faltan # operadores para el mínimo de {min}}}",
         "CREW_UNQUALIFIED": "Dotación sin los requisitos",
         "CREW_EXHAUSTED": "Dotación agotada"
       },

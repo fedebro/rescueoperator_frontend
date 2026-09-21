@@ -187,9 +187,12 @@ describe('DispatchCrewPreview', () => {
       available: 3,
       min: 3,
       optimal: 5,
-      missingQualifications: ['DRIVER_OPERATOR', 'HEAVY_VEHICLE_LICENSE'],
+      // A REQUIRED qualification short (blocks) and a RECOMMENDED role short (doesn't) are independent facts.
+      missingQualifications: ['HEAVY_VEHICLE_LICENSE'],
+      missingRoles: ['DRIVER_OPERATOR'],
       maxFatigueBand: 'TIRED' as const,
       efficiency: 0.76,
+      restUntilSeconds: null as number | null,
     },
   };
   const renderOption = (o: typeof option) => {
@@ -206,17 +209,32 @@ describe('DispatchCrewPreview', () => {
       </QueryClientProvider>,
     );
   };
-  it('shows numbers, efficiency, what is missing and the way to fix the block', () => {
+  it('shows numbers, efficiency, what is missing (both a qualification and a role) and the way to fix the block', () => {
     renderOption(option);
     expect(screen.getByText('Equipaggio 3/5 (min 3)')).toBeInTheDocument();
     expect(screen.getByText('Efficienza 76%')).toBeInTheDocument();
-    expect(screen.getByText('Manca: Autista')).toBeInTheDocument();
     expect(screen.getByText('Manca: Patente mezzi pesanti')).toBeInTheDocument();
+    expect(screen.getByText('Manca (consigliato): Autista')).toBeInTheDocument();
     expect(screen.getByText('Equipaggio senza i requisiti')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Assumi o forma il personale' })).toHaveAttribute(
       'href',
       '/game/personnel?tab=recruitment',
     );
+  });
+  it('reports how many operators are short of the minimum, and when an exhausted crew recovers', () => {
+    const { unmount } = renderOption({
+      ...option,
+      blockedReason: 'CREW_INSUFFICIENT',
+      crew: { ...option.crew, available: 1, missingQualifications: [], missingRoles: [] },
+    });
+    expect(screen.getByText('Mancano 2 operatori per il minimo di 3')).toBeInTheDocument();
+    unmount();
+    renderOption({
+      ...option,
+      blockedReason: 'CREW_EXHAUSTED',
+      crew: { ...option.crew, missingQualifications: [], missingRoles: [], restUntilSeconds: 754 },
+    });
+    expect(screen.getByTestId('crew-rest-until')).toHaveTextContent('Di nuovo pronto tra 12:34');
   });
   it('sends an exhausted crew to the roster, and renders nothing without a crew preview', () => {
     const { unmount } = renderOption({ ...option, blockedReason: 'CREW_EXHAUSTED' });

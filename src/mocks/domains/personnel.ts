@@ -1142,6 +1142,9 @@ export function installPersonnel(engine: MockEngine): void {
           min: type.crewMin,
           optimal: type.crewOptimal,
           missingQualifications: [],
+          // The simulator does not model a separate RECOMMENDED-role gap or a per-operator fatigue-recovery ETA.
+          missingRoles: [],
+          restUntilSeconds: null,
           ...crewQuality(type, crew, now),
         },
       };
@@ -1162,6 +1165,9 @@ export function installPersonnel(engine: MockEngine): void {
         min: type.crewMin,
         optimal: type.crewOptimal,
         missingQualifications: selection.missing,
+        // Ditto: no role/qualification split or recovery-time projection in the simulator's simplified model.
+        missingRoles: [],
+        restUntilSeconds: null,
         maxFatigueBand: selection.maxFatigueBand,
         efficiency: selection.efficiency,
       },

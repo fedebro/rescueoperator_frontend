@@ -156,7 +156,7 @@ describe('DispatchPanel — a vehicle that is ineligible by nature', () => {
   afterEach(() => vi.clearAllMocks());
 
   it.each([
-    ['VEHICLE_DOMAIN_MISMATCH', /solo su emergenze in acqua/i],
+    ['VEHICLE_DOMAIN_MISMATCH', /terra e acqua richiedono mezzi diversi/i],
     ['AIR_SUPPORT_NOT_NEEDED', /non richiede supporto aereo/i],
   ] as const)('disables the vehicle and explains %s', async (code, text) => {
     renderWithBlocked(code);

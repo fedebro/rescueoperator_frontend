@@ -226,7 +226,10 @@ export const DispatchOption = z.object({
    */
   crew: z.object({
     available: z.number().int(), min: z.number().int(), optimal: z.number().int(),
-    missingQualifications: z.array(z.string()), maxFatigueBand: FatigueBand, efficiency: z.number(),
+    missingQualifications: z.array(z.string()), missingRoles: z.array(z.string()), maxFatigueBand: FatigueBand, efficiency: z.number(),
+    /** Only meaningful (non-null) while `maxFatigueBand === 'REST_REQUIRED'` and the crew is short of `min`: seconds
+     * until enough operators have recovered to reach the minimum. */
+    restUntilSeconds: z.number().nullable(),
   }).optional(),
   /**
    * Chaining (additive). Present for every vehicle that is NOT `AVAILABLE` right now and is on a mission or returning
@@ -253,7 +256,7 @@ export const DispatchOption = z.object({
      * `null` when the personnel system is off. */
     crew: z.object({
       available: z.number().int(), min: z.number().int(), optimal: z.number().int(),
-      missingQualifications: z.array(z.string()), maxFatigueBand: FatigueBand, efficiency: z.number(),
+      missingQualifications: z.array(z.string()), missingRoles: z.array(z.string()), maxFatigueBand: FatigueBand, efficiency: z.number(), restUntilSeconds: z.number().nullable(),
     }).nullable(),
     /** This vehicle's current queue slot, if any (set by a previous `chain` call that queued instead of redirecting). */
     queuedIncidentId: publicId(IdPrefix.incident).nullable(),

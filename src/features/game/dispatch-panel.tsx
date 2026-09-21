@@ -224,6 +224,16 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
     .flatMap((o) => o.warnings)
     .find((w) => warningNextAction(w));
 
+  /**
+   * A stale-code rejection (a CREW_ code, VEHICLE_NOT_AVAILABLE, etc.) means the option list that "send
+   * recommended"/"send selected" just acted on is stale (see DISPATCH_STALE_CODES above). Resetting the manual pick
+   * is not enough on its own: the
+   * "send recommended" button reads `recommended`, which still holds the SAME stale set until the refetch actually
+   * lands, so a quick second tap would immediately resubmit the very set that just failed. This flag keeps both send
+   * buttons disabled until the refetch this error triggered has genuinely completed.
+   */
+  const [awaitingStaleRefetch, setAwaitingStaleRefetch] = React.useState(false);
+
   const mutation = useMutation({
     mutationFn: (ids: string[]) => gameApi.dispatch(careerId, incident.id, ids),
     onSuccess: (_r, ids) => {
@@ -237,7 +247,8 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
       toast({ tone: 'danger', title: errorMessage(e) });
       if (isApiError(e) && DISPATCH_STALE_CODES.has(e.code)) {
         setManual(null);
-        void options.refetch();
+        setAwaitingStaleRefetch(true);
+        void options.refetch().finally(() => setAwaitingStaleRefetch(false));
       }
     },
   });
@@ -300,8 +311,8 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
               size="lg"
               className="w-full"
               onClick={() => mutation.mutate([...recommended])}
-              loading={mutation.isPending}
-              disabled={recommended.size === 0}
+              loading={mutation.isPending || awaitingStaleRefetch}
+              disabled={recommended.size === 0 || awaitingStaleRefetch}
               data-tutorial="send-recommended"
               data-testid="send-recommended"
             >
@@ -314,8 +325,8 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
                 variant="secondary"
                 className="w-full"
                 onClick={() => mutation.mutate([...selected])}
-                loading={mutation.isPending}
-                disabled={selected.size === 0}
+                loading={mutation.isPending || awaitingStaleRefetch}
+                disabled={selected.size === 0 || awaitingStaleRefetch}
                 data-testid="send-selected"
               >
                 <Send className="size-4" aria-hidden />

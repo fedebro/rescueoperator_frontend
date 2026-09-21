@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { AlertTriangle, BedDouble, Gauge, UserPlus, Users } from 'lucide-react';
 import type { FacilityDto, VehicleDto } from '@/contracts';
 import type { DispatchOptionsResult } from '@/lib/api/types';
+import { formatClock } from '@/lib/format';
 import { useCatalogName } from '@/i18n/use-i18n-text';
 import { useCatalog, useSnapshot } from '@/features/game/hooks';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +23,8 @@ type CrewBlock = (typeof CREW_BLOCKS)[number];
 export const crewBlockOf = (option: DispatchOptionRow): CrewBlock | null =>
   CREW_BLOCKS.find((code) => code === option.blockedReason) ?? null;
 
-/** `missingQualifications` may carry required ROLE codes too: resolve each against the right catalog namespace. */
+/** `missingQualifications` and `missingRoles` are separate namespaces (a qualification code vs. a role code):
+ * resolve each against the right catalog list rather than assuming one. */
 function useRequirementName(): (code: string) => string {
   const catalog = useCatalog();
   const name = useCatalogName();
@@ -145,13 +147,31 @@ export function DispatchCrewPreview({ option }: { option: DispatchOptionRow }) {
             {t('missing', { name: requirementName(code) })}
           </Badge>
         ))}
+        {/* Missing a RECOMMENDED role never blocks departure (only efficiency), but the player still deserves to know
+            exactly what is short — a bare "crew insufficient" chip does not say WHICH specialist is missing. */}
+        {crew.missingRoles.map((code) => (
+          <Badge key={code} tone="warning">
+            <AlertTriangle className="size-3" aria-hidden />
+            {t('missingRole', { name: requirementName(code) })}
+          </Badge>
+        ))}
       </div>
       {block ? (
         <p className="text-danger flex flex-wrap items-center gap-x-2 gap-y-1 text-xs" role="status">
           <span className="flex items-center gap-1 font-semibold">
             <AlertTriangle className="size-3.5" aria-hidden />
-            {t(`blocked.${block}`)}
+            {block === 'CREW_INSUFFICIENT'
+              ? t('blocked.CREW_INSUFFICIENT', {
+                  short: Math.max(0, crew.min - crew.available),
+                  min: crew.min,
+                })
+              : t(`blocked.${block}`)}
           </span>
+          {block === 'CREW_EXHAUSTED' && crew.restUntilSeconds !== null ? (
+            <span className="text-subtle" data-testid="crew-rest-until">
+              {t('restIn', { duration: formatClock(crew.restUntilSeconds) })}
+            </span>
+          ) : null}
           <Link
             href={
               block === 'CREW_EXHAUSTED' ? '/game/personnel?tab=roster' : '/game/personnel?tab=recruitment'

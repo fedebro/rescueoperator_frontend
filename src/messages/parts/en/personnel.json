@@ -263,8 +263,10 @@
       "preview": "Crew {available}/{optimal} (min {min})",
       "efficiency": "Efficiency {pct}%",
       "missing": "Missing: {name}",
+      "missingRole": "Missing (recommended): {name}",
+      "restIn": "Back in {duration}",
       "blocked": {
-        "CREW_INSUFFICIENT": "Not enough crew",
+        "CREW_INSUFFICIENT": "{short, plural, one {Missing # operator to reach the minimum of {min}} other {Missing # operators to reach the minimum of {min}}}",
         "CREW_UNQUALIFIED": "Crew lacks the requirements",
         "CREW_EXHAUSTED": "Crew exhausted"
       },

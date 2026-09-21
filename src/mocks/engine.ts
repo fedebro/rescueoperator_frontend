@@ -134,8 +134,10 @@ export interface MockDispatchOption {
     min: number;
     optimal: number;
     missingQualifications: string[];
+    missingRoles: string[];
     maxFatigueBand: 'RESTED' | 'TIRED' | 'FATIGUED' | 'REST_REQUIRED';
     efficiency: number;
+    restUntilSeconds: number | null;
   };
 }
 

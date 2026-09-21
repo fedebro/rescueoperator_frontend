@@ -87,7 +87,8 @@ export const EnrollBody = z.object({ courseCode: z.string(), personnelIds: z.arr
 /** Crew preview shown in dispatch options (additive field `crew` on DispatchOption). */
 export const CrewPreview = z.object({
   available: z.number().int(), min: z.number().int(), optimal: z.number().int(),
-  missingQualifications: z.array(z.string()), maxFatigueBand: FatigueBand, efficiency: z.number(),
+  missingQualifications: z.array(z.string()), missingRoles: z.array(z.string()), maxFatigueBand: FatigueBand, efficiency: z.number(),
+  restUntilSeconds: z.number().nullable(),
 });
 
 /* ───────────── medical ───────────── */

@@ -263,8 +263,10 @@
       "preview": "Besatzung {available}/{optimal} (mind. {min})",
       "efficiency": "Effizienz {pct} %",
       "missing": "Fehlt: {name}",
+      "missingRole": "Fehlt (empfohlen): {name}",
+      "restIn": "Wieder einsatzbereit in {duration}",
       "blocked": {
-        "CREW_INSUFFICIENT": "Zu wenig Besatzung",
+        "CREW_INSUFFICIENT": "{short, plural, one {Es fehlt # Einsatzkraft zum Minimum von {min}} other {Es fehlen # Einsatzkräfte zum Minimum von {min}}}",
         "CREW_UNQUALIFIED": "Besatzung erfüllt die Anforderungen nicht",
         "CREW_EXHAUSTED": "Besatzung erschöpft"
       },

@@ -263,8 +263,10 @@
       "preview": "Équipage {available}/{optimal} (min. {min})",
       "efficiency": "Efficacité {pct} %",
       "missing": "Manque : {name}",
+      "missingRole": "Manque (recommandé) : {name}",
+      "restIn": "De retour dans {duration}",
       "blocked": {
-        "CREW_INSUFFICIENT": "Équipage insuffisant",
+        "CREW_INSUFFICIENT": "{short, plural, one {Il manque # opérateur pour atteindre le minimum de {min}} other {Il manque # opérateurs pour atteindre le minimum de {min}}}",
         "CREW_UNQUALIFIED": "Équipage sans les prérequis",
         "CREW_EXHAUSTED": "Équipage épuisé"
       },
