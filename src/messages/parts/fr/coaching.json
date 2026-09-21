@@ -1,0 +1,129 @@
+{
+  "coaching": {
+    "toggle": {
+      "label": "Conseils actifs",
+      "hint": "Explications des écrans, repères sur les actions importantes et suggestions sur la marche à suivre. Désactivez-les pour une interface plus sobre."
+    },
+    "help": {
+      "buttonLabel": "Aide pour cette section"
+    },
+    "dismissPrimerLabel": "Ignorer cette astuce",
+    "gotIt": "Compris",
+    "warningNextAction": {
+      "hire": "Recruter du personnel",
+      "train": "Former le personnel",
+      "rest": "Mettre au repos",
+      "order": "Commander des fournitures",
+      "repair": "Aller à l’atelier"
+    },
+    "idle": {
+      "brokenVehicle": "{callSign} est immobilisé suite à une panne.",
+      "brokenVehicleAction": "Aller à l’atelier",
+      "lowStock": "Stock presque épuisé : {item}.",
+      "lowStockAction": "Aller à l’entrepôt",
+      "expiringCandidate": "Un candidat ({role}) est sur le point d’expirer.",
+      "expiringCandidateAction": "Aller au recrutement",
+      "affordableUpgrade": "Vous pouvez maintenant vous offrir un nouveau {vehicle}.",
+      "affordableUpgradeAction": "Aller à la boutique",
+      "uncoveredFamily": "Au niveau {level}, vous débloquez {family}.",
+      "uncoveredFamilyAction": "Voir la progression"
+    },
+    "sections": {
+      "personnel": {
+        "title": "Personnel",
+        "body": "Ici vous recrutez, formez et organisez en équipes les opérateurs de vos casernes : sans équipage, un véhicule ne peut pas partir.",
+        "tip1": "Les recrutements rapides couvrent l’urgence ; les équipes offrent des bonus stables.",
+        "tip2": "Un opérateur fatigué peut être mis au repos depuis l’onglet Effectif."
+      },
+      "medical": {
+        "title": "Patients",
+        "body": "Chaque patient doit être évalué, stabilisé puis transporté à l’hôpital : les besoins non satisfaits ralentissent la clôture du cas.",
+        "tip1": "La couleur du triage indique l’urgence : les cas rouges passent en premier.",
+        "tip2": "L’hôpital recommandé est déjà sélectionné : un seul geste suffit, le choix manuel reste facultatif."
+      },
+      "inventory": {
+        "title": "Entrepôt",
+        "body": "Chaque caserne consomme des fournitures pendant les missions : ici vous vérifiez les stocks et commandez des fournitures.",
+        "tip1": "Un stock sous le minimum bloque l’usage de cette capacité en mission.",
+        "tip2": "Une commande urgente arrive plus vite mais coûte plus cher."
+      },
+      "maintenance": {
+        "title": "Atelier",
+        "body": "Les véhicules s’usent avec les missions : ici vous voyez leur état, réservez l’entretien et suivez la récupération après une panne.",
+        "tip1": "Un véhicule en état critique risque de tomber en panne en service.",
+        "tip2": "Une panne sur la route déclenche automatiquement sa récupération : suivez-en le déroulement ici."
+      },
+      "shop": {
+        "title": "Nouveau service : {family}",
+        "body": "C’est ici que vous achetez les véhicules de ce service et choisissez la caserne qui les recevra.",
+        "tip1": "Un véhicule verrouillé indique le niveau ou la caserne nécessaire pour le débloquer.",
+        "tip2": "Vous pouvez changer la caserne de livraison depuis le menu du haut, si vous en avez plusieurs compatibles."
+      },
+      "world": {
+        "title": "Monde",
+        "body": "La météo, l’heure locale et le trafic influencent en temps réel les temps de trajet de vos véhicules.",
+        "tip1": "Les fermetures de route actives dévient les itinéraires : touchez-en une pour la voir sur la carte.",
+        "tip2": "Un trafic dense ralentit les arrivées : prévoyez une marge aux heures de pointe."
+      },
+      "facilities": {
+        "title": "Casernes",
+        "body": "Ici vous voyez vos casernes, leur espace disponible et les améliorations que vous pouvez construire.",
+        "tip1": "Chaque amélioration augmente une capacité précise : véhicules, personnel ou stockage.",
+        "tip2": "Une nouvelle caserne ailleurs sur la carte réduit les temps d’arrivée dans cette zone."
+      },
+      "fleet": {
+        "title": "Flotte",
+        "body": "La liste de tous vos véhicules, leur état et leur caserne d’appartenance.",
+        "tip1": "Vous pouvez transférer un véhicule vers une autre caserne compatible depuis son icône de transfert.",
+        "tip2": "Touchez un véhicule pour l’ouvrir sur la carte et voir ses détails."
+      },
+      "progression": {
+        "title": "Carrière",
+        "body": "Niveau, expérience, réputation et étapes clés : ici vous voyez ce que débloque chaque montée de niveau.",
+        "tip1": "Chaque mission bien résolue augmente la réputation, ce qui augmente aussi l’indemnité de couverture.",
+        "tip2": "Les étapes clés versent une récompense unique une fois accomplies."
+      },
+      "notifications": {
+        "title": "Notifications",
+        "body": "Les alertes importantes de votre carrière arrivent ici : véhicules, personnel, casernes et économie.",
+        "tip1": "Touchez une notification pour ouvrir directement ce qu’elle concerne.",
+        "tip2": "Vous pouvez filtrer par catégorie avec les boutons du haut."
+      },
+      "admin": {
+        "title": "Panneau d’administration",
+        "body": "Outils réservés à l’équipe : utilisateurs, carrières, incidents, configuration et supervision du système.",
+        "tip1": "Chaque action ici est enregistrée dans le journal d’audit.",
+        "tip2": "Le bandeau du haut indique toujours l’environnement en cours : vérifiez-le avant d’agir."
+      }
+    },
+    "marks": {
+      "crewInsufficient": {
+        "title": "Équipage insuffisant",
+        "body": "Ce véhicule ne peut pas partir sans assez d’opérateurs. Recrutez d’autres opérateurs pour pouvoir l’utiliser.",
+        "action": "Aller au personnel"
+      },
+      "hospitalTransport": {
+        "title": "Transport à l’hôpital",
+        "body": "L’hôpital recommandé est déjà sélectionné : un geste lance le transport, ou choisissez-en un autre."
+      },
+      "lockedFamily": {
+        "title": "Service pas encore débloqué",
+        "body": "Ce service se débloque à un niveau de carrière plus élevé : continuez à résoudre des missions pour l’atteindre."
+      },
+      "vehicleBreakdown": {
+        "title": "Panne en cours",
+        "body": "Ce véhicule est tombé en panne et hors service : suivez ici les délais de récupération et de réparation.",
+        "action": "Aller à l’atelier"
+      },
+      "lowStock": {
+        "title": "Stock presque épuisé",
+        "body": "Un stock sous le minimum peut bloquer l’usage de cette capacité en mission : commandez d’autres fournitures.",
+        "action": "Commander des fournitures"
+      },
+      "coverageStipend": {
+        "title": "Couverture et indemnité",
+        "body": "Chaque période, vous recevez une indemnité calculée sur la couverture du territoire et votre réputation : voici comment elle est calculée."
+      }
+    }
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "coaching": {
+    "toggle": {
+      "label": "Suggerimenti attivi",
+      "hint": "Spiegazioni delle schermate, indicazioni sulle azioni importanti e consigli su cosa fare. Disattivali per un’interfaccia più essenziale."
+    },
+    "help": {
+      "buttonLabel": "Aiuto su questa sezione"
+    },
+    "dismissPrimerLabel": "Ignora il suggerimento",
+    "gotIt": "Ho capito",
+    "warningNextAction": {
+      "hire": "Assumi personale",
+      "train": "Forma il personale",
+      "rest": "Metti a riposo",
+      "order": "Ordina rifornimenti",
+      "repair": "Vai all’officina"
+    },
+    "idle": {
+      "brokenVehicle": "Il mezzo {callSign} è fermo per un guasto.",
+      "brokenVehicleAction": "Vai all’officina",
+      "lowStock": "Scorte in esaurimento: {item}.",
+      "lowStockAction": "Vai al magazzino",
+      "expiringCandidate": "Un candidato ({role}) sta per scadere.",
+      "expiringCandidateAction": "Vai alle assunzioni",
+      "affordableUpgrade": "Puoi permetterti un nuovo {vehicle}.",
+      "affordableUpgradeAction": "Vai al negozio",
+      "uncoveredFamily": "Al livello {level} sblocchi {family}.",
+      "uncoveredFamilyAction": "Vedi la progressione"
+    },
+    "sections": {
+      "personnel": {
+        "title": "Personale",
+        "body": "Qui assumi, formi e organizzi in squadre gli operatori delle tue sedi: senza equipaggio un mezzo non può partire.",
+        "tip1": "Le assunzioni rapide (recluta) coprono l’emergenza; le squadre danno bonus stabili.",
+        "tip2": "Un operatore affaticato va messo a riposo dalla scheda Ruolo."
+      },
+      "medical": {
+        "title": "Pazienti",
+        "body": "Ogni paziente va valutato, stabilizzato e trasportato in ospedale: le esigenze non soddisfatte rallentano la chiusura del caso.",
+        "tip1": "Il triage (colore) indica l’urgenza: i casi rossi vanno serviti per primi.",
+        "tip2": "L’ospedale consigliato è già selezionato: un tocco basta, la scelta manuale è opzionale."
+      },
+      "inventory": {
+        "title": "Magazzino",
+        "body": "Ogni sede consuma materiali di consumo nelle missioni: qui controlli le scorte e ordini i rifornimenti.",
+        "tip1": "Una scorta sotto il minimo blocca l’uso di quella capacità in missione.",
+        "tip2": "Un ordine urgente arriva prima ma costa di più."
+      },
+      "maintenance": {
+        "title": "Officina",
+        "body": "I mezzi si usurano con le missioni: qui vedi lo stato di salute, prenoti la manutenzione e segui i recuperi dopo un guasto.",
+        "tip1": "Un mezzo in stato critico rischia il guasto in servizio.",
+        "tip2": "Un guasto in strada avvia da solo il recupero: qui ne segui i tempi."
+      },
+      "shop": {
+        "title": "Nuovo servizio: {family}",
+        "body": "Da qui acquisti i mezzi di questo servizio e scegli in quale sede consegnarli.",
+        "tip1": "Un mezzo bloccato dal lucchetto indica il livello o la sede che ti servono per sbloccarlo.",
+        "tip2": "Puoi cambiare la sede di consegna dal menu in alto, se ne hai più di una compatibile."
+      },
+      "world": {
+        "title": "Mondo",
+        "body": "Meteo, orario e traffico locali influenzano i tempi di viaggio dei tuoi mezzi in tempo reale.",
+        "tip1": "Le chiusure stradali attive deviano i percorsi: toccale per vederle sulla mappa.",
+        "tip2": "Il traffico intenso rallenta gli arrivi: pianifica margine nelle ore di punta."
+      },
+      "facilities": {
+        "title": "Sedi",
+        "body": "Qui vedi le tue sedi, i loro spazi disponibili e gli ampliamenti che puoi costruire.",
+        "tip1": "Ogni ampliamento aumenta una capacità precisa: mezzi, personale o magazzino.",
+        "tip2": "Una nuova sede in un altro punto della mappa riduce i tempi di arrivo in quella zona."
+      },
+      "fleet": {
+        "title": "Flotta",
+        "body": "L’elenco di tutti i tuoi mezzi, il loro stato e la sede di appartenenza.",
+        "tip1": "Un mezzo puoi trasferirlo in un’altra sede compatibile dall’icona di trasferimento.",
+        "tip2": "Tocca un mezzo per aprirlo sulla mappa e vederne i dettagli."
+      },
+      "progression": {
+        "title": "Carriera",
+        "body": "Livello, esperienza, reputazione e traguardi: qui vedi cosa sblocchi salendo di livello.",
+        "tip1": "Ogni missione risolta bene aumenta la reputazione, che alza anche lo stipendio di copertura.",
+        "tip2": "I traguardi assegnano un premio una tantum quando li completi."
+      },
+      "notifications": {
+        "title": "Notifiche",
+        "body": "Qui arrivano gli avvisi importanti della tua carriera: mezzi, personale, sedi ed economia.",
+        "tip1": "Tocca una notifica per aprire direttamente ciò a cui si riferisce.",
+        "tip2": "Puoi filtrare per categoria con i pulsanti in alto."
+      },
+      "admin": {
+        "title": "Pannello di amministrazione",
+        "body": "Strumenti riservati allo staff: utenti, carriere, emergenze, configurazione e monitoraggio del sistema.",
+        "tip1": "Ogni azione qui è tracciata nel registro controlli.",
+        "tip2": "Il banner in alto indica sempre su quale ambiente stai operando: verificalo prima di agire."
+      }
+    },
+    "marks": {
+      "crewInsufficient": {
+        "title": "Equipaggio insufficiente",
+        "body": "Questo mezzo non può partire senza abbastanza operatori. Assumi altri operatori per poterlo usare.",
+        "action": "Vai al personale"
+      },
+      "hospitalTransport": {
+        "title": "Trasporto in ospedale",
+        "body": "L’ospedale consigliato è già selezionato: un tocco avvia il trasporto, oppure scegline un altro."
+      },
+      "lockedFamily": {
+        "title": "Servizio non ancora sbloccato",
+        "body": "Questo servizio si sblocca a un livello più alto della tua carriera: continua a risolvere missioni per raggiungerlo."
+      },
+      "vehicleBreakdown": {
+        "title": "Guasto in corso",
+        "body": "Questo mezzo si è guastato ed è fuori servizio: segui qui i tempi di recupero e riparazione.",
+        "action": "Vai all’officina"
+      },
+      "lowStock": {
+        "title": "Scorte in esaurimento",
+        "body": "Una scorta sotto il minimo può bloccare l’uso di quella capacità in missione: ordina altri rifornimenti.",
+        "action": "Ordina rifornimenti"
+      },
+      "coverageStipend": {
+        "title": "Copertura e stipendio",
+        "body": "Ogni periodo ricevi uno stipendio calcolato sulla copertura del territorio e sulla tua reputazione: qui vedi come viene calcolato."
+      }
+    }
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "coaching": {
+    "toggle": {
+      "label": "Tipps aktiv",
+      "hint": "Erklärungen zu den Bildschirmen, Hinweise zu wichtigen Aktionen und Vorschläge für die nächsten Schritte. Schalte sie aus für eine schlankere Oberfläche."
+    },
+    "help": {
+      "buttonLabel": "Hilfe zu diesem Bereich"
+    },
+    "dismissPrimerLabel": "Tipp ignorieren",
+    "gotIt": "Verstanden",
+    "warningNextAction": {
+      "hire": "Personal einstellen",
+      "train": "Personal ausbilden",
+      "rest": "Ausruhen lassen",
+      "order": "Nachschub bestellen",
+      "repair": "Zur Werkstatt"
+    },
+    "idle": {
+      "brokenVehicle": "{callSign} ist wegen einer Panne außer Dienst.",
+      "brokenVehicleAction": "Zur Werkstatt",
+      "lowStock": "Vorrat wird knapp: {item}.",
+      "lowStockAction": "Zum Lager",
+      "expiringCandidate": "Ein Bewerber ({role}) läuft bald ab.",
+      "expiringCandidateAction": "Zur Rekrutierung",
+      "affordableUpgrade": "Du kannst dir jetzt ein neues {vehicle} leisten.",
+      "affordableUpgradeAction": "Zum Shop",
+      "uncoveredFamily": "Auf Level {level} schaltest du {family} frei.",
+      "uncoveredFamilyAction": "Fortschritt ansehen"
+    },
+    "sections": {
+      "personnel": {
+        "title": "Personal",
+        "body": "Hier stellst du Einsatzkräfte deiner Wachen ein, bildest sie aus und organisierst sie in Teams: Ohne Besatzung kann ein Fahrzeug nicht ausrücken.",
+        "tip1": "Schnelleinstellungen decken den Notfall ab; Teams geben dauerhafte Boni.",
+        "tip2": "Ein erschöpfter Mitarbeiter kann im Reiter Dienstplan ausgeruht werden."
+      },
+      "medical": {
+        "title": "Patienten",
+        "body": "Jeder Patient muss untersucht, stabilisiert und ins Krankenhaus gebracht werden: Unerfüllte Bedürfnisse verzögern den Abschluss des Einsatzes.",
+        "tip1": "Die Triage-Farbe zeigt die Dringlichkeit: Rote Fälle zuerst.",
+        "tip2": "Das empfohlene Krankenhaus ist bereits ausgewählt: ein Tipp genügt, die manuelle Wahl ist optional."
+      },
+      "inventory": {
+        "title": "Lager",
+        "body": "Jede Wache verbraucht bei Einsätzen Verbrauchsmaterial: Hier prüfst du die Bestände und bestellst Nachschub.",
+        "tip1": "Ein Bestand unter dem Minimum blockiert die Nutzung dieser Fähigkeit im Einsatz.",
+        "tip2": "Eine Eilbestellung kommt schneller an, kostet aber mehr."
+      },
+      "maintenance": {
+        "title": "Werkstatt",
+        "body": "Fahrzeuge verschleißen durch Einsätze: Hier siehst du ihren Zustand, buchst Wartungen und verfolgst die Wiederherstellung nach einer Panne.",
+        "tip1": "Ein Fahrzeug in kritischem Zustand riskiert eine Panne im Dienst.",
+        "tip2": "Eine Panne unterwegs startet die Bergung von selbst: Verfolge hier den Fortschritt."
+      },
+      "shop": {
+        "title": "Neuer Dienst: {family}",
+        "body": "Hier kaufst du die Fahrzeuge dieses Dienstes und wählst, welche Wache sie erhält.",
+        "tip1": "Ein gesperrtes Fahrzeug zeigt das Level oder die Wache, die du zum Freischalten brauchst.",
+        "tip2": "Du kannst die Zielwache oben im Menü ändern, falls du mehr als eine passende hast."
+      },
+      "world": {
+        "title": "Welt",
+        "body": "Örtliches Wetter, Uhrzeit und Verkehr beeinflussen in Echtzeit die Fahrzeiten deiner Fahrzeuge.",
+        "tip1": "Aktive Straßensperrungen leiten Fahrzeuge um: Tippe eine an, um sie auf der Karte zu sehen.",
+        "tip2": "Starker Verkehr verzögert die Ankunft: Plane in Stoßzeiten zusätzlichen Puffer ein."
+      },
+      "facilities": {
+        "title": "Wachen",
+        "body": "Hier siehst du deine Wachen, ihren verfügbaren Platz und die Ausbauten, die du bauen kannst.",
+        "tip1": "Jeder Ausbau erhöht eine bestimmte Kapazität: Fahrzeuge, Personal oder Lager.",
+        "tip2": "Eine neue Wache an anderer Stelle der Karte verkürzt die Anfahrtszeiten in diesem Gebiet."
+      },
+      "fleet": {
+        "title": "Fuhrpark",
+        "body": "Die Liste aller deiner Fahrzeuge, ihr Status und ihre Heimatwache.",
+        "tip1": "Du kannst ein Fahrzeug über das Verlegungssymbol in eine andere passende Wache verlegen.",
+        "tip2": "Tippe ein Fahrzeug an, um es auf der Karte zu öffnen und Details zu sehen."
+      },
+      "progression": {
+        "title": "Karriere",
+        "body": "Level, Erfahrung, Reputation und Meilensteine: Hier siehst du, was ein Levelaufstieg freischaltet.",
+        "tip1": "Jeder gut gelöste Einsatz erhöht die Reputation, was auch die Ausgleichszahlung erhöht.",
+        "tip2": "Meilensteine zahlen bei Abschluss eine einmalige Belohnung."
+      },
+      "notifications": {
+        "title": "Benachrichtigungen",
+        "body": "Wichtige Hinweise zu deiner Karriere landen hier: Fahrzeuge, Personal, Wachen und Wirtschaft.",
+        "tip1": "Tippe eine Benachrichtigung an, um direkt dorthin zu springen, worauf sie sich bezieht.",
+        "tip2": "Du kannst mit den Schaltflächen oben nach Kategorie filtern."
+      },
+      "admin": {
+        "title": "Admin-Bereich",
+        "body": "Werkzeuge nur für das Team: Benutzer, Karrieren, Einsätze, Konfiguration und Systemüberwachung.",
+        "tip1": "Jede Aktion hier wird im Prüfprotokoll erfasst.",
+        "tip2": "Das Banner oben zeigt immer die aktuelle Umgebung: Prüfe es, bevor du handelst."
+      }
+    },
+    "marks": {
+      "crewInsufficient": {
+        "title": "Besatzung unzureichend",
+        "body": "Dieses Fahrzeug kann ohne genügend Einsatzkräfte nicht ausrücken. Stelle weitere Einsatzkräfte ein, um es nutzen zu können.",
+        "action": "Zum Personal"
+      },
+      "hospitalTransport": {
+        "title": "Krankenhaustransport",
+        "body": "Das empfohlene Krankenhaus ist bereits ausgewählt: ein Tipp startet den Transport, oder wähle ein anderes."
+      },
+      "lockedFamily": {
+        "title": "Dienst noch nicht freigeschaltet",
+        "body": "Dieser Dienst wird ab einem höheren Karrierelevel freigeschaltet: Löse weiter Einsätze, um es zu erreichen."
+      },
+      "vehicleBreakdown": {
+        "title": "Panne im Gange",
+        "body": "Dieses Fahrzeug hat eine Panne und ist außer Dienst: Verfolge hier die Bergungs- und Reparaturzeiten.",
+        "action": "Zur Werkstatt"
+      },
+      "lowStock": {
+        "title": "Vorrat wird knapp",
+        "body": "Ein Bestand unter dem Minimum kann die Nutzung dieser Fähigkeit im Einsatz blockieren: bestelle weiteren Nachschub.",
+        "action": "Nachschub bestellen"
+      },
+      "coverageStipend": {
+        "title": "Abdeckung und Ausgleichszahlung",
+        "body": "Jede Periode erhältst du eine Ausgleichszahlung, berechnet aus der Gebietsabdeckung und deiner Reputation: So wird sie berechnet."
+      }
+    }
+  }
+}

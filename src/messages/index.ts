@@ -16,6 +16,7 @@ export const MESSAGE_PARTS = [
   'notifications',
   'platform',
   'admin',
+  'coaching',
 ] as const;
 
 export type MessageTree = { [key: string]: MessageTree | string };

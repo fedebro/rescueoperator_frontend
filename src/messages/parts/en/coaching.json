@@ -1,0 +1,129 @@
+{
+  "coaching": {
+    "toggle": {
+      "label": "Coaching tips",
+      "hint": "Screen explanations, pointers on important actions and suggestions for what to do next. Turn them off for a leaner interface."
+    },
+    "help": {
+      "buttonLabel": "Help for this section"
+    },
+    "dismissPrimerLabel": "Dismiss this tip",
+    "gotIt": "Got it",
+    "warningNextAction": {
+      "hire": "Hire personnel",
+      "train": "Train personnel",
+      "rest": "Send to rest",
+      "order": "Order supplies",
+      "repair": "Go to the workshop"
+    },
+    "idle": {
+      "brokenVehicle": "{callSign} is out of service with a breakdown.",
+      "brokenVehicleAction": "Go to the workshop",
+      "lowStock": "Running low on supplies: {item}.",
+      "lowStockAction": "Go to the warehouse",
+      "expiringCandidate": "A candidate ({role}) is about to expire.",
+      "expiringCandidateAction": "Go to recruitment",
+      "affordableUpgrade": "You can now afford a new {vehicle}.",
+      "affordableUpgradeAction": "Go to the shop",
+      "uncoveredFamily": "At level {level} you unlock {family}.",
+      "uncoveredFamilyAction": "See progression"
+    },
+    "sections": {
+      "personnel": {
+        "title": "Personnel",
+        "body": "Here you hire, train and organise your stations’ operators into teams: without a crew a vehicle cannot leave.",
+        "tip1": "Quick hires cover an emergency; teams give steady bonuses.",
+        "tip2": "A fatigued operator can be sent to rest from the Roster tab."
+      },
+      "medical": {
+        "title": "Patients",
+        "body": "Every patient needs to be assessed, stabilised and transported to a hospital: unmet needs slow down closing the case.",
+        "tip1": "Triage colour shows urgency: red cases come first.",
+        "tip2": "The recommended hospital is already selected: one tap is enough, the manual choice is optional."
+      },
+      "inventory": {
+        "title": "Warehouse",
+        "body": "Every station uses up consumables on missions: here you check stock levels and order supplies.",
+        "tip1": "A stock line below the minimum blocks using that capability on a mission.",
+        "tip2": "An urgent order arrives sooner but costs more."
+      },
+      "maintenance": {
+        "title": "Workshop",
+        "body": "Vehicles wear down with missions: here you see their health, book maintenance and follow recovery after a breakdown.",
+        "tip1": "A vehicle in critical condition risks breaking down while in service.",
+        "tip2": "A breakdown on the road starts its own recovery: follow its progress here."
+      },
+      "shop": {
+        "title": "New service: {family}",
+        "body": "This is where you buy this service’s vehicles and choose which station receives them.",
+        "tip1": "A locked vehicle shows the level or station you need to unlock it.",
+        "tip2": "You can change the delivery station from the menu above, if you have more than one compatible one."
+      },
+      "world": {
+        "title": "World",
+        "body": "Local weather, time of day and traffic affect your vehicles’ travel times in real time.",
+        "tip1": "Active road closures reroute vehicles: tap one to see it on the map.",
+        "tip2": "Heavy traffic slows arrivals down: plan extra margin during peak hours."
+      },
+      "facilities": {
+        "title": "Stations",
+        "body": "Here you see your stations, their available space and the upgrades you can build.",
+        "tip1": "Each upgrade raises one specific capacity: vehicles, personnel or storage.",
+        "tip2": "A new station elsewhere on the map cuts arrival times in that area."
+      },
+      "fleet": {
+        "title": "Fleet",
+        "body": "The list of every vehicle you own, its status and its home station.",
+        "tip1": "You can transfer a vehicle to another compatible station from its transfer icon.",
+        "tip2": "Tap a vehicle to open it on the map and see its details."
+      },
+      "progression": {
+        "title": "Career",
+        "body": "Level, experience, reputation and milestones: here you see what levelling up unlocks.",
+        "tip1": "Every mission resolved well raises reputation, which also raises the coverage stipend.",
+        "tip2": "Milestones pay a one-off reward when you complete them."
+      },
+      "notifications": {
+        "title": "Notifications",
+        "body": "Important alerts about your career land here: vehicles, personnel, stations and economy.",
+        "tip1": "Tap a notification to jump straight to what it refers to.",
+        "tip2": "You can filter by category with the buttons at the top."
+      },
+      "admin": {
+        "title": "Admin panel",
+        "body": "Staff-only tools: users, careers, incidents, configuration and system monitoring.",
+        "tip1": "Every action here is recorded in the audit log.",
+        "tip2": "The banner at the top always shows which environment you are on: check it before acting."
+      }
+    },
+    "marks": {
+      "crewInsufficient": {
+        "title": "Not enough crew",
+        "body": "This vehicle cannot leave without enough operators. Hire more operators to be able to use it.",
+        "action": "Go to Personnel"
+      },
+      "hospitalTransport": {
+        "title": "Hospital transport",
+        "body": "The recommended hospital is already selected: one tap starts the transport, or pick another one."
+      },
+      "lockedFamily": {
+        "title": "Service not unlocked yet",
+        "body": "This service unlocks at a higher career level: keep resolving missions to reach it."
+      },
+      "vehicleBreakdown": {
+        "title": "Breakdown in progress",
+        "body": "This vehicle has broken down and is out of service: follow the recovery and repair times here.",
+        "action": "Go to the workshop"
+      },
+      "lowStock": {
+        "title": "Running low on supplies",
+        "body": "A stock line below the minimum can block using that capability on a mission: order more supplies.",
+        "action": "Order supplies"
+      },
+      "coverageStipend": {
+        "title": "Coverage and stipend",
+        "body": "Every period you receive a stipend computed from territory coverage and your reputation: here is how it is worked out."
+      }
+    }
+  }
+}

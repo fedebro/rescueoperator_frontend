@@ -1,0 +1,129 @@
+{
+  "coaching": {
+    "toggle": {
+      "label": "Sugerencias activas",
+      "hint": "Explicaciones de las pantallas, indicaciones sobre acciones importantes y sugerencias sobre qué hacer. Desactívalas para una interfaz más sobria."
+    },
+    "help": {
+      "buttonLabel": "Ayuda de esta sección"
+    },
+    "dismissPrimerLabel": "Ignorar esta sugerencia",
+    "gotIt": "Entendido",
+    "warningNextAction": {
+      "hire": "Contratar personal",
+      "train": "Formar al personal",
+      "rest": "Poner a descansar",
+      "order": "Pedir suministros",
+      "repair": "Ir al taller"
+    },
+    "idle": {
+      "brokenVehicle": "{callSign} está fuera de servicio por una avería.",
+      "brokenVehicleAction": "Ir al taller",
+      "lowStock": "Stock casi agotado: {item}.",
+      "lowStockAction": "Ir al almacén",
+      "expiringCandidate": "Un candidato ({role}) está a punto de caducar.",
+      "expiringCandidateAction": "Ir a contratación",
+      "affordableUpgrade": "Ahora puedes permitirte un nuevo {vehicle}.",
+      "affordableUpgradeAction": "Ir a la tienda",
+      "uncoveredFamily": "En el nivel {level} desbloqueas {family}.",
+      "uncoveredFamilyAction": "Ver progresión"
+    },
+    "sections": {
+      "personnel": {
+        "title": "Personal",
+        "body": "Aquí contratas, formas y organizas en equipos a los operadores de tus bases: sin tripulación un vehículo no puede salir.",
+        "tip1": "Las contrataciones rápidas cubren la emergencia; los equipos dan bonificaciones estables.",
+        "tip2": "Un operador fatigado puede ponerse a descansar desde la pestaña Plantilla."
+      },
+      "medical": {
+        "title": "Pacientes",
+        "body": "Cada paciente debe evaluarse, estabilizarse y trasladarse a un hospital: las necesidades no cubiertas retrasan el cierre del caso.",
+        "tip1": "El color del triaje indica la urgencia: los casos rojos van primero.",
+        "tip2": "El hospital recomendado ya está seleccionado: basta un toque, la elección manual es opcional."
+      },
+      "inventory": {
+        "title": "Almacén",
+        "body": "Cada base consume material fungible en las misiones: aquí controlas las existencias y pides suministros.",
+        "tip1": "Una existencia por debajo del mínimo bloquea el uso de esa capacidad en misión.",
+        "tip2": "Un pedido urgente llega antes pero cuesta más."
+      },
+      "maintenance": {
+        "title": "Taller",
+        "body": "Los vehículos se desgastan con las misiones: aquí ves su estado, reservas el mantenimiento y sigues la recuperación tras una avería.",
+        "tip1": "Un vehículo en estado crítico corre el riesgo de averiarse en servicio.",
+        "tip2": "Una avería en carretera inicia sola su recuperación: sigue aquí su progreso."
+      },
+      "shop": {
+        "title": "Nuevo servicio: {family}",
+        "body": "Aquí compras los vehículos de este servicio y eliges a qué base se entregan.",
+        "tip1": "Un vehículo bloqueado indica el nivel o la base que necesitas para desbloquearlo.",
+        "tip2": "Puedes cambiar la base de entrega desde el menú superior si tienes más de una compatible."
+      },
+      "world": {
+        "title": "Mundo",
+        "body": "El clima local, la hora y el tráfico afectan en tiempo real los tiempos de desplazamiento de tus vehículos.",
+        "tip1": "Los cortes de carretera activos desvían las rutas: tócalo para verlo en el mapa.",
+        "tip2": "El tráfico intenso ralentiza las llegadas: prevé un margen en las horas punta."
+      },
+      "facilities": {
+        "title": "Bases",
+        "body": "Aquí ves tus bases, su espacio disponible y las mejoras que puedes construir.",
+        "tip1": "Cada mejora aumenta una capacidad concreta: vehículos, personal o almacenamiento.",
+        "tip2": "Una nueva base en otro punto del mapa reduce los tiempos de llegada en esa zona."
+      },
+      "fleet": {
+        "title": "Flota",
+        "body": "La lista de todos tus vehículos, su estado y su base de origen.",
+        "tip1": "Puedes transferir un vehículo a otra base compatible desde su icono de transferencia.",
+        "tip2": "Toca un vehículo para abrirlo en el mapa y ver sus detalles."
+      },
+      "progression": {
+        "title": "Carrera",
+        "body": "Nivel, experiencia, reputación e hitos: aquí ves qué desbloquea subir de nivel.",
+        "tip1": "Cada misión bien resuelta aumenta la reputación, lo que también sube la ayuda por cobertura.",
+        "tip2": "Los hitos otorgan una recompensa única al completarlos."
+      },
+      "notifications": {
+        "title": "Notificaciones",
+        "body": "Aquí llegan los avisos importantes de tu carrera: vehículos, personal, bases y economía.",
+        "tip1": "Toca una notificación para abrir directamente aquello a lo que se refiere.",
+        "tip2": "Puedes filtrar por categoría con los botones de arriba."
+      },
+      "admin": {
+        "title": "Panel de administración",
+        "body": "Herramientas reservadas al equipo: usuarios, carreras, incidentes, configuración y supervisión del sistema.",
+        "tip1": "Cada acción aquí queda registrada en el registro de auditoría.",
+        "tip2": "El banner superior siempre indica en qué entorno estás: compruébalo antes de actuar."
+      }
+    },
+    "marks": {
+      "crewInsufficient": {
+        "title": "Tripulación insuficiente",
+        "body": "Este vehículo no puede salir sin suficientes operadores. Contrata más operadores para poder usarlo.",
+        "action": "Ir a Personal"
+      },
+      "hospitalTransport": {
+        "title": "Traslado al hospital",
+        "body": "El hospital recomendado ya está seleccionado: un toque inicia el traslado, o elige otro."
+      },
+      "lockedFamily": {
+        "title": "Servicio aún no desbloqueado",
+        "body": "Este servicio se desbloquea en un nivel de carrera más alto: sigue resolviendo misiones para alcanzarlo."
+      },
+      "vehicleBreakdown": {
+        "title": "Avería en curso",
+        "body": "Este vehículo se ha averiado y está fuera de servicio: sigue aquí los tiempos de recuperación y reparación.",
+        "action": "Ir al taller"
+      },
+      "lowStock": {
+        "title": "Stock casi agotado",
+        "body": "Una existencia por debajo del mínimo puede bloquear el uso de esa capacidad en misión: pide más suministros.",
+        "action": "Pedir suministros"
+      },
+      "coverageStipend": {
+        "title": "Cobertura y ayuda",
+        "body": "Cada periodo recibes una ayuda calculada según la cobertura del territorio y tu reputación: así se calcula."
+      }
+    }
+  }
+}
