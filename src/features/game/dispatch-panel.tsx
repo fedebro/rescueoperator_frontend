@@ -349,8 +349,10 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
           </div>
 
           {/* Stuck to the top of the tab's own scroll container while the option list below scrolls, so the
-              coverage you're building stays visible without scrolling back up after each pick. */}
-          <div className="border-border bg-surface-1 sticky top-0 z-10 -mx-4 border-b px-4 pb-3">
+              coverage you're building stays visible without scrolling back up after each pick. Capped and
+              internally scrollable: a heavy multi-service incident can list 8-9 requirement bars, which would
+              otherwise fill the whole panel and leave no room to reach the vehicle list below it. */}
+          <div className="border-border bg-surface-1 sticky top-0 z-10 -mx-4 max-h-[42vh] overflow-y-auto border-b px-4 pb-3">
             <SectionTitle>{t('requirements')}</SectionTitle>
             <RequirementBars incident={incident} planned={planned} />
           </div>
