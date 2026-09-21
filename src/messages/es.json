@@ -384,10 +384,7 @@
       "crew": "Dotación",
       "crewMin": "mínimo {min} para salir",
       "patrol": {
-        "start": "Enviar de patrulla",
-        "stop": "Llamar de vuelta de la patrulla",
-        "onPatrol": "De patrulla",
-        "stopping": "{callSign} está volviendo de la patrulla"
+        "onPatrol": "De patrulla"
       },
       "purposes": {
         "TO_INCIDENT": "Hacia la emergencia",

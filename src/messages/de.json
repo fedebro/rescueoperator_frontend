@@ -384,10 +384,7 @@
       "crew": "Besatzung",
       "crewMin": "mindestens {min} zum Ausrücken",
       "patrol": {
-        "start": "Auf Streife schicken",
-        "stop": "Von der Streife zurückrufen",
-        "onPatrol": "Auf Streife",
-        "stopping": "{callSign} kehrt von der Streife zurück"
+        "onPatrol": "Auf Streife"
       },
       "purposes": {
         "TO_INCIDENT": "Zum Einsatzort",

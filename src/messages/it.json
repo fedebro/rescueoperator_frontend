@@ -384,10 +384,7 @@
       "crew": "Equipaggio",
       "crewMin": "minimo {min} per partire",
       "patrol": {
-        "start": "Invia in pattugliamento",
-        "stop": "Richiama dal pattugliamento",
-        "onPatrol": "In pattugliamento",
-        "stopping": "{callSign} sta rientrando dal pattugliamento"
+        "onPatrol": "In pattugliamento"
       },
       "purposes": {
         "TO_INCIDENT": "Verso l’emergenza",

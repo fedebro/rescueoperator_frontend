@@ -384,10 +384,7 @@
       "crew": "Crew",
       "crewMin": "minimum {min} to turn out",
       "patrol": {
-        "start": "Send out on patrol",
-        "stop": "Recall from patrol",
-        "onPatrol": "On patrol",
-        "stopping": "{callSign} is heading back from patrol"
+        "onPatrol": "On patrol"
       },
       "purposes": {
         "TO_INCIDENT": "To the emergency",

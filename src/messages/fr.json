@@ -384,10 +384,7 @@
       "crew": "Équipage",
       "crewMin": "minimum {min} pour partir",
       "patrol": {
-        "start": "Envoyer en patrouille",
-        "stop": "Rappeler de patrouille",
-        "onPatrol": "En patrouille",
-        "stopping": "{callSign} rentre de patrouille"
+        "onPatrol": "En patrouille"
       },
       "purposes": {
         "TO_INCIDENT": "Vers l’urgence",
