@@ -180,7 +180,13 @@ export const TrainingOverview = z.object({
 export type TrainingOverview = z.infer<typeof TrainingOverview>;
 
 /** GET /inventory */
-export const InventoryOverview = z.object({ lines: z.array(InventoryLineDto), orders: z.array(OrderDto) });
+export const InventoryOverview = z.object({
+  lines: z.array(InventoryLineDto),
+  orders: z.array(OrderDto),
+  /* additive: STORAGE capacity per facility with a warehouse — lets the client cap an order before submitting it
+     instead of only learning about CAPACITY_EXCEEDED after the fact */
+  storage: z.array(z.object({ facilityId: publicId(IdPrefix.facility), capacity: z.number().int(), used: z.number().int() })).optional(),
+});
 export type InventoryOverview = z.infer<typeof InventoryOverview>;
 
 /** GET /maintenance */
