@@ -383,12 +383,19 @@
       "health": "Estado",
       "crew": "Dotación",
       "crewMin": "mínimo {min} para salir",
+      "patrol": {
+        "start": "Enviar de patrulla",
+        "stop": "Llamar de vuelta de la patrulla",
+        "onPatrol": "De patrulla",
+        "stopping": "{callSign} está volviendo de la patrulla"
+      },
       "purposes": {
         "TO_INCIDENT": "Hacia la emergencia",
         "TO_HOSPITAL": "Hacia el hospital",
         "TO_BASE": "Regreso a la base",
         "DELIVERY": "Entrega",
-        "RECOVERY": "Recuperación"
+        "RECOVERY": "Recuperación",
+        "PATROLLING": "De patrulla"
       }
     },
     "facility": {

@@ -383,12 +383,19 @@
       "health": "Condition",
       "crew": "Crew",
       "crewMin": "minimum {min} to turn out",
+      "patrol": {
+        "start": "Send out on patrol",
+        "stop": "Recall from patrol",
+        "onPatrol": "On patrol",
+        "stopping": "{callSign} is heading back from patrol"
+      },
       "purposes": {
         "TO_INCIDENT": "To the emergency",
         "TO_HOSPITAL": "To hospital",
         "TO_BASE": "Returning to station",
         "DELIVERY": "Delivery",
-        "RECOVERY": "Recovery"
+        "RECOVERY": "Recovery",
+        "PATROLLING": "On patrol"
       }
     },
     "facility": {

@@ -77,6 +77,10 @@ export const gameApi = {
     api.command(`${c(careerId)}/shop/vehicles`, body, { schema: VehicleDto }),
   recallVehicle: (careerId: string, vehicleId: string) =>
     api.command(`${c(careerId)}/vehicles/${vehicleId}/recall`, {}, { schema: VehicleDto }),
+  startPatrol: (careerId: string, vehicleId: string) =>
+    api.command(`${c(careerId)}/vehicles/${vehicleId}/patrol`, {}, { schema: VehicleDto }),
+  stopPatrol: (careerId: string, vehicleId: string) =>
+    api.post(`${c(careerId)}/vehicles/${vehicleId}/patrol/stop`, {}, { schema: VehicleDto }),
   incident: (careerId: string, id: string) =>
     api.get(`${c(careerId)}/incidents/${id}`, { schema: IncidentDto }),
   dispatchOptions: (careerId: string, incidentId: string) =>

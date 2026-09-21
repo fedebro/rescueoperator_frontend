@@ -383,12 +383,19 @@
       "health": "Condizioni",
       "crew": "Equipaggio",
       "crewMin": "minimo {min} per partire",
+      "patrol": {
+        "start": "Invia in pattugliamento",
+        "stop": "Richiama dal pattugliamento",
+        "onPatrol": "In pattugliamento",
+        "stopping": "{callSign} sta rientrando dal pattugliamento"
+      },
       "purposes": {
         "TO_INCIDENT": "Verso l’emergenza",
         "TO_HOSPITAL": "Verso l’ospedale",
         "TO_BASE": "Rientro in sede",
         "DELIVERY": "Consegna",
-        "RECOVERY": "Recupero"
+        "RECOVERY": "Recupero",
+        "PATROLLING": "In pattugliamento"
       }
     },
     "facility": {

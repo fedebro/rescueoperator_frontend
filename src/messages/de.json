@@ -383,12 +383,19 @@
       "health": "Zustand",
       "crew": "Besatzung",
       "crewMin": "mindestens {min} zum Ausrücken",
+      "patrol": {
+        "start": "Auf Streife schicken",
+        "stop": "Von der Streife zurückrufen",
+        "onPatrol": "Auf Streife",
+        "stopping": "{callSign} kehrt von der Streife zurück"
+      },
       "purposes": {
         "TO_INCIDENT": "Zum Einsatzort",
         "TO_HOSPITAL": "Zum Krankenhaus",
         "TO_BASE": "Rückfahrt zur Wache",
         "DELIVERY": "Lieferung",
-        "RECOVERY": "Bergung"
+        "RECOVERY": "Bergung",
+        "PATROLLING": "Auf Streife"
       }
     },
     "facility": {

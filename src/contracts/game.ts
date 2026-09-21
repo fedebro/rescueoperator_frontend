@@ -126,7 +126,7 @@ export const MovementDto = z.object({
   departAt: IsoDateTime,
   arriveAt: IsoDateTime,
   distanceMeters: z.number(),
-  purpose: z.enum(['TO_INCIDENT', 'TO_HOSPITAL', 'TO_BASE', 'DELIVERY', 'RECOVERY', 'TO_WATER_SOURCE', 'TAXIING']),
+  purpose: z.enum(['TO_INCIDENT', 'TO_HOSPITAL', 'TO_BASE', 'DELIVERY', 'RECOVERY', 'TO_WATER_SOURCE', 'TAXIING', 'PATROLLING']),
 });
 export type MovementDto = z.infer<typeof MovementDto>;
 

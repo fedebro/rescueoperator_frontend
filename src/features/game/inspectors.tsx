@@ -11,6 +11,7 @@ import {
   MapPin,
   Package,
   Plane,
+  Radar,
   Radio,
   Truck,
   Undo2,
@@ -334,6 +335,9 @@ export function IncidentInspector({ incident }: { incident: IncidentDto }) {
   );
 }
 
+/** The owner's three (analisi/note-agenti/police-patrol.md): presence assets, never a call-out-only unit. */
+const PATROL_TYPE_CODES = new Set(['POL_PATROL', 'POL_MOTO', 'POL_TRAFFIC']);
+
 export function VehicleInspector({ vehicle }: { vehicle: VehicleDto }) {
   const careerId = useCareerId();
   const t = useTranslations('game.vehicle');
@@ -343,7 +347,7 @@ export function VehicleInspector({ vehicle }: { vehicle: VehicleDto }) {
   const tx = useI18nText();
   const locale = useLocale();
   const errorMessage = useErrorMessage();
-  const { facilities, incidents } = useSnapshot();
+  const { facilities, incidents, featureFlags } = useSnapshot();
   const type = useVehicleTypeLookup()(vehicle.typeCode);
   const focusOn = useUiStore((s) => s.focusOn);
   const select = useUiStore((s) => s.select);
@@ -353,6 +357,22 @@ export function VehicleInspector({ vehicle }: { vehicle: VehicleDto }) {
   const recall = useMutation({
     mutationFn: () => gameApi.recallVehicle(careerId, vehicle.id),
     onSuccess: () => toast({ tone: 'info', title: t('recalled', { callSign: vehicle.callSign }) }),
+    onError: (e) => toast({ tone: 'danger', title: errorMessage(e) }),
+  });
+  const patrolling = vehicle.movement?.purpose === 'PATROLLING';
+  // Still a plain AVAILABLE vehicle underneath (Option B: no state-machine change) — the toggle only offers to START
+  // when nothing else is going on, and offers to STOP whenever the vehicle is actually out patrolling.
+  const patrolEligible =
+    featureFlags.police_patrol === true &&
+    PATROL_TYPE_CODES.has(vehicle.typeCode) &&
+    (vehicle.status === 'AVAILABLE' || patrolling);
+  const startPatrol = useMutation({
+    mutationFn: () => gameApi.startPatrol(careerId, vehicle.id),
+    onError: (e) => toast({ tone: 'danger', title: errorMessage(e) }),
+  });
+  const stopPatrol = useMutation({
+    mutationFn: () => gameApi.stopPatrol(careerId, vehicle.id),
+    onSuccess: () => toast({ tone: 'info', title: t('patrol.stopping', { callSign: vehicle.callSign }) }),
     onError: (e) => toast({ tone: 'danger', title: errorMessage(e) }),
   });
   const currentPosition = () =>
@@ -380,7 +400,10 @@ export function VehicleInspector({ vehicle }: { vehicle: VehicleDto }) {
         onFocus={() => focusOn(currentPosition(), 15)}
         badges={
           <>
-            <StatusChip status={vehicle.status} label={ts(vehicle.status)} />
+            <StatusChip
+              status={vehicle.status}
+              label={patrolling ? t('patrol.onPatrol') : ts(vehicle.status)}
+            />
             <Badge>{type ? tx(type.name) : vehicle.typeCode}</Badge>
             {vehicle.movement ? (
               <Eta
@@ -420,6 +443,19 @@ export function VehicleInspector({ vehicle }: { vehicle: VehicleDto }) {
           >
             <Undo2 className="size-4" aria-hidden />
             {t('recall')}
+          </Button>
+        ) : null}
+        {patrolEligible ? (
+          <Button
+            variant={patrolling ? 'secondary' : 'primary'}
+            size="lg"
+            className="w-full"
+            onClick={() => (patrolling ? stopPatrol.mutate() : startPatrol.mutate())}
+            loading={patrolling ? stopPatrol.isPending : startPatrol.isPending}
+            data-testid="toggle-patrol"
+          >
+            <Radar className="size-4" aria-hidden />
+            {patrolling ? t('patrol.stop') : t('patrol.start')}
           </Button>
         ) : null}
         {vehicle.movement ? (

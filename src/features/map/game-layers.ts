@@ -50,6 +50,7 @@ function vehicleMapState(v: VehicleDto): VehicleMapState {
     )
       return 'URGENT';
     if (v.movement.purpose === 'TO_BASE') return 'RETURNING';
+    if (v.movement.purpose === 'PATROLLING') return 'NEUTRAL'; // police patrol: siren off, as if going out or coming back
     return 'NEUTRAL'; // DELIVERY, RECOVERY: moving, but nothing urgent for the player right now
   }
   if (v.status === 'ON_SCENE' || v.status === 'AT_HOSPITAL' || v.status === 'AT_WATER_SOURCE')
