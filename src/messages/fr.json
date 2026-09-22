@@ -369,6 +369,26 @@
       "ineligible": {
         "VEHICLE_DOMAIN_MISMATCH": "Non adapté à ce lieu : la terre et l’eau demandent des moyens différents",
         "AIR_SUPPORT_NOT_NEEDED": "Moyen aérien : cette urgence ne demande aucun appui aérien"
+      },
+      "chain": {
+        "redirect": "Rediriger ici",
+        "queue": "Assigner en prochain",
+        "queued": "En attente pour cette intervention",
+        "cancelQueue": "Annuler",
+        "redirected": "{callSign} redirigé ici",
+        "queuedToast": "{callSign} partira ici dès qu'il sera libre",
+        "queueCancelled": "Affectation en attente annulée",
+        "availableIn": "Libre dans {time}",
+        "reason": {
+          "VEHICLE_NOT_RETURNING": "Encore occupé : redirigeable pendant le retour",
+          "VEHICLE_INOPERABLE": "Hors service : réparation nécessaire",
+          "MAINTENANCE_DUE": "Entretien requis : doit d'abord rentrer",
+          "GROUNDED_BY_CONDITIONS": "Ne peut pas partir dans ces conditions",
+          "INVENTORY_NEEDS_RESTOCK": "Doit d'abord se réapprovisionner",
+          "CREW_INSUFFICIENT": "Équipage insuffisant",
+          "CREW_UNQUALIFIED": "L'équipage n'a pas la qualification requise",
+          "CREW_EXHAUSTED": "Équipage trop fatigué"
+        }
       }
     },
     "vehicle": {

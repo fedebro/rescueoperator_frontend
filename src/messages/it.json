@@ -369,6 +369,26 @@
       "ineligible": {
         "VEHICLE_DOMAIN_MISMATCH": "Non adatto a questo luogo: terra e acqua richiedono mezzi diversi",
         "AIR_SUPPORT_NOT_NEEDED": "Mezzo aereo: questa emergenza non richiede supporto aereo"
+      },
+      "chain": {
+        "redirect": "Reindirizza qui",
+        "queue": "Assegna come prossima",
+        "queued": "In coda per questa missione",
+        "cancelQueue": "Annulla",
+        "redirected": "{callSign} reindirizzato qui",
+        "queuedToast": "{callSign} partirà per qui appena libero",
+        "queueCancelled": "Turno in coda annullato",
+        "availableIn": "Libero tra {time}",
+        "reason": {
+          "VEHICLE_NOT_RETURNING": "Ancora impegnato: reindirizzabile durante il rientro",
+          "VEHICLE_INOPERABLE": "Mezzo fuori uso: serve una riparazione",
+          "MAINTENANCE_DUE": "Manutenzione scaduta: deve rientrare in sede",
+          "GROUNDED_BY_CONDITIONS": "Non può partire con queste condizioni",
+          "INVENTORY_NEEDS_RESTOCK": "Deve prima rifornire le scorte",
+          "CREW_INSUFFICIENT": "Equipaggio insufficiente",
+          "CREW_UNQUALIFIED": "Equipaggio senza le qualifiche richieste",
+          "CREW_EXHAUSTED": "Equipaggio troppo affaticato"
+        }
       }
     },
     "vehicle": {

@@ -369,6 +369,26 @@
       "ineligible": {
         "VEHICLE_DOMAIN_MISMATCH": "Nicht geeignet für diesen Ort: Land und Wasser brauchen unterschiedliche Fahrzeuge",
         "AIR_SUPPORT_NOT_NEEDED": "Luftfahrzeug: dieser Einsatz verlangt keine Luftunterstützung"
+      },
+      "chain": {
+        "redirect": "Hierher umleiten",
+        "queue": "Als nächsten Einsatz zuweisen",
+        "queued": "Für diesen Einsatz vorgemerkt",
+        "cancelQueue": "Abbrechen",
+        "redirected": "{callSign} hierher umgeleitet",
+        "queuedToast": "{callSign} fährt hierher, sobald frei",
+        "queueCancelled": "Vorgemerkter Einsatz storniert",
+        "availableIn": "Frei in {time}",
+        "reason": {
+          "VEHICLE_NOT_RETURNING": "Noch im Einsatz: umleitbar sobald es zurückkehrt",
+          "VEHICLE_INOPERABLE": "Außer Betrieb: benötigt Reparatur",
+          "MAINTENANCE_DUE": "Wartung fällig: muss zuerst zur Station zurück",
+          "GROUNDED_BY_CONDITIONS": "Kann unter diesen Bedingungen nicht starten",
+          "INVENTORY_NEEDS_RESTOCK": "Muss zuerst aufgefüllt werden",
+          "CREW_INSUFFICIENT": "Besatzung unzureichend",
+          "CREW_UNQUALIFIED": "Besatzung hat nicht die erforderliche Qualifikation",
+          "CREW_EXHAUSTED": "Besatzung zu erschöpft"
+        }
       }
     },
     "vehicle": {

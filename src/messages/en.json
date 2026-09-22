@@ -369,6 +369,26 @@
       "ineligible": {
         "VEHICLE_DOMAIN_MISMATCH": "Not suited to this location: land and water need different vehicles",
         "AIR_SUPPORT_NOT_NEEDED": "Aircraft: this emergency does not call for air support"
+      },
+      "chain": {
+        "redirect": "Redirect here",
+        "queue": "Assign as next",
+        "queued": "Queued for this call",
+        "cancelQueue": "Cancel",
+        "redirected": "{callSign} redirected here",
+        "queuedToast": "{callSign} will head here once free",
+        "queueCancelled": "Queued assignment cancelled",
+        "availableIn": "Free in {time}",
+        "reason": {
+          "VEHICLE_NOT_RETURNING": "Still busy: redirectable once it's returning",
+          "VEHICLE_INOPERABLE": "Out of service: needs a repair",
+          "MAINTENANCE_DUE": "Maintenance due: must return to base first",
+          "GROUNDED_BY_CONDITIONS": "Can't depart in these conditions",
+          "INVENTORY_NEEDS_RESTOCK": "Needs to restock first",
+          "CREW_INSUFFICIENT": "Not enough crew",
+          "CREW_UNQUALIFIED": "Crew lacks the required qualification",
+          "CREW_EXHAUSTED": "Crew too fatigued"
+        }
       }
     },
     "vehicle": {

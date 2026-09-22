@@ -15,6 +15,7 @@ import { playSound } from '@/lib/sound';
 import { soundEnabled, useSettingsStore } from '@/stores/settings';
 import { toast } from '@/stores/toast';
 import { useCatalogName, useI18nText } from '@/i18n/use-i18n-text';
+import { useServerNow } from '@/hooks/use-server-now';
 import { cn } from '@/lib/utils';
 import { FamilyBadge, GameIcon, TopdownGlyph, capabilityIconName, vehicleClassOf } from '@/design/icons';
 import { Button } from '@/components/ui/button';
@@ -138,6 +139,72 @@ function DispatchEligibilityBlock({ option }: { option: DispatchOptionsResult['o
   );
 }
 
+/**
+ * A vehicle that isn't AVAILABLE but is on a mission or returning (`option.chain` present, see the contract's
+ * `DispatchOption.chain` doc) can still be pointed at THIS incident: redirected immediately if it's RETURNING and
+ * every chaining condition holds, otherwise queued as its next assignment once it frees up. One button either way —
+ * the server decides which — mirroring the single `chain` endpoint it calls.
+ */
+function ChainAction({
+  option,
+  incidentId,
+  now,
+  onChain,
+  onCancel,
+  chaining,
+  cancelling,
+}: {
+  option: DispatchOptionsResult['options'][number];
+  incidentId: string;
+  now: number;
+  onChain: () => void;
+  onCancel: () => void;
+  chaining: boolean;
+  cancelling: boolean;
+}) {
+  const t = useTranslations('game.dispatch.chain');
+  const chain = option.chain;
+  if (!chain) return null;
+  const queuedHere = chain.queuedIncidentId === incidentId;
+  const availableInSeconds = chain.availableAt
+    ? Math.max(0, Math.round((Date.parse(chain.availableAt) - now) / 1000))
+    : null;
+
+  if (queuedHere)
+    return (
+      <div className="flex shrink-0 flex-col items-end gap-1">
+        <Badge tone="info">{t('queued')}</Badge>
+        <Button size="sm" variant="ghost" onClick={onCancel} loading={cancelling}>
+          {t('cancelQueue')}
+        </Button>
+      </div>
+    );
+
+  if (chain.redirectEligible)
+    return (
+      <Button size="sm" onClick={onChain} loading={chaining} data-testid="chain-redirect">
+        {t('redirect')}
+      </Button>
+    );
+
+  return (
+    <div className="flex shrink-0 flex-col items-end gap-1">
+      <Button size="sm" variant="secondary" onClick={onChain} loading={chaining} data-testid="chain-queue">
+        {t('queue')}
+      </Button>
+      {chain.blockedReason ? (
+        <span className="text-subtle text-right text-[11px]">
+          {t.has(`reason.${chain.blockedReason}` as never)
+            ? t(`reason.${chain.blockedReason}` as never)
+            : chain.blockedReason}
+        </span>
+      ) : availableInSeconds !== null ? (
+        <span className="text-subtle text-[11px]">{t('availableIn', { time: formatClock(availableInSeconds) })}</span>
+      ) : null}
+    </div>
+  );
+}
+
 /** Assisted but fully editable dispatch: one tap sends the recommended set, no confirmation step (Spec 05 §13). */
 export function DispatchPanel({ incident }: { incident: IncidentDto }) {
   const careerId = useCareerId();
@@ -164,6 +231,7 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
   const locale = useLocale();
   const qc = useQueryClient();
   const errorMessage = useErrorMessage();
+  const now = useServerNow(1000);
   const { vehicles, facilities } = useSnapshot();
   const typeOf = useVehicleTypeLookup();
   const familyLabel = useFamilyLabel();
@@ -252,6 +320,35 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
         void options.refetch().finally(() => setAwaitingStaleRefetch(false));
       }
     },
+  });
+
+  const [chainingId, setChainingId] = React.useState<string | null>(null);
+  const chainMutation = useMutation({
+    mutationFn: (vehicleId: string) => gameApi.chainVehicle(careerId, vehicleId, incident.id),
+    onMutate: (vehicleId) => setChainingId(vehicleId),
+    onSuccess: (result) => {
+      playSound('dispatch', soundEnabled(useSettingsStore.getState().sound));
+      toast({
+        tone: 'success',
+        title: t(result.mode === 'REDIRECTED' ? 'chain.redirected' : 'chain.queuedToast', {
+          callSign: result.vehicle.callSign,
+        }),
+      });
+      void qc.invalidateQueries({ queryKey: qk.dispatchOptions(careerId, incident.id) });
+    },
+    onError: (e) => toast({ tone: 'danger', title: errorMessage(e) }),
+    onSettled: () => setChainingId(null),
+  });
+  const [cancellingId, setCancellingId] = React.useState<string | null>(null);
+  const cancelChainMutation = useMutation({
+    mutationFn: (vehicleId: string) => gameApi.cancelChain(careerId, vehicleId),
+    onMutate: (vehicleId) => setCancellingId(vehicleId),
+    onSuccess: () => {
+      toast({ tone: 'info', title: t('chain.queueCancelled') });
+      void qc.invalidateQueries({ queryKey: qk.dispatchOptions(careerId, incident.id) });
+    },
+    onError: (e) => toast({ tone: 'danger', title: errorMessage(e) }),
+    onSettled: () => setCancellingId(null),
   });
 
   const toggle = (id: string) =>
@@ -462,6 +559,16 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
                               {formatDistance(o.distanceMeters, locale)}
                             </span>
                           </span>
+                        ) : o.chain ? (
+                          <ChainAction
+                            option={o}
+                            incidentId={incident.id}
+                            now={now}
+                            onChain={() => chainMutation.mutate(o.vehicleId)}
+                            onCancel={() => cancelChainMutation.mutate(o.vehicleId)}
+                            chaining={chainingId === o.vehicleId && chainMutation.isPending}
+                            cancelling={cancellingId === o.vehicleId && cancelChainMutation.isPending}
+                          />
                         ) : (
                           <StatusChip status={vehicle.status} label={ts(vehicle.status)} />
                         )}
