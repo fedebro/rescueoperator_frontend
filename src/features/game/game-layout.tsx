@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useAuthStore } from '@/stores/auth';
 import { useSessionGate } from '@/hooks/use-session';
 import { BrandSplash } from '@/components/brand/splash';
+import { ServerOfflineScreen } from '@/components/brand/server-offline';
 import { GameRuntime } from './game-runtime';
 import { GameShell } from './shell';
 import { OutcomeModal } from './outcome-modal';
@@ -14,9 +15,10 @@ import { FamilyUnlockCelebration } from '@/features/families/family-unlock-celeb
 
 export function GameLayout({ children }: { children: React.ReactNode }) {
   const t = useTranslations('common');
-  const allowed = useSessionGate('needs-career');
+  const gateStatus = useSessionGate('needs-career');
   const careerId = useAuthStore((s) => s.user?.activeCareerId ?? null);
-  if (!allowed || !careerId) return <BrandSplash />;
+  if (gateStatus === 'unreachable') return <ServerOfflineScreen />;
+  if (gateStatus !== 'ok' || !careerId) return <BrandSplash />;
   return (
     <GameRuntime careerId={careerId}>
       <a

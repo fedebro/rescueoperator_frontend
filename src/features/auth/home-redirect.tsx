@@ -6,10 +6,10 @@ import { BrandSplash } from '@/components/brand/splash';
 
 /** "/" has no UI of its own: everyone is sent to /auth, /onboarding or /game. */
 export function HomeRedirect() {
-  const anonymous = useSessionGate('anonymous-only');
+  const gateStatus = useSessionGate('anonymous-only');
   const router = useRouter();
   React.useEffect(() => {
-    if (anonymous) router.replace('/auth');
-  }, [anonymous, router]);
+    if (gateStatus === 'ok') router.replace('/auth');
+  }, [gateStatus, router]);
   return <BrandSplash />;
 }

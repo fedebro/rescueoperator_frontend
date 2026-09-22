@@ -73,6 +73,12 @@
     "retry": "Riprova",
     "home": "Torna all’inizio"
   },
+  "offline": {
+    "title": "Centrale momentaneamente irraggiungibile",
+    "body": "Non riusciamo a contattare il server. La tua carriera è al sicuro: i dati vivono lì, non su questo dispositivo. Controlla la connessione e riprova.",
+    "retry": "Riprova ora",
+    "autoRetry": "Stiamo ritentando automaticamente in background."
+  },
   "notFound": {
     "title": "Pagina non trovata",
     "body": "Questo indirizzo non porta a nessuna centrale operativa.",

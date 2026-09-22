@@ -73,6 +73,12 @@
     "retry": "Erneut versuchen",
     "home": "Zur Startseite"
   },
+  "offline": {
+    "title": "Zentrale vorübergehend nicht erreichbar",
+    "body": "Wir können den Server gerade nicht erreichen. Deine Karriere ist sicher: Die Daten liegen dort, nicht auf diesem Gerät. Prüfe deine Verbindung und versuche es erneut.",
+    "retry": "Jetzt erneut versuchen",
+    "autoRetry": "Wir versuchen es im Hintergrund bereits automatisch erneut."
+  },
   "notFound": {
     "title": "Seite nicht gefunden",
     "body": "Diese Adresse führt zu keiner Leitstelle.",

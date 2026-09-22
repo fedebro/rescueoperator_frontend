@@ -73,6 +73,12 @@
     "retry": "Try again",
     "home": "Back to start"
   },
+  "offline": {
+    "title": "Control room temporarily unreachable",
+    "body": "We can't reach the server right now. Your career is safe: your data lives there, not on this device. Check your connection and try again.",
+    "retry": "Retry now",
+    "autoRetry": "We're already retrying automatically in the background."
+  },
   "notFound": {
     "title": "Page not found",
     "body": "This address doesn’t lead to any control room.",

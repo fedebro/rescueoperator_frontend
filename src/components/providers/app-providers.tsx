@@ -44,24 +44,47 @@ function MockGate({ children }: { children: React.ReactNode }) {
   return ready ? <>{children}</> : <BrandSplash />;
 }
 
-/** Restores the session from the refresh cookie once per page load and keeps the auth store in sync with the API client. */
+/**
+ * Restores the session from the refresh cookie once per page load and keeps the auth store in sync with the API
+ * client. `refreshSession()` only ever *resolves* to `null` on a definitive "you're logged out" (see client.ts); by
+ * the time a rejection reaches this `.catch`, it is always connectivity/availability trouble (network error,
+ * timeout, a non-401/403 server error) — never proof the session is gone. Logging out on that would bounce a
+ * signed-in player to the login screen every time the backend has a bad moment, so it marks the session
+ * `unreachable` and keeps retrying with backoff instead.
+ */
 function AuthBootstrap({ children }: { children: React.ReactNode }) {
   const setSession = useAuthStore((s) => s.setSession);
   const clear = useAuthStore((s) => s.clear);
+  const markUnreachable = useAuthStore((s) => s.markUnreachable);
   React.useEffect(() => {
     const off = onAuthChange((result) => (result ? setSession(result.user) : clear()));
+    let cancelled = false;
+    let attempt = 0;
+    const tryRefresh = () => {
+      if (cancelled) return;
+      refreshSession()
+        .then((r) => {
+          if (cancelled) return;
+          if (!r) clear();
+        })
+        .catch(() => {
+          if (cancelled) return;
+          markUnreachable();
+          attempt += 1;
+          const delayMs = Math.min(2000 * 2 ** (attempt - 1), 30_000);
+          setTimeout(tryRefresh, delayMs);
+        });
+    };
     if (useAuthStore.getState().status === 'unknown') {
       // A browser that has never signed in has no refresh cookie: asking for one would only produce a 401.
       if (!mayHaveSession()) clear();
-      else
-        refreshSession()
-          .then((r) => {
-            if (!r) clear();
-          })
-          .catch(() => clear());
+      else tryRefresh();
     }
-    return off;
-  }, [setSession, clear]);
+    return () => {
+      cancelled = true;
+      off();
+    };
+  }, [setSession, clear, markUnreachable]);
   return <>{children}</>;
 }
 

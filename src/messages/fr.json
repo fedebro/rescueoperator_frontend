@@ -73,6 +73,12 @@
     "retry": "Réessayer",
     "home": "Retour à l’accueil"
   },
+  "offline": {
+    "title": "Centrale momentanément injoignable",
+    "body": "Impossible de contacter le serveur pour le moment. Votre carrière est en sécurité : vos données sont là-bas, pas sur cet appareil. Vérifiez votre connexion et réessayez.",
+    "retry": "Réessayer maintenant",
+    "autoRetry": "Nous réessayons déjà automatiquement en arrière-plan."
+  },
   "notFound": {
     "title": "Page introuvable",
     "body": "Cette adresse ne mène à aucun centre opérationnel.",

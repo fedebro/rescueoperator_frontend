@@ -213,7 +213,11 @@ export function refreshSession(): Promise<AuthResult | null> {
       }
       if (!res.ok) {
         const err = await toError(res);
-        if (err.transient) throw err;
+        // Only a clean 401/403 means the refresh token is genuinely gone (expired, revoked, rotated away). Anything
+        // else — a transient 502/503, but just as much a bare 500 or other unexpected status — is the server having a
+        // bad moment, not a verdict on the session: surface it to the caller (AuthBootstrap treats it as "unreachable,
+        // retry" instead of logging the player out) rather than clearing the session on a guess.
+        if (res.status !== 401 && res.status !== 403) throw err;
         setAccessToken(null);
         setSessionHint(false);
         for (const l of authListeners) l(null);

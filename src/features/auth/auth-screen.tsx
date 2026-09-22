@@ -47,7 +47,8 @@ const profileSchema = z.object({
 type ProfileValues = z.input<typeof profileSchema>;
 
 export function AuthScreen() {
-  const allowed = useSessionGate('anonymous-only');
+  const gateStatus = useSessionGate('anonymous-only');
+  const allowed = gateStatus === 'ok';
   const t = useTranslations('auth');
   const tc = useTranslations('common');
   const name = useCatalogName();

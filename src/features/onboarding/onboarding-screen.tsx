@@ -199,7 +199,8 @@ function SiteCard({ site, selected, onSelect }: { site: Site; selected: boolean;
 }
 
 export function OnboardingScreen() {
-  const allowed = useSessionGate('needs-no-career');
+  const gateStatus = useSessionGate('needs-no-career');
+  const allowed = gateStatus === 'ok';
   const t = useTranslations('onboarding');
   const tc = useTranslations('common');
   const locale = useLocale();

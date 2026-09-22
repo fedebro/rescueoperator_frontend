@@ -73,6 +73,12 @@
     "retry": "Reintentar",
     "home": "Volver al inicio"
   },
+  "offline": {
+    "title": "Centralita momentáneamente inalcanzable",
+    "body": "No podemos contactar con el servidor. Tu carrera está a salvo: los datos están allí, no en este dispositivo. Comprueba tu conexión y vuelve a intentarlo.",
+    "retry": "Reintentar ahora",
+    "autoRetry": "Ya lo estamos reintentando automáticamente en segundo plano."
+  },
   "notFound": {
     "title": "Página no encontrada",
     "body": "Esta dirección no lleva a ninguna central de emergencias.",
