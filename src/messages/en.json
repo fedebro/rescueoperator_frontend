@@ -522,6 +522,7 @@
         "FAILURE": "Failed"
       },
       "subtitle": "End-of-mission report",
+      "firstMission": "Your first mission, completed. From here on, it's all on you.",
       "stars": "{stars} out of 3 stars",
       "gross": "Gross reward",
       "net": "Net credited",
@@ -581,32 +582,32 @@
     },
     "tutorial": {
       "label": "Guided tutorial",
-      "progress": "Tutorial · {current} of {total}",
+      "progress": "Step {current} of {total}",
       "skip": "Skip the tutorial",
-      "start": "Let’s begin",
+      "start": "Answer the call",
       "WELCOME": {
-        "title": "Welcome to the control room, Director",
-        "body": "The first call has come in. In a few steps you’ll see how an emergency is handled from start to finish."
+        "title": "The emergency line is ringing",
+        "body": "A call is coming in right now. Over the next few minutes you'll run your first mission start to finish: from the call to the vehicles' return. Ready, Director?"
       },
       "SELECT_INCIDENT": {
-        "title": "Open the call",
-        "body": "Active emergencies are always in this queue, sorted by urgency. Select it to read what’s happening."
+        "title": "There's a call waiting",
+        "body": "It's at the top of the emergency queue. Open it to see what's happening and who might be involved."
       },
       "DISPATCH": {
-        "title": "Dispatch the vehicles",
-        "body": "The bars show what’s needed. The control room suggests the best vehicles: one tap and they’re on their way. You can always pick by hand."
+        "title": "Every second counts",
+        "body": "The bars show what's needed on scene. The control room already suggests the best vehicles: one tap and they're on their way."
       },
       "WATCH_ARRIVAL": {
-        "title": "The vehicle is en route",
-        "body": "Follow it on the map: on arrival the operation starts and progresses according to how well the vehicles on scene cover the needs."
+        "title": "Your vehicles are on the road",
+        "body": "Follow them on the map in real time. On arrival the operation starts on its own, based on how well the units on scene cover what's needed."
       },
       "OUTCOME": {
-        "title": "Mission complete",
-        "body": "Read the report: reward, costs and experience."
+        "title": "First mission complete!",
+        "body": "Check the report: reward, experience, and what you got right."
       },
       "BUY_VEHICLE": {
-        "title": "Grow your fleet",
-        "body": "With the reward you can afford a second vehicle. Open the Shop and choose one: two vehicles mean two emergencies handled at once."
+        "title": "One vehicle can't cover a whole city",
+        "body": "Spend the reward on a second vehicle for your fleet: from here on, emergencies won't wait — more vehicles ready means more lives handled at once."
       }
     }
   },

@@ -360,6 +360,10 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
     });
   const sameAsRecommended =
     selected.size === recommended.size && [...selected].every((id) => recommended.has(id));
+  // A vehicle that's busy elsewhere or RETURNING is never `dispatchable`, but it can still be redirected/queued here
+  // via `chain` — that option list must render even when nothing can leave immediately (e.g. a one-vehicle fleet with
+  // its only unit inbound from another call), or the chain action has nowhere to appear.
+  const anyChainable = (data?.options ?? []).some((o) => o.chain);
 
   if (!data)
     return (
@@ -381,17 +385,17 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
         actionLabel={tci('action')}
         actionHref="/game/personnel?tab=recruitment"
       />
-      {dispatchable.size === 0 ? (
+      {dispatchable.size === 0 && !anyChainable ? (
         <div>
           <SectionTitle>{t('requirements')}</SectionTitle>
           <RequirementBars incident={incident} planned={planned} />
         </div>
       ) : null}
       {/* Vehicles that only lack a crew explain why and how to fix it, even when nothing else can leave. */}
-      {dispatchable.size === 0 ? <DispatchCrewBlocked options={data.options} /> : null}
-      {dispatchable.size === 0 && incident.assignedVehicleIds.length > 0 ? (
+      {dispatchable.size === 0 && !anyChainable ? <DispatchCrewBlocked options={data.options} /> : null}
+      {dispatchable.size === 0 && !anyChainable && incident.assignedVehicleIds.length > 0 ? (
         <p className="text-subtle text-center text-xs">{t('noneAvailableHint')}</p>
-      ) : dispatchable.size === 0 ? (
+      ) : dispatchable.size === 0 && !anyChainable ? (
         <EmptyState
           icon={<Truck className="size-5" />}
           title={t('noneAvailableTitle')}
@@ -404,58 +408,60 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
         />
       ) : (
         <>
-          <div className="flex flex-col gap-2">
-            <Button
-              size="lg"
-              className="w-full"
-              onClick={() => mutation.mutate([...recommended])}
-              loading={mutation.isPending || awaitingStaleRefetch}
-              disabled={recommended.size === 0 || awaitingStaleRefetch}
-              data-tutorial="send-recommended"
-              data-testid="send-recommended"
-            >
-              <Sparkles className="size-5" aria-hidden />
-              {t('sendRecommended', { count: recommended.size })}
-            </Button>
-            {manual !== null && !sameAsRecommended ? (
+          {dispatchable.size > 0 ? (
+            <div className="flex flex-col gap-2">
               <Button
                 size="lg"
-                variant="secondary"
                 className="w-full"
-                onClick={() => mutation.mutate([...selected])}
+                onClick={() => mutation.mutate([...recommended])}
                 loading={mutation.isPending || awaitingStaleRefetch}
-                disabled={selected.size === 0 || awaitingStaleRefetch}
-                data-testid="send-selected"
+                disabled={recommended.size === 0 || awaitingStaleRefetch}
+                data-tutorial="send-recommended"
+                data-testid="send-recommended"
               >
-                <Send className="size-4" aria-hidden />
-                {t('sendSelected', { count: selected.size })}
+                <Sparkles className="size-5" aria-hidden />
+                {t('sendRecommended', { count: recommended.size })}
               </Button>
-            ) : null}
-            {!data.recommendationCoversRequired && manual === null ? (
-              <p className="text-warning flex items-start gap-2 text-xs">
-                <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-                {t('recommendationPartial')}
-              </p>
-            ) : null}
-            {insufficient && !sameAsRecommended && selected.size > 0 ? (
-              <p
-                role="status"
-                className="text-warning flex flex-wrap items-start gap-x-2 gap-y-1 text-xs"
-                data-testid="insufficient-warning"
-              >
-                <span className="flex items-start gap-2">
+              {manual !== null && !sameAsRecommended ? (
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  className="w-full"
+                  onClick={() => mutation.mutate([...selected])}
+                  loading={mutation.isPending || awaitingStaleRefetch}
+                  disabled={selected.size === 0 || awaitingStaleRefetch}
+                  data-testid="send-selected"
+                >
+                  <Send className="size-4" aria-hidden />
+                  {t('sendSelected', { count: selected.size })}
+                </Button>
+              ) : null}
+              {!data.recommendationCoversRequired && manual === null ? (
+                <p className="text-warning flex items-start gap-2 text-xs">
                   <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-                  {t('insufficient')}
-                </span>
-                {actionableWarning ? (
-                  <WarningNextAction
-                    code={actionableWarning}
-                    className="text-skyline ml-5 inline-flex items-center gap-1 font-semibold hover:underline"
-                  />
-                ) : null}
-              </p>
-            ) : null}
-          </div>
+                  {t('recommendationPartial')}
+                </p>
+              ) : null}
+              {insufficient && !sameAsRecommended && selected.size > 0 ? (
+                <p
+                  role="status"
+                  className="text-warning flex flex-wrap items-start gap-x-2 gap-y-1 text-xs"
+                  data-testid="insufficient-warning"
+                >
+                  <span className="flex items-start gap-2">
+                    <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                    {t('insufficient')}
+                  </span>
+                  {actionableWarning ? (
+                    <WarningNextAction
+                      code={actionableWarning}
+                      className="text-skyline ml-5 inline-flex items-center gap-1 font-semibold hover:underline"
+                    />
+                  ) : null}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
 
           {/* Stuck to the top of the tab's own scroll container while the option list below scrolls, so the
               coverage you're building stays visible without scrolling back up after each pick. Capped and

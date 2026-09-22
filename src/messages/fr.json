@@ -522,6 +522,7 @@
         "FAILURE": "Échec"
       },
       "subtitle": "Rapport de fin de mission",
+      "firstMission": "Votre première mission, menée à bien. À partir de maintenant, tout est entre vos mains.",
       "stars": "{stars} étoiles sur 3",
       "gross": "Récompense brute",
       "net": "Net crédité",
@@ -581,32 +582,32 @@
     },
     "tutorial": {
       "label": "Tutoriel guidé",
-      "progress": "Tutoriel · {current} sur {total}",
+      "progress": "Étape {current} sur {total}",
       "skip": "Passer le tutoriel",
-      "start": "C’est parti",
+      "start": "Répondre à l’appel",
       "WELCOME": {
-        "title": "Bienvenue au centre opérationnel, Directeur",
-        "body": "Le premier appel vient d’arriver. En quelques étapes, vous verrez comment gérer une urgence du début à la fin."
+        "title": "La ligne d’urgence sonne",
+        "body": "Un appel arrive à l’instant. Dans les prochaines minutes, vous gérerez votre première mission du début à la fin : de l’appel au retour des véhicules. Prêt, Directeur ?"
       },
       "SELECT_INCIDENT": {
-        "title": "Ouvrez l’appel",
-        "body": "Les urgences actives sont toujours dans cette file, classées par degré d’urgence. Sélectionnez-la pour lire ce qui se passe."
+        "title": "Un appel est en attente",
+        "body": "Il est en tête de la file des urgences. Ouvrez-le pour découvrir ce qui se passe et qui pourrait être concerné."
       },
       "DISPATCH": {
-        "title": "Envoyez les véhicules",
-        "body": "Les barres indiquent les besoins. Le centre vous propose les meilleurs véhicules : un appui et ils partent aussitôt. Vous pouvez toujours choisir à la main."
+        "title": "Chaque seconde compte",
+        "body": "Les barres indiquent les besoins sur place. Le centre vous propose déjà les meilleurs véhicules : un appui et ils partent aussitôt."
       },
       "WATCH_ARRIVAL": {
-        "title": "Le véhicule est en route",
-        "body": "Suivez-le sur la carte : à l’arrivée, l’intervention commence et avance selon la façon dont les véhicules sur place couvrent les besoins."
+        "title": "Vos véhicules sont en route",
+        "body": "Suivez-les sur la carte en temps réel. À l’arrivée, l’intervention démarre d’elle-même, selon la façon dont les unités sur place couvrent les besoins."
       },
       "OUTCOME": {
-        "title": "Mission terminée",
-        "body": "Lisez le rapport : récompense, coûts et expérience."
+        "title": "Première mission terminée !",
+        "body": "Consultez le rapport : récompense, expérience et ce que vous avez réussi."
       },
       "BUY_VEHICLE": {
-        "title": "Développez la flotte",
-        "body": "Avec la récompense, vous pouvez vous offrir un deuxième véhicule. Ouvrez le Centre d’achats et choisissez-en un : deux véhicules, ce sont deux urgences gérées en même temps."
+        "title": "Un seul véhicule ne suffit pas pour toute une ville",
+        "body": "Utilisez la récompense pour un deuxième véhicule : désormais, les urgences n’attendent plus — plus de véhicules prêts, ce sont plus de vies gérées en même temps."
       }
     }
   },

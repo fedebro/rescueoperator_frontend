@@ -522,6 +522,7 @@
         "FAILURE": "Gescheitert"
       },
       "subtitle": "Einsatzbericht",
+      "firstMission": "Dein erster Einsatz, erfolgreich abgeschlossen. Von jetzt an liegt alles bei dir.",
       "stars": "{stars} von 3 Sternen",
       "gross": "Belohnung brutto",
       "net": "Netto gutgeschrieben",
@@ -581,32 +582,32 @@
     },
     "tutorial": {
       "label": "Geführtes Tutorial",
-      "progress": "Tutorial · {current} von {total}",
+      "progress": "Schritt {current} von {total}",
       "skip": "Tutorial überspringen",
-      "start": "Los geht’s",
+      "start": "Notruf annehmen",
       "WELCOME": {
-        "title": "Willkommen in der Leitstelle, Leiter",
-        "body": "Der erste Notruf ist eingegangen. In wenigen Schritten siehst du, wie ein Einsatz von Anfang bis Ende abläuft."
+        "title": "Die Notrufleitung klingelt",
+        "body": "Gerade jetzt geht ein Anruf ein. In den nächsten Minuten führst du deinen ersten Einsatz von Anfang bis Ende durch: vom Notruf bis zur Rückkehr der Fahrzeuge. Bereit, Leiter?"
       },
       "SELECT_INCIDENT": {
-        "title": "Öffne den Notruf",
-        "body": "Aktive Einsätze stehen immer in dieser Liste, nach Dringlichkeit sortiert. Wähle den Einsatz aus, um zu lesen, was passiert ist."
+        "title": "Ein Notruf wartet",
+        "body": "Er steht ganz oben in der Einsatzliste. Öffne ihn, um zu sehen, was passiert ist und wer betroffen sein könnte."
       },
       "DISPATCH": {
-        "title": "Alarmiere die Fahrzeuge",
-        "body": "Die Balken zeigen, was gebraucht wird. Die Leitstelle schlägt dir die besten Fahrzeuge vor: Ein Tipp, und sie rücken sofort aus. Du kannst jederzeit selbst auswählen."
+        "title": "Jede Sekunde zählt",
+        "body": "Die Balken zeigen, was vor Ort gebraucht wird. Die Leitstelle schlägt dir bereits die besten Fahrzeuge vor: ein Tipp, und sie rücken sofort aus."
       },
       "WATCH_ARRIVAL": {
-        "title": "Das Fahrzeug ist unterwegs",
-        "body": "Verfolge es auf der Karte: Bei der Ankunft beginnt der Einsatz. Er schreitet umso schneller voran, je besser die Fahrzeuge vor Ort den Bedarf decken."
+        "title": "Deine Fahrzeuge sind unterwegs",
+        "body": "Verfolge sie in Echtzeit auf der Karte. Bei der Ankunft beginnt der Einsatz von selbst — je besser die Einheiten vor Ort den Bedarf decken, desto schneller."
       },
       "OUTCOME": {
-        "title": "Einsatz beendet",
-        "body": "Lies den Bericht: Belohnung, Kosten und Erfahrung."
+        "title": "Erster Einsatz abgeschlossen!",
+        "body": "Sieh dir den Bericht an: Belohnung, Erfahrung und was gut gelaufen ist."
       },
       "BUY_VEHICLE": {
-        "title": "Bau deinen Fuhrpark aus",
-        "body": "Mit der Belohnung kannst du dir ein zweites Fahrzeug leisten. Öffne den Fahrzeugshop und such dir eins aus: Zwei Fahrzeuge bedeuten zwei Einsätze gleichzeitig."
+        "title": "Eine Stadt kommt mit einem Fahrzeug nicht aus",
+        "body": "Nutze die Belohnung für ein zweites Fahrzeug: Von jetzt an warten Einsätze nicht mehr — mehr einsatzbereite Fahrzeuge bedeuten mehr Leben, die gleichzeitig versorgt werden."
       }
     }
   },

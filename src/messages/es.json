@@ -522,6 +522,7 @@
         "FAILURE": "Fracaso"
       },
       "subtitle": "Informe de fin de misión",
+      "firstMission": "Tu primera misión, completada. A partir de ahora, todo depende de ti.",
       "stars": "{stars} estrellas de 3",
       "gross": "Recompensa bruta",
       "net": "Neto abonado",
@@ -581,32 +582,32 @@
     },
     "tutorial": {
       "label": "Tutorial guiado",
-      "progress": "Tutorial · {current} de {total}",
+      "progress": "Paso {current} de {total}",
       "skip": "Saltar el tutorial",
-      "start": "Empecemos",
+      "start": "Responder a la llamada",
       "WELCOME": {
-        "title": "Te damos la bienvenida a la central, Director",
-        "body": "Ha llegado el primer aviso. En pocos pasos verás cómo se gestiona una emergencia de principio a fin."
+        "title": "Suena la línea de emergencias",
+        "body": "Está entrando una llamada ahora mismo. En los próximos minutos gestionarás tu primera misión de principio a fin: desde el aviso hasta el regreso de los vehículos. ¿Listo, Director?"
       },
       "SELECT_INCIDENT": {
-        "title": "Abre el aviso",
-        "body": "Las emergencias activas están siempre en esta cola, ordenadas por urgencia. Selecciónala para leer qué está pasando."
+        "title": "Hay una llamada esperando",
+        "body": "Está arriba de todo en la cola de emergencias. Ábrela para descubrir qué está pasando y quién podría estar implicado."
       },
       "DISPATCH": {
-        "title": "Envía los vehículos",
-        "body": "Las barras muestran qué hace falta. La central te propone los mejores vehículos: con un toque salen al instante. Siempre puedes elegir a mano."
+        "title": "Cada segundo cuenta",
+        "body": "Las barras muestran qué hace falta en el lugar. La central ya te propone los mejores vehículos: con un toque salen al instante."
       },
       "WATCH_ARRIVAL": {
-        "title": "El vehículo está en camino",
-        "body": "Síguelo en el mapa: al llegar empieza la intervención, que avanza según lo bien que los vehículos en el lugar cubran las necesidades."
+        "title": "Tus vehículos están en camino",
+        "body": "Síguelos en el mapa en tiempo real. Al llegar, la intervención arranca sola, según lo bien que las unidades en el lugar cubran lo necesario."
       },
       "OUTCOME": {
-        "title": "Misión finalizada",
-        "body": "Lee el informe: recompensa, costes y experiencia."
+        "title": "¡Primera misión completada!",
+        "body": "Lee el informe: recompensa, experiencia y qué hiciste bien."
       },
       "BUY_VEHICLE": {
-        "title": "Haz crecer la flota",
-        "body": "Con la recompensa puedes permitirte un segundo vehículo. Abre el Centro de compras y elige uno: dos vehículos significan dos emergencias atendidas a la vez."
+        "title": "Un solo vehículo no cubre toda una ciudad",
+        "body": "Usa la recompensa para un segundo vehículo de tu flota: a partir de ahora las emergencias no esperan, y más vehículos listos significan más vidas atendidas a la vez."
       }
     }
   },

@@ -522,6 +522,7 @@
         "FAILURE": "Fallito"
       },
       "subtitle": "Rapporto di fine missione",
+      "firstMission": "La tua prima missione, portata a termine. Da qui in poi tocca tutto a te.",
       "stars": "{stars} stelle su 3",
       "gross": "Ricompensa lorda",
       "net": "Netto accreditato",
@@ -581,32 +582,32 @@
     },
     "tutorial": {
       "label": "Tutorial guidato",
-      "progress": "Tutorial · {current} di {total}",
+      "progress": "Passo {current} di {total}",
       "skip": "Salta il tutorial",
-      "start": "Cominciamo",
+      "start": "Rispondi alla chiamata",
       "WELCOME": {
-        "title": "Benvenuto in centrale, Direttore",
-        "body": "È arrivata la prima segnalazione. In pochi passi vedrai come si gestisce un’emergenza dall’inizio alla fine."
+        "title": "Squilla il telefono dell’emergenza",
+        "body": "Una chiamata sta arrivando proprio ora. Nei prossimi minuti gestirai la tua prima missione dall’inizio alla fine: dalla segnalazione al rientro dei mezzi. Pronto, Direttore?"
       },
       "SELECT_INCIDENT": {
-        "title": "Apri la segnalazione",
-        "body": "Le emergenze attive sono sempre in questa coda, ordinate per urgenza. Selezionala per leggere cosa sta succedendo."
+        "title": "C’è una chiamata in attesa",
+        "body": "È in cima alla coda delle emergenze. Aprila per scoprire cosa sta succedendo e chi rischia di rimanere coinvolto."
       },
       "DISPATCH": {
-        "title": "Invia i mezzi",
-        "body": "Le barre mostrano cosa serve. La centrale ti propone i mezzi migliori: con un tocco partono subito. Puoi sempre scegliere a mano."
+        "title": "Ogni secondo conta",
+        "body": "Le barre mostrano cosa serve sul posto. La centrale ti consiglia già i mezzi migliori: un tocco e partono subito."
       },
       "WATCH_ARRIVAL": {
-        "title": "Il mezzo è in viaggio",
-        "body": "Seguilo sulla mappa: all’arrivo l’intervento inizia e avanza in base a quanto i mezzi sul posto coprono le necessità."
+        "title": "I tuoi mezzi sono in strada",
+        "body": "Seguili sulla mappa in tempo reale. All’arrivo l’intervento parte da solo, in base a quanto i mezzi sul posto coprono ciò che serve."
       },
       "OUTCOME": {
-        "title": "Missione conclusa",
-        "body": "Leggi il rapporto: ricompensa, costi ed esperienza."
+        "title": "Prima missione conclusa!",
+        "body": "Guarda il rapporto: ricompensa, esperienza e cosa hai fatto bene."
       },
       "BUY_VEHICLE": {
-        "title": "Fai crescere la flotta",
-        "body": "Con la ricompensa puoi permetterti un secondo mezzo. Apri il Centro acquisti e scegline uno: due mezzi significano due emergenze gestite insieme."
+        "title": "Una città non si copre con un mezzo solo",
+        "body": "Usa la ricompensa per il secondo mezzo della tua flotta: da qui in poi le emergenze non aspettano, e più mezzi pronti significano più vite gestite insieme."
       }
     }
   },
