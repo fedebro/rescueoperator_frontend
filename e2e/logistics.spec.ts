@@ -63,11 +63,12 @@ test('maintenance: worn vehicle → service → done; breakdown → recovery →
   await test.step('dispatch, then the vehicle breaks down on the road', async () => {
     // Far enough that the drive is observable: at mock speed 12 a nearby spawn can go PREPARING → ON_SCENE inside a
     // single engine tick, and the breakdown this step is about only means something while the vehicle is on the road.
-    await qa(page, 'spawn', 'FIRE_TRASH_BIN', 1, 3000);
+    const incidentId = await qa<string>(page, 'spawn', 'FIRE_TRASH_BIN', 1, 3000);
     // Mobile: the map is the leftmost bottom-nav item, which the dev-server overlay badge can cover → direct navigation.
     if (isMobile(page)) await page.goto('/game');
     else await goTo(page, 'Centro operativo');
-    await page.getByTestId('incident-card').first().click();
+    // This call, not whichever random one happens to top the list.
+    await page.locator(`[data-testid="incident-card"][data-incident-id="${incidentId}"]`).click();
     await page.getByTestId('send-recommended').click();
     await expect(page.getByTestId('assigned-vehicle').first()).toHaveAttribute(
       'data-vehicle-status',
@@ -107,7 +108,9 @@ test('maintenance: worn vehicle → service → done; breakdown → recovery →
 });
 
 test('inventory: low stock alert → urgent order → delivery restores the stock', async ({ page }, info) => {
-  await bootCareer(page, info.project.name, { level: 3, credits: 2000 });
+  // Real-time mock clock: at ×12 the urgent delivery (under 2 s) could be over before the Orders tab is even open;
+  // the test moves time itself (`fastForward`) once it has seen the order in delivery.
+  await bootCareer(page, info.project.name, { level: 3, credits: 2000, speed: 1 });
   await qa(page, 'drainStock', 'FOAM', 80);
 
   await test.step('low-stock alert with icon and label', async () => {
@@ -148,7 +151,7 @@ test('inventory: low stock alert → urgent order → delivery restores the stoc
     await page.getByRole('tab', { name: 'Magazzino' }).click();
     await expect(page.getByTestId('low-stock-alert')).toBeHidden();
     await expect(page.locator('[data-testid="stock-state"][data-state="LOW"]')).toHaveCount(0);
-    await goTo(page, 'Sedi', true);
+    await goTo(page, 'Sedi');
     const section = page.getByTestId('facility-stock');
     await expect(section.getByTestId('stock-line')).toHaveCount(3);
     await expect(

@@ -102,7 +102,7 @@ function CoverageSection() {
   return (
     <section className="border-border flex flex-col gap-3 border-t pt-3" data-testid="coverage-section">
       <div className="flex items-baseline justify-between gap-2">
-        <h3 className="text-subtle text-[11px] font-bold tracking-[0.08em] uppercase">{t('title')}</h3>
+        <h3 className="text-subtle text-xs font-bold tracking-[0.08em] uppercase">{t('title')}</h3>
         <span className="tabular text-sm font-semibold" data-testid="coverage-pct">
           {formatPercent(pct / 100, locale)}
         </span>
@@ -175,7 +175,7 @@ export function CoverageLegend({ coverage }: { coverage: Pick<CoverageDto, 'isoc
   const bins = legendBins(coverage.isochroneSeconds?.length ? coverage.isochroneSeconds : DEFAULT_RINGS);
   return (
     <div>
-      <p className="text-subtle mb-1.5 text-[11px] font-semibold">{t('legend')}</p>
+      <p className="text-subtle mb-1.5 text-xs font-semibold">{t('legend')}</p>
       <ul className="grid grid-cols-2 gap-x-3 gap-y-1.5" data-testid="coverage-legend">
         {bins.map((b) => (
           <li key={b.bin} className="flex items-center gap-2 text-xs">
@@ -213,7 +213,7 @@ function ClosuresSection() {
   const world = useWorld();
   return (
     <section className="border-border flex flex-col gap-2 border-t pt-3" data-testid="closures-section">
-      <h3 className="text-subtle text-[11px] font-bold tracking-[0.08em] uppercase">{t('title')}</h3>
+      <h3 className="text-subtle text-xs font-bold tracking-[0.08em] uppercase">{t('title')}</h3>
       {world.closures.length === 0 ? (
         <p className="text-muted text-sm">{t('empty')}</p>
       ) : (

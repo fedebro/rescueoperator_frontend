@@ -3,7 +3,6 @@ import { pointAlong, type LngLat } from '@/lib/geo';
 import {
   ECONOMY,
   FEATURES,
-  INCIDENT_TEMPLATES,
   ITEM_TYPES,
   MANAGERIAL_SCALE,
   VEHICLE_TYPES,
@@ -14,10 +13,12 @@ import type { QaHelpers } from '../qa';
 import { domainState } from './index';
 
 /**
- * Simulation of the `logistics` area = minimal inventory (analisi/07 §7) + maintenance / breakdowns / recovery (Spec 11
- * reduced by D-31: nothing is ever lost for good, and a free slow repair always exists — analisi/05 §7.3).
+ * Simulation of the `logistics` area = the facility warehouses (analisi/07 §7) + maintenance / breakdowns / recovery
+ * (Spec 11 reduced by D-31: nothing is ever lost for good, and a free slow repair always exists — analisi/05 §7.3).
  * Same design as the backend: no ticks, every future change is a scheduled action (`SUPPLY_DELIVERED`,
  * `MAINTENANCE_DONE`, `BREAKDOWN`, `RECOVERY_START`, `RECOVERY_ARRIVE`).
+ * Since D-22 a vehicle carries its OWN stock (the `autonomy` domain): a mission consumes from the vehicle, and the
+ * warehouse only feeds the resupply stops (shelf → vehicle, `loadOntoVehicle`). Nothing is reserved on the shelves.
  */
 
 /* ───────────────────────────── types ───────────────────────────── */
@@ -29,6 +30,7 @@ export type WorkKind = 'SERVICE' | 'REPAIR' | 'FREE_EMERGENCY_REPAIR';
 
 export interface StockLine {
   quantity: number;
+  /** Legacy (shelf reservations, before D-22): always 0 now, kept for the wire shape and old saves. */
   reserved: number;
   inbound: number;
   /** Wall-clock ms of the last `inventory.low_stock` notification (cooldown). */
@@ -43,14 +45,6 @@ export interface SupplyOrder {
   placedAt: number;
   arrivesAt: number;
   status: 'IN_DELIVERY' | 'DELIVERED';
-}
-interface Reservation {
-  facilityId: string;
-  itemCode: string;
-  /** What the template asks for at this severity. */
-  needed: number;
-  /** What the warehouse could actually set aside. */
-  quantity: number;
 }
 export interface HistoryEntry {
   at: string;
@@ -81,11 +75,6 @@ export interface WorkOrder {
 export interface LogisticsState {
   stock: Record<string, Record<string, StockLine>>;
   orders: SupplyOrder[];
-  reservations: Record<string, Reservation[]>;
-  /** Incidents whose stock shortage already slowed the on-scene work (applied once). */
-  penalised: Record<string, true>;
-  /** Consumption of a closed incident, waiting to be written in the history of the vehicles coming home. */
-  restock: Record<string, { itemCode: string; quantity: number }[]>;
   care: Record<string, VehicleCare>;
   work: WorkOrder[];
 }
@@ -94,9 +83,6 @@ export const logisticsState = (career: MockCareer): LogisticsState =>
   domainState<LogisticsState>(career, 'logistics', () => ({
     stock: {},
     orders: [],
-    reservations: {},
-    penalised: {},
-    restock: {},
     care: {},
     work: [],
   }));
@@ -108,8 +94,6 @@ export const URGENT = { timeMultiplier: 0.35, priceMultiplier: 1.5 };
 /** No workshop in the facility → the vehicle goes to an external garage: one implicit slot, slower. */
 export const EXTERNAL_GARAGE_FACTOR = 1.5;
 const LOW_STOCK_COOLDOWN_MS = 10 * 60_000;
-/** Work added to an incident (share of its total) when the warehouse could not cover the expected consumption at all. */
-const SHORTAGE_WORK_PENALTY = 0.25;
 const TOWING_SLOWDOWN = 1.6;
 const MIN_TOWING_SECONDS = 60;
 const HEALTH_AFTER_BREAKDOWN = 30;
@@ -218,6 +202,25 @@ export interface LogisticsDomain {
   breakDown(career: MockCareer, vehicleId: string, at?: number): VehicleDto;
   setHealth(career: MockCareer, vehicleId: string, health: number): VehicleDto;
   drainStock(career: MockCareer, itemCode: string, quantity: number): void;
+  /** Units on the shelves of a facility, per item (what a resupply stop can load). Creates the starter lines lazily. */
+  shelf(career: MockCareer, facilityId: string): Record<string, number>;
+  /**
+   * A resupply stop moves units shelf → vehicle (never more than the shelf holds): returns what really moved, notifies
+   * the warehouse change and the low-stock alert.
+   */
+  loadOntoVehicle(
+    career: MockCareer,
+    facilityId: string,
+    loads: readonly { itemCode: string; units: number }[],
+  ): { itemCode: string; units: number }[];
+  /** The exact inverse of `loadOntoVehicle` (a reload before departure given back by the free undo of a dispatch). */
+  unloadFromVehicle(
+    career: MockCareer,
+    facilityId: string,
+    loads: readonly { itemCode: string; units: number }[],
+  ): void;
+  /** Adds a line to the vehicle history (mission, resupply, workshop…). */
+  remember(career: MockCareer, vehicleId: string, kind: string, text: I18nText, at?: number): void;
 }
 
 const domains = new WeakMap<MockEngine, LogisticsDomain>();
@@ -276,9 +279,15 @@ export function installLogistics(engine: MockEngine): void {
         lines[item.code] ??= { quantity: item.starterStock, reserved: 0, inbound: 0, lowNotifiedAt: null };
       }
     }
-    // A reservation whose incident vanished without a close hook must never lock stock forever.
-    for (const incidentId of Object.keys(st.reservations))
-      if (!career.incidents.some((i) => i.id === incidentId)) settle(career, incidentId, false);
+    // Saves from before D-22 reserved shelf units per incident: those units simply go back on the shelf (the backend's
+    // migration 023 releases them the same way).
+    const legacy = st as LogisticsState & { reservations?: unknown; penalised?: unknown; restock?: unknown };
+    if (legacy.reservations !== undefined || legacy.restock !== undefined) {
+      for (const lines of Object.values(st.stock)) for (const line of Object.values(lines)) line.reserved = 0;
+      delete legacy.reservations;
+      delete legacy.penalised;
+      delete legacy.restock;
+    }
   };
 
   const lineDto = (facilityId: string, itemCode: string, line: StockLine) => {
@@ -340,56 +349,46 @@ export function installLogistics(engine: MockEngine): void {
     });
   };
 
-  /** Mission end: commit what was really used, release the rest. `worked` = somebody reached the scene. */
-  function settle(career: MockCareer, incidentId: string, worked: boolean): void {
-    const st = logisticsState(career);
-    const reservations = st.reservations[incidentId];
-    delete st.reservations[incidentId];
-    delete st.penalised[incidentId];
-    if (!reservations?.length) return;
-    const used: { itemCode: string; quantity: number }[] = [];
-    for (const r of reservations) {
-      const line = st.stock[r.facilityId]?.[r.itemCode];
-      if (!line) continue;
-      // Server-computed consumption: 70–100 % of what was set aside, never more than what is on the shelf.
-      const consumed = worked
-        ? Math.min(line.quantity, r.quantity, Math.ceil(r.quantity * (0.7 + 0.3 * engine.random())))
-        : 0;
-      line.quantity -= consumed;
-      line.reserved = Math.max(0, line.reserved - r.quantity);
-      if (consumed > 0) used.push({ itemCode: r.itemCode, quantity: consumed });
+  /** Units on the shelves of a facility (what a resupply stop can load onto a vehicle). */
+  const shelf = (career: MockCareer, facilityId: string): Record<string, number> => {
+    ensureStock(career);
+    const lines = logisticsState(career).stock[facilityId] ?? {};
+    return Object.fromEntries(
+      Object.entries(lines).map(([code, line]) => [code, Math.max(0, line.quantity)]),
+    );
+  };
+
+  /** Shelf → vehicle, capped by what is really there (D-22: the shelf only feeds the resupply stops). */
+  const loadOntoVehicle: LogisticsDomain['loadOntoVehicle'] = (career, facilityId, loads) => {
+    ensureStock(career);
+    const lines = logisticsState(career).stock[facilityId] ?? {};
+    const moved: { itemCode: string; units: number }[] = [];
+    for (const load of loads) {
+      const line = lines[load.itemCode];
+      const units = line ? Math.min(Math.max(0, Math.floor(load.units)), line.quantity) : 0;
+      if (units <= 0) continue;
+      line!.quantity -= units;
+      moved.push({ itemCode: load.itemCode, units });
     }
-    if (used.length) {
-      st.restock[incidentId] = used;
-      for (const key of Object.keys(st.restock).slice(0, -20)) delete st.restock[key];
-    }
-    for (const facilityId of new Set(reservations.map((r) => r.facilityId))) {
+    if (moved.length > 0) {
       emitInventory(career, facilityId);
       checkLowStock(career, facilityId);
     }
-  }
+    return moved;
+  };
 
-  const reserveFor = (career: MockCareer, incident: IncidentDto, vehicles: VehicleDto[]): void => {
-    const template = INCIDENT_TEMPLATES.find((t) => t.code === incident.templateCode);
-    if (!template?.consumables.length) return;
+  const unloadFromVehicle: LogisticsDomain['unloadFromVehicle'] = (career, facilityId, loads) => {
     ensureStock(career);
-    const st = logisticsState(career);
-    const held = (st.reservations[incident.id] ??= []);
-    const touched = new Set<string>();
-    for (const c of template.consumables) {
-      if (held.some((r) => r.itemCode === c.item)) continue;
-      const needed = Math.max(0, Math.round(c.base + c.perSeverity * incident.severity));
-      const family = ITEM_TYPES.find((i) => i.code === c.item)?.family;
-      const carrier = vehicles.find((v) => v.family === family && st.stock[v.facilityId]?.[c.item]);
-      if (!needed || !carrier) continue; // item not unlocked yet → inventory is not part of the game for it
-      const line = st.stock[carrier.facilityId]![c.item]!;
-      const quantity = Math.min(needed, Math.max(0, line.quantity - line.reserved));
-      line.reserved += quantity;
-      held.push({ facilityId: carrier.facilityId, itemCode: c.item, needed, quantity });
-      touched.add(carrier.facilityId);
+    const lines = logisticsState(career).stock[facilityId];
+    if (!lines) return;
+    let moved = false;
+    for (const load of loads) {
+      const line = lines[load.itemCode];
+      if (!line || load.units <= 0) continue;
+      line.quantity += Math.floor(load.units);
+      moved = true;
     }
-    if (held.length === 0) delete st.reservations[incident.id];
-    for (const facilityId of touched) emitInventory(career, facilityId);
+    if (moved) emitInventory(career, facilityId);
   };
 
   const placeOrder: LogisticsDomain['placeOrder'] = (career, body) => {
@@ -724,6 +723,8 @@ export function installLogistics(engine: MockEngine): void {
         a.ref === vehicle.id &&
         ['VEHICLE_DEPART', 'VEHICLE_ARRIVE', 'VEHICLE_RETURNED', 'BREAKDOWN'].includes(a.type),
     );
+    // Fuel of the share of the leg really driven, before the vehicle stops where it is (D-22).
+    for (const hook of engine.hooks.vehicleBrokeDown) hook(career, vehicle, at);
     // The tow truck (a system unit, never owned) needs a moment to reach the vehicle.
     const towAt = at + engine.dur(managerial(M.recovery.baseSeconds) / 2);
     setHealthValue(career, vehicle.id, Math.min(vehicle.health, HEALTH_AFTER_BREAKDOWN));
@@ -844,19 +845,8 @@ export function installLogistics(engine: MockEngine): void {
     emitInventory(career);
   });
 
-  engine.hooks.dispatchCheck.push((career, incident, vehicles) => reserveFor(career, incident, vehicles));
-
-  // Missing stock never blocks a dispatch: it only warns (and slows the work a little, see `vehicleArrived`).
-  engine.hooks.dispatchOption.push((career, vehicle, option) => {
-    const st = logisticsState(career);
-    const short = Object.entries(st.stock[vehicle.facilityId] ?? {}).some(([code, line]) => {
-      const item = ITEM_TYPES.find((i) => i.code === code);
-      return item?.family === vehicle.family && line.quantity - line.reserved <= item.lowStockThreshold;
-    });
-    return short && !option.warnings.includes('INVENTORY_LOW')
-      ? { ...option, warnings: [...option.warnings, 'INVENTORY_LOW'] }
-      : option;
-  });
+  // The stock a mission needs travels ON the vehicle (D-22, the `autonomy` domain): no shelf reservation at dispatch,
+  // and the warnings of a dispatch option (`STOCK_MISSING:<item>` / `STOCK_LOW:<item>`) are about the stock on board.
 
   engine.hooks.vehicleDeparting.push((career, vehicle, at) => {
     const incident = career.incidents.find((i) => i.id === vehicle.incidentId);
@@ -893,26 +883,7 @@ export function installLogistics(engine: MockEngine): void {
     return 'OK';
   });
 
-  engine.hooks.vehicleArrived.push((career, _vehicle, incident) => {
-    const st = logisticsState(career);
-    const held = st.reservations[incident.id];
-    if (!held?.length || st.penalised[incident.id]) return;
-    st.penalised[incident.id] = true;
-    const needed = held.reduce((s, r) => s + r.needed, 0);
-    const missing = held.reduce((s, r) => s + (r.needed - r.quantity), 0);
-    if (needed <= 0 || missing <= 0) return;
-    const extra = incident.work.total * SHORTAGE_WORK_PENALTY * (missing / needed);
-    engine.patchIncident(career, incident.id, {
-      work: {
-        ...incident.work,
-        total: incident.work.total + extra,
-        remaining: incident.work.remaining + extra,
-      },
-    });
-  });
-
   const onReturned = (career: MockCareer, vehicle: VehicleDto, leg: DispatchLeg | null): void => {
-    const st = logisticsState(career);
     const type = typeOf(vehicle);
     const towed = towedHome.get(career)?.has(vehicle.id) ?? false;
     if (type && !towed) {
@@ -931,34 +902,10 @@ export function installLogistics(engine: MockEngine): void {
         text('logistics.history.MISSION', { km: Math.round(km * 10) / 10 }),
       );
     }
-    if (leg) {
-      // Mission end for the stock: work is over (RESOLVING) or the incident already left the world.
-      const incident = career.incidents.find((i) => i.id === leg.incidentId);
-      if (st.reservations[leg.incidentId] && (!incident || incident.status === 'RESOLVING'))
-        settle(career, leg.incidentId, true);
-      const used = (st.restock[leg.incidentId] ?? []).filter(
-        (u) => ITEM_TYPES.find((i) => i.code === u.itemCode)?.family === vehicle.family,
-      );
-      if (used.length) {
-        // Automatic restock: the vehicle is refilled from its facility's warehouse the moment it is back.
-        delete st.restock[leg.incidentId];
-        remember(
-          career,
-          vehicle.id,
-          'RESTOCKED',
-          text('logistics.history.RESTOCKED', { units: used.reduce((s, u) => s + u.quantity, 0) }),
-        );
-      }
-    }
+    // Whether the vehicle now stops to reload is the single resupply rule's call (the `autonomy` domain).
     engine.emit(career, 'maintenance.updated', {});
   };
   engine.hooks.vehicleReturned.push(onReturned);
-
-  engine.hooks.incidentClosed.push((career, incident, status) => {
-    const worked =
-      status === 'RESOLVED' || status === 'FAILED' || career.firstArrival[incident.id] !== undefined;
-    settle(career, incident.id, worked);
-  });
 
   /* ───────────── read models ───────────── */
   const inventoryOverview: LogisticsDomain['inventoryOverview'] = (career) => {
@@ -1052,6 +999,10 @@ export function installLogistics(engine: MockEngine): void {
       }
       engine.save();
     },
+    shelf,
+    loadOntoVehicle,
+    unloadFromVehicle,
+    remember,
   };
   domains.set(engine, domain);
 

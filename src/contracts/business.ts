@@ -13,7 +13,12 @@ import { TimelineEntryDto } from './core-loop';
 /* ───────────── stipend & coverage ───────────── */
 export const StipendDto = z.object({
   periodSeconds: z.number().int(), nextPayoutAt: IsoDateTime, accruedPeriods: z.number().int(), maxAccruedPeriods: z.number().int(),
-  estimate: z.object({ base: Amount, coverageMultiplier: z.number(), reputationMultiplier: z.number(), personnelCost: Amount, net: Amount }),
+  estimate: z.object({
+    base: Amount, coverageMultiplier: z.number(), reputationMultiplier: z.number(), personnelCost: Amount, net: Amount,
+    /* ── additive (temporary-stipend-implementation) ── */
+    /** Mission-linked bonus (share of the period's MISSION_REWARD total, capped): upkeep never deducts from this part. */
+    activityBonus: Amount.optional(),
+  }),
   lastPayout: z.object({ at: IsoDateTime, net: Amount }).nullable(),
   /* ── additive (backend-integration) ── */
   /** After this instant of inactivity accrual stops (D-11); null when unknown. */
@@ -22,8 +27,9 @@ export const StipendDto = z.object({
   /** Facility effects (e.g. coordination centre +5%). */
   bonusMultiplier: z.number().optional(),
   history: z.array(z.object({
-    periodKey: z.string(), status: z.enum(['PAID', 'SKIPPED_INACTIVE']), net: Amount, base: Amount, coveragePct: z.number(), coverageMultiplier: z.number(),
-    reputationMultiplier: z.number(), personnelCost: Amount, at: IsoDateTime,
+    /** `SKIPPED_DISABLED`: the `coverage_stipend` feature flag was off for this period (temporary-stipend-implementation). */
+    periodKey: z.string(), status: z.enum(['PAID', 'SKIPPED_INACTIVE', 'SKIPPED_DISABLED']), net: Amount, base: Amount, coveragePct: z.number(), coverageMultiplier: z.number(),
+    reputationMultiplier: z.number(), personnelCost: Amount, activityBonus: Amount.optional(), at: IsoDateTime,
   })).optional(),
 });
 export const CoverageDto = z.object({

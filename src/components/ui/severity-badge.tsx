@@ -30,7 +30,7 @@ export function SeverityBadge({
       data-severity={s}
       className={cn(
         'tabular inline-flex shrink-0 items-center gap-1 rounded-sm border font-bold',
-        size === 'sm' ? 'h-5 px-1 text-[11px]' : size === 'lg' ? 'h-8 px-2 text-base' : 'h-6 px-1.5 text-xs',
+        size === 'sm' ? 'h-5 px-1 text-xs' : size === 'lg' ? 'h-8 px-2 text-base' : 'h-6 px-1.5 text-xs',
         className,
       )}
       style={{
@@ -50,7 +50,7 @@ export function SeverityBadge({
       </span>
       <span aria-hidden>{s}</span>
       {escalating ? (
-        <span aria-hidden className="text-[10px]">
+        <span aria-hidden className="text-xs">
           ▲
         </span>
       ) : null}

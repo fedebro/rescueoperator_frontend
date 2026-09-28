@@ -26,6 +26,7 @@
       "hint": "Aggiungi Rescue Control alla schermata Home: si apre a tutto schermo, come un’app.",
       "installedHint": "Stai già usando l’app installata.",
       "unavailableHint": "Questo browser non offre l’installazione. Prova dal menu del browser oppure con Chrome, Edge o Safari.",
+      "inAppHint": "Sei nel browser di un’altra app (TikTok, Instagram…): apri il gioco nel tuo browser, dal menu ⋯ → «Apri nel browser», per installarlo.",
       "hintTitle": "Rescue Control come app",
       "hintBody": "Installala per aprire la centrale con un tocco, a tutto schermo.",
       "iosTitle": "Installa su iPhone e iPad",

@@ -62,7 +62,7 @@
       "REFUNDED": "Remboursé"
     },
     "shop": {
-      "title": "Crédits",
+      "title": "Recharger des Crédits",
       "subtitle": "Soutenez le jeu et donnez un coup de pouce à votre centre. Facultatif, toujours.",
       "balance": "Solde actuel",
       "purchasedBalance": "dont achetés : {credits} (dépensés en dernier)",

@@ -8,6 +8,10 @@
       "buttonLabel": "Hilfe zu diesem Bereich"
     },
     "dismissPrimerLabel": "Tipp ignorieren",
+    "primer": {
+      "more": "Mehr erfahren",
+      "less": "Weniger anzeigen"
+    },
     "gotIt": "Verstanden",
     "warningNextAction": {
       "hire": "Personal einstellen",

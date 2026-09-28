@@ -147,7 +147,8 @@
       "emptyTitle": "Aucun opérateur trouvé",
       "emptyHint": "Élargissez les filtres ou recrutez depuis l’onglet Recrutement.",
       "count": "{shown} opérateurs sur {total}",
-      "caption": "Effectif du centre"
+      "caption": "Effectif du centre",
+      "filters": "Filtres{count, plural, =0 {} other { (#)}}"
     },
     "locked": {
       "progress": "Vous êtes au niveau {level} sur {required}"

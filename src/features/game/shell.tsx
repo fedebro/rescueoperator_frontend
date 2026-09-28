@@ -3,11 +3,12 @@ import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Truck, Siren, MapPin, ShieldAlert, WifiOff, RefreshCw } from 'lucide-react';
+import { MapPin, ShieldAlert, WifiOff, RefreshCw } from 'lucide-react';
 import { amountRatio } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { isAdminUser, useAuthStore } from '@/stores/auth';
 import { useUiStore } from '@/stores/ui';
+import { useIsDesktop } from '@/hooks/use-media-query';
 import { Logo } from '@/components/brand/logo';
 import { CreditAmount } from '@/components/ui/credit-amount';
 import { Tooltip } from '@/components/ui/tooltip';
@@ -17,6 +18,34 @@ import { useSnapshot } from './hooks';
 import { DutyToggle } from './duty-toggle';
 import { WorldWidget } from '@/features/world/world-widget';
 import { NotificationsButton } from '@/features/platform/notifications-center';
+import { MajorStrip } from '@/features/major/strip';
+import { PersistentMapHost } from './persistent-map';
+
+/** Progress towards the next level as a ring around the level number (the top bar's compact variant, 03 §2.1). */
+function LevelRing({ level, ratio }: { level: number; ratio: number }) {
+  const r = 12.5;
+  const c = 2 * Math.PI * r;
+  return (
+    <span className="relative grid size-8 shrink-0 place-items-center">
+      <svg viewBox="0 0 32 32" className="absolute inset-0 -rotate-90" aria-hidden>
+        <circle cx="16" cy="16" r={r} fill="none" stroke="var(--rc-surface-3)" strokeWidth="3" />
+        <circle
+          cx="16"
+          cy="16"
+          r={r}
+          fill="none"
+          stroke="var(--rc-xp)"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeDasharray={c}
+          strokeDashoffset={c * (1 - ratio)}
+          className="transition-[stroke-dashoffset] duration-500"
+        />
+      </svg>
+      <span className="tabular text-fg relative text-xs font-bold">{level}</span>
+    </span>
+  );
+}
 
 function LevelMeter({ compact }: { compact?: boolean }) {
   const { career } = useSnapshot();
@@ -26,17 +55,15 @@ function LevelMeter({ compact }: { compact?: boolean }) {
   return (
     <Link
       href="/game/progression"
-      className="hover:bg-surface-3 flex min-h-11 items-center gap-2 rounded-md px-1.5 py-1 lg:min-h-0"
+      className="hover:bg-surface-3 flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-md px-1.5 py-1 lg:min-h-0"
       aria-label={t('levelAria', { level: career.level, percent: Math.round(ratio * 100) })}
       data-testid="level-meter"
       data-level={career.level}
     >
-      <span className="tabular border-xp text-fg grid size-7 place-items-center rounded-full border-2 text-xs font-bold">
-        {career.level}
-      </span>
+      <LevelRing level={career.level} ratio={ratio} />
       {compact ? null : (
         <span className="flex w-24 flex-col gap-1">
-          <span className="text-subtle text-[10px] leading-none font-bold tracking-wider uppercase">
+          <span className="text-subtle text-xs leading-none font-bold tracking-wider uppercase">
             {t('level')}
           </span>
           <span aria-hidden className="bg-surface-3 h-1.5 overflow-hidden rounded-full">
@@ -51,46 +78,19 @@ function LevelMeter({ compact }: { compact?: boolean }) {
   );
 }
 
-function Counter({
-  icon,
-  value,
-  label,
-  tone,
-  testId,
-}: {
-  icon: React.ReactNode;
-  value: number;
-  label: string;
-  tone?: 'danger' | 'success';
-  testId?: string;
-}) {
-  return (
-    <Tooltip content={label}>
-      <span
-        className={cn(
-          'tabular border-border bg-surface-2 inline-flex h-8 items-center gap-1.5 rounded-md border px-2 text-sm font-semibold',
-          tone === 'danger' && value > 0 ? 'text-danger' : tone === 'success' ? 'text-success' : 'text-fg',
-        )}
-        role="img"
-        aria-label={`${label}: ${value}`}
-        data-testid={testId}
-      >
-        <span aria-hidden>{icon}</span>
-        {value}
-      </span>
-    </Tooltip>
-  );
-}
-
+/**
+ * Phones (03 §2.1): level ring · credits · weather · bell — nothing else, so it fits 360 px without clipping. The
+ * incident / vehicle counters are gone (the sheet's summary row says it, once); the duty switch lives in that row too.
+ */
 export function TopBar() {
-  const { career, incidents, vehicles } = useSnapshot();
-  const t = useTranslations('game.topbar');
+  const { career } = useSnapshot();
   const tc = useTranslations('common');
+  const t = useTranslations('game.topbar');
+  const desktop = useIsDesktop();
   const user = useAuthStore((s) => s.user);
-  const available = vehicles.filter((v) => v.status === 'AVAILABLE').length;
   return (
     <header className="pt-safe border-border bg-surface-1 z-30 shrink-0 border-b" data-testid="topbar">
-      <div className="flex h-[var(--rc-topbar-h)] items-center gap-2 px-3 lg:gap-4 lg:px-4">
+      <div className="flex h-[var(--rc-topbar-h)] items-center gap-1.5 px-2 lg:gap-4 lg:px-4">
         <Link href="/game" className="hidden shrink-0 lg:block" aria-label="Rescue Control">
           <Logo variant="horizontal" className="w-32" />
         </Link>
@@ -98,33 +98,18 @@ export function TopBar() {
           <MapPin className="text-skyline size-4 shrink-0" aria-hidden />
           <span className="truncate">{career.locationName}</span>
         </span>
-        <LevelMeter />
+        <LevelMeter compact={!desktop} />
         <Link
           href="/game/economy"
-          className="hover:bg-surface-3 inline-flex min-h-11 items-center rounded-md px-1.5 py-1 lg:min-h-0"
+          className="hover:bg-surface-3 inline-flex min-h-11 min-w-0 items-center rounded-md px-1.5 py-1 lg:min-h-0"
           data-testid="credits"
         >
           <CreditAmount value={career.credits} label={tc('credits')} />
         </Link>
-        <div className="ml-auto flex items-center gap-2">
-          <Counter
-            icon={<Siren className="size-4" />}
-            value={incidents.length}
-            label={t('activeIncidents')}
-            tone="danger"
-            testId="active-incidents"
-          />
-          <Counter
-            icon={<Truck className="size-4" />}
-            value={available}
-            label={t('availableVehicles')}
-            tone="success"
-            testId="available-vehicles"
-          />
+        <div className="ml-auto flex shrink-0 items-center gap-1 lg:gap-2">
           <WorldWidget />
-          <span className="hidden lg:block">
-            <DutyToggle compact />
-          </span>
+          {/* Desktop only: below 1024 px the duty switch lives in the sheet's summary row (one place, 03 §2.9). */}
+          {desktop ? <DutyToggle compact /> : null}
           <NotificationsButton />
           {isAdminUser(user) ? (
             <Tooltip content={t('admin')}>
@@ -192,6 +177,7 @@ export function BottomNav() {
   const t = useTranslations('game.nav');
   const ta = useTranslations('platform.a11y');
   const pending = useSnapshot().incidents.filter((i) => i.status === 'PENDING_RESPONSE').length;
+  const badgeId = React.useId();
   return (
     <nav
       aria-label={t('label')}
@@ -203,34 +189,42 @@ export function BottomNav() {
           const active =
             isActive(pathname, item.href) ||
             (item.href === '/game/more' && MORE_ITEMS.some((m) => pathname.startsWith(m.href)));
+          // The waiting-incidents badge sits on "Mappa": that is where the list (the sheet) is.
+          const badge = item.href === '/game' && pending > 0;
           return (
             <li key={item.href}>
               <Link
                 href={item.href}
                 aria-current={active ? 'page' : undefined}
+                // The waiting count is a description, not part of the name: the link stays "Mappa".
+                aria-describedby={badge ? badgeId : undefined}
                 data-tutorial={item.tutorialId}
+                data-nav={item.labelKey}
                 className={cn(
-                  'relative flex h-full flex-col items-center justify-center gap-0.5 text-[10px] font-semibold',
+                  'relative flex h-full flex-col items-center justify-center gap-0.5 text-xs font-semibold',
                   active ? 'text-fg' : 'text-muted',
                 )}
               >
                 {active ? <span aria-hidden className="bg-brand absolute top-0 h-0.5 w-8 rounded-b" /> : null}
                 <span className="relative">
                   <item.icon className="size-5" aria-hidden />
-                  {item.href === '/game/incidents' && pending > 0 ? (
+                  {badge ? (
                     <span
-                      className="tabular bg-brand absolute -top-1.5 -right-2.5 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[10px] font-bold text-white"
+                      className="tabular bg-brand absolute -top-1.5 -right-2.5 grid h-4 min-w-4 place-items-center rounded-full px-1 text-xs leading-none font-bold text-white"
                       aria-hidden
+                      data-testid="nav-pending-badge"
                     >
                       {pending}
                     </span>
                   ) : null}
                 </span>
                 {t(item.labelKey)}
-                {item.href === '/game/incidents' && pending > 0 ? (
-                  <span className="sr-only">{ta('pendingIncidents', { count: pending })}</span>
-                ) : null}
               </Link>
+              {badge ? (
+                <span id={badgeId} className="sr-only">
+                  {ta('pendingIncidents', { count: pending })}
+                </span>
+              ) : null}
             </li>
           );
         })}
@@ -282,16 +276,21 @@ export function GameShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const t = useTranslations('game.nav');
   return (
-    <div className="h-dvh-safe bg-bg flex flex-col overflow-hidden">
+    // `overflow: clip`, not hidden: a hidden overflow can still be scrolled by a focus or a scrollIntoView (a card of the
+    // sheet below the fold) — the whole frame would slide up with no way back. Clipped, it never moves.
+    <div className="h-dvh-safe bg-bg shell-clip flex flex-col" data-testid="game-shell">
       <TopBar />
       <ConnectionBanner />
+      {/* A running major incident, one tap away from every page but the map (D-24). */}
+      <MajorStrip />
       <div className="flex min-h-0 flex-1">
         <Sidebar />
         {/* tabIndex -1: the skip link moves FOCUS here, not only the scroll position. */}
-        <main id="main" tabIndex={-1} className="relative min-w-0 flex-1 outline-none">
+        <main id="main" tabIndex={-1} className="shell-clip relative min-w-0 flex-1 outline-none">
           {/* The map screen has no visible title: every page still starts with an h1 (PageBody renders the others). */}
           {pathname === '/game' ? <h1 className="sr-only">{t('operations')}</h1> : null}
-          {children}
+          {/* One operations map for the whole session: the map screen shows it, the other pages leave it parked. */}
+          <PersistentMapHost>{children}</PersistentMapHost>
         </main>
       </div>
       <BottomNav />
@@ -303,11 +302,14 @@ export function GameShell({ children }: { children: React.ReactNode }) {
 export function PageBody({
   title,
   subtitle,
+  help,
   actions,
   children,
 }: {
   title: string;
   subtitle?: string;
+  /** The section's "?" (SectionHelpButton): on the title's own line, never a row of its own on a phone. */
+  help?: React.ReactNode;
   actions?: React.ReactNode;
   children: React.ReactNode;
 }) {
@@ -315,8 +317,11 @@ export function PageBody({
     <div className="scroll-y absolute inset-0">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-4 lg:p-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h1 className="font-display text-2xl font-extrabold">{title}</h1>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <h1 className="font-display text-2xl font-extrabold">{title}</h1>
+              {help}
+            </div>
             {subtitle ? <p className="text-muted mt-1 text-sm">{subtitle}</p> : null}
           </div>
           {actions}

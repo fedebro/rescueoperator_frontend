@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import type { GeoJSONSource, Map as MlMap } from 'maplibre-gl';
+import type { Map as MlMap } from 'maplibre-gl';
 import type { FeatureCollection, Point } from 'geojson';
 import type { z } from 'zod';
 import { useTranslations } from 'next-intl';
@@ -8,17 +8,21 @@ import { Check, Crosshair, Hospital, Minus, X } from 'lucide-react';
 import type { HospitalDto } from '@/contracts';
 import { useUiStore } from '@/stores/ui';
 import { useCatalogName } from '@/i18n/use-i18n-text';
-import { registerClickableLayer } from '@/features/map/game-layers';
+import { geoJsonSource, registerClickableLayer } from '@/features/map/game-layers';
 import { GAME_LABEL_FONT } from '@/features/map/style';
 import { IconButton } from '@/components/ui/button';
+import { InspectorHeaderButton, SHEET_HEADER } from '@/features/game/inspector-parts';
 import { EmptyState, SectionTitle, Skeleton } from '@/components/ui/misc';
 import { useSnapshot } from '@/features/game/hooks';
+import { incidentScene } from '@/features/water/water';
 import { useActivePatients, useHospitals } from './hooks';
 import { LOAD_VISUALS, MedicalChip, PATIENT_STATUS_VISUALS } from './visuals';
 
 type HospitalData = z.infer<typeof HospitalDto>;
 
 const SOURCE = 'rc-hospitals';
+/** The names in a source of their own: glyphs that cannot load take the labels down, never the hospitals. */
+const SOURCE_LABELS = 'rc-hospitals-labels';
 const LAYER_ICON = 'rc-hospitals-icon';
 const LAYER_LABEL = 'rc-hospitals-label';
 const IMAGE = 'medical:hospital';
@@ -79,6 +83,7 @@ export function HospitalsMapOverlay({ map }: { map: MlMap }) {
     if (!on) return;
     ensureMarkerImage(map);
     map.addSource(SOURCE, { type: 'geojson', data: hospitalFeatures([]) });
+    map.addSource(SOURCE_LABELS, { type: 'geojson', data: hospitalFeatures([]) });
     map.addLayer({
       id: LAYER_ICON,
       type: 'symbol',
@@ -93,7 +98,7 @@ export function HospitalsMapOverlay({ map }: { map: MlMap }) {
     map.addLayer({
       id: LAYER_LABEL,
       type: 'symbol',
-      source: SOURCE,
+      source: SOURCE_LABELS,
       minzoom: 10.5,
       layout: {
         'text-field': ['get', 'name'],
@@ -122,6 +127,7 @@ export function HospitalsMapOverlay({ map }: { map: MlMap }) {
         if (map.getLayer(LAYER_LABEL)) map.removeLayer(LAYER_LABEL);
         if (map.getLayer(LAYER_ICON)) map.removeLayer(LAYER_ICON);
         if (map.getSource(SOURCE)) map.removeSource(SOURCE);
+        if (map.getSource(SOURCE_LABELS)) map.removeSource(SOURCE_LABELS);
       } catch {
         /* style already destroyed */
       }
@@ -130,7 +136,8 @@ export function HospitalsMapOverlay({ map }: { map: MlMap }) {
 
   React.useEffect(() => {
     if (!on) return;
-    (map.getSource(SOURCE) as GeoJSONSource | undefined)?.setData(hospitalFeatures(hospitals.data ?? []));
+    const features = hospitalFeatures(hospitals.data ?? []);
+    for (const id of [SOURCE, SOURCE_LABELS]) geoJsonSource(map, id)?.setData(features);
     map.getContainer().setAttribute('data-hospitals-count', String(hospitals.data?.length ?? 0));
   }, [map, on, hospitals.data]);
 
@@ -179,27 +186,43 @@ export function HospitalInspector({ id }: { id: string }) {
     (p) => p.hospitalId === id && (p.status === 'IN_TRANSPORT' || p.status === 'HANDOFF'),
   );
   return (
-    <div className="flex h-full min-h-0 flex-col" data-testid="hospital-inspector" data-hospital-id={id}>
-      <header className="border-border shrink-0 border-b px-4 pt-1 pb-3 lg:pt-4">
+    <div
+      className="flex h-full min-h-0 flex-1 flex-col"
+      data-testid="hospital-inspector"
+      data-hospital-id={id}
+    >
+      <header className="border-border shrink-0 border-b px-4 pb-2.5 md:pt-3" {...SHEET_HEADER}>
         <div className="flex items-start gap-3">
-          <span className="bg-surface-3 text-info mt-0.5 grid size-10 shrink-0 place-items-center rounded-md">
+          <span className="bg-surface-3 text-info mt-1 grid size-10 shrink-0 place-items-center rounded-md">
             <Hospital className="size-5" aria-hidden />
           </span>
-          <div className="min-w-0 flex-1">
-            <h2 className="font-display text-lg leading-tight font-bold" data-testid="inspector-title">
+          <div className="min-w-0 flex-1 pt-0.5">
+            <h2
+              className="font-display line-clamp-2 text-lg leading-tight font-bold"
+              data-testid="inspector-title"
+            >
               {hospital.name}
             </h2>
             <p className="text-muted mt-0.5 text-xs">{t('subtitle')}</p>
           </div>
-          <IconButton label={ti('centerOnMap')} size="sm" onClick={() => focusOn(hospital.position, 13)}>
-            <Crosshair className="size-4" aria-hidden />
-          </IconButton>
-          <IconButton label={ti('close')} size="sm" onClick={clear} data-testid="inspector-close">
-            <X className="size-4" aria-hidden />
-          </IconButton>
+          <InspectorHeaderButton
+            label={ti('centerOnMap')}
+            onClick={() => focusOn(hospital.position, 13)}
+            className="-my-1"
+          >
+            <Crosshair className="size-5" aria-hidden />
+          </InspectorHeaderButton>
+          <InspectorHeaderButton
+            label={ti('close')}
+            onClick={clear}
+            data-testid="inspector-close"
+            className="-my-1 -mr-2"
+          >
+            <X className="size-5" aria-hidden />
+          </InspectorHeaderButton>
         </div>
       </header>
-      <div className="scroll-y flex min-h-0 flex-1 flex-col gap-5 p-4">
+      <div className="scroll-y flex min-h-0 flex-1 flex-col gap-5 p-4" data-sheet-scroll>
         <div>
           <SectionTitle>{t('load')}</SectionTitle>
           <MedicalChip
@@ -248,12 +271,15 @@ export function HospitalInspector({ id }: { id: string }) {
                   <li key={p.id}>
                     <button
                       type="button"
-                      className="border-border bg-surface-2 hover:bg-surface-3 flex w-full flex-wrap items-center gap-2 rounded-md border px-2.5 py-2 text-left"
+                      className="border-border bg-surface-2 hover:bg-surface-3 flex min-h-11 w-full flex-wrap items-center gap-2 rounded-md border px-2.5 py-2 text-left"
                       onClick={() =>
                         vehicle
                           ? select({ kind: 'vehicle', id: vehicle.id })
                           : incident
-                            ? select({ kind: 'incident', id: incident.id }, { focus: incident.position })
+                            ? select(
+                                { kind: 'incident', id: incident.id },
+                                { focus: incidentScene(incident) },
+                              )
                             : undefined
                       }
                     >

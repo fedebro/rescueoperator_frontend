@@ -71,6 +71,21 @@ const HOSPITAL_TILE =
 const hospitalWith = (m: Mark, s = 1): string => HOSPITAL_TILE + fine(m(14, 14.7, s));
 const GROUND = '<path d="M2 21.5h20"/>';
 
+// ───────────────────────────── bases for incident scenes and boats ─────────────────────────────
+/** Compact car low on the left (as cat_traffic_accident), leaving the top-right corner free for a mark. */
+const CAR_LOW =
+  '<path d="M4.5 19.5h-2v-3l1.5-1 2-3h6l2.5 3 3 1v3h-1M8.5 19.5h4"/><circle cx="6.5" cy="19.5" r="2"/><circle cx="14.5" cy="19.5" r="2"/>';
+/** Side-view hull of the boats (nose to the right), sitting on the waterline. */
+const HULL = 'M2 13.5h20l-3 4.5H5z';
+/** Head in profile, facing right: the skull stays free for an inner mark around (11.5, 10.5). */
+const HEAD =
+  '<path d="M7.5 21.5v-4.2C5.6 16 4.5 13.6 4.5 11c0-4.2 3.4-7.5 7.7-7.5 3.9 0 6.9 2.7 7.1 6.4l1.7 3.4-1.7.7v2.3a1.8 1.8 0 0 1-1.8 1.8H15.5v3.4"/>';
+/** School building (clock + flag) on the left, leaving the right side free for a mark. */
+const SCHOOL =
+  '<path d="M2 21.5h14.5"/><path d="M3 21.5V12l5.5-5 5.5 5v9.5"/><path d="M8.5 7V2.5h3.5l-1 1.2 1 1.3H8.5"/><circle cx="8.5" cy="12.8" r="1.6"/><path d="M7 21.5V18h3v3.5"/>';
+/** Industrial plant: a low block with two stacks on the left half. */
+const PLANT = `${GROUND}<path d="M2.5 21.5V13h11v8.5"/><path d="M4.5 13V5.5H7V13M9.5 13V8H12v5"/>`;
+
 /** Inner SVG markup for a 24×24 viewBox. Rendered inside <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">. */
 export const PICTOGRAMS: Record<PictogramName, string> = {
   // ───────────────────────────── vehicles (side view, nose to the right) ─────────────────────────────
@@ -117,18 +132,22 @@ export const PICTOGRAMS: Record<PictogramName, string> = {
   veh_fire_divers: VAN + fine(mark.mask(7.2, 11.6, 0.9)),
   veh_fire_usar: inTruck(mark.rubble, 1.1),
   veh_fire_heli: heliWith(mark.flame),
+  veh_fire_fireboat: `<path d="${HULL}"/><path d="M6.5 13.5V10h7l1.5 3.5"/><path d="M10 10V8.5"/><path d="M10 8.5C9.5 5.5 7 3.5 3.5 3.5M10 8.5c.8-3 3.5-5 7.5-5"/><path d="${WAVE_21}"/>`,
   veh_ems_msb: ambulanceTier([11.5]),
   veh_ems_msi: ambulanceTier([10.4, 12.6]),
   veh_ems_msa: ambulanceTier([9.4, 11.5, 13.6]),
   veh_ems_automedica: CAR + mark.heart(19.5, 5.6, 0.95),
   veh_ems_pediatric: AMBULANCE + fine(mark.teddy(8, 11.2, 1)),
   veh_ems_heli: heliWith(mark.heart, 0.95),
+  veh_ems_jetski: `<path d="M8.5 17h10l3.5-3.5-4-1h-2l-2-2.5H11l-1.5 2.5H9z"/><circle cx="13" cy="4.3" r="1.6"/><path d="M12.5 6.5 12 10h-.5M12.5 7.5l3.5 2 1-1.5"/><path d="M16.5 12.5l.5-3"/><path d="M2 16h5v1.8H2z"/><path d="M7 16.9h1.5"/><path d="${WAVE_21}"/>`,
+  veh_ems_water_ambulance: `<path d="${HULL}"/><path d="M4.5 13.5v-7h10l3.5 7"/>${fine(mark.pulse(9.5, 10.2, 0.9))}<path d="${WAVE_21}"/>`,
   veh_pol_traffic: CAR + mark.cone(19.5, 5.3, 0.8),
   veh_pol_van: inVan(mark.shield),
   veh_pol_k9: inVan(mark.paw),
   veh_pol_forensic: inVan(mark.magnifier),
   veh_pol_eod: inTruck(mark.bomb, 1.1),
   veh_pol_heli: heliWith(mark.shield),
+  veh_pol_patrol_boat: `<path d="${HULL}"/><path d="M4.5 13.5V9h8.5l3.5 4.5"/><path d="M7 9V7.5h3V9"/>${fine(mark.shield(9.3, 11.5, 0.62))}<path d="${WAVE_21}"/>`,
   veh_aib_pickup: `${PICKUP}<rect x="2.5" y="8.3" width="6.5" height="3.7" rx="1.2"/>${mark.pine(5.7, 4.6, 0.62)}`,
   veh_aib_tanker: `<rect x="2" y="7" width="12" height="8" rx="1.5"/><path d="M7 7V5.5h2.5V7"/>${fine(mark.pine(8, 11, 0.78))}${TANKER_CHASSIS}`,
   veh_aib_command: COMMAND + fine(mark.pine(11.8, 12.6, 0.7)),
@@ -172,6 +191,7 @@ export const PICTOGRAMS: Record<PictogramName, string> = {
   facility_wildfire: `${HOUSE}<path d="M12 8.5 9 12.5h1.5l-2.5 4h8l-2.5-4H15z"/><path d="M12 16.5V19"/>`,
   facility_alpine: `${HOUSE}<path d="M7 18.5l3.5-6.5 2 3.5 1.5-2 3 5z"/>`,
   facility_coordination: `${HOUSE}<circle cx="12" cy="15" r="1" fill="currentColor" stroke="none"/><path d="M9.2 12.2a4 4 0 0 0 0 5.6M14.8 12.2a4 4 0 0 1 0 5.6"/>`,
+  facility_nautical_base: `<path d="M2 16.5V10L7.5 5.5 13 10v6.5"/>${mark.anchor(7.5, 12, 0.8)}<path d="M2 16.5h11"/><path d="M14.5 14h7.5l-1.5 2.5h-4.5z"/><path d="M17.5 14v-3.5"/><path d="${WAVE_21}"/>`,
   facility_fire_detachment: houseWithBay(mark.flame),
   facility_fire_command: headquarters(mark.flame),
   facility_fire_special_hub: specialBase(mark.flame, BADGE_STAR),
@@ -243,6 +263,20 @@ export const PICTOGRAMS: Record<PictogramName, string> = {
   inc_alp_wall_recovery:
     '<path d="M2 21.5h4.5l-1-5 1.5-4.5-1.5-4 1-5.5"/><path d="M6.3 4H14v4.5"/><circle cx="14" cy="10.3" r="1.8"/><path d="M14 12.2v4.5M11.3 14.2l2.7-1 2.7 1M14 16.7l-2 3.8M14 16.7l2 3.8"/>',
   inc_alp_stranded_group: `<path d="M2.5 10.5 9 3l3.5 4.5L15 5l6.5 5.5"/>${mark.people(12, 16.2, 2.1)}`,
+  inc_alp_twisted_ankle:
+    '<path d="M8 3.5h5v6.5l5.5 2.3a3 3 0 0 1 2 2.8v3.4H8z"/><path d="M8 16h12.5"/><path d="M13 6h-2M13 8.5h-2"/><path d="M5.5 9.5 3.5 8M5 12.5H2.5M5.5 15.5l-2 1.5"/>',
+  inc_alp_mtb_crash:
+    '<circle cx="5.5" cy="14.07" r="3.2"/><circle cx="16.63" cy="18.57" r="3.2"/><path d="M5.5 14.07 10.99 9.82l5.57 2.25.07 6.5M10.99 9.82l.07 6.5 5.5-4.25M5.5 14.07l5.56 2.25M10.99 9.82l.1-1.58M9.98 7.79l2.41.97M16.56 12.07l.28-2.05 1.86.75"/><path d="M19.5 6.5l.5-3M21 8.5l1.5-1.5"/>',
+  inc_alp_lost_forager: `<path d="M2.5 12a6 6 0 0 1 12 0z"/><path d="M6.5 12v6.5a2 2 0 0 0 4 0V12"/>${mark.question(18.5, 9, 1.15)}`,
+  inc_alp_ski_slope_injury: `<path d="M5 20.5 17.3 4.3a1.3 1.3 0 0 1 2.2 1.3"/><path d="M19 20.5 6.7 4.3a1.3 1.3 0 0 0-2.2 1.3"/>${mark.heart(12, 20, 0.85)}`,
+  inc_alp_canyon_rescue: `<path d="M2.5 2.5l2 4.5-1.5 4 2 4.5-1 6"/><path d="M21.5 2.5l-2 3.5 1.5 4.5-2 4 1 7"/><path d="M6.5 17.5c1-.7 1.8-.7 2.75 0s1.75.7 2.75 0 1.75-.7 2.75 0 1.75.7 2.75 0"/><path d="M7.5 21c.9-.6 1.6-.6 2.3 0s1.6.6 2.3 0 1.6-.6 2.3 0 1.6.6 2.3 0"/><circle cx="12" cy="13" r="2"/><path d="M12 2.5V11"/>`,
+  inc_alp_paraglider: `<path d="M3 9C4.5 3.5 19.5 3.5 21 9c-2-1.3-5-2-9-2s-7 .7-9 2z"/><path d="M3.5 9 12 16.5M20.5 9 12 16.5M8.5 7.3 12 16.5M15.5 7.3 12 16.5"/><circle cx="12" cy="18" r="1.3"/><path d="M12 19.3v2.2"/>`,
+  inc_alp_cave_rescue: `<path d="M2 21.5 5 11.5l3.5-3 2-4 4 1.5 3 4.5 1.5 4 3 7.5"/><path d="M6.5 21.5c0-3 .8-6.5 2.8-8.3s3.9-1.8 5.4 0 2.8 5.3 2.8 8.3"/><path d="M9.6 14.2l.9 2.3.9-2.3M12.8 13.3l.9 2.3.9-2.3"/>${GROUND}`,
+  inc_alp_chairlift_evacuation:
+    '<path d="M2 5 22 2"/><path d="M10 3.8V9H6.5v5.5H14V12"/><circle cx="9.6" cy="11.4" r="1.3"/><path d="M10 17v4.5M8 19.5l2 2 2-2"/>',
+  inc_alp_ice_climber:
+    '<path d="M2 3h20"/><path d="M4.5 3l1.2 5 1.2-5M9 3l1 3.5 1-3.5M13.5 3l1.2 6 1.2-6M18.5 3l1 3.8 1-3.8"/><path d="M5.5 20.5 14.5 11.5"/><path d="M11.5 8.8 14.5 11.5c1.5 1.3 2.8 2.9 3.6 4.7"/><path d="M5.5 20.5 4.5 21.5"/>',
+  inc_alp_snow_emergency: `<path d="M3.5 21.5V14l6-4.5 6 4.5v7.5"/><path d="M2 13.5 9.5 7.5 17 13.5"/><path d="M7.5 21.5v-3.5h4v3.5"/><path d="M2 21.5h15.5"/>${mark.snowflake(19, 5, 1)}`,
   inc_med_minor_illness:
     '<path d="M10 14.5V5a2 2 0 0 1 4 0v9.5a4 4 0 1 1-4 0z"/><circle cx="12" cy="18" r="1.5" fill="currentColor" stroke="none"/><path d="M12 16.5V9"/><path d="M17 6h2M17 9.5h2M17 13h2"/>',
   inc_med_severe_illness:
@@ -252,8 +286,42 @@ export const PICTOGRAMS: Record<PictogramName, string> = {
   inc_med_fall:
     '<path d="M2 21.5h20"/><circle cx="7.5" cy="6" r="2.1"/><path d="M9 8.5l4.5 5.5M7.5 12.5l3.5-1.5 4-2M13.5 14l-4 3.5M13.5 14l4.5 2"/><path d="M17.5 3.5V7M20.5 5.5V9"/>',
   inc_med_pediatric: mark.teddy(12, 12.8, 2.5),
+  inc_med_allergic_reaction: `${HEAD}<circle cx="15.5" cy="12" r=".85" fill="currentColor" stroke="none"/><circle cx="13" cy="14" r=".85" fill="currentColor" stroke="none"/><circle cx="16" cy="15.3" r=".85" fill="currentColor" stroke="none"/><circle cx="12.5" cy="17.3" r=".85" fill="currentColor" stroke="none"/>`,
+  inc_med_diabetic: `<rect x="4" y="8.5" width="11" height="13" rx="2.5"/><rect x="6.5" y="11" width="6" height="4" rx=".8"/><path d="M8 18.5h3"/><path d="M8 8.5V5h3v3.5"/>${mark.drop(18.5, 6.5, 1.05)}`,
+  inc_med_seizure: `${HEAD}${mark.bolt(11.8, 10.8, 1.15)}`,
+  inc_med_abdominal_pain:
+    '<path d="M8.5 2.5V6C6 7 3.5 9.5 3.5 13.5c0 4.5 3.5 7.5 8 7.5 5 0 9-3 9-7 0-2-1.3-3-2.8-2.5-1.7.6-3 1.5-4.7 1-1.8-.6-2.5-2.5-2.5-5V2.5"/><path d="M8 13.5l1.5 1.5-1 1.5 1.5 1.5"/>',
+  inc_med_elderly_assist: `<circle cx="9.5" cy="4.5" r="2"/><path d="M10.5 7.5 8.5 13.5l-1.5 8M8.5 13.5l3 3 .5 5M10 9l3.5 2.5"/><path d="M13.5 11.5v10M13.5 11.5a1.3 1.3 0 0 0-2.6 0"/>${GROUND}<path d="M18.5 16V8M16 10.5l2.5-2.5 2.5 2.5"/>`,
+  inc_med_intoxication:
+    '<path d="M4 21.5h5.5V11.5C9.5 10 8 9 8 7.5V3.5H5.5v4C5.5 9 4 10 4 11.5z"/><path d="M4 14.5h5.5"/><path d="M13 9h8l-4 5v6M14.5 21h5"/><path d="M14.5 11h5"/>',
+  inc_med_workplace_injury: `<path d="M3 17.5a7 7 0 0 1 14 0"/><path d="M1.5 17.5h17"/><path d="M8.5 10.8v3.2M11.5 10.8v3.2"/>${mark.bandage(18.8, 5.8, 1.15)}`,
+  inc_med_sports_injury: `<circle cx="9.5" cy="14" r="7"/><path d="M9.5 11.2l2.3 1.7-.9 2.7H8.1l-.9-2.7z"/><path d="M9.5 11.2V7M11.8 12.9l4-1.3M10.9 15.6l2.5 3.4M8.1 15.6l-2.5 3.4M7.2 12.9l-4-1.3"/>${mark.bandage(18.5, 5.5, 1.1)}`,
+  inc_med_heat_stroke: `<path d="M2 20h20"/><circle cx="5" cy="15.5" r="2.25"/><path d="M8.5 17h12.5M12 17l3-3h3.5"/>${mark.sun(17.5, 6.5, 1.25)}`,
+  inc_med_respiratory_crisis:
+    '<path d="M12 3v8.5M12 11.5l-2.5 2M12 11.5l2.5 2"/><path d="M9.5 8.5C6.5 8.5 3 13.5 3 18c0 1.8 1.2 3 3 3 2.2 0 3.5-1.3 3.5-3.5z"/><path d="M14.5 8.5c3 0 6.5 5 6.5 9.5 0 1.8-1.2 3-3 3-2.2 0-3.5-1.3-3.5-3.5z"/>',
+  inc_med_obstetric:
+    '<circle cx="10.5" cy="4" r="2.3"/><path d="M9.3 7.3 8 13.5v8M12 7.3c.3 1.7 1.2 2.6 2.5 3.1 2.3.9 3.5 2.6 3.5 4.6 0 2.2-1.8 3.7-4.6 3.7h-1v2.8"/><path d="M10 9.3l3 3.5"/>',
+  inc_med_psychiatric: `${HEAD}<path d="M9.5 11.5c0-2 1.5-3 3-3s2.5 1 2.5 2.3-1 2-2 2-1.6-.6-1.6-1.3.6-1 1.1-1"/>`,
+  inc_med_school_emergency: `${SCHOOL}${mark.heart(19, 15, 1.2)}`,
+  inc_med_stroke_alert: `${mark.brain(10, 13, 2)}${mark.stopwatch(18.5, 5, 1)}`,
+  inc_med_food_poisoning_event: `<path d="M3 3v5a1.8 1.8 0 0 0 3.6 0V3M4.8 3v18.5"/><path d="M11 21.5V3c1.5 0 2.5 3 2.5 7H11"/>${mark.people(17.8, 15, 1.15)}`,
+  inc_med_nursing_home_event:
+    '<path d="M2 21.5h13.5"/><path d="M3 21.5V9.5L8 5l5 4.5v12"/><path d="M5.8 12.5h.4M9.8 12.5h.4M5.8 16h.4M9.8 16h.4"/><path d="M18 21.5V9.5a2.2 2.2 0 0 1 4.4 0"/>',
+  inc_med_swimmer_distress: `<path d="${WAVE_17}"/><path d="${WAVE_21}"/><circle cx="8" cy="12" r="2"/><path d="M10 11.5l2.5-5"/>${mark.lifebuoy(18, 7.5, 1.15)}`,
+  inc_med_lake_rescue: `${mark.pine(4.5, 6.5, 1)}${mark.pine(9, 7.5, 0.75)}<path d="M2 12.5h20"/><path d="${WAVE_21}"/><circle cx="15" cy="15" r="2"/><path d="M17 14.5l2.5-5"/>`,
   inc_fire_apartment_block: `${GROUND}<path d="M3.5 21.5V3h9.5v18.5"/><path d="M6.2 7h1.2M9.2 7h1.2M6.2 11h1.2M9.2 11h1.2M6.2 15h1.2M9.2 15h1.2"/>${mark.flame(18, 14, 1.4)}`,
   inc_fire_warehouse: `${GROUND}<path d="M2 21.5V11l5.5-3.5V11L13 7.5v14"/><path d="M5 21.5v-5.5h5v5.5"/>${mark.flame(18, 14.5, 1.4)}`,
+  inc_fire_chimney: `<path d="M3.5 21.5v-8L10 8l6.5 5.5v8"/>${GROUND}<path d="M12.5 9.7V6.5h2.5v5.3"/>${mark.flame(13.75, 3, 0.75)}<circle cx="18.5" cy="6.5" r=".8" fill="currentColor" stroke="none"/><circle cx="20" cy="10" r=".8" fill="currentColor" stroke="none"/>`,
+  inc_fire_kitchen: `<path d="M3 14h12l-1 3.3a1.5 1.5 0 0 1-1.4 1.2H5.4A1.5 1.5 0 0 1 4 17.3z"/><path d="M15 14.8h6.5"/>${mark.flame(9, 7.5, 1.35)}<path d="M2 21.5h14"/>`,
+  inc_fire_balcony: `${GROUND}<path d="M2.5 21.5V2.5H9v19"/><path d="M4.8 6.5h2M4.8 10.5h2M4.8 18h2"/><path d="M9 16.5h9M9 12.5h9v4M12 12.5v4M15 12.5v4"/>${mark.flame(13.5, 6.8, 1.3)}`,
+  inc_fire_electrical_panel: `<rect x="3" y="3.5" width="11" height="18" rx="1.5"/>${fine(mark.bolt(8.5, 12.5, 1.2))}${mark.flame(18.5, 14.5, 1.3)}`,
+  inc_fire_shop: `<path d="M3.5 5h11l1 4.5h-13z"/><path d="M2.5 9.5v.8a2.2 2.2 0 0 0 4.4 0 2.2 2.2 0 0 0 4.4 0 2.2 2.2 0 0 0 4.4 0v-.8"/><path d="M3.5 12.5v9h11v-9M3.5 15.5h11M3.5 18.5h11"/>${mark.flame(19.5, 13.5, 1.2)}`,
+  inc_fire_basement: `<path d="M2 9.5h20"/><path d="M5 9.5V4h9v5.5"/><path d="M5 9.5v12h14v-12"/>${mark.flame(12, 16, 1.2)}`,
+  inc_fire_farm_building: `${GROUND}<path d="M2.5 21.5V12l2-4.5 4.5-3 4.5 3 2 4.5v9.5"/><path d="M6.5 21.5v-5h5v5M6.5 16.5l5 5M11.5 16.5l-5 5"/><path d="M8 10h2v2H8z"/>${mark.flame(19.3, 14.5, 1.2)}`,
+  inc_fire_bus: `<path d="M4.5 20H2v-7.5a1.5 1.5 0 0 1 1.5-1.5H19l3 4.5V20h-2.5M8.5 20h7"/><path d="M2 14.5h20M6.5 11v3.5M11 11v3.5M15.5 11v3.5"/><circle cx="6.5" cy="20" r="2"/><circle cx="17.5" cy="20" r="2"/>${mark.flame(12, 5.3, 1.2)}`,
+  inc_fire_parking_garage: `${CAR_LOW}<rect x="2.5" y="2.5" width="7.5" height="7.5" rx="1.5"/><path d="M5.3 8.2V4.4h1.6a1.2 1.2 0 0 1 0 2.4H5.3"/>${mark.flame(17.5, 7, 1.25)}`,
+  inc_fire_industrial_plant: `${PLANT}<path d="M6 3.5a2.2 2.2 0 0 1 3.8-1 2.6 2.6 0 0 1 4.7 1.2 2 2 0 0 1 .5 3.8H8"/>${mark.flame(18.5, 15, 1.3)}`,
+  inc_fire_vessel_blaze: `<path d="${HULL}"/><path d="${WAVE_21}"/>${mark.flame(12, 7.5, 1.4)}`,
   inc_tech_elevator:
     '<rect x="4.5" y="2.5" width="15" height="19" rx="1.5"/><path d="M12 2.5v19"/><path d="M8.2 14.5v-5M6.4 11.3l1.8-1.8L10 11.3M15.8 9.5v5M14 12.7l1.8 1.8 1.8-1.8"/>',
   inc_tech_fallen_tree:
@@ -262,12 +330,53 @@ export const PICTOGRAMS: Record<PictogramName, string> = {
     '<path d="M4.5 21.5V11.5M19.5 21.5V14M4.5 21.5h15"/><path d="M2.5 12.5 12 4.5l4 3.4M19 10.5l2.5 2"/><path d="M16.2 10.5l2 1-1 2-2-1zM14 15.5l1.6.8-.8 1.6-1.6-.8z"/>',
   inc_tech_animal_rescue:
     '<path d="M5 13V3.5l4 3.5h6l4-3.5V13a7 7 0 0 1-14 0z"/><circle cx="9.3" cy="11.5" r="0.9" fill="currentColor" stroke="none"/><circle cx="14.7" cy="11.5" r="0.9" fill="currentColor" stroke="none"/><path d="M11 15l1 1 1-1M2 13.5l3.5.8M2.5 17l3-.7M22 13.5l-3.5.8M21.5 17l-3-.7"/>',
+  inc_tech_person_locked_in: `<path d="M2 21.5h14"/><path d="M4 21.5V3h10v18.5"/><path d="M11.5 12v1.5"/>${mark.padlock(18.5, 12, 1.25)}`,
+  inc_tech_water_leak: `<path d="M2 4.5h8.5l1 1.5-1 1.5-1 1.5H2M22 4.5h-8.5l1 1.5-.5 1.5 1 1.5H22"/>${mark.drop(12, 14, 0.9)}${mark.drop(7.5, 13, 0.6)}${mark.drop(16.5, 13, 0.6)}<path d="M2 20c1.5-1 3-1 4.5 0s3 1 4.5 0 3-1 4.5 0 3 1 4.5 0"/>`,
+  inc_tech_insect_nest:
+    '<path d="M3 3h18"/><path d="M12 3v2.5"/><path d="M12 5.5c-3.5 0-5.5 3.5-5.5 7s2.5 7.5 5.5 7.5 5.5-4 5.5-7.5-2-7-5.5-7z"/><path d="M7 9.5h10M6.5 13h11M7.3 16.5h9.4"/>',
+  inc_tech_gas_smell:
+    '<path d="M2.5 21.5V12l6-5 6 5v9.5z"/><path d="M6.5 21.5v-5h4v5"/><path d="M16.5 10.5c1.5-1 2.5 1 4 0M16.5 14c1.5-1 2.5 1 4 0M16.5 17.5c1.5-1 2.5 1 4 0"/>',
+  inc_tech_dangling_object:
+    '<path d="M2.5 2.5v19"/><path d="M2.5 5.5H14M4.5 5.5v2"/><path d="M13 5.5V9"/><path d="M13 9 6.07 13l2.5 4.33 6.93-4z"/><path d="M17 17.5h4.5M16 20.5h3.5M18 14.5h2"/>',
+  inc_tech_industrial_machine: `${mark.gear(9.5, 14, 1.8)}${mark.jaws(18.5, 6.5, 1.1)}`,
+  inc_tech_person_on_ledge:
+    '<path d="M2 21.5h9.5V11H2"/><path d="M4.5 14h1.5M7.5 14H9M4.5 17.5h1.5M7.5 17.5H9"/><circle cx="12" cy="3.8" r="1.7"/><path d="M12 5.8v3M12 8.8 11 11M12 8.8l1 2.2M9.5 6.5l2.5 1 2.5-1"/><path d="M2 11h13"/>',
+  inc_tech_confined_space:
+    '<path d="M12 3 4 21.5M12 3l8 18.5"/><ellipse cx="12" cy="19.5" rx="4.5" ry="1.6"/><path d="M12 3v15"/><circle cx="7.3" cy="11" r="1.3"/>',
+  inc_tech_vessel_adrift: `<path d="M2 14h14l-2.5 4H4.5z"/><path d="M5 14v-3.5h5l1.5 3.5"/><path d="${WAVE_21}"/><path d="M13 7c1.3-1 2.5-1 3.8 0s2.5 1 3.7 0M18.8 4.8l1.7 2.2-2 1.7"/>`,
   inc_road_accident_trapped: `<path d="M4.5 19.5h-2v-3l1.5-1 2-3h6l2.5 3 3 1v3h-1M8.5 19.5h4"/><circle cx="6.5" cy="19.5" r="2"/><circle cx="14.5" cy="19.5" r="2"/><path d="M4 15.5h10.5"/>${mark.jaws(18.5, 6.5, 1.1)}`,
+  inc_road_pedestrian_struck: `${CAR_LOW}<circle cx="19.5" cy="4" r="1.7"/><path d="M19 6.2 17.8 10.5l-2.3 2.5M17.8 10.5l2.7 2.5M16.5 7.5l2.3.8 2.7-1"/>`,
+  inc_road_motorcycle:
+    '<circle cx="4.8" cy="17.5" r="2.4"/><circle cx="15.2" cy="17.5" r="2.4"/><path d="M15.2 17.5 13.2 10.7h-2.4M4.8 17.5l2.4-4.4"/><path d="M7.2 13.1H14l-1.2 2.8h-4z" fill="currentColor"/><path d="M17.9 9.5 18.5 6M19.4 10.4l2.3-1.9M20 12.5h2"/>',
+  inc_road_vehicle_off_road:
+    '<path d="M2 11.5h3l16 9.24"/><path d="M6.68 10.05 4.86 9l1.58-2.73 1.89-.12 3.39-1.68 5.46 3.15.69 4.04 2.21 2.49-1.58 2.73-.91-.53M10.32 12.15l3.64 2.1"/><circle cx="8.5" cy="11.1" r="2.1"/><circle cx="15.77" cy="15.3" r="2.1"/>',
+  inc_road_fuel_spill: `<path d="M8.5 3 3.5 21.5M15.5 3l5 18.5M12 4v2M12 9v2.5"/>${mark.drop(12, 16.5, 1)}<path d="M7.5 20.5h9"/>`,
+  inc_road_truck_overturned:
+    '<path d="M2 12h13v8.5H2z"/><path d="M15.5 14.5H21v4l-2 2h-3.5z"/><path d="M13 14.5h2.5"/><circle cx="4.8" cy="12" r="1.8"/><circle cx="9" cy="12" r="1.8"/><circle cx="18.5" cy="14.5" r="1.8"/><path d="M1.5 20.5h21"/><path d="M11 8.5 10 5.5M14 9l1.5-2.5M7 9 5 7"/>',
   inc_multi_road_accident:
     '<path d="M3 19.5H1.5V16l2-3.5H8l2.5 3.5h1v3.5h-.9M6.2 19.5h1.2"/><circle cx="4.6" cy="19.5" r="1.6"/><circle cx="9" cy="19.5" r="1.6"/><path d="M21 19.5h1.5V16l-2-3.5H16L13.5 16h-1v3.5h.9M17.8 19.5h-1.2"/><circle cx="19.4" cy="19.5" r="1.6"/><circle cx="15" cy="19.5" r="1.6"/><path d="M12 9.5V5M8.8 10.5 7.2 7M15.2 10.5 16.8 7"/>',
   inc_multi_fire_with_casualties: `${mark.flame(8, 11.5, 2.1)}<circle cx="18.5" cy="10" r="2.3"/><path d="M14.5 20.5V19a4 4 0 0 1 8 0v1.5"/>`,
   inc_multi_hazmat_spill: `<rect x="7" y="2.5" width="10" height="13.5" rx="1.5"/><path d="M7 6.5h10M7 12h10"/>${mark.drop(12, 9.3, 0.5)}<ellipse cx="12" cy="19.3" rx="9.5" ry="2.2"/>`,
   inc_multi_building_collapse: `${mark.rubble(11, 12.6, 2.5)}<path d="M5 14.5h2.5v3H5zM17 18l1.5-2 2 1"/>`,
+  inc_multi_capsized_boat: `<path d="M2.5 13h14l-2.5-5.5H5z"/><path d="M13.5 7.5l.5-2.5"/><path d="M2 16c1.5-1 3-1 4.5 0s3 1 4.5 0 3-1 4.5 0 3 1 4.5 0"/><path d="M2 21c1.5-1 3-1 4.5 0s3 1 4.5 0 3-1 4.5 0 3 1 4.5 0"/><circle cx="19.5" cy="11.5" r="1.8"/><path d="M16.5 8l1.8 2.2M22.5 8l-1.8 2.2"/>`,
+  inc_multi_person_overboard: `<path d="M2 11h11l-2 4H4z"/><path d="M4.5 11V8h4.5l1.5 3"/><path d="${WAVE_17}"/><path d="${WAVE_21}"/><circle cx="17.5" cy="11.5" r="1.8"/><path d="M19.3 11l1.7-4.5"/>`,
+  inc_multi_power_blackout: `${GROUND}<path d="M3 21.5V12h5v9.5M8 21.5V8h5v13.5"/>${mark.bolt(17.5, 8, 1.3)}<path d="M13.5 3.5l8 9"/>`,
+  inc_multi_school_evacuation: `${SCHOOL}${mark.flame(19.3, 14.5, 1.3)}`,
+  inc_multi_heatwave_surge: `${mark.sun(7.5, 7.5, 1.35)}${mark.people(15, 17, 1.65)}`,
+  inc_multi_boat_incident: `<path d="M2 12.5h8.5l-1.8 3.5H3.8z"/><path d="M4 12.5V10h3.5l1.2 2.5"/><path d="M22 12.5h-8.5l1.8 3.5h4.9z"/><path d="M20 12.5V10h-3.5l-1.2 2.5"/><path d="M12 7V3.5M9.5 7.5 8.3 5M14.5 7.5l1.2-2.5"/><path d="${WAVE_21}"/>`,
+  inc_multi_flood_emergency: `<path d="M5.5 14.5 8 10.5h7l3 4"/><path d="M10.5 10.5v4"/><path d="${WAVE_17}"/><path d="${WAVE_21}"/><path d="M5 3.5 4 6M10 3 9 5.5M15 3.5 14 6M20 3l-1 2.5"/>`,
+  inc_multi_winter_storm: `<path d="M6 16l2.5-4.5h7l3 4.5"/><path d="M11.5 11.5V16"/><path d="M2 18c1.5-2.5 4-3 6.5-2.5 2 .4 3.5.4 5.5-.2 3-.9 6-.3 8 2.7"/>${mark.snowflake(5, 5.5, 0.85)}${mark.snowflake(18.5, 5, 0.85)}`,
+  inc_multi_landslide: `<path d="M2 3.5c2.5 2 4 5 5.5 9s4 7.5 7 9"/><path d="M8.5 7.5l2-1 1.5 1-.5 2-2 .5-1.5-1zM11 12.5l2.3-.8 1.2 1.5-.8 1.8-2 0-.9-1.3z"/><path d="M15 21.5v-4.5l3.3-3 3.2 3v4.5"/>${GROUND}`,
+  inc_multi_train_derailment:
+    '<path d="M3.51 17.09 1.7 9.81a1.5 1.5 0 0 1 1.09-1.82l10.67-2.66 4.97 3.4 1.09 4.36zM4.36 10.17l2.91-.72M9.22 8.96l2.91-.72M14.55 7.63l2.23 1.51"/><circle cx="7.27" cy="17.69" r="1.6"/><circle cx="16.49" cy="15.4" r="1.6"/><path d="M2 21.5h20M4.5 21.5v-1.5M9 21.5v-1.5M13.5 21.5v-1.5M18 21.5v-1.5"/>',
+  inc_multi_tunnel_fire: `<path d="M2 21.5V11a10 10 0 0 1 20 0v10.5"/><path d="M6 21.5V13a6 6 0 0 1 12 0v8.5"/>${mark.flame(12, 17.3, 1)}`,
+  inc_multi_stadium_crush: `${mark.people(12, 12, 1.9)}<path d="M2 12h3M3.5 10.5 5 12l-1.5 1.5M22 12h-3M20.5 10.5 19 12l1.5 1.5"/><path d="M4 20h16"/>`,
+  inc_multi_industrial_explosion: `${PLANT}${mark.blast(18, 11.5, 1.2)}`,
+  inc_multi_hospital_evacuation: `${GROUND}<path d="M3 21.5V5.5h10v16"/><path d="M6 9v5M10 9v5M6 11.5h4"/><path d="M6.5 21.5v-3h3v3"/>${mark.flame(18.5, 14.5, 1.3)}`,
+  inc_multi_aircraft_accident: `<path d="M14.71 14.71 9.63 12.24l-6.95 1.45-1.45-1.45 5.22-3.18-2.47-3.05-2.61.29-1.01-1.01 3.19-1.74 1.74-3.19 1.01 1.01-.29 2.61 3.05 2.47 3.18-5.22 1.45 1.45-1.45 6.95z"/>${GROUND}${mark.flame(18.5, 17.3, 1)}`,
+  inc_multi_bridge_collapse: `<path d="M2 7.5h8l-1 2.5H2M22 7.5h-8l1 2.5h7"/><path d="M5 10v11.5M19 10v11.5"/><path d="M9.6 11.2l1.8-.9 4.8 7.7-1.8.9z"/><path d="M6.5 20c1-.7 1.7-.7 2.7 0s1.7.7 2.7 0 1.7-.7 2.7 0 1.7.7 2.7 0"/>`,
+  inc_multi_earthquake:
+    '<path d="M4.5 14V8l6.5-5 6.5 5v6"/><path d="M11 3l-1 3 2 2-1.5 3 1 3"/><path d="M2 19h4l1.5-3 2 6 2-8.5 2 7 1.5-4 1 2.5H22"/>',
   inc_pol_brawl:
     '<circle cx="6" cy="6.5" r="2"/><circle cx="18" cy="6.5" r="2"/><path d="M6 10v5.5l-2 6M6 15.5l2.5 6M6 11.5l5-1.5M18 10v5.5l2 6M18 15.5l-2.5 6M18 11.5l-5-1.5"/><path d="M12 2.5v3M9.8 3.5l.8 2M14.2 3.5l-.8 2"/>',
   inc_pol_alarm_activation:
@@ -277,6 +386,26 @@ export const PICTOGRAMS: Record<PictogramName, string> = {
   inc_pol_public_event: `<path d="M2.5 3.5c3 2.5 6.3 2.5 9.5 0 3.2 2.5 6.5 2.5 9.5 0"/><path d="M6 5.2l.9 2.5L8.3 5.4M15.7 5.4l1.4 2.3.9-2.5"/>${mark.people(12, 15.5, 2.1)}`,
   inc_pol_traffic_disruption:
     '<rect x="8" y="2.5" width="8" height="16" rx="2"/><circle cx="12" cy="6.3" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="10.5" r="1.4"/><circle cx="12" cy="14.7" r="1.4"/><path d="M12 18.5v3M8.5 21.5h7M8 7H5.5M8 12H5.5M16 7h2.5M16 12h2.5"/>',
+  inc_pol_noise_complaint: `<path d="M8 17V6.5l9-2.5v11"/><path d="M8 9.5l9-2.5"/><ellipse cx="6" cy="17" rx="2" ry="1.6"/><ellipse cx="15" cy="15" rx="2" ry="1.6"/>${mark.moon(19.5, 19, 0.85)}`,
+  inc_pol_parking_obstruction: `${CAR_LOW}<circle cx="18.5" cy="6.5" r="3.5"/><path d="M16 4l5 5"/>`,
+  inc_pol_shoplifting: `<path d="M2 4h2.5l2.5 11h11l2-8H5.5"/><circle cx="8.5" cy="19" r="1.6"/><circle cx="16.5" cy="19" r="1.6"/>${fine(mark.bandit(12.8, 11, 1))}`,
+  inc_pol_vandalism: `<path d="M3.5 21.5V11a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v10.5z"/><path d="M6 9V6.5h2V9"/><circle cx="11.5" cy="4.5" r=".7" fill="currentColor" stroke="none"/><circle cx="13.5" cy="6.3" r=".7" fill="currentColor" stroke="none"/><circle cx="13.3" cy="3" r=".7" fill="currentColor" stroke="none"/><path d="M14 18.5c1-3 2-5 3-5s0 5 1.5 5 1.5-6 3-6"/>`,
+  inc_pol_stray_animal_road: `<path d="M8.5 3 3.5 21.5M15.5 3l5 18.5M12 4v2M12 8.5v2"/>${mark.paw(12, 16.5, 1.2)}`,
+  inc_pol_domestic_disturbance: `<path d="M2.5 21.5V11L12 3.5l9.5 7.5v10.5z"/>${mark.shout(12, 15, 1.35)}`,
+  inc_pol_dui_checkpoint: `${CAR_LOW}<circle cx="18.5" cy="6" r="3.3"/><circle cx="18.5" cy="6" r="1.3"/><path d="M18.5 9.3v4"/>`,
+  inc_pol_road_rage: `${CAR_LOW}${mark.shout(17.5, 6.5, 1.2)}`,
+  inc_pol_burglary_report: `<path d="M2.5 21.5V11L12 3.5l9.5 7.5v10.5z"/>${mark.bandit(12, 14.5, 1.3)}`,
+  inc_pol_atm_attack: `<rect x="3" y="3" width="11" height="18.5" rx="1.5"/><rect x="5.5" y="5.5" width="6" height="4.5" rx=".5"/><path d="M6 13.5h5M6.5 17h4"/>${mark.blast(18.5, 8.5, 1.1)}`,
+  inc_pol_vehicle_pursuit:
+    '<path d="M8 19.5H6v-3l1.5-1 2-3h6l2.5 3 3 1v3h-1M12 19.5h4"/><circle cx="10" cy="19.5" r="2"/><circle cx="18" cy="19.5" r="2"/><path d="M1.5 13.5h3M2.5 16.5h2M3 10.5h4"/>',
+  inc_pol_missing_child: `<circle cx="8" cy="7.5" r="2.5"/><path d="M8 10v5.5M8 15.5 6 21M8 15.5l2 5.5M5 12.5l3-1.5 3 1.5"/>${mark.question(17, 9, 1.2)}`,
+  inc_pol_demonstration: `<rect x="3" y="2.5" width="8" height="5" rx=".8"/><path d="M7 7.5v5"/><rect x="13" y="3.5" width="8" height="5" rx=".8"/><path d="M17 8.5v4.5"/>${mark.people(12, 17.5, 1.85)}`,
+  inc_pol_armed_robbery: `<path d="M8 8 6.5 4.5h6L11 8"/><path d="M8 8c-3 1.5-5 5-5 8.5 0 3 2 5 6.5 5S16 19.5 16 16.5c0-3.5-2-7-5-8.5z"/>${mark.crosshair(18.5, 6.5, 1.25)}`,
+  inc_pol_drug_operation:
+    '<path d="M2.5 21.5V11L12 3.5l9.5 7.5v10.5z"/><path d="M9.14 16.31l4.17-4.17a1.8 1.8 0 0 1 2.55 2.55l-4.17 4.17a1.8 1.8 0 0 1-2.55-2.55z"/><path d="M11.23 14.23 9.14 16.31a1.8 1.8 0 0 0 2.55 2.55l2.08-2.09z" fill="currentColor"/>',
+  inc_pol_hostage_situation: `<circle cx="8.5" cy="8" r="3.5"/><path d="M2.5 20.5V20a6 6 0 0 1 12 0v.5"/>${mark.padlock(18.5, 9.5, 1.25)}`,
+  inc_pol_stadium_disorder: `<path d="M2 20.5h20"/><path d="M2.5 20.5V11l5.5 4v5.5M21.5 20.5V11L16 15v5.5"/><path d="M2.5 11V4.5M21.5 11V4.5M1.5 4.5h2M20.5 4.5h2"/>${mark.blast(12, 9.5, 1.05)}`,
+  inc_pol_public_attack: `${mark.blast(12, 7.5, 1.45)}${mark.people(12, 18, 1.85)}`,
   inc_wf_brush: `<path d="M2 20.5h20"/><path d="M3.5 20.5a3 3 0 0 1 1-5.5 3.5 3.5 0 0 1 6.5-1 3 3 0 0 1 3 3.5 2 2 0 0 1-.5 3"/>${mark.flame(18.5, 12.5, 1.3)}`,
   inc_wf_forest_medium: mark.pine(5, 13.5, 1.3) + mark.pine(12, 13.5, 1.3) + mark.flame(19, 13.5, 1.15),
   inc_wf_forest_large:
@@ -287,6 +416,16 @@ export const PICTOGRAMS: Record<PictogramName, string> = {
     mark.flame(4.8, 8.5, 0.8) +
     mark.flame(19.2, 8.5, 0.8),
   inc_wf_interface: `<path d="M2 21.5V14l4.5-3.5L11 14v7.5z"/><path d="M5 21.5v-3.5h3v3.5"/>${mark.pine(15.5, 16, 1.25)}${mark.flame(19.3, 6.5, 1.1)}`,
+  inc_wf_roadside_verge: `<path d="M2 16.5h20M2 21.5h20M4 19h2.5M10.75 19h2.5M17.5 19H20"/>${mark.flame(9, 8.5, 1.35)}${mark.flame(17, 10.5, 0.85)}<path d="M3.5 16.5l1-2.5 1 2.5M13 16.5l1-2.5 1 2.5M19.5 16.5l1-2 1 2"/>`,
+  inc_wf_stubble_field: `${mark.flame(12, 7, 1.4)}${GROUND}<path d="M3.5 21.5v-2M6.5 21.5v-2M9.5 21.5v-2M12.5 21.5v-2M15.5 21.5v-2M18.5 21.5v-2M5 16.5v-1.5M8 16.5v-1.5M11 16.5v-1.5M14 16.5v-1.5M17 16.5v-1.5M20 16.5v-1.5"/>`,
+  inc_wf_pruning_burn: `<path d="M3 21l10-3.5M3 17.5 13 21"/>${mark.flame(8, 10.5, 1.4)}${mark.flame(18, 15.5, 0.85)}<path d="M15 21.5h7"/>`,
+  inc_wf_waste_dump: `<path d="M2 21.5l2-4 2.5-1 1.5-3 3 .5 2-2 2.5 2 2 3 1.5-.5 1.5 3 1.5 2z"/><circle cx="8.5" cy="18.5" r="1.6"/><path d="M13.5 16.5l2.5 2.5"/>${mark.flame(12, 6, 1.3)}`,
+  inc_wf_reignition: `${GROUND}<path d="M4.5 21.5v-3l1-1 1 1v3M17.5 21.5v-2.5l1-1 1 1v2.5"/>${mark.flame(12, 11.5, 1.2)}<path d="M6 8a6.5 6.5 0 0 1 11.8-1.5M18 3.5v3h-3"/>`,
+  inc_wf_powerline_corridor: `<path d="M3 21.5 6.5 3.5h1L11 21.5M3 7h8M4 11.5h6M5 14.5l4 4M9 14.5l-4 4"/><path d="M11 7c4 1.5 7.5 1.5 11 0"/>${mark.flame(17.5, 16, 1.25)}`,
+  inc_wf_night_front: `${mark.moon(5.5, 5.5, 1.05)}${mark.pine(5, 16.5, 1.3)}${mark.pine(11.5, 16.5, 1.3)}${mark.flame(18.5, 15.5, 1.3)}`,
+  inc_wf_steep_slope: `<path d="M2 21.5 13 3.5l9 18"/>${mark.pine(8.5, 15.5, 0.9)}${mark.flame(14.5, 13.5, 1.15)}${mark.pine(18.5, 17.3, 0.8)}`,
+  inc_wf_campsite_threat: `${GROUND}<path d="M3 21.5 9 9.5l6 12M9 21.5l-2-4h4z"/>${mark.flame(18.5, 12.5, 1.35)}`,
+  inc_wf_multiple_ignitions: `<path d="M3 21.5 9.5 15"/><circle cx="10.5" cy="14" r="1.4" fill="currentColor" stroke="none"/>${mark.flame(6.5, 6, 0.9)}${mark.flame(16, 5.5, 1.2)}${mark.flame(18.5, 16.5, 0.9)}`,
 
   // ───────────────────────────── capabilities ─────────────────────────────
   cap_fire_suppression:
@@ -355,6 +494,8 @@ export const PICTOGRAMS: Record<PictogramName, string> = {
     '<path d="M4.5 20.5 14 11"/><path d="M12.5 6.5 17.5 11.5 20.5 8.5 15.5 3.5z"/><path d="M19.5 20.5 11.5 12.5"/><path d="M11.5 12.5 8 11.5 4 6l1.5-1.5L11 8.5z"/>',
   upgrade_training_room:
     '<path d="M2 9.5 12 5l10 4.5L12 14z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9.5V15"/>',
+  upgrade_pier:
+    '<path d="M2 9.5h20M2 12h20"/><path d="M5 12v9.5M12 12v9.5M19 12v9.5"/><path d="M14.5 9.5V8h-.8V6.5h3.6V8h-.8v1.5"/><path d="M2 17c1-.7 2-.7 3 0M5 17c1 .7 2 .7 3.5 0M12 17c1 .7 2 .7 3.5 0M19 17c1 .7 2 .7 3 0"/>',
   upgrade_generic: '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 17V7.5M8 11.5l4-4 4 4"/>',
 
   // ───────────────────────────── roles ─────────────────────────────

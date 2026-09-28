@@ -1,0 +1,130 @@
+{
+  "nautical": {
+    "section": "Einsatz auf dem Wasser",
+    "body": {
+      "SEA": "Auf See",
+      "LAKE": "Auf dem See",
+      "RIVER": "Auf dem Fluss",
+      "UNKNOWN": "Auf dem Wasser"
+    },
+    "focusScene": "Punkt auf dem Wasser",
+    "focusMeeting": "Sammelpunkt",
+    "roles": "Boote fahren zum Punkt auf dem Wasser; Landfahrzeuge halten am Sammelpunkt an der Straße, wo das Boot die Geretteten an Land bringt.",
+    "coastGuard": {
+      "title": "Ein Boot wird gebraucht — die Küstenwache greift ein",
+      "titleCovered": "Deine Boote reichen nicht — die Küstenwache greift ein",
+      "titleNoCoastGuard": "Ein Boot wird gebraucht",
+      "covers": "{provider} übernimmt die Rettung auf dem Wasser ({list}).",
+      "shore": "Schicke deine Landfahrzeuge zum Sammelpunkt.",
+      "reward": "Belohnung auf {percent} % reduziert.",
+      "noCoastGuard": "Auf Flüssen und Seen greift die Küstenwache nicht ein: Du brauchst ein eigenes Boot, das per Anhänger hinkommt.",
+      "buyBase": "Wasserrettungsstation kaufen",
+      "buyBoat": "Boot kaufen"
+    },
+    "requirements": {
+      "water": "Auf dem Wasser",
+      "waterHint": "Boote und Luftfahrzeuge, am Einsatzpunkt",
+      "shore": "An Land",
+      "shoreHint": "Landfahrzeuge, am Sammelpunkt",
+      "coastGuard": "Küstenwache"
+    },
+    "dispatch": {
+      "toScene": "Auf dem Wasser",
+      "toMeetingPoint": "Zum Sammelpunkt",
+      "route": {
+        "DIRECT": "legt vom Liegeplatz ab",
+        "TRAILER": "per Anhänger, Einsetzen bei {place}",
+        "BANK": "per Anhänger, Einsetzen vom Ufer"
+      },
+      "launchPoint": "einer Einsetzstelle",
+      "legs": "{road} auf der Straße, {water} auf dem Wasser",
+      "landAtWater": "Bringt am Sammelpunkt nichts Nötiges: Die Rettung auf dem Wasser braucht ein Boot",
+      "boatOnLand": "Ein Boot erreicht keinen Einsatz an Land"
+    },
+    "shop": {
+      "title": "Wo die Boote stehen",
+      "body": "Boote werden nur in einer Wasserrettungsstation gehalten, im Hafen, an der Uferpromenade oder an einem See. Auf demselben Gewässer legen sie direkt vom Liegeplatz ab; Flüsse und andere Seen erreichen sie per Anhänger.",
+      "none": "Du hast noch keine Wasserrettungsstation.",
+      "fromLevel": "ab Level {level}",
+      "bases": "Deine Wasserrettungsstationen",
+      "building": "Im Bau",
+      "berths": "{free, plural, =0 {Liegeplätze voll} one {# Liegeplatz frei von {total}} other {# Liegeplätze frei von {total}}}",
+      "legacyMove": "{count, plural, one {Ein Boot steht noch in einer Wache: Verlege es kostenlos in die Wasserrettungsstation.} other {# Boote stehen noch in einer Wache: Verlege sie kostenlos in die Wasserrettungsstation.}}",
+      "legacyKeep": "{count, plural, one {Ein Boot steht noch in einer Wache: Es bleibt einsatzbereit, und mit einer Wasserrettungsstation verlegst du es kostenlos.} other {# Boote stehen noch in einer Wache: Sie bleiben einsatzbereit, und mit einer Wasserrettungsstation verlegst du sie kostenlos.}}",
+      "buyBase": "Wasserrettungsstation kaufen",
+      "buyAnotherBase": "Weitere Wasserrettungsstation",
+      "showSites": "Nautische Standorte auf der Karte",
+      "noFacility": "Du brauchst eine Wasserrettungsstation: Boote stehen nicht in Wachen.",
+      "noBerth": "Liegeplätze voll: Verlängere den Steg deiner Wasserrettungsstation.",
+      "pier": "Steg verlängern"
+    },
+    "site": {
+      "badge": "Nautischer Standort",
+      "badgeNamed": "Nautischer Standort · {name}",
+      "filter": "Nautisch",
+      "listHint": "Häfen, Uferpromenaden und Seen: der einzige Ort für eine Wasserrettungsstation und für Boote.",
+      "candidate": "Verfügbarer nautischer Standort",
+      "mapTitle": "Nautische Standorte",
+      "mapHint": "{count, plural, =0 {Kein nautischer Standort in der Nähe} one {# nautischer Standort: Tippe darauf für die Wasserrettungsstation} other {# nautische Standorte: Tippe auf einen für die Wasserrettungsstation}}",
+      "conditionsTitle": "Wasserrettungsstation: Bedingungen",
+      "price": "Kosten",
+      "level": "Ab Level {level}",
+      "berths": "{count, plural, one {# Bootsplatz} other {# Bootsplätze}}, bis zu {max} mit dem Steg",
+      "hosts": "Nimmt die Boote von Feuerwehr, Rettungsdienst und Polizei auf",
+      "water": "Liegeplatz auf: {name}",
+      "berthOnWater": "Liegeplatz auf dem Wasser: Die Boote legen hier ab"
+    },
+    "facility": {
+      "title": "Wasserrettungsstation",
+      "water": "Wasserrettungsstation auf: {name}",
+      "berths": "Belegte Liegeplätze: {used} von {total}",
+      "howItWorks": "Auf demselben Gewässer legen die Boote direkt vom Liegeplatz ab; Flüsse und andere Seen erreichen sie per Anhänger bis zu einer Einsetzstelle. Der Steg bringt weitere Liegeplätze.",
+      "buyBoat": "Boot kaufen"
+    },
+    "transfer": {
+      "offer": "Kostenlos zur Wasserrettungsstation verlegen",
+      "hint": "Dieses Boot steht noch in einer Wache: Verlege es kostenlos nach {facility}.",
+      "noBerth": "Boot noch in einer Wache: Mach einen Liegeplatz frei oder verlängere den Steg, um es kostenlos in die Wasserrettungsstation zu verlegen.",
+      "noBase": "Boot noch in einer Wache: Es bleibt einsatzbereit. Mit einer Wasserrettungsstation verlegst du es kostenlos.",
+      "buyBase": "Wasserrettungsstation kaufen",
+      "onlyAvailable": "Es wird verlegt, sobald es an seinem Standort verfügbar ist.",
+      "done": "{callSign} wird nach {facility} verlegt",
+      "boatOnly": "Boote stehen nur in einer Wasserrettungsstation"
+    },
+    "fleet": {
+      "movable": "Kostenlos verlegbar",
+      "legacy": "In der Wache"
+    },
+    "errors": {
+      "NEEDS_NAUTICAL_BASE": "Boote stehen nur in einer Wasserrettungsstation: Kaufe eine an einem nautischen Standort.",
+      "NAUTICAL_SITE_REQUIRED": "Eine Wasserrettungsstation lässt sich nur an einem nautischen Standort eröffnen: Hafen, Uferpromenade oder See.",
+      "NO_ROOM_WATER": "Liegeplätze voll in dieser Wasserrettungsstation ({used} von {total}): Verlängere den Steg.",
+      "NO_ROOM": "Kein freier Platz an diesem Standort ({used} von {total}): {upgrade}.",
+      "INCOMPATIBLE_FACILITY": "Dieser Standort kann dieses Fahrzeug nicht aufnehmen.",
+      "FACILITY_NOT_OPERATIONAL": "Der Standort ist noch im Bau: Du kannst ihn nutzen, sobald er einsatzbereit ist."
+    },
+    "upgrade": {
+      "GARAGE": "erweitere die Fahrzeughalle",
+      "HELIPAD": "baue den Hubschrauberlandeplatz"
+    },
+    "fix": {
+      "title": "Vorgang nicht möglich",
+      "buyBase": "Wasserrettungsstation kaufen",
+      "showNauticalSites": "Nautische Standorte zeigen",
+      "pier": "Steg verlängern",
+      "garage": "Fahrzeughalle erweitern",
+      "helipad": "Hubschrauberlandeplatz bauen",
+      "newFacility": "Standort erwerben",
+      "facility": "Standort öffnen"
+    }
+  },
+  "game": {
+    "dispatch": {
+      "chain": {
+        "reason": {
+          "BOAT_NEEDS_BASE": "Muss zuerst zu seiner Wasserrettungsstation zurück"
+        }
+      }
+    }
+  }
+}

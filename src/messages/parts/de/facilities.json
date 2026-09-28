@@ -95,7 +95,8 @@
     "detail": {
       "upgradesAfterConstruction": "Erweiterungen sind möglich, sobald der Standort einsatzbereit ist.",
       "capsHint": "Die Höchststufen hängen vom Standorttyp ab ({type}): Werte ihn auf, um sie zu erhöhen.",
-      "notOperational": "Verfügbar, sobald der Standort einsatzbereit ist"
+      "notOperational": "Verfügbar, sobald der Standort einsatzbereit ist",
+      "showOnMap": "Auf der Karte zeigen"
     }
   },
   "notifications": {

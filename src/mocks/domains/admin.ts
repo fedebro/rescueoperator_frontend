@@ -373,7 +373,7 @@ export function pointInPolygon(point: LngLat, polygon: readonly LngLat[]): boole
 /** Pushes the current world context to every career so that open game clients update without a reload. */
 export function broadcastWorld(engine: MockEngine): void {
   for (const career of Object.values(engine.state.careers))
-    engine.emit(career, 'world.updated', { world: engine.snapshot(career).world });
+    engine.emit(career, 'world.updated', { world: engine.world(career) });
 }
 export function createClosure(
   engine: MockEngine,

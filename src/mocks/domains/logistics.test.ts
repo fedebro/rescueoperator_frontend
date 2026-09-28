@@ -25,6 +25,7 @@ import {
   quoteOrder,
   wearDelta,
 } from './logistics';
+import { autonomyOf, installAutonomy } from './autonomy';
 
 function world(opts: { level?: number; credits?: number; random?: () => number } = {}) {
   let now = Date.parse('2026-03-01T09:00:00.000Z');
@@ -38,6 +39,7 @@ function world(opts: { level?: number; credits?: number; random?: () => number }
     random: opts.random ?? (() => (seed = (seed * 16807) % 2147483647) / 2147483647),
   });
   installLogistics(engine);
+  installAutonomy(engine);
   installQa(engine);
   const advance = (ms: number, step = 250) => {
     for (let t = 0; t < ms; t += step) {
@@ -134,40 +136,64 @@ describe('inventory', () => {
     for (const item of w.domain.itemTypes(w.career)) ItemTypeDto.parse(item);
   });
 
-  it('reserves at dispatch, consumes at mission end and never lets stock go negative', () => {
+  it('a mission consumes from the stock ON BOARD (D-22): nothing is reserved on the shelf, which is never negative', () => {
     const w = world({ level: 3 });
     w.domain.ensureStock(w.career);
-    const incident = w.engine.spawnIncident(w.career, 'FIRE_VEHICLE', false, { severity: 3 });
+    const incident = w.engine.spawnIncident(w.career, 'FIRE_VEHICLE', false, { severity: 1 });
     w.engine.dispatch(w.career, incident.id, [w.vehicle().id]);
     const foam = () => logisticsState(w.career).stock[w.vehicle().facilityId]!.FOAM!;
-    expect(foam().reserved).toBe(20); // base 5 + 5 × severity 3
-    expect(w.events.some((e) => e.type === 'inventory.updated')).toBe(true);
+    expect(foam()).toMatchObject({ quantity: 100, reserved: 0 });
     w.advance(600_000, 1000);
     expect(w.career.incidents).toHaveLength(0);
-    expect(foam().reserved).toBe(0);
-    expect(foam().quantity).toBeLessThan(100);
-    expect(foam().quantity).toBeGreaterThanOrEqual(80);
+    // base 5 + 5 × severity 1 = 10 units × the conditions (day, clear sky, maybe low coverage: at most × 1.8)
+    const onboard = w.vehicle().autonomy!.items.find((i) => i.itemCode === 'FOAM')!;
+    expect(onboard.capacity).toBe(45);
+    expect(45 - onboard.quantity).toBeGreaterThanOrEqual(10);
+    expect(45 - onboard.quantity).toBeLessThanOrEqual(18);
+    // 27+ units left > 35 % of 45: no stop, the vehicle is ready at once and the shelf was never touched.
+    expect(w.vehicle().status).toBe('AVAILABLE');
+    expect(foam()).toMatchObject({ quantity: 100, reserved: 0 });
     const history = w.domain.history(w.career, w.vehicle().id);
-    expect(history.map((h) => h.kind)).toEqual(expect.arrayContaining(['MISSION', 'RESTOCKED']));
+    expect(history.map((h) => h.kind)).toContain('MISSION');
+    expect(history.map((h) => h.kind)).not.toContain('RESTOCKED');
     for (const h of history) VehicleHistoryEntry.parse(h);
   });
 
-  it('releases the reservation of a cancelled incident without consuming', () => {
+  it('a cancelled incident consumes nothing', () => {
     const w = world({ level: 3 });
     const incident = w.engine.spawnIncident(w.career, 'FIRE_VEHICLE', false, { severity: 3 });
     w.engine.dispatch(w.career, incident.id, [w.vehicle().id]);
     w.engine.close(w.career, w.career.incidents[0]!, 'CANCELLED', w.now());
     const foam = logisticsState(w.career).stock[w.vehicle().facilityId]!.FOAM!;
     expect(foam).toMatchObject({ quantity: 100, reserved: 0 });
+    expect(w.vehicle().autonomy!.items.find((i) => i.itemCode === 'FOAM')!.quantity).toBe(45);
+  });
+
+  it('a resupply stop moves units shelf → vehicle and writes the history', () => {
+    const w = world({ level: 3 });
+    autonomyOf(w.engine).setAutonomy(w.career, w.vehicle().id, { stock: { FOAM: 16 } });
+    const incident = w.engine.spawnIncident(w.career, 'FIRE_VEHICLE', false, { severity: 1 });
+    w.engine.dispatch(w.career, incident.id, [w.vehicle().id]);
+    const foam = () => logisticsState(w.career).stock[w.vehicle().facilityId]!.FOAM!;
+    w.advance(300_000, 250);
+    // Whatever the mission took, the stop reloaded the vehicle to full from the shelf.
+    expect(w.vehicle().autonomy!.items.find((i) => i.itemCode === 'FOAM')!.quantity).toBe(45);
+    expect(foam().quantity).toBeLessThan(100);
+    expect(foam().quantity).toBeGreaterThanOrEqual(100 - 45);
+    expect(w.domain.history(w.career, w.vehicle().id).map((h) => h.kind)).toContain('RESTOCKED');
+    expect(w.events.some((e) => e.type === 'inventory.updated')).toBe(true);
   });
 
   it('missing stock warns on the dispatch option but never blocks the dispatch', () => {
     const w = world({ level: 3 });
     w.domain.drainStock(w.career, 'FOAM', 1000);
+    autonomyOf(w.engine).setAutonomy(w.career, w.vehicle().id, { stock: { FOAM: 0 } });
     const incident = w.engine.spawnIncident(w.career, 'FIRE_VEHICLE', false, { severity: 3 });
     const option = w.engine.dispatchOptions(w.career, incident.id).options[0]!;
     expect(option.dispatchable).toBe(true);
-    expect(option.warnings).toContain('INVENTORY_LOW');
+    // Empty on board AND on the shelf: nothing to reload before leaving, the vehicle goes as it is.
+    expect(option.warnings).toContain('STOCK_MISSING:FOAM');
+    expect(option.warnings).not.toContain('RESUPPLY_BEFORE_DEPARTURE');
     expect(() => w.engine.dispatch(w.career, incident.id, [w.vehicle().id])).not.toThrow();
     const total = w.career.incidents[0]!.work.total;
     w.advance(120_000, 1000);
@@ -177,6 +203,8 @@ describe('inventory', () => {
     w.advance(900_000, 1000);
     expect(w.career.incidents).toHaveLength(0);
     expect(logisticsState(w.career).stock[w.vehicle().facilityId]!.FOAM!.quantity).toBe(0);
+    // An empty shelf never forces a useless stop.
+    expect(w.vehicle().status).toBe('AVAILABLE');
   });
 
   it('notifies low stock once per cooldown', () => {

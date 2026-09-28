@@ -8,6 +8,10 @@
       "buttonLabel": "Help for this section"
     },
     "dismissPrimerLabel": "Dismiss this tip",
+    "primer": {
+      "more": "Learn more",
+      "less": "Show less"
+    },
     "gotIt": "Got it",
     "warningNextAction": {
       "hire": "Hire personnel",

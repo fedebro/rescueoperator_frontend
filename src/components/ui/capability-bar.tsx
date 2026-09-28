@@ -44,7 +44,7 @@ export function CapabilityBar({
         <span className="text-fg min-w-0 flex-1 truncate font-semibold">{label}</span>
         <span
           className={cn(
-            'rounded-sm px-1 text-[10px] font-bold tracking-wide uppercase',
+            'rounded-sm px-1 text-xs font-bold tracking-wide uppercase',
             level === 'REQUIRED'
               ? 'bg-brand-soft text-brand-hover'
               : level === 'RECOMMENDED'

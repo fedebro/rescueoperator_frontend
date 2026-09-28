@@ -8,6 +8,10 @@
       "buttonLabel": "Aide pour cette section"
     },
     "dismissPrimerLabel": "Ignorer cette astuce",
+    "primer": {
+      "more": "En savoir plus",
+      "less": "Réduire"
+    },
     "gotIt": "Compris",
     "warningNextAction": {
       "hire": "Recruter du personnel",

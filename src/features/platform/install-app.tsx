@@ -9,21 +9,30 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { installMode, isIosDevice, isStandalone, promptInstall, usePwaStore, type InstallMode } from './pwa';
+import { isInAppBrowser } from './in-app-browser';
 
 /** Install availability for this device, resolved on the client only (SSR renders "unavailable"). */
 const noopSubscribe = () => () => undefined;
-const clientDevice = (): 'standalone' | 'ios' | 'other' =>
+const clientDevice = (): 'standalone' | 'in-app' | 'ios' | 'other' =>
   isStandalone()
     ? 'standalone'
-    : isIosDevice(navigator.userAgent, navigator.maxTouchPoints)
-      ? 'ios'
-      : 'other';
+    : isInAppBrowser(navigator.userAgent)
+      ? 'in-app'
+      : isIosDevice(navigator.userAgent, navigator.maxTouchPoints)
+        ? 'ios'
+        : 'other';
 
 export function useInstallMode(): InstallMode {
   const hasPrompt = usePwaStore((s) => s.deferred !== null);
   const installed = usePwaStore((s) => s.installed);
   const device = React.useSyncExternalStore(noopSubscribe, clientDevice, () => 'other' as const);
-  return installMode({ hasPrompt, installed, standalone: device === 'standalone', ios: device === 'ios' });
+  return installMode({
+    hasPrompt,
+    installed,
+    standalone: device === 'standalone',
+    ios: device === 'ios',
+    inApp: device === 'in-app',
+  });
 }
 
 /** iOS has no programmatic prompt: explain the two taps. */
@@ -87,12 +96,14 @@ export function InstallAppSetting() {
     <div className="flex items-center justify-between gap-4 py-3" data-testid="install-app-setting">
       <div className="min-w-0">
         <p className="text-sm font-semibold">{t('title')}</p>
-        <p className="text-muted text-xs">
+        <p className="text-muted text-xs" data-testid="install-app-hint" data-mode={mode}>
           {mode === 'installed'
             ? t('installedHint')
-            : mode === 'unavailable'
-              ? t('unavailableHint')
-              : t('hint')}
+            : mode === 'in-app'
+              ? t('inAppHint')
+              : mode === 'unavailable'
+                ? t('unavailableHint')
+                : t('hint')}
         </p>
       </div>
       <div className="shrink-0">
@@ -105,7 +116,7 @@ export function InstallAppSetting() {
           <Button
             variant="secondary"
             className="h-11 lg:h-10"
-            disabled={mode === 'unavailable'}
+            disabled={mode === 'unavailable' || mode === 'in-app'}
             onClick={() => void start()}
             data-testid="install-app-button"
           >

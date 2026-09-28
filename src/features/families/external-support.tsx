@@ -1,6 +1,7 @@
 'use client';
+import * as React from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Ban, CheckCircle2, Coins, Construction, Hammer, LifeBuoy, PhoneCall } from 'lucide-react';
+import { Ban, CheckCircle2, Coins, Construction, Hammer, Info, LifeBuoy, PhoneCall } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { IncidentDto } from '@/contracts';
 import { formatTime } from '@/lib/format';
@@ -42,7 +43,7 @@ function UnitRow({ unit }: { unit: Unit }) {
         <span className="min-w-0 flex-1 truncate text-sm font-semibold">{tx(type?.name ?? unit.name)}</span>
         <span
           className={cn(
-            'inline-flex h-6 shrink-0 items-center gap-1 rounded-full border px-2 text-[11px] font-semibold',
+            'inline-flex h-6 shrink-0 items-center gap-1 rounded-full border px-2 text-xs font-semibold',
             visual.className,
           )}
         >
@@ -70,7 +71,9 @@ function UnitRow({ unit }: { unit: Unit }) {
 /**
  * Two jobs inside the incident inspector:
  *  - before/while the player works: tells which families of a mixed incident are still locked → covered by external
- *    support, so the player only dispatches for the services they manage;
+ *    support, so the player only dispatches for the services they manage. A one-line chip ("Polizia: supporto
+ *    esterno ⓘ") whose explanation opens on tap — it used to be a paragraph pushing the send button off screen
+ *    (03 §2.4);
  *  - while the incident is RESOLVING: the "external support" phase — system units (UNG) finishing the job. The reward
  *    was already paid (`rewardedAt`); units are never dispatchable nor speed-up targets.
  */
@@ -79,6 +82,8 @@ export function IncidentExternalSupport({ incident }: { incident: IncidentDto })
   const name = useCatalogName();
   const locale = useLocale();
   const { career } = useSnapshot();
+  const [infoOpen, setInfoOpen] = React.useState(false);
+  const infoId = React.useId();
   const external = (incident.externalFamilies ?? []).filter((f) => f !== 'UNG');
   const units = incident.externalSupport ?? [];
   const resolving = incident.status === 'RESOLVING';
@@ -88,7 +93,7 @@ export function IncidentExternalSupport({ incident }: { incident: IncidentDto })
   );
   return (
     <section
-      className="border-border flex flex-col gap-3 border-b p-4"
+      className={cn('border-border flex flex-col gap-3 border-b', resolving ? 'p-4' : 'px-4 py-2')}
       aria-label={t('support.title')}
       data-testid="external-support"
       data-phase={resolving ? 'RESOLVING' : 'NOTICE'}
@@ -118,13 +123,30 @@ export function IncidentExternalSupport({ incident }: { incident: IncidentDto })
         </>
       ) : null}
       {external.length > 0 ? (
-        <p
-          className="border-info/40 bg-info/10 text-fg flex items-start gap-2 rounded-md border px-3 py-2 text-xs leading-relaxed"
-          data-testid="external-families-notice"
-        >
-          <LifeBuoy className="text-info mt-0.5 size-4 shrink-0" aria-hidden />
-          <span>{t('external.notice', { count: external.length, families: familyNames })}</span>
-        </p>
+        <div className="flex flex-col gap-1.5">
+          <button
+            type="button"
+            onClick={() => setInfoOpen((o) => !o)}
+            aria-expanded={infoOpen}
+            aria-controls={infoId}
+            className="border-info/40 bg-info/10 text-fg hover:bg-info/15 inline-flex min-h-11 max-w-full items-center gap-2 self-start rounded-full border px-3 text-left text-xs font-semibold lg:min-h-9"
+            data-testid="external-families-notice"
+          >
+            <LifeBuoy className="text-info size-4 shrink-0" aria-hidden />
+            <span className="min-w-0 truncate">{t('external.chip', { families: familyNames })}</span>
+            <Info className="text-muted size-4 shrink-0" aria-hidden />
+            <span className="sr-only">{t('external.chipInfo')}</span>
+          </button>
+          {infoOpen ? (
+            <p
+              id={infoId}
+              className="text-muted text-xs leading-relaxed"
+              data-testid="external-families-info"
+            >
+              {t('external.notice', { count: external.length, families: familyNames })}
+            </p>
+          ) : null}
+        </div>
       ) : null}
     </section>
   );

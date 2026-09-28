@@ -17,7 +17,8 @@ export interface MixedSpawn {
 export function pickMixedTemplate(career: MockCareer): { code: string; severity: number } | null {
   const { level, unlockedFamilies } = career.summary;
   for (const t of INCIDENT_TEMPLATES) {
-    if (t.tutorial || t.minLevel > level || !unlockedFamilies.includes(t.primaryFamily)) continue;
+    // A land incident: a water one would need a boat or the Coast Guard (another story, see domains/water.ts).
+    if (t.tutorial || t.water || t.minLevel > level || !unlockedFamilies.includes(t.primaryFamily)) continue;
     if (!t.families.some((f) => f !== 'UNG' && !unlockedFamilies.includes(f))) continue;
     for (let severity = t.severity[0]; severity <= t.severity[1]; severity++) {
       const band = bandFor(t, severity);

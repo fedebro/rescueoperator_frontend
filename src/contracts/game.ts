@@ -80,6 +80,25 @@ export const CreateCareerBody = z.object({ locationId: z.string(), siteId: publi
 
 export const CapabilityValue = z.object({ code: z.string(), value: z.number().int().min(0) });
 
+/* ── water (D-23 [U] / D-68 [C], analisi/note-agenti/water-backend.md) ── */
+
+/** Water body kinds of the geodata (schema 1.1.0): open sea, lake / reservoir, river / canal. */
+export const WaterBodyKind = z.enum(['SEA', 'LAKE', 'RIVER']);
+export type WaterBodyKind = z.infer<typeof WaterBodyKind>;
+
+/**
+ * A nautical site / a Base nautica (D-23: boats live only in a "Base nautica", bought on nautical sites — harbours, seafront,
+ * main lakes). `position` of the site/facility stays the road-side point; the boats start from `berth`, on the water.
+ */
+export const SiteNauticalDto = z.object({
+  waterBody: WaterBodyKind.exclude(['RIVER']),
+  /** Stable water body id (`sea:adriatic`, `lake:osm:w17671525`…): a base serves incidents on the same body directly. */
+  waterBodyId: z.string(),
+  waterBodyName: z.string().nullable(),
+  berth: LngLat,
+});
+export type SiteNauticalDto = z.infer<typeof SiteNauticalDto>;
+
 export const CareerSummary = z.object({
   id: publicId(IdPrefix.career),
   directorName: z.string(),
@@ -117,8 +136,25 @@ export const FacilityDto = z.object({
   /** UNDER_CONSTRUCTION until this instant (acquired facilities). */
   operationalAt: IsoDateTime.nullable().optional(),
   promotion: z.object({ toTypeCode: z.string(), completeAt: IsoDateTime }).nullable().optional(),
+  /** Additive (water): set on a Base nautica — its water body and the berth on the water its boats start from. */
+  nautical: SiteNauticalDto.nullable().optional(),
 });
 export type FacilityDto = z.infer<typeof FacilityDto>;
+
+/**
+ * One piece of a boat's mixed leg (additive, D-68): `ROAD` = on the trailer by road (draw solid), `LAUNCH` / `RECOVERY` =
+ * stationary at a launch point while the boat is put into / taken out of the water, `WATER` = straight line on the water
+ * (draw dashed). Segments tile the movement: the first departs at `movement.departAt`, the last arrives at `arriveAt`.
+ */
+export const MovementSegmentDto = z.object({
+  mode: z.enum(['ROAD', 'LAUNCH', 'WATER', 'RECOVERY']),
+  /** ≥ 2 points for ROAD/WATER; a single point (where it stands) for LAUNCH/RECOVERY. */
+  path: z.array(LngLat).min(1),
+  departAt: IsoDateTime,
+  arriveAt: IsoDateTime,
+  distanceMeters: z.number(),
+});
+export type MovementSegmentDto = z.infer<typeof MovementSegmentDto>;
 
 /** A movement leg the client interpolates: position = along(path, (now-departAt)/(arriveAt-departAt)). */
 export const MovementDto = z.object({
@@ -127,8 +163,54 @@ export const MovementDto = z.object({
   arriveAt: IsoDateTime,
   distanceMeters: z.number(),
   purpose: z.enum(['TO_INCIDENT', 'TO_HOSPITAL', 'TO_BASE', 'DELIVERY', 'RECOVERY', 'TO_WATER_SOURCE', 'TAXIING', 'PATROLLING']),
+  /**
+   * Additive (water): a boat's leg by trailer + launch + water (or back). When present, interpolate inside the segment that
+   * contains `now` instead of along the whole `path` (the road and the water parts do not move at the same speed, and the
+   * launch is a pause). Absent for every other vehicle.
+   */
+  segments: z.array(MovementSegmentDto).optional(),
 });
 export type MovementDto = z.infer<typeof MovementDto>;
+
+/**
+ * Vehicle autonomy (D-22 [U] / D-67, additive): onboard stock + fuel in game km, and the ONE resupply rule evaluated now.
+ * Labels ship in the catalog i18n bundle under `autonomy.*` (e.g. `autonomy.fuel`, `autonomy.missionsLeft` with `{count}`).
+ */
+export const VehicleAutonomyDto = z.object({
+  /** Which halves are active for this career: onboard stock from level 2, fuel from level 3 (config `depth.autonomy`). */
+  unlocked: z.object({ stock: z.boolean(), fuel: z.boolean() }),
+  /** `null` while fuel is not tracked for this vehicle: locked by level (fuel from level 3), foot teams. */
+  fuel: z.object({
+    /** Autonomy left in `unit` (one decimal): game km, or minutes of flight for helicopters and the AIB plane. */
+    km: z.number(),
+    /** A full tank in `unit`. */
+    rangeKm: z.number(),
+    /** km / rangeKm, 0..1. */
+    ratio: z.number(),
+    /**
+     * Under the reserve light (fuelReserveRatio). For an aircraft the reserve it never flies into: over the scene it turns
+     * back to refuel when the endurance left is the flight home + this reserve.
+     */
+    reserve: z.boolean(),
+    /** Under the resupply threshold: the next stop at base refuels. */
+    low: z.boolean(),
+    /**
+     * Additive (flight endurance, analisi/note-agenti/air-endurance.md): the unit of `km` / `rangeKm` — `KM` (game km of a
+     * road/water tank) or `MIN` (REAL minutes of flight of a helicopter / the AIB plane; label `autonomy.flight`, value
+     * `autonomy.flightMinutes` with `{count}`). Absent = `KM`.
+     */
+    unit: z.enum(['KM', 'MIN']).optional(),
+  }).nullable(),
+  /** One line per item carried at this level (empty below level 2, or for a vehicle that carries nothing). */
+  items: z.array(z.object({ itemCode: z.string(), quantity: z.number().int(), capacity: z.number().int(), low: z.boolean() })),
+  /** Average missions left before the next resupply stop (the minimum over fuel and items); `null` when nothing is tracked. */
+  missionsLeftEstimate: z.number().int().nullable(),
+  /** The single resupply rule, now: true = the next stop at base resupplies (items that the shelf can refill, or fuel). */
+  needsResupply: z.boolean(),
+  /** A manual "return to resupply" is pending: applied at the next stop at base. */
+  resupplyRequested: z.boolean(),
+});
+export type VehicleAutonomyDto = z.infer<typeof VehicleAutonomyDto>;
 
 export const VehicleDto = z.object({
   id: publicId(IdPrefix.vehicle),
@@ -146,6 +228,8 @@ export const VehicleDto = z.object({
   healthBand: HealthBand,
   crew: z.object({ min: z.number().int(), optimal: z.number().int(), assigned: z.number().int() }),
   busyUntil: IsoDateTime.nullable(),
+  /** Autonomy (additive, D-22): always present with the YAML catalog; absent only without depth content (core-loop tests). */
+  autonomy: VehicleAutonomyDto.optional(),
 });
 export type VehicleDto = z.infer<typeof VehicleDto>;
 
@@ -159,6 +243,13 @@ export const IncidentRequirementDto = z.object({
   family: ServiceFamily.nullable().optional(),
   /** True while that family is locked for the career: the need is covered by external support and ignored in coverage. */
   external: z.boolean().optional(),
+  /** Additive (water): who covers an `external` need — `FAMILY` (service locked / not owned yet) or `COAST_GUARD` (no boat able to do the water part). */
+  externalSource: z.enum(['FAMILY', 'COAST_GUARD', /* major incidents: fully covered by an external reinforcement column */ 'REINFORCEMENTS']).nullable().optional(),
+  /**
+   * Additive (water incidents only): where this need is served — `WATER` on the scene (boats, aircraft) or `SHORE` at the
+   * meeting point (land units deliver only their shore-side capabilities there). Absent on land incidents.
+   */
+  side: z.enum(['WATER', 'SHORE']).optional(),
 });
 
 /** System unit (UNG) requested while the incident is RESOLVING. It never blocks the player's reward. */
@@ -171,6 +262,33 @@ export const ExternalSupportDto = z.object({
   completeAt: IsoDateTime,
   keepsRoadClosed: z.boolean(),
 });
+
+/* ── major incidents (D-24 [U] / D-69 [C], analisi/note-agenti/major-incidents.md) — the full DTO lives in major.ts ── */
+
+/** Phases of a major incident: ALARM → CONTAINMENT → RESCUE → SECURING, then ENDED. Labels: catalog bundle `major.phase.<P>.name`. */
+export const MajorPhase = z.enum(['ALARM', 'CONTAINMENT', 'RESCUE', 'SECURING', 'ENDED']);
+export type MajorPhase = z.infer<typeof MajorPhase>;
+/** `MAIN` = the main scene, `SUB` = a linked incident spawned around it (phase, growth or a catalog secondary). */
+export const MajorMemberRole = z.enum(['MAIN', 'SUB']);
+export type MajorMemberRole = z.infer<typeof MajorMemberRole>;
+/**
+ * Compact reference carried by every incident that belongs to a major incident (`IncidentDto.major`): enough to badge the
+ * incident card, draw the event area and the link lines on the map, and open `GET /major-incidents/:id` for the full view.
+ */
+export const MajorIncidentRefDto = z.object({
+  id: publicId(IdPrefix.majorIncident),
+  scenarioCode: z.string(),
+  title: I18nText,
+  role: MajorMemberRole,
+  phase: MajorPhase,
+  /** The main scene (null only in the instant before it exists). */
+  mainIncidentId: publicId(IdPrefix.incident).nullable(),
+  /** 0 = main scene, 1…n = linked incidents in creation order (label `major.sector.sub` with `{count}`). */
+  sector: z.number().int(),
+  center: LngLat,
+  areaRadiusMeters: z.number().int(),
+});
+export type MajorIncidentRefDto = z.infer<typeof MajorIncidentRefDto>;
 
 export const IncidentDto = z.object({
   id: publicId(IdPrefix.incident),
@@ -207,6 +325,35 @@ export const IncidentDto = z.object({
   externalSupport: z.array(ExternalSupportDto).optional(),
   /** Set once the reward was paid (an incident may stay RESOLVING afterwards while system units finish). */
   rewardedAt: IsoDateTime.nullable().optional(),
+  /* ── additive (water scene, D-68 — analisi/note-agenti/water-backend.md) ── */
+  /** `WATER`: the incident is on the water (sea, lake, river): draw the marker at `scenePosition`, show the water badge. */
+  domain: z.enum(['LAND', 'WATER']).optional(),
+  /** The water body of the scene (`id`/`name` null for water incidents created before the water geodata). Null on land. */
+  waterBody: z.object({ type: WaterBodyKind, id: z.string().nullable(), name: z.string().nullable() }).nullable().optional(),
+  /**
+   * Where the incident really is — the map marker, where boats and aircraft go. For a water incident a point on the water;
+   * for a land incident the same as `position`.
+   */
+  scenePosition: LngLat.optional(),
+  /**
+   * Water incidents: the meeting point on the shore road where land units stop and the boat lands the rescued (= `position`,
+   * which keeps meaning "where land units are routed"). Null on land incidents.
+   */
+  meetingPoint: LngLat.nullable().optional(),
+  /**
+   * Display line of the place, coherent with the radio text: water incidents "Al largo di <address>" / "<lake>, davanti a …"
+   * / "<river>, all'altezza di …" (catalog bundle `water.place.*`, params `place`, `water`). Absent on land incidents: show `address`.
+   */
+  placeText: I18nText.optional(),
+  /**
+   * External support on the water (D-68): the career has no boat able to do the water part, so the Coast Guard covers the
+   * listed capabilities (their requirements are `external`, `externalSource: 'COAST_GUARD'`). The land part at the meeting
+   * point stays the player's; the reward is multiplied by `rewardShare`; never an automatic failure. Null otherwise.
+   */
+  waterSupport: z.object({ provider: z.literal('COAST_GUARD'), name: I18nText, capabilities: z.array(z.string()), rewardShare: z.number() }).nullable().optional(),
+  /* ── additive (major incidents, D-24/D-69) ── */
+  /** Set when the incident belongs to a major incident (main scene or linked incident); null/absent otherwise. */
+  major: MajorIncidentRefDto.nullable().optional(),
 });
 export type IncidentDto = z.infer<typeof IncidentDto>;
 
@@ -232,6 +379,55 @@ export const DispatchOption = z.object({
     restUntilSeconds: z.number().nullable(),
   }).optional(),
   /**
+   * Autonomy for THIS incident (additive, D-22). Present for AVAILABLE vehicles once the stock or fuel half is unlocked.
+   * Matching `warnings`: `RESUPPLY_BEFORE_DEPARTURE` (at base, reloads first — time already in `etaSeconds`),
+   * `FUEL_RESERVE` (away from base without fuel for there + back), `FUEL_RANGE_INSUFFICIENT` (too far even with a full
+   * tank), `LAST_MISSION_BEFORE_RESUPPLY`. The first three keep the vehicle out of the recommendation, never out of reach.
+   * Aircraft (flight endurance, `fuelUnit: 'MIN'`): `FUEL_RANGE_INSUFFICIENT` = not enough endurance for there + back + a
+   * minimal time over the scene with the reserve intact (flagged, still selectable); when not even there and back fit, the
+   * option is not dispatchable at all: `blockedReason: 'ENDURANCE_INSUFFICIENT'` (label `autonomy.blocked.ENDURANCE_INSUFFICIENT`).
+   */
+  autonomy: z.object({
+    /**
+     * Fuel this incident needs, in `fuelUnit`: there + back to base + the on-scene estimate (game km). For an aircraft: there
+     * + back + the minimal time over the scene + the reserve (longer operations rotate: at its reserve the aircraft turns back
+     * to refuel and resumes). `null` = fuel not tracked.
+     */
+    fuelNeededKm: z.number().nullable(),
+    /** Fuel on board now, in `fuelUnit`. `null` = fuel not tracked. */
+    fuelKm: z.number().nullable(),
+    /** Enough fuel for there + back once the refuel-before-departure (if any) is done. */
+    enoughFuel: z.boolean(),
+    /** Real seconds of resupply at base before leaving (already included in `etaSeconds`); 0 = leaves straight away. */
+    resupplyBeforeDepartureSeconds: z.number().int(),
+    /** This mission would leave the vehicle needing a resupply stop afterwards. */
+    lastMissionBeforeResupply: z.boolean(),
+    /** Additive: unit of `fuelNeededKm` / `fuelKm` — `KM` or `MIN` (minutes of flight). Absent = `KM`. */
+    fuelUnit: z.enum(['KM', 'MIN']).optional(),
+    /**
+     * Additive (aircraft only): REAL minutes it can stay over the scene before turning back to refuel (after the refuel before
+     * departure, if any; label `autonomy.onSceneFor` with `{count}`). `null` = no limit or not an aircraft.
+     */
+    onSceneMinutes: z.number().nullable().optional(),
+  }).optional(),
+  /**
+   * Additive (water incidents only): where this vehicle would go — `SCENE` (boats, aircraft: the point on the water) or
+   * `MEETING_POINT` (land units: the shore road, where they deliver only their shore-side capabilities).
+   */
+  destination: z.enum(['SCENE', 'MEETING_POINT']).optional(),
+  /**
+   * Additive (boats only): how the boat gets there. `DIRECT` = from its berth on the same water; `TRAILER` = by road to a
+   * launch point (slipway, harbour or another Base nautica) on the incident's water, launched, then by water; `BANK` = by
+   * road to the bank next to the meeting point (rivers without a slipway nearby). The seconds are already in `etaSeconds`.
+   */
+  boatRoute: z.object({
+    kind: z.enum(['DIRECT', 'TRAILER', 'BANK']),
+    roadMeters: z.number(),
+    waterMeters: z.number(),
+    launchSeconds: z.number().int(),
+    launchPoint: z.object({ name: z.string().nullable(), position: LngLat }).nullable(),
+  }).optional(),
+  /**
    * Chaining (additive). Present for every vehicle that is NOT `AVAILABLE` right now and is on a mission or returning
    * (`PREPARING|EN_ROUTE|ON_SCENE|TRANSPORTING|AT_HOSPITAL|RETURNING|RESTOCKING`) — absent for `AVAILABLE` vehicles
    * (already fully described by the fields above) and for `MAINTENANCE|BROKEN_DOWN|BEING_RECOVERED|OUT_OF_SERVICE|IN_DELIVERY`.
@@ -243,14 +439,19 @@ export const DispatchOption = z.object({
     /** True only when the vehicle is `RETURNING` AND all three chaining conditions hold: calling `chain` now redirects it immediately. */
     redirectEligible: z.boolean(),
     /** Why `redirectEligible` is false: `VEHICLE_NOT_RETURNING` (still outbound/on scene/transporting — not yet at the fork in the road),
-     * `VEHICLE_INOPERABLE`, `MAINTENANCE_DUE`, `GROUNDED_BY_CONDITIONS`, `INVENTORY_NEEDS_RESTOCK`, or a crew reason
-     * (`CREW_INSUFFICIENT`/`CREW_UNQUALIFIED`/`CREW_EXHAUSTED`). `null` when `redirectEligible` is true. */
+     * `VEHICLE_RESTOCKING` (resupplying at base: queue only), `VEHICLE_INOPERABLE`, `MAINTENANCE_DUE`, `GROUNDED_BY_CONDITIONS`,
+     * `INVENTORY_NEEDS_RESTOCK` (the single resupply rule wants a stop at base for items the shelf can refill), `FUEL_RESERVE`
+     * (not enough fuel and no fuel station in reach), or a crew reason (`CREW_INSUFFICIENT`/`CREW_UNQUALIFIED`/`CREW_EXHAUSTED`).
+     * `null` when `redirectEligible` is true. */
     blockedReason: z.string().nullable(),
     /** Always true for a vehicle in the tracked set: `chain` always either redirects or queues. */
     queueable: z.boolean(),
-    /** Best-effort ISO instant this vehicle is expected to reach AVAILABLE on its own. Known precisely only while
-     * RETURNING (its planned return arrival, before any RESTOCKING stop); `null` otherwise (depends on future work). */
+    /** Best-effort ISO instant this vehicle is expected to reach AVAILABLE on its own: while RETURNING its planned return
+     * arrival PLUS the resupply stop the single rule predicts; while RESTOCKING the end of the stop; `null` otherwise. */
     availableAt: IsoDateTime.nullable(),
+    /** Phase 2 (additive): the redirect would first detour to a fuel station (fuel only). `extraSeconds` is already in the
+     * new leg's ETA; `premium` is the credit surcharge over the refilled km (refuelling at base is free). */
+    fuelStop: z.object({ extraSeconds: z.number().int(), premium: Amount }).nullable().optional(),
     /** This vehicle's crew projected through the current mission's fatigue load, against ITS OWN vehicle type's crew
      * requirement — the same `CrewPreview` shape used for an idle vehicle, so `efficiency` is directly comparable.
      * `null` when the personnel system is off. */
@@ -266,6 +467,11 @@ export const DispatchOptionsResult = z.object({
   options: z.array(DispatchOption),
   recommendedVehicleIds: z.array(publicId(IdPrefix.vehicle)),
   recommendationCoversRequired: z.boolean(),
+  /**
+   * Additive (major incidents): how many vehicles ONE dispatch command may send to this incident — the normal limit (12), more
+   * for the incidents of a major incident (24). The recommendation never lists more; a larger scene takes a second dispatch.
+   */
+  maxVehiclesPerDispatch: z.number().int().positive().optional(),
 });
 
 /** POST /careers/:id/incidents/:incidentId/dispatch (Idempotency-Key) */
@@ -289,6 +495,21 @@ export const ChainVehicleResult = z.object({
   /** Present when `mode === 'QUEUED'`: this vehicle's (only) queue slot. */
   queue: z.object({ incidentId: publicId(IdPrefix.incident), queuedAt: IsoDateTime }).optional(),
 });
+
+/**
+ * ★POST /careers/:id/vehicles/:vehicleId/resupply (Idempotency-Key, no body) — manual "return to resupply" (D-22 §3.4).
+ * `RESTOCKING`: at base, the stop started now (`until` = its end). `RETURNING_TO_BASE`: out on patrol, heads home at its next
+ * hop and resupplies there. `SCHEDULED_ON_RETURN`: on a mission's return leg, resupplies as soon as it is back.
+ * `ALREADY_FULL` / `ALREADY_RESUPPLYING`: nothing to do (replaying the command is harmless). Refused with
+ * `VEHICLE_NOT_AVAILABLE` (409) while the vehicle is committed to an incident or in the workshop.
+ */
+export const ResupplyVehicleResult = z.object({
+  mode: z.enum(['RESTOCKING', 'RETURNING_TO_BASE', 'SCHEDULED_ON_RETURN', 'ALREADY_FULL', 'ALREADY_RESUPPLYING']),
+  vehicle: VehicleDto,
+  /** End of the resupply stop when `mode` is RESTOCKING or ALREADY_RESUPPLYING. */
+  until: IsoDateTime.nullable(),
+});
+export type ResupplyVehicleResult = z.infer<typeof ResupplyVehicleResult>;
 
 export const IncidentOutcomeDto = z.object({
   incidentId: publicId(IdPrefix.incident),
@@ -319,6 +540,8 @@ export const VehicleTypeDto = z.object({
   unlocked: z.boolean(), lockedReason: z.string().nullable(),
   /* additive (wave 2a) */
   movement: z.enum(['ROAD', 'ROAD_TRAILER', 'AIR']).optional(), airSpeedKmh: z.number().nullable().optional(), sirenFactor: z.number().optional(),
+  /** Additive (water): cruise speed of a boat on the water, km/h; null for every other vehicle. */
+  waterSpeedKmh: z.number().nullable().optional(),
   preparationSeconds: z.number().optional(), tags: z.array(z.string()).optional(), shortName: I18nText.optional(),
   unlockConditions: z.array(z.record(z.unknown())).optional(),
 });
@@ -331,7 +554,11 @@ export const FacilityTypeDto = z.object({
   promotion: z.object({ to: z.string(), cost: Amount, buildSeconds: z.number().int(), requiredUpgradeLevels: z.record(z.number().int()) }).nullable().optional(),
   effects: z.array(z.record(z.unknown())).optional(), unlockConditions: z.array(z.record(z.unknown())).optional(),
 });
-export const CapabilityDto = z.object({ code: z.string(), name: I18nText, icon: z.string(), group: z.string().optional() });
+export const CapabilityDto = z.object({
+  code: z.string(), name: I18nText, icon: z.string(), group: z.string().optional(),
+  /** Additive (water): a land unit delivers it from the meeting point of a water incident; anything else needs a boat on the scene. */
+  shoreSide: z.boolean().optional(),
+});
 export const FacilityUpgradeTypeDto = z.object({
   code: z.string(), name: I18nText, description: I18nText, requiredLevel: z.number().int(), basePrice: Amount, costGrowth: z.number(), baseBuildSeconds: z.number().int(),
   buildGrowth: z.number(), maxLevel: z.number().int(), effect: z.object({ domain: z.string(), delta: z.number().int() }),
@@ -410,6 +637,8 @@ export const SyncSnapshot = z.object({
   unreadNotifications: z.number().int(),
   featureFlags: z.record(z.boolean()),
   configVersion: z.string(),
+  /** Additive (major incidents, D-24/D-69): the running major incident, if any — fetch `GET /major-incidents/current` for the full view. */
+  activeMajorIncidentId: publicId(IdPrefix.majorIncident).nullable().optional(),
 });
 export type SyncSnapshot = z.infer<typeof SyncSnapshot>;
 

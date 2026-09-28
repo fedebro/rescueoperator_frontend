@@ -33,6 +33,11 @@ test('section primer: shown on first visit, help reopens it on demand, gone for 
     await expect(primer).toBeVisible();
     await expect(primer).toHaveAttribute('data-section', 'personnel');
     await expect(primer).toContainText('Personale');
+    // Phones: one line until opened (03 §2.5).
+    if (isMobile(page)) {
+      await expect(primer).toHaveAttribute('data-compact', '');
+      await primer.getByTestId('section-primer-toggle').click();
+    }
     await expect(primer.getByRole('listitem').first()).toBeVisible();
   });
 
@@ -59,6 +64,45 @@ test('section primer: shown on first visit, help reopens it on demand, gone for 
     await expect(page.getByRole('heading', { name: 'Personale', level: 1 })).toBeVisible();
     await expect(page.getByTestId('section-primer')).toBeHidden();
   });
+});
+
+test('phones: the primer is a single line; opened, it is read — it closes by itself and never comes back', async ({
+  page,
+}, info) => {
+  test.skip(!isMobile(page), 'the one-line primer is the phone layout');
+  await bootCareer(page, info.project.name, { level: 1 });
+  await goTo(page, 'Sedi');
+  await expect(page.getByRole('heading', { name: 'Sedi', level: 1 })).toBeVisible();
+  const primer = page.getByTestId('section-primer');
+  await expect(primer).toHaveAttribute('data-section', 'facilities');
+  await expect(primer).toHaveAttribute('data-compact', '');
+  // One line, the size of a touch target: it never pushes the page's content off screen.
+  expect((await primer.boundingBox())!.height).toBeLessThanOrEqual(50);
+  await expect(primer.getByRole('listitem')).toHaveCount(0);
+
+  const toggle = primer.getByTestId('section-primer-toggle');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(primer.getByRole('listitem').first()).toBeVisible();
+  await primer.getByTestId('section-primer-done').click();
+  await expect(page.getByTestId('section-primer')).toHaveCount(0);
+
+  // Read once is enough: not on the next visit, not after a reload — the "?" still has it.
+  await goTo(page, 'Flotta');
+  await goTo(page, 'Sedi');
+  await expect(page.getByRole('heading', { name: 'Sedi', level: 1 })).toBeVisible();
+  await expect(page.getByTestId('section-primer')).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Sedi', level: 1 })).toBeVisible();
+  await expect(page.getByTestId('section-primer')).toHaveCount(0);
+  const help = page.getByTestId('section-help-facilities');
+  const box = (await help.boundingBox())!;
+  expect(box.width).toBeGreaterThanOrEqual(44);
+  expect(box.height).toBeGreaterThanOrEqual(44);
+  await help.click();
+  const dialog = page.getByRole('dialog', { name: 'Sedi' });
+  await expect(dialog.getByRole('listitem').first()).toBeVisible();
 });
 
 test('shop primer fires per newly-unlocked family; a still-locked family shows a coach mark instead', async ({
@@ -105,6 +149,8 @@ test('medical inside an incident: patients primer and hospital-transport coach m
   page,
 }, info) => {
   await bootCareer(page, info.project.name, { level: 6, credits: 5000 });
+  // A silent world: only this call, so the only report and the only toasts are its own.
+  await qa(page, 'quiet');
   await page.addLocatorHandler(page.getByTestId('outcome-modal'), async () => {
     await page.getByTestId('outcome-continue').click();
   });
@@ -122,6 +168,8 @@ test('medical inside an incident: patients primer and hospital-transport coach m
     await page.locator(`[data-testid="incident-card"][data-incident-id="${incidentId}"]`).click();
     const patients = page.getByTestId('incident-patients');
     await expect(patients).toBeVisible();
+    // The section starts collapsed ("Pazienti · 1 paziente"): its content, primer included, is one tap away.
+    await patients.getByTestId('patients-toggle').click();
     const primer = patients.getByTestId('section-primer');
     await expect(primer).toBeVisible();
     await expect(primer).toHaveAttribute('data-section', 'medical');
@@ -144,12 +192,16 @@ test('medical inside an incident: patients primer and hospital-transport coach m
     const mark = page.getByTestId('coach-mark');
     await expect(mark).toBeVisible();
     await expect(mark).toHaveAttribute('data-coach-id', 'hospitalTransport');
-    // Escape dismisses it from the keyboard, same as the close button.
-    await page.keyboard.press('Escape');
+    // Escape dismisses it from the keyboard, same as the close button. (Pressed through the transport panel, a locator
+    // action: the mission report, which may open at this very moment, is set aside first — a bare key press would
+    // close that dialog instead.)
+    await panel.press('Escape');
     await expect(mark).toBeHidden();
     // The confirm button underneath was never covered: it is still clickable right after.
     await panel.getByTestId('confirm-recommended-hospital').click();
-    await expect(page.locator('[data-testid="toast"][data-tone="success"]')).toBeVisible();
+    await expect(
+      page.locator('[data-testid="toast"][data-tone="success"]').filter({ hasText: 'in viaggio verso' }),
+    ).toBeVisible();
   });
 });
 
@@ -214,7 +266,7 @@ test('the "Suggerimenti attivi" toggle turns every primer off, and back on witho
     await expect(toggle).toHaveAttribute('aria-checked', 'true');
     await toggle.click();
     await expect(toggle).toHaveAttribute('aria-checked', 'false');
-    await goTo(page, 'Sedi', true);
+    await goTo(page, 'Sedi');
     await expect(page.getByTestId('section-primer')).toBeHidden();
   });
 
@@ -222,7 +274,7 @@ test('the "Suggerimenti attivi" toggle turns every primer off, and back on witho
     await goTo(page, 'Impostazioni', true);
     await page.getByTestId('coaching-toggle').click();
     await expect(page.getByTestId('coaching-toggle')).toHaveAttribute('aria-checked', 'true');
-    await goTo(page, 'Sedi', true);
+    await goTo(page, 'Sedi');
     await expect(page.getByTestId('section-primer')).toBeVisible();
     await goTo(page, 'Personale', true);
     await expect(page.getByTestId('section-primer')).toBeHidden();
@@ -233,14 +285,17 @@ test('idle Operations screen suggests a concrete next action from real career st
   page,
 }, info) => {
   await bootCareer(page, info.project.name, { level: 3, credits: 1000 });
+  // An idle screen is one with no calls: a silent world (off duty, nothing open), so a random incident arriving at ×12
+  // cannot replace the suggestion with the list while the test looks at it.
+  await qa(page, 'quiet');
   const vehicleId = await qa<string>(page, 'breakDown');
   const vehicle = (await careerVehicles(page)).find((v) => v.id === vehicleId)!;
 
-  if (isMobile(page)) await goTo(page, 'Emergenze', true);
-  // Desktop: the queue is already visible in the map sidebar from `bootCareer`'s landing on /game.
+  // Desktop: the queue column of the map screen. Phones: the idle suggestion is the bottom sheet's peek itself.
 
   const queue = page.getByTestId('incident-queue');
   await expect(queue).toBeVisible();
+  await expect(queue.getByTestId('queue-empty')).toBeVisible();
   await expect(queue).toContainText(vehicle.callSign);
   const action = queue.getByTestId('idle-suggestion-action');
   await expect(action).toBeVisible();

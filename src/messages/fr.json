@@ -64,8 +64,13 @@
     "HOSPITAL_NOT_COMPATIBLE": "L’hôpital choisi ne peut pas accueillir ce patient.",
     "INVALID_STATE_TRANSITION": "Opération non autorisée pour le moment.",
     "FEATURE_DISABLED": "Cette fonctionnalité n’est pas encore active.",
-    "VEHICLE_DOMAIN_MISMATCH": "Ce moyen ne peut pas atteindre ce type de lieu : la terre et l’eau demandent des moyens différents.",
-    "AIR_SUPPORT_NOT_NEEDED": "Cette urgence ne demande aucun moyen aérien."
+    "VEHICLE_DOMAIN_MISMATCH": "Ce moyen ne peut pas intervenir ici : sur l’eau il faut des bateaux, et lors d’une urgence sur l’eau les moyens terrestres n’interviennent qu’au point de rassemblement.",
+    "AIR_SUPPORT_NOT_NEEDED": "Cette urgence ne demande aucun moyen aérien.",
+    "NEEDS_NAUTICAL_BASE": "Les bateaux ne s’achètent et ne se transfèrent que dans une base nautique.",
+    "NAUTICAL_SITE_REQUIRED": "Une base nautique ne s’ouvre que sur un site nautique : port, front de mer ou lac.",
+    "ENDURANCE_INSUFFICIENT": "L’autonomie de vol ne suffit pas pour l’aller-retour avec la réserve : choisissez un autre véhicule.",
+    "CANCEL_WINDOW_EXPIRED": "Trop tard pour annuler l’envoi : vous pouvez seulement rappeler les véhicules.",
+    "DISPATCH_NOT_CANCELLABLE": "Cet envoi ne peut plus être annulé : un véhicule est déjà parti. Rappelez-le depuis sa fiche."
   },
   "errorBoundary": {
     "title": "Une erreur s’est produite",
@@ -242,7 +247,7 @@
       "more": "Plus",
       "personnel": "Personnel",
       "logistics": "Logistique",
-      "credits": "Boutique de Crédits",
+      "credits": "Recharger des Crédits",
       "network": "Votre réseau"
     },
     "topbar": {
@@ -293,19 +298,30 @@
       "label": "Carte opérationnelle"
     },
     "sheet": {
-      "handle": "Panneau : faites glisser ou appuyez pour changer la hauteur"
+      "handle": "Panneau : faites glisser ou appuyez pour changer la hauteur",
+      "collapse": "Réduire"
     },
     "inspector": {
       "label": "Détail de la sélection",
       "centerOnMap": "Centrer sur la carte",
-      "close": "Fermer le détail"
+      "close": "Fermer le détail",
+      "closed": {
+        "resolved": "Urgence résolue",
+        "expired": "Urgence expirée",
+        "failed": "Urgence échouée",
+        "cancelled": "Urgence annulée",
+        "closed": "Urgence close"
+      },
+      "backToList": "Retour à la liste"
     },
     "queue": {
       "title": "Urgences",
       "pending": "{count, plural, one {# en attente} other {# en attente}}",
       "emptyTitle": "Tout est calme",
       "emptyOnDuty": "Aucune urgence active. Le prochain appel arrivera sous peu.",
-      "emptyOffDuty": "Vous êtes hors service : aucune nouvelle urgence n’arrivera."
+      "emptyOffDuty": "Vous êtes hors service : aucune nouvelle urgence n’arrivera.",
+      "summary": "{count, plural, =0 {Aucune urgence} one {# urgence} other {# urgences}}",
+      "allIncidents": "Toutes les urgences"
     },
     "incident": {
       "severity": "Gravité",
@@ -339,7 +355,12 @@
         "REQUIRED": "Nécessaire",
         "RECOMMENDED": "Recommandé",
         "OPTIONAL": "Facultatif"
-      }
+      },
+      "forecast": "Couverture prévue",
+      "missing": "manque : {list}",
+      "covered": "besoins couverts",
+      "showDetails": "Afficher le détail des besoins",
+      "hideDetails": "Masquer le détail des besoins"
     },
     "dispatch": {
       "requirements": "Besoins",
@@ -382,18 +403,20 @@
         "queued": "En attente pour cette intervention",
         "cancelQueue": "Annuler",
         "redirected": "{callSign} redirigé ici",
-        "queuedToast": "{callSign} partira ici dès qu'il sera libre",
+        "queuedToast": "{callSign} partira ici dès qu’il sera libre",
         "queueCancelled": "Affectation en attente annulée",
         "availableIn": "Libre dans {time}",
         "reason": {
           "VEHICLE_NOT_RETURNING": "Encore occupé : redirigeable pendant le retour",
           "VEHICLE_INOPERABLE": "Hors service : réparation nécessaire",
-          "MAINTENANCE_DUE": "Entretien requis : doit d'abord rentrer",
+          "MAINTENANCE_DUE": "Entretien requis : doit d’abord rentrer",
           "GROUNDED_BY_CONDITIONS": "Ne peut pas partir dans ces conditions",
-          "INVENTORY_NEEDS_RESTOCK": "Doit d'abord se réapprovisionner",
+          "INVENTORY_NEEDS_RESTOCK": "Doit d’abord se réapprovisionner",
           "CREW_INSUFFICIENT": "Équipage insuffisant",
-          "CREW_UNQUALIFIED": "L'équipage n'a pas la qualification requise",
-          "CREW_EXHAUSTED": "Équipage trop fatigué"
+          "CREW_UNQUALIFIED": "L’équipage n’a pas la qualification requise",
+          "CREW_EXHAUSTED": "Équipage trop fatigué",
+          "VEHICLE_RESTOCKING": "En ravitaillement à la base",
+          "FUEL_RESERVE": "Doit d’abord faire le plein"
         }
       }
     },
@@ -595,7 +618,7 @@
       },
       "DISPATCH": {
         "title": "Chaque seconde compte",
-        "body": "Les barres indiquent les besoins sur place. Le centre vous propose déjà les meilleurs véhicules : un appui et ils partent aussitôt."
+        "body": "Le centre vous propose déjà les meilleurs véhicules pour les besoins sur place : un appui sur le bouton en bas et ils partent aussitôt."
       },
       "WATCH_ARRIVAL": {
         "title": "Vos véhicules sont en route",
@@ -609,6 +632,20 @@
         "title": "Un seul véhicule ne suffit pas pour toute une ville",
         "body": "Utilisez la récompense pour un deuxième véhicule : désormais, les urgences n’attendent plus — plus de véhicules prêts, ce sont plus de vies gérées en même temps."
       }
+    },
+    "quickDispatch": {
+      "send": "Envoyer",
+      "sendAria": "Envoyer les véhicules conseillés : {title}",
+      "sent": "{count, plural, one {# véhicule envoyé} other {# véhicules envoyés}}",
+      "partial": "couverture partielle",
+      "undo": "Annuler",
+      "undone": "Envoi annulé : véhicules rappelés",
+      "undoFailed": "L’envoi n’a pas pu être annulé",
+      "noRecommendation": "Aucun véhicule conseillé disponible",
+      "open": "Ouvrir",
+      "cancelled": "Envoi annulé",
+      "recalledInstead": "Trop tard pour annuler gratuitement : véhicules rappelés",
+      "recall": "Rappeler"
     }
   },
   "settings": {
@@ -1038,7 +1075,8 @@
     "SUPPLIES": "Stocks",
     "SPEEDUP": "Accélération",
     "EXTERNAL_SUPPORT": "Renfort extérieur",
-    "LEVEL_UP": "Prime du niveau {level}"
+    "LEVEL_UP": "Prime du niveau {level}",
+    "FUEL": "Carburant à la station-service"
   },
   "outcome": {
     "note": {
@@ -1061,7 +1099,9 @@
     "incident_resolving": "Travail sur place terminé : opérations de clôture",
     "incident_cancelled": "Urgence annulée",
     "ung_arrived": "Soutien externe sur place",
-    "ung_done": "Soutien externe : intervention terminée"
+    "ung_done": "Soutien externe : intervention terminée",
+    "vehicle_resupply_before_departure": "{callSign} se ravitaille avant de partir",
+    "vehicle_refuel_stop": "{callSign} s’arrête à une station-service pour faire le plein"
   },
   "away": {
     "event": {

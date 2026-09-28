@@ -3,6 +3,7 @@ import {
   AuthResult,
   AwayReport,
   BalanceDto,
+  CancelDispatchResult,
   CareerSummary,
   ChainVehicleResult,
   DispatchResultDto,
@@ -17,6 +18,7 @@ import {
   LedgerEntryDto,
   LocationSummary,
   OtpRequestResult,
+  ResupplyVehicleResult,
   SessionDto,
   StarterSite,
   SyncSnapshot,
@@ -76,17 +78,18 @@ export const gameApi = {
     api.command(`${c(careerId)}/facilities/${facilityId}/upgrades`, { upgradeCode }, { schema: FacilityDto }),
   buyVehicle: (careerId: string, body: { vehicleTypeCode: string; facilityId: string }) =>
     api.command(`${c(careerId)}/shop/vehicles`, body, { schema: VehicleDto }),
+  /** The fleet as read now: every vehicle with its read-model fields (the autonomy block is computed on read, D-22). */
+  vehicles: (careerId: string) => api.get(`${c(careerId)}/vehicles`, { schema: z.array(VehicleDto) }),
   recallVehicle: (careerId: string, vehicleId: string) =>
     api.command(`${c(careerId)}/vehicles/${vehicleId}/recall`, {}, { schema: VehicleDto }),
   /** Redirects the vehicle now if it's RETURNING and eligible, otherwise queues the incident as its next assignment. */
   chainVehicle: (careerId: string, vehicleId: string, incidentId: string) =>
-    api.command(
-      `${c(careerId)}/vehicles/${vehicleId}/chain`,
-      { incidentId },
-      { schema: ChainVehicleResult },
-    ),
+    api.command(`${c(careerId)}/vehicles/${vehicleId}/chain`, { incidentId }, { schema: ChainVehicleResult }),
   cancelChain: (careerId: string, vehicleId: string) =>
     api.post(`${c(careerId)}/vehicles/${vehicleId}/chain/cancel`, {}, { schema: VehicleDto }),
+  /** Manual "return to resupply" (D-22 §3.4): at base now, on the way home at the arrival, patrolling at the next hop. */
+  resupplyVehicle: (careerId: string, vehicleId: string) =>
+    api.command(`${c(careerId)}/vehicles/${vehicleId}/resupply`, {}, { schema: ResupplyVehicleResult }),
   incident: (careerId: string, id: string) =>
     api.get(`${c(careerId)}/incidents/${id}`, { schema: IncidentDto }),
   dispatchOptions: (careerId: string, incidentId: string) =>
@@ -97,6 +100,12 @@ export const gameApi = {
       { vehicleIds },
       { schema: DispatchResultDto },
     ),
+  /**
+   * ★ The free undo of a dispatch (the quick dispatch's "Annulla"): within `cancellableUntil`, while every vehicle is still
+   * at its origin. 409 CANCEL_WINDOW_EXPIRED / DISPATCH_NOT_CANCELLABLE (→ recall instead), 404 unknown dispatch.
+   */
+  cancelDispatch: (careerId: string, dispatchId: string) =>
+    api.command(`${c(careerId)}/dispatches/${dispatchId}/cancel`, {}, { schema: CancelDispatchResult }),
   timeline: (careerId: string, incidentId: string) =>
     api.get(`${c(careerId)}/incidents/${incidentId}/timeline`, { schema: z.array(TimelineEntryDto) }),
   unseenOutcomes: (careerId: string) =>

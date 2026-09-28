@@ -33,18 +33,22 @@
     "veh_fire_divers",
     "veh_fire_usar",
     "veh_fire_heli",
+    "veh_fire_fireboat",
     "veh_ems_msb",
     "veh_ems_msi",
     "veh_ems_msa",
     "veh_ems_automedica",
     "veh_ems_pediatric",
     "veh_ems_heli",
+    "veh_ems_jetski",
+    "veh_ems_water_ambulance",
     "veh_pol_traffic",
     "veh_pol_van",
     "veh_pol_k9",
     "veh_pol_forensic",
     "veh_pol_eod",
     "veh_pol_heli",
+    "veh_pol_patrol_boat",
     "veh_aib_pickup",
     "veh_aib_tanker",
     "veh_aib_command",
@@ -76,6 +80,7 @@
     "facility_wildfire",
     "facility_alpine",
     "facility_coordination",
+    "facility_nautical_base",
     "facility_fire_detachment",
     "facility_fire_command",
     "facility_fire_special_hub",
@@ -119,31 +124,129 @@
     "inc_alp_missing_hiker",
     "inc_alp_wall_recovery",
     "inc_alp_stranded_group",
+    "inc_alp_twisted_ankle",
+    "inc_alp_mtb_crash",
+    "inc_alp_lost_forager",
+    "inc_alp_ski_slope_injury",
+    "inc_alp_canyon_rescue",
+    "inc_alp_paraglider",
+    "inc_alp_cave_rescue",
+    "inc_alp_chairlift_evacuation",
+    "inc_alp_ice_climber",
+    "inc_alp_snow_emergency",
     "inc_med_minor_illness",
     "inc_med_severe_illness",
     "inc_med_unconscious",
     "inc_med_fall",
     "inc_med_pediatric",
+    "inc_med_allergic_reaction",
+    "inc_med_diabetic",
+    "inc_med_seizure",
+    "inc_med_abdominal_pain",
+    "inc_med_elderly_assist",
+    "inc_med_intoxication",
+    "inc_med_workplace_injury",
+    "inc_med_sports_injury",
+    "inc_med_heat_stroke",
+    "inc_med_respiratory_crisis",
+    "inc_med_obstetric",
+    "inc_med_psychiatric",
+    "inc_med_school_emergency",
+    "inc_med_stroke_alert",
+    "inc_med_food_poisoning_event",
+    "inc_med_nursing_home_event",
+    "inc_med_swimmer_distress",
+    "inc_med_lake_rescue",
     "inc_fire_apartment_block",
     "inc_fire_warehouse",
+    "inc_fire_chimney",
+    "inc_fire_kitchen",
+    "inc_fire_balcony",
+    "inc_fire_electrical_panel",
+    "inc_fire_shop",
+    "inc_fire_basement",
+    "inc_fire_farm_building",
+    "inc_fire_bus",
+    "inc_fire_parking_garage",
+    "inc_fire_industrial_plant",
+    "inc_fire_vessel_blaze",
     "inc_tech_elevator",
     "inc_tech_fallen_tree",
     "inc_tech_unsafe_roof",
     "inc_tech_animal_rescue",
+    "inc_tech_person_locked_in",
+    "inc_tech_water_leak",
+    "inc_tech_insect_nest",
+    "inc_tech_gas_smell",
+    "inc_tech_dangling_object",
+    "inc_tech_industrial_machine",
+    "inc_tech_person_on_ledge",
+    "inc_tech_confined_space",
+    "inc_tech_vessel_adrift",
     "inc_road_accident_trapped",
+    "inc_road_pedestrian_struck",
+    "inc_road_motorcycle",
+    "inc_road_vehicle_off_road",
+    "inc_road_fuel_spill",
+    "inc_road_truck_overturned",
     "inc_multi_road_accident",
     "inc_multi_fire_with_casualties",
     "inc_multi_hazmat_spill",
     "inc_multi_building_collapse",
+    "inc_multi_capsized_boat",
+    "inc_multi_person_overboard",
+    "inc_multi_power_blackout",
+    "inc_multi_school_evacuation",
+    "inc_multi_heatwave_surge",
+    "inc_multi_boat_incident",
+    "inc_multi_flood_emergency",
+    "inc_multi_winter_storm",
+    "inc_multi_landslide",
+    "inc_multi_train_derailment",
+    "inc_multi_tunnel_fire",
+    "inc_multi_stadium_crush",
+    "inc_multi_industrial_explosion",
+    "inc_multi_hospital_evacuation",
+    "inc_multi_aircraft_accident",
+    "inc_multi_bridge_collapse",
+    "inc_multi_earthquake",
     "inc_pol_brawl",
     "inc_pol_alarm_activation",
     "inc_pol_accident_survey",
     "inc_pol_public_event",
     "inc_pol_traffic_disruption",
+    "inc_pol_noise_complaint",
+    "inc_pol_parking_obstruction",
+    "inc_pol_shoplifting",
+    "inc_pol_vandalism",
+    "inc_pol_stray_animal_road",
+    "inc_pol_domestic_disturbance",
+    "inc_pol_dui_checkpoint",
+    "inc_pol_road_rage",
+    "inc_pol_burglary_report",
+    "inc_pol_atm_attack",
+    "inc_pol_vehicle_pursuit",
+    "inc_pol_missing_child",
+    "inc_pol_demonstration",
+    "inc_pol_armed_robbery",
+    "inc_pol_drug_operation",
+    "inc_pol_hostage_situation",
+    "inc_pol_stadium_disorder",
+    "inc_pol_public_attack",
     "inc_wf_brush",
     "inc_wf_forest_medium",
     "inc_wf_forest_large",
     "inc_wf_interface",
+    "inc_wf_roadside_verge",
+    "inc_wf_stubble_field",
+    "inc_wf_pruning_burn",
+    "inc_wf_waste_dump",
+    "inc_wf_reignition",
+    "inc_wf_powerline_corridor",
+    "inc_wf_night_front",
+    "inc_wf_steep_slope",
+    "inc_wf_campsite_threat",
+    "inc_wf_multiple_ignitions",
     "cap_fire_suppression",
     "cap_water_supply",
     "cap_height_access",
@@ -180,6 +283,7 @@
     "upgrade_storage",
     "upgrade_workshop",
     "upgrade_training_room",
+    "upgrade_pier",
     "upgrade_generic",
     "role_firefighter",
     "role_driver_operator",
@@ -335,6 +439,10 @@
       "pictogram": "veh_fire_heli",
       "topdown": "helicopter"
     },
+    "vehicle-fire-fireboat": {
+      "pictogram": "veh_fire_fireboat",
+      "topdown": "boat"
+    },
     "vehicle-ems-msb": {
       "pictogram": "veh_ems_msb",
       "topdown": "ambulance"
@@ -366,6 +474,14 @@
     "vehicle-ems-heli": {
       "pictogram": "veh_ems_heli",
       "topdown": "helicopter"
+    },
+    "vehicle-ems-jetski": {
+      "pictogram": "veh_ems_jetski",
+      "topdown": "boat"
+    },
+    "vehicle-ems-water-ambulance": {
+      "pictogram": "veh_ems_water_ambulance",
+      "topdown": "boat"
     },
     "vehicle-pol-patrol": {
       "pictogram": "veh_car",
@@ -402,6 +518,10 @@
     "vehicle-pol-heli": {
       "pictogram": "veh_pol_heli",
       "topdown": "helicopter"
+    },
+    "vehicle-pol-patrol-boat": {
+      "pictogram": "veh_pol_patrol_boat",
+      "topdown": "boat"
     },
     "vehicle-aib-pickup": {
       "pictogram": "veh_aib_pickup",
@@ -551,6 +671,9 @@
     "facility-coordination-center": {
       "pictogram": "facility_coordination"
     },
+    "facility-nautical-base": {
+      "pictogram": "facility_nautical_base"
+    },
     "incident-alp-injured-hiker": {
       "pictogram": "inc_alp_injured_hiker"
     },
@@ -565,6 +688,36 @@
     },
     "incident-alp-stranded-group": {
       "pictogram": "inc_alp_stranded_group"
+    },
+    "incident-alp-twisted-ankle": {
+      "pictogram": "inc_alp_twisted_ankle"
+    },
+    "incident-alp-mtb-crash": {
+      "pictogram": "inc_alp_mtb_crash"
+    },
+    "incident-alp-lost-forager": {
+      "pictogram": "inc_alp_lost_forager"
+    },
+    "incident-alp-ski-slope-injury": {
+      "pictogram": "inc_alp_ski_slope_injury"
+    },
+    "incident-alp-canyon-rescue": {
+      "pictogram": "inc_alp_canyon_rescue"
+    },
+    "incident-alp-paraglider": {
+      "pictogram": "inc_alp_paraglider"
+    },
+    "incident-alp-cave-rescue": {
+      "pictogram": "inc_alp_cave_rescue"
+    },
+    "incident-alp-chairlift-evacuation": {
+      "pictogram": "inc_alp_chairlift_evacuation"
+    },
+    "incident-alp-ice-climber": {
+      "pictogram": "inc_alp_ice_climber"
+    },
+    "incident-alp-snow-emergency": {
+      "pictogram": "inc_alp_snow_emergency"
     },
     "incident-med-minor-illness": {
       "pictogram": "inc_med_minor_illness"
@@ -590,6 +743,60 @@
     "incident-med-pediatric": {
       "pictogram": "inc_med_pediatric"
     },
+    "incident-med-allergic-reaction": {
+      "pictogram": "inc_med_allergic_reaction"
+    },
+    "incident-med-diabetic": {
+      "pictogram": "inc_med_diabetic"
+    },
+    "incident-med-seizure": {
+      "pictogram": "inc_med_seizure"
+    },
+    "incident-med-abdominal-pain": {
+      "pictogram": "inc_med_abdominal_pain"
+    },
+    "incident-med-elderly-assist": {
+      "pictogram": "inc_med_elderly_assist"
+    },
+    "incident-med-intoxication": {
+      "pictogram": "inc_med_intoxication"
+    },
+    "incident-med-workplace-injury": {
+      "pictogram": "inc_med_workplace_injury"
+    },
+    "incident-med-sports-injury": {
+      "pictogram": "inc_med_sports_injury"
+    },
+    "incident-med-heat-stroke": {
+      "pictogram": "inc_med_heat_stroke"
+    },
+    "incident-med-respiratory-crisis": {
+      "pictogram": "inc_med_respiratory_crisis"
+    },
+    "incident-med-obstetric": {
+      "pictogram": "inc_med_obstetric"
+    },
+    "incident-med-psychiatric": {
+      "pictogram": "inc_med_psychiatric"
+    },
+    "incident-med-school-emergency": {
+      "pictogram": "inc_med_school_emergency"
+    },
+    "incident-med-stroke-alert": {
+      "pictogram": "inc_med_stroke_alert"
+    },
+    "incident-med-food-poisoning-event": {
+      "pictogram": "inc_med_food_poisoning_event"
+    },
+    "incident-med-nursing-home-event": {
+      "pictogram": "inc_med_nursing_home_event"
+    },
+    "incident-med-swimmer-distress": {
+      "pictogram": "inc_med_swimmer_distress"
+    },
+    "incident-med-lake-rescue": {
+      "pictogram": "inc_med_lake_rescue"
+    },
     "incident-fire-trash-bin": {
       "pictogram": "cat_fire_minor"
     },
@@ -604,6 +811,39 @@
     },
     "incident-fire-warehouse": {
       "pictogram": "inc_fire_warehouse"
+    },
+    "incident-fire-chimney": {
+      "pictogram": "inc_fire_chimney"
+    },
+    "incident-fire-kitchen": {
+      "pictogram": "inc_fire_kitchen"
+    },
+    "incident-fire-balcony": {
+      "pictogram": "inc_fire_balcony"
+    },
+    "incident-fire-electrical-panel": {
+      "pictogram": "inc_fire_electrical_panel"
+    },
+    "incident-fire-shop": {
+      "pictogram": "inc_fire_shop"
+    },
+    "incident-fire-basement": {
+      "pictogram": "inc_fire_basement"
+    },
+    "incident-fire-farm-building": {
+      "pictogram": "inc_fire_farm_building"
+    },
+    "incident-fire-bus": {
+      "pictogram": "inc_fire_bus"
+    },
+    "incident-fire-parking-garage": {
+      "pictogram": "inc_fire_parking_garage"
+    },
+    "incident-fire-industrial-plant": {
+      "pictogram": "inc_fire_industrial_plant"
+    },
+    "incident-fire-vessel-blaze": {
+      "pictogram": "inc_fire_vessel_blaze"
     },
     "incident-tech-elevator": {
       "pictogram": "inc_tech_elevator"
@@ -620,11 +860,59 @@
     "incident-tech-animal-rescue": {
       "pictogram": "inc_tech_animal_rescue"
     },
+    "incident-tech-person-locked-in": {
+      "pictogram": "inc_tech_person_locked_in"
+    },
+    "incident-tech-water-leak": {
+      "pictogram": "inc_tech_water_leak"
+    },
+    "incident-tech-insect-nest": {
+      "pictogram": "inc_tech_insect_nest"
+    },
+    "incident-tech-gas-smell": {
+      "pictogram": "inc_tech_gas_smell"
+    },
+    "incident-tech-dangling-object": {
+      "pictogram": "inc_tech_dangling_object"
+    },
+    "incident-tech-industrial-machine": {
+      "pictogram": "inc_tech_industrial_machine"
+    },
+    "incident-tech-person-on-ledge": {
+      "pictogram": "inc_tech_person_on_ledge"
+    },
+    "incident-tech-confined-space": {
+      "pictogram": "inc_tech_confined_space"
+    },
+    "incident-tech-vessel-adrift": {
+      "pictogram": "inc_tech_vessel_adrift"
+    },
+    "incident-road-pedestrian-struck": {
+      "pictogram": "inc_road_pedestrian_struck"
+    },
     "incident-road-accident-minor": {
       "pictogram": "cat_traffic_accident"
     },
     "incident-road-accident-trapped": {
       "pictogram": "inc_road_accident_trapped"
+    },
+    "incident-road-motorcycle": {
+      "pictogram": "inc_road_motorcycle"
+    },
+    "incident-road-vehicle-off-road": {
+      "pictogram": "inc_road_vehicle_off_road"
+    },
+    "incident-road-fuel-spill": {
+      "pictogram": "inc_road_fuel_spill"
+    },
+    "incident-road-truck-overturned": {
+      "pictogram": "inc_road_truck_overturned"
+    },
+    "incident-multi-capsized-boat": {
+      "pictogram": "inc_multi_capsized_boat"
+    },
+    "incident-multi-person-overboard": {
+      "pictogram": "inc_multi_person_overboard"
     },
     "incident-multi-road-accident": {
       "pictogram": "inc_multi_road_accident"
@@ -646,6 +934,51 @@
     },
     "incident-multi-building-collapse": {
       "pictogram": "inc_multi_building_collapse"
+    },
+    "incident-multi-power-blackout": {
+      "pictogram": "inc_multi_power_blackout"
+    },
+    "incident-multi-school-evacuation": {
+      "pictogram": "inc_multi_school_evacuation"
+    },
+    "incident-multi-heatwave-surge": {
+      "pictogram": "inc_multi_heatwave_surge"
+    },
+    "incident-multi-boat-incident": {
+      "pictogram": "inc_multi_boat_incident"
+    },
+    "incident-multi-flood-emergency": {
+      "pictogram": "inc_multi_flood_emergency"
+    },
+    "incident-multi-winter-storm": {
+      "pictogram": "inc_multi_winter_storm"
+    },
+    "incident-multi-landslide": {
+      "pictogram": "inc_multi_landslide"
+    },
+    "incident-multi-train-derailment": {
+      "pictogram": "inc_multi_train_derailment"
+    },
+    "incident-multi-tunnel-fire": {
+      "pictogram": "inc_multi_tunnel_fire"
+    },
+    "incident-multi-stadium-crush": {
+      "pictogram": "inc_multi_stadium_crush"
+    },
+    "incident-multi-industrial-explosion": {
+      "pictogram": "inc_multi_industrial_explosion"
+    },
+    "incident-multi-hospital-evacuation": {
+      "pictogram": "inc_multi_hospital_evacuation"
+    },
+    "incident-multi-aircraft-accident": {
+      "pictogram": "inc_multi_aircraft_accident"
+    },
+    "incident-multi-bridge-collapse": {
+      "pictogram": "inc_multi_bridge_collapse"
+    },
+    "incident-multi-earthquake": {
+      "pictogram": "inc_multi_earthquake"
     },
     "incident-pol-brawl": {
       "pictogram": "inc_pol_brawl"
@@ -671,6 +1004,60 @@
     "incident-pol-traffic-disruption": {
       "pictogram": "inc_pol_traffic_disruption"
     },
+    "incident-pol-noise-complaint": {
+      "pictogram": "inc_pol_noise_complaint"
+    },
+    "incident-pol-parking-obstruction": {
+      "pictogram": "inc_pol_parking_obstruction"
+    },
+    "incident-pol-shoplifting": {
+      "pictogram": "inc_pol_shoplifting"
+    },
+    "incident-pol-vandalism": {
+      "pictogram": "inc_pol_vandalism"
+    },
+    "incident-pol-stray-animal-road": {
+      "pictogram": "inc_pol_stray_animal_road"
+    },
+    "incident-pol-domestic-disturbance": {
+      "pictogram": "inc_pol_domestic_disturbance"
+    },
+    "incident-pol-dui-checkpoint": {
+      "pictogram": "inc_pol_dui_checkpoint"
+    },
+    "incident-pol-road-rage": {
+      "pictogram": "inc_pol_road_rage"
+    },
+    "incident-pol-burglary-report": {
+      "pictogram": "inc_pol_burglary_report"
+    },
+    "incident-pol-atm-attack": {
+      "pictogram": "inc_pol_atm_attack"
+    },
+    "incident-pol-vehicle-pursuit": {
+      "pictogram": "inc_pol_vehicle_pursuit"
+    },
+    "incident-pol-missing-child": {
+      "pictogram": "inc_pol_missing_child"
+    },
+    "incident-pol-demonstration": {
+      "pictogram": "inc_pol_demonstration"
+    },
+    "incident-pol-armed-robbery": {
+      "pictogram": "inc_pol_armed_robbery"
+    },
+    "incident-pol-drug-operation": {
+      "pictogram": "inc_pol_drug_operation"
+    },
+    "incident-pol-hostage-situation": {
+      "pictogram": "inc_pol_hostage_situation"
+    },
+    "incident-pol-stadium-disorder": {
+      "pictogram": "inc_pol_stadium_disorder"
+    },
+    "incident-pol-public-attack": {
+      "pictogram": "inc_pol_public_attack"
+    },
     "incident-wf-brush": {
       "pictogram": "inc_wf_brush"
     },
@@ -685,6 +1072,36 @@
     },
     "incident-wf-interface": {
       "pictogram": "inc_wf_interface"
+    },
+    "incident-wf-roadside-verge": {
+      "pictogram": "inc_wf_roadside_verge"
+    },
+    "incident-wf-stubble-field": {
+      "pictogram": "inc_wf_stubble_field"
+    },
+    "incident-wf-pruning-burn": {
+      "pictogram": "inc_wf_pruning_burn"
+    },
+    "incident-wf-waste-dump": {
+      "pictogram": "inc_wf_waste_dump"
+    },
+    "incident-wf-reignition": {
+      "pictogram": "inc_wf_reignition"
+    },
+    "incident-wf-powerline-corridor": {
+      "pictogram": "inc_wf_powerline_corridor"
+    },
+    "incident-wf-night-front": {
+      "pictogram": "inc_wf_night_front"
+    },
+    "incident-wf-steep-slope": {
+      "pictogram": "inc_wf_steep_slope"
+    },
+    "incident-wf-campsite-threat": {
+      "pictogram": "inc_wf_campsite_threat"
+    },
+    "incident-wf-multiple-ignitions": {
+      "pictogram": "inc_wf_multiple_ignitions"
     },
     "capability-fire-suppression": {
       "pictogram": "cap_fire_suppression"
@@ -811,6 +1228,9 @@
     },
     "upgrade-helipad": {
       "pictogram": "helipad"
+    },
+    "upgrade-pier": {
+      "pictogram": "upgrade_pier"
     },
     "role-firefighter": {
       "pictogram": "role_firefighter"

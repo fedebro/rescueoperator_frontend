@@ -239,9 +239,9 @@ describe('marks', () => {
 
 describe('catalog mapping', () => {
   it('reads every icon key group of the bundled catalog', () => {
-    expect(catalog.vehicleTypes).toHaveLength(41);
-    expect(catalog.facilityTypes).toHaveLength(20);
-    expect(catalog.incidentTemplates).toHaveLength(45);
+    expect(catalog.vehicleTypes).toHaveLength(45);
+    expect(catalog.facilityTypes).toHaveLength(21);
+    expect(catalog.incidentTemplates).toHaveLength(143);
     for (const [group, list] of Object.entries(groups)) {
       expect(list.length, group).toBeGreaterThan(0);
       for (const entry of list)
@@ -275,9 +275,9 @@ describe('catalog mapping', () => {
   });
 
   it.each([
-    ['vehicleTypes', 41],
-    ['facilityTypes', 20],
-    ['incidentTemplates', 45],
+    ['vehicleTypes', 45],
+    ['facilityTypes', 21],
+    ['incidentTemplates', 143],
     ['ungUnitTypes', 12],
     ['roles', 12],
     ['itemTypes', 7],
@@ -353,7 +353,7 @@ describe('style guide gallery', () => {
     expect(entries.map((e) => e.id)).toEqual(expect.arrayContaining(allKeys));
     expect(new Set(entries.map((e) => e.id)).size).toBe(entries.length);
     const fire = groups.find((g) => g.id === 'vehicle-fire-*')!;
-    expect(fire.entries).toHaveLength(14);
+    expect(fire.entries).toHaveLength(15);
     expect(fire.entries.every((e) => e.topdown?.family === 'FIRE')).toBe(true);
   });
 });

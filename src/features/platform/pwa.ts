@@ -37,15 +37,19 @@ export function isIosDevice(userAgent: string, maxTouchPoints = 0): boolean {
   return /Macintosh/.test(userAgent) && maxTouchPoints > 1;
 }
 
-export type InstallMode = 'native' | 'ios' | 'unavailable' | 'installed';
+/** `in-app`: inside TikTok / Instagram / Facebook… — installing needs the real browser (in-app-browser.ts). */
+export type InstallMode = 'native' | 'ios' | 'unavailable' | 'installed' | 'in-app';
 
 export function installMode(input: {
   hasPrompt: boolean;
   installed: boolean;
   standalone: boolean;
   ios: boolean;
+  /** Inside another app's web view: no "Add to Home Screen" there, whatever the platform says. */
+  inApp?: boolean;
 }): InstallMode {
   if (input.installed || input.standalone) return 'installed';
+  if (input.inApp) return 'in-app';
   if (input.hasPrompt) return 'native';
   if (input.ios) return 'ios';
   return 'unavailable';

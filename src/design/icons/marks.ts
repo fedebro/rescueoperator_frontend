@@ -207,3 +207,40 @@ export const stethoscope = all(
 export const chevrons = line('m-3 -.6l3-2.4 3 2.4m-6 3.2l3-2.4 3 2.4');
 export const wheel = all(ring(0, 0, 3.4), dot(0, 0, 0.9), line('m-3.4 0h2.5m1.8 0h2.5m-3.4 .9v2.5'));
 export const bubbles = all(ring(-1.2, 0.8, 2.2), ring(2.3, -1.5, 1.3), ring(2.5, 2.3, 0.9));
+/** "?" of the search glyphs (missing people). */
+export const question = all(
+  line('m-2.3 -1.4a2.35 2.35 0 1 1 3.4 2.1c-.75.45-1.1.95-1.1 1.7'),
+  dot(0, 3.3, 0.85),
+);
+export const sun = all(
+  ring(0, 0, 1.9),
+  line('m0 -3.8v1m0 5.6v1m-3.8 -3.8h1m5.6 0h1m-6.5 -2.7l.7.7m4 4l.7.7m0 -5.4l-.7.7m-4 4l-.7.7'),
+);
+export const moon = line('m.6 -3.7a3.8 3.8 0 1 0 3.2 5.2 3.1 3.1 0 0 1-3.2-5.2z');
+/** Irregular seven-spike burst: explosions and blasts. */
+export const blast = line(
+  'm0 -3.8l.89 2.35 1.43-.6-.64 1.81 1.73 1.02-1.98.14.05 2.58-1.48-1.8-1.62.83.29-1.47-2.13-.05 1.85-1.55-.89-1.46 1.64.53z',
+);
+export const lifebuoy = all(
+  ring(0, 0, 3.4),
+  ring(0, 0, 1.5),
+  line('m-2.45 -2.45l1.4 1.4m2.1 2.1l1.4 1.4m0 -4.9l-1.4 1.4m-2.1 2.1l-1.4 1.4'),
+);
+export const padlock = line('m-2.7 -.4h5.4v4.1h-5.4zm1.1 0v-1.4a1.6 1.6 0 0 1 3.2 0v1.4');
+export const stopwatch = all(ring(0, 0.6, 3.1), line('m0 -.9v1.5l1.1 1.1m-2.1 -4.9h2'));
+/** Domino mask of the crime glyphs. */
+export const bandit = line(
+  'm-3.8 -1.4c1.2-.6 2.5-.6 3.8 0 1.3-.6 2.6-.6 3.8 0 0 2-1 3.2-2.2 3.2-.9 0-1.2-.8-1.6-.8s-.7.8-1.6.8c-1.2 0-2.2-1.2-2.2-3.2z',
+);
+/** Speech bubble with an angry zigzag: arguments, confrontations. */
+export const shout = all(
+  line('m-3.8 -1a3.8 2.9 0 1 1 1.6 2.4l-1.6 2.3.3-3a3.4 3.4 0 0 1-.3-1.7z'),
+  line('m-1.9 -1.1l1.2-.9.9 1.4 1.1-1.2 1 1'),
+);
+export const gear = all(
+  line(
+    'm0 -2.9l.74-.83.71.22.16 1.1.44.36 1.11-.06.35.66-.67.88.06.57.83.74-.22.71-1.1.16-.36.44.06 1.11-.66.35-.88-.67-.57.06-.74.83-.71-.22-.16-1.1-.44-.36-1.11.06-.35-.66.67-.88-.06-.57-.83-.74.22-.71 1.1-.16.36-.44-.06-1.11.66-.35.88.67z',
+  ),
+  ring(0, 0, 1.2),
+);
+export const anchor = all(ring(0, -2.9, 0.9), line('m0 -2v5.8m-2 -4.2h4m-3.8 2a3.8 3.8 0 0 0 7.6 0'));

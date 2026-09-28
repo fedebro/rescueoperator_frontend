@@ -15,6 +15,7 @@ import { worldApiOf } from './domains/world';
 import { monetizationHandlers } from './handlers/monetization';
 import { platformHandlers } from './handlers/platform';
 import { adminHandlers } from './handlers/admin';
+import { majorHandlers } from './handlers/major';
 
 /** One file per feature area; each owns its routes (see contracts/ROUTES.md) and its domain module in src/mocks/domains. */
 const DOMAIN_HANDLERS: DomainHandlers[] = [
@@ -27,6 +28,7 @@ const DOMAIN_HANDLERS: DomainHandlers[] = [
   monetizationHandlers,
   platformHandlers,
   adminHandlers,
+  majorHandlers,
 ];
 
 /** MSW request handlers implementing the v1 REST contract on top of the in-browser engine. */
@@ -283,6 +285,11 @@ export function createHandlers(engine: MockEngine, baseUrl: string): HttpHandler
           throw new MockError(422, 'VALIDATION_ERROR', 'vehicleIds must not be empty');
         return engine.dispatch(c, String(ctx.params.id), body.vehicleIds as string[]);
       }, 201),
+    ),
+    /* ★ the free undo of a dispatch (air-endurance.md §5): within `cancellableUntil`, every vehicle still at its origin */
+    http.post(
+      url(`${C}/dispatches/:dispatchId/cancel`),
+      command((ctx, _body, c) => engine.cancelDispatch(c, String(ctx.params.dispatchId))),
     ),
     http.get(
       url(`${C}/incidents/:id`),

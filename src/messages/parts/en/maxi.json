@@ -1,0 +1,107 @@
+{
+  "maxi": {
+    "alert": {
+      "severity": "Severity of the main scene",
+      "boosted": "More severe than your level usually sees",
+      "sized": "Sized on your fleet: about {count} vehicles",
+      "linked": "{count, plural, one {# linked emergency already reported} other {# linked emergencies already reported}}",
+      "reward": "Estimated bonus",
+      "hint": "Send units to the main scene right away: left uncovered, the emergency spreads.",
+      "open": "Coordinate the response",
+      "dismiss": "Close"
+    },
+    "view": {
+      "phase": "Phase of the major incident",
+      "mainProgress": "Main scene",
+      "expiresIn": "Nobody on scene: lost in",
+      "endsIn": "Expected to end in",
+      "growth": "Spread {level} times out of {max}",
+      "growthNext": "If the main scene stays uncovered it spreads in",
+      "otherNeeds": "Other needs",
+      "external": "External support",
+      "byReinforcements": "Covered by reinforcements",
+      "coverage": "{percent}% covered",
+      "groupAria": "{family}: {onScene}% on scene, {enRoute}% en route",
+      "needsCovered": "{covered} of {total} needs covered",
+      "enRouteShare": "+{percent}% on the way",
+      "withReinforcements": "With reinforcements",
+      "severity": "Severity",
+      "sectorOpen": "Open {title}",
+      "sectorVehicles": "{count, plural, =0 {No vehicles} one {# vehicle} other {# vehicles}}",
+      "reinforcements": "External reinforcements",
+      "quoteCover": "They cover",
+      "quoteCost": "Bonus",
+      "quoteEta": "On scene in",
+      "priority": "Priority support",
+      "columnShare": "{percent}% of the needs",
+      "reinforcedTotal": "Covered by reinforcements: {percent}% of the major incident",
+      "summary": "Summary",
+      "reward": "Major incident bonus",
+      "xp": "+{xp} XP",
+      "quality": "Quality {percent}%",
+      "rewardHint": "On top of every emergency’s own reward: the more your own fleet handles, the more you earn.",
+      "fleet": "Sized on {operational} operational vehicles · target {target}",
+      "loadError": "The major incident could not be loaded.",
+      "close": "Close",
+      "centerOnMap": "Center on map",
+      "boosted": "Above your level",
+      "elapsed": "Ongoing for",
+      "needs": "Needs by service",
+      "needsHint": "All open emergencies",
+      "needsNone": "No open needs",
+      "committed": "{count, plural, =0 {No vehicles committed} one {# vehicle committed} other {# vehicles committed}}",
+      "sectors": "Sectors · {count}"
+    },
+    "reinforcements": {
+      "requested": "Reinforcements requested",
+      "requestedBody": "The column will cover {percent}% of the needs."
+    },
+    "queue": {
+      "openAria": "Open the coordination of the major incident: {title}",
+      "sectors": "{count, plural, one {# sector} other {# sectors}}",
+      "pending": "{count, plural, one {# waiting} other {# waiting}}",
+      "coordinate": "Coordinate"
+    },
+    "member": {
+      "badge": "Major",
+      "open": "Coordinate"
+    },
+    "strip": {
+      "aria": "Open the ongoing major incident: {title}",
+      "pending": "{count, plural, one {# sector waiting} other {# sectors waiting}}",
+      "open": "Coordinate"
+    },
+    "toast": {
+      "linked": "New emergency linked to the major incident",
+      "coordinate": "Coordinate",
+      "phase": "Major incident: {phase} phase",
+      "endedBody": "Bonus of {credits} credits",
+      "summary": "Summary"
+    },
+    "trophies": {
+      "title": "Major incidents",
+      "subtitle": "A medal for every kind of major incident handled: gold without reinforcements and without letting it spread.",
+      "total": "{count, plural, =0 {None handled} one {# handled} other {# handled}}",
+      "none": "Not yet",
+      "handled": "{handled} handled out of {attempts}",
+      "best": "best {percent}%",
+      "locked": "from level {level}",
+      "history": "Latest major incidents"
+    },
+    "dispatch": {
+      "majorCap": "Major incident: up to {count} vehicles per dispatch ({selected} selected)",
+      "capReached": "At most {count} vehicles per dispatch: send these, then add the others"
+    }
+  },
+  "ledger": {
+    "MAJOR_INCIDENT": "Major incident bonus"
+  },
+  "notificationCenter": {
+    "major": "Major incident"
+  },
+  "game": {
+    "queue": {
+      "majorMembers": "Emergencies of the major incident"
+    }
+  }
+}

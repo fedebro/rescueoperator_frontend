@@ -201,7 +201,8 @@
       "priority": "Priority",
       "title2": "Title",
       "read": "Read",
-      "unread": "Unread"
+      "unread": "Unread",
+      "spawnMajor": "Start major incident"
     },
     "credit": {
       "title": "Credit adjustment",
@@ -551,6 +552,16 @@
       "filterTarget": "Filter by target ID",
       "targetType": "Target type",
       "allTargets": "All types"
+    },
+    "spawnMajor": {
+      "title": "Start a major incident",
+      "subtitle": "Testing and support tool: it starts now, sized on the career’s fleet. Only one at a time.",
+      "scenario": "Scenario",
+      "auto": "Picked by the generator",
+      "reason": "Reason (recorded in the audit log)",
+      "reasonRequired": "Give a reason of at least 5 characters",
+      "submit": "Start",
+      "done": "Major incident started"
     }
   }
 }

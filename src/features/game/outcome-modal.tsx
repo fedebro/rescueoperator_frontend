@@ -61,7 +61,7 @@ export function OutcomeModal() {
       >
         {isFirstMission ? (
           <p
-            className="border-brand/40 bg-brand/10 text-brand-hot -mt-1 mb-1 flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold"
+            className="border-brand/40 bg-brand/10 text-brand-text -mt-1 mb-1 flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold"
             data-testid="outcome-first-mission"
           >
             <Trophy className="size-4 shrink-0" aria-hidden />

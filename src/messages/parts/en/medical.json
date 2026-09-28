@@ -14,7 +14,9 @@
       "hospital": "Hospital",
       "externalAmbulance": "External ambulance",
       "transportNotRequired": "No transport needed",
-      "openHospital": "Show {hospital} on the map"
+      "openHospital": "Show {hospital} on the map",
+      "expand": "Show the patients",
+      "collapse": "Hide the patients"
     },
     "stability": {
       "label": "Stability",
@@ -71,7 +73,9 @@
       "send": "Send {callSign}",
       "noAmbulance": "No ambulance available right now.",
       "sent": "{callSign} sent for the transport",
-      "started": "{callSign} heading to {hospital}"
+      "started": "{callSign} heading to {hospital}",
+      "startedMulti": "{callSign} on its way to {hospital} with {count} patients",
+      "confirmRecommendedMulti": "Take {count} patients to {hospital}"
     },
     "reasons": {
       "CLOSEST": "It is the closest",
@@ -94,6 +98,15 @@
       "incomingNone": "No incoming patients.",
       "notFound": "Hospital not found.",
       "loadError": "Hospitals could not be loaded."
+    },
+    "massCasualty": {
+      "fieldPostTitle": "Advanced medical post active ({callSign})",
+      "fieldPostBody": "It treats up to 4 patients at a time, faster; green, white and blue codes are released on scene, with no transport.",
+      "multiPatientNote": "Carries up to {count} patients per trip",
+      "fieldPostNote": "Advanced medical post: treats patients on scene, carries nobody",
+      "boardingTitle": "Board as well (up to {count} patients)",
+      "boardingNone": "No other patient waiting: it can carry up to {count} per trip.",
+      "boardingHint": "{count, plural, one {# patient aboard} other {# patients aboard}} of {capacity}"
     }
   },
   "status": {
@@ -123,7 +136,9 @@
     "patient_transport": "{callSign} is transporting the patient to {hospital}",
     "patient_transport_auto": "{callSign} is transporting the patient to {hospital} (recommended hospital, confirmed automatically)",
     "patient_external": "Patient entrusted to an external ambulance heading to {hospital}",
-    "patient_admitted": "Patient handed over to {hospital}"
+    "patient_admitted": "Patient handed over to {hospital}",
+    "patient_released_field_post": "Patient treated and released by the advanced medical post",
+    "patient_transport_multi": "{callSign} takes {count} patients to {hospital}"
   },
   "notifications": {
     "patientAwaitingTransport": "Patient awaiting transport at {address}"

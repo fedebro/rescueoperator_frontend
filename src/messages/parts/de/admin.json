@@ -201,7 +201,8 @@
       "priority": "Priorität",
       "title2": "Titel",
       "read": "Gelesen",
-      "unread": "Ungelesen"
+      "unread": "Ungelesen",
+      "spawnMajor": "Großschadenslage starten"
     },
     "credit": {
       "title": "Credit-Korrektur",
@@ -551,6 +552,16 @@
       "filterTarget": "Nach Ziel-ID filtern",
       "targetType": "Zieltyp",
       "allTargets": "Alle Typen"
+    },
+    "spawnMajor": {
+      "title": "Eine Großschadenslage starten",
+      "subtitle": "Test- und Support-Werkzeug: startet sofort, auf die Flotte der Karriere zugeschnitten. Nur eine gleichzeitig.",
+      "scenario": "Szenario",
+      "auto": "Vom Generator gewählt",
+      "reason": "Grund (im Audit-Protokoll gespeichert)",
+      "reasonRequired": "Gib einen Grund mit mindestens 5 Zeichen an",
+      "submit": "Starten",
+      "done": "Großschadenslage gestartet"
     }
   }
 }

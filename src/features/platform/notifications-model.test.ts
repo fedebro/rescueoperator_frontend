@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { snapshot } from '@/test/fixtures';
 import {
   filterNotifications,
+  isSevereIncidentNotification,
   markAllRead,
   markRead,
   resolveAction,
@@ -71,6 +72,19 @@ describe('notifications model', () => {
     expect(sameText({ key: 'a' }, { key: 'a', params: {} })).toBe(true);
     expect(sameText({ key: 'a', params: { x: 1 } }, { key: 'a', params: { x: 2 } })).toBe(false);
     expect(sameText({ key: 'a' }, { key: 'b' })).toBe(false);
+  });
+
+  it('recognises the severe-incident notification of the backend (centre and badge only, no second toast)', () => {
+    const severe = n({
+      category: 'OPERATIONS',
+      priority: 'CRITICAL',
+      title: { key: 'notification.SEVERE_INCIDENT.title', params: { fallback: 'Emergenza grave' } },
+      body: { key: 'notification.SEVERE_INCIDENT.body', params: { severity: 9, address: 'Via Roma' } },
+      action: { kind: 'OPEN_INCIDENT', targetId: 'inc_1' },
+    });
+    expect(isSevereIncidentNotification(severe)).toBe(true);
+    expect(resolveAction(severe.action)).toEqual({ type: 'select', kind: 'incident', id: 'inc_1' });
+    expect(isSevereIncidentNotification(n({}))).toBe(false);
   });
 
   it('resolves every action kind', () => {

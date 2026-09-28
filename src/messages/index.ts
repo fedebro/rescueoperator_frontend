@@ -18,6 +18,9 @@ export const MESSAGE_PARTS = [
   'admin',
   'coaching',
   'water',
+  'autonomy',
+  'nautical',
+  'maxi',
 ] as const;
 
 export type MessageTree = { [key: string]: MessageTree | string };

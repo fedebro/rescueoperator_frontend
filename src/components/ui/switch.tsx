@@ -13,6 +13,8 @@ export const Switch = React.forwardRef<
     ref={ref}
     className={cn(
       'border-border-strong bg-surface-3 data-[state=checked]:border-success data-[state=checked]:bg-success/30 relative h-6 w-11 shrink-0 rounded-full border transition-colors',
+      // 24 px tall to the eye, 44 px under a finger (03 §2.10): the hit area grows with a pseudo-element.
+      "pointer-coarse:after:absolute pointer-coarse:after:inset-x-0 pointer-coarse:after:-inset-y-2.5 pointer-coarse:after:content-['']",
       className,
     )}
     {...props}
@@ -29,7 +31,9 @@ export const Checkbox = React.forwardRef<
   <CheckboxPrimitive.Root
     ref={ref}
     className={cn(
-      'border-border-strong bg-surface-2 data-[state=checked]:border-brand data-[state=checked]:bg-brand aria-[invalid=true]:border-danger grid size-5 shrink-0 place-items-center rounded-sm border',
+      'border-border-strong bg-surface-2 data-[state=checked]:border-brand data-[state=checked]:bg-brand aria-[invalid=true]:border-danger relative grid size-5 shrink-0 place-items-center rounded-sm border',
+      // 20 px to the eye, 44 px under a finger.
+      "pointer-coarse:after:absolute pointer-coarse:after:-inset-3 pointer-coarse:after:content-['']",
       className,
     )}
     {...props}

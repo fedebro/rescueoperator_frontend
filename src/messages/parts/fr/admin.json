@@ -201,7 +201,8 @@
       "priority": "Priorité",
       "title2": "Titre",
       "read": "Lue",
-      "unread": "Non lue"
+      "unread": "Non lue",
+      "spawnMajor": "Lancer une urgence majeure"
     },
     "credit": {
       "title": "Ajustement de Crédits",
@@ -551,6 +552,16 @@
       "filterTarget": "Filtrer par ID de la cible",
       "targetType": "Type de cible",
       "allTargets": "Tous les types"
+    },
+    "spawnMajor": {
+      "title": "Lancer une urgence majeure",
+      "subtitle": "Outil de test et d’assistance : elle démarre tout de suite, dimensionnée sur la flotte de la carrière. Une seule à la fois.",
+      "scenario": "Scénario",
+      "auto": "Choisi par le générateur",
+      "reason": "Motif (enregistré dans l’audit)",
+      "reasonRequired": "Indiquez un motif d’au moins 5 caractères",
+      "submit": "Lancer",
+      "done": "Urgence majeure lancée"
     }
   }
 }

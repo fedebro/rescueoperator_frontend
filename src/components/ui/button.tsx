@@ -17,9 +17,10 @@ export const buttonVariants = cva(
         danger: 'bg-danger/15 text-danger border border-danger/40 hover:bg-danger/20',
         link: 'text-skyline underline-offset-4 hover:underline px-0 h-auto',
       },
+      // Touch screens (03 §2.10): whatever the visual size, a button is at least 44 px tall under a finger.
       size: {
-        sm: 'h-8 px-3 text-xs',
-        md: 'h-10 px-4 text-sm',
+        sm: 'h-8 px-3 text-xs pointer-coarse:min-h-11',
+        md: 'h-10 px-4 text-sm pointer-coarse:min-h-11',
         lg: 'h-12 px-5 text-base',
         xl: 'h-14 px-6 text-base w-full',
       },
@@ -73,7 +74,13 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
       aria-label={label}
       title={label}
       variant={variant}
-      className={cn('px-0', size === 'sm' ? 'size-8' : size === 'lg' ? 'size-12' : 'size-10', className)}
+      className={cn(
+        'px-0',
+        size === 'sm' ? 'size-8' : size === 'lg' ? 'size-12' : 'size-10',
+        // 44 × 44 under a finger (03 §2.10), the compact size with a mouse.
+        size !== 'lg' && 'pointer-coarse:min-h-11 pointer-coarse:min-w-11',
+        className,
+      )}
       {...props}
     >
       {children}

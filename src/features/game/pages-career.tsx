@@ -34,6 +34,8 @@ import { DutyToggle } from './duty-toggle';
 import { PrivacyAndAppSettings, SoundSettings } from '@/features/platform/settings-sections';
 import { track } from '@/lib/analytics';
 import { SectionHelpButton, SectionPrimer } from '@/features/coaching/section-primer';
+import { LedgerDescription } from '@/features/autonomy/ledger';
+import { MajorTrophiesCard } from '@/features/major/trophies';
 import { useCareerId, useSnapshot } from './hooks';
 import { PageBody } from './shell';
 
@@ -72,7 +74,7 @@ export function ProgressionScreen() {
     <PageBody
       title={t('title')}
       subtitle={t('subtitle')}
-      actions={
+      help={
         <SectionHelpButton
           content={progressionContent}
           label={tco('help.buttonLabel')}
@@ -109,6 +111,8 @@ export function ProgressionScreen() {
         <ReputationCard />
         <MilestonesCard />
       </div>
+      {/* A medal per major incident scenario handled (D-24, 06 §2.5), and the last majors. */}
+      <MajorTrophiesCard />
       <Card>
         <SectionTitle>{t('unlocks')}</SectionTitle>
         {!unlocks ? (
@@ -159,7 +163,6 @@ export function EconomyScreen() {
   const careerId = useCareerId();
   const t = useTranslations('game.economy');
   const tc = useTranslations('common');
-  const tx = useI18nText();
   const locale = useLocale();
   const desktop = useIsDesktop();
   const { career } = useSnapshot();
@@ -182,7 +185,12 @@ export function EconomyScreen() {
       cell: (r) => <span className="tabular text-muted">{formatDateTime(r.createdAt, locale)}</span>,
       sortValue: (r) => r.createdAt,
     },
-    { id: 'desc', header: t('col.description'), width: 'minmax(220px,3fr)', cell: (r) => tx(r.description) },
+    {
+      id: 'desc',
+      header: t('col.description'),
+      width: 'minmax(220px,3fr)',
+      cell: (r) => <LedgerDescription entry={r} />,
+    },
     {
       id: 'amount',
       header: t('col.amount'),
@@ -236,8 +244,8 @@ export function EconomyScreen() {
               data-testid="ledger-row"
             >
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm">{tx(r.description)}</span>
-                <span className="tabular text-subtle block text-[11px]">
+                <LedgerDescription entry={r} className="text-sm" />
+                <span className="tabular text-subtle block text-xs">
                   {formatDateTime(r.createdAt, locale)}
                 </span>
               </span>
@@ -367,7 +375,7 @@ export function SettingsScreen() {
               <li key={s.id} className="flex items-center gap-3 py-2.5">
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm">{s.userAgent ?? t('unknownDevice')}</p>
-                  <p className="text-subtle text-[11px]">
+                  <p className="text-subtle text-xs">
                     {t('lastUsed', { date: formatDateTime(s.lastUsedAt, locale) })}
                   </p>
                 </div>
@@ -377,6 +385,7 @@ export function SettingsScreen() {
                   <Button
                     variant="outline"
                     size="sm"
+                    className="h-11 lg:h-8"
                     onClick={() => revoke.mutate(s.id)}
                     loading={revoke.isPending && revoke.variables === s.id}
                   >
@@ -444,7 +453,6 @@ export function MoreScreen() {
           </li>
         ))}
       </ul>
-      <DutyToggle />
     </PageBody>
   );
 }

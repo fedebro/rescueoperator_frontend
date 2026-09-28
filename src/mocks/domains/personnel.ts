@@ -155,8 +155,12 @@ const holds = (op: PersonnelDto, qualification: string, now: number): boolean =>
 /* ───────────── crew selection (pure) ───────────── */
 export interface CrewSelection {
   crew: MockOperator[];
-  /** Required role / qualification codes that the selection could not satisfy. */
+  /** Required role / qualification codes that the selection could not satisfy (roles first). */
   missing: string[];
+  /** Qualifications the crew lacks: these block the vehicle (CREW_UNQUALIFIED), as in the backend. */
+  missingQualifications: string[];
+  /** Roles the crew lacks: recommended, never blocking — the vehicle leaves with a CREW_ROLE_MISSING warning. */
+  missingRoles: string[];
   exhausted: number;
   blocked: CrewBlock | null;
   efficiency: number;
@@ -184,15 +188,15 @@ export function crewQuality(
 }
 
 /**
- * Draws the crew of a vehicle from `pool` (operators based at the vehicle's facility): members of the vehicle's own team
- * first, then free operators, last the ones assigned to another vehicle's team; required roles and qualifications first,
- * then the freshest and most competent up to `target`. Operators in the REST_REQUIRED band are never drafted.
+ * Operators of `pool` (based at the vehicle's facility) that could be drafted now, best first: members of the vehicle's
+ * own team, then free operators, last the ones assigned to another vehicle's team; within a rank the freshest, then the
+ * most competent. Operators in the REST_REQUIRED band are left out (`exhausted`).
  */
-export function selectCrew(
+export function crewCandidates(
   type: MockVehicleType,
   pool: MockOperator[],
-  opts: { now: number; ownTeam: ReadonlySet<string>; target: 'MIN' | 'OPTIMAL' },
-): CrewSelection {
+  opts: { now: number; ownTeam: ReadonlySet<string> },
+): { ordered: MockOperator[]; exhausted: MockOperator[] } {
   const { now, ownTeam } = opts;
   const draftable = pool.filter(
     (op) =>
@@ -209,41 +213,60 @@ export function selectCrew(
       b.competence - a.competence ||
       a.id.localeCompare(b.id),
   );
+  return { ordered, exhausted };
+}
+
+/**
+ * Draws the crew of a vehicle, the backend's `selectCrew` (personnel.math.ts): at most `target` people (the minimum or
+ * the optimal crew), the required QUALIFICATIONS first — a crew cannot leave without them (CREW_UNQUALIFIED) —, then
+ * the required ROLES, which are recommended: a crew without one still leaves (CREW_ROLE_MISSING warning), then the best
+ * candidates up to the target. Never more than the target: one vehicle must not starve the next one of the same station.
+ */
+export function selectCrew(
+  type: MockVehicleType,
+  pool: MockOperator[],
+  opts: { now: number; ownTeam: ReadonlySet<string>; target: 'MIN' | 'OPTIMAL' },
+): CrewSelection {
+  const { now } = opts;
+  const { ordered, exhausted } = crewCandidates(type, pool, opts);
+  const target = opts.target === 'MIN' ? type.crewMin : Math.max(type.crewMin, type.crewOptimal);
   const crew: MockOperator[] = [];
-  const take = (pred: (op: MockOperator) => boolean, wanted: number): number => {
-    let have = crew.filter(pred).length;
-    for (const op of ordered) {
-      if (have >= wanted) break;
-      if (crew.includes(op) || !pred(op)) continue;
-      crew.push(op);
-      have += 1;
-    }
-    return have;
+  const take = (op: MockOperator | undefined) => {
+    if (op && !crew.includes(op) && crew.length < target) crew.push(op);
   };
-  const missing: string[] = [];
-  const recoverable: boolean[] = [];
-  for (const r of type.requiredRoles)
-    if (take((op) => op.roleCode === r.role, r.count) < r.count) {
-      missing.push(r.role);
-      recoverable.push(exhausted.some((op) => op.roleCode === r.role));
+  /** Adds holders of `pred` (best first) until `count` of the crew hold it; true when reached. */
+  const fill = (pred: (op: MockOperator) => boolean, count: number): boolean => {
+    while (crew.filter(pred).length < count) {
+      const next = ordered.find((op) => pred(op) && !crew.includes(op));
+      if (!next || crew.length >= target) break;
+      take(next);
     }
-  for (const q of type.requiredQualifications)
-    if (take((op) => holds(op, q.qualification, now), q.count) < q.count) {
-      missing.push(q.qualification);
-      recoverable.push(exhausted.some((op) => holds(op, q.qualification, now)));
-    }
-  take(() => true, opts.target === 'MIN' ? type.crewMin : type.crewOptimal);
+    return crew.filter(pred).length >= count;
+  };
+  const missingQualifications = type.requiredQualifications
+    .filter((q) => !fill((op) => holds(op, q.qualification, now), q.count))
+    .map((q) => q.qualification);
+  const missingRoles = type.requiredRoles
+    .filter((r) => !fill((op) => op.roleCode === r.role, r.count))
+    .map((r) => r.role);
+  for (const op of ordered) take(op);
   const blocked: CrewBlock | null =
     crew.length < type.crewMin
-      ? crew.length + exhausted.length >= type.crewMin
+      ? crew.length + exhausted.length >= type.crewMin && exhausted.length > 0
         ? 'CREW_EXHAUSTED'
         : 'CREW_INSUFFICIENT'
-      : missing.length > 0
-        ? recoverable.every(Boolean)
-          ? 'CREW_EXHAUSTED'
-          : 'CREW_UNQUALIFIED'
+      : missingQualifications.length > 0
+        ? 'CREW_UNQUALIFIED'
         : null;
-  return { crew, missing, exhausted: exhausted.length, blocked, ...crewQuality(type, crew, now) };
+  return {
+    crew,
+    missing: [...missingRoles, ...missingQualifications],
+    missingQualifications,
+    missingRoles,
+    exhausted: exhausted.length,
+    blocked,
+    ...crewQuality(type, crew, now),
+  };
 }
 
 /* ───────────── team status (derived, pure) ───────────── */
@@ -341,6 +364,11 @@ export interface PersonnelDomain {
   enroll(career: MockCareer, body: Record<string, unknown>): EnrollmentDto[];
   cancelEnrollment(career: MockCareer, id: string): EnrollmentDto;
   staffAll(career: MockCareer): void;
+  /**
+   * GET /personnel/vehicle-crew-gaps — per vehicle type, the specialist (candidate-market-only) roles of its crew the career
+   * can genuinely not hire now: owns none AND no current candidate (the backend's `vehicleCrewGaps`, a shop warning).
+   */
+  vehicleCrewGaps(career: MockCareer): { vehicleTypeCode: string; missingRoles: string[] }[];
 }
 const domains = new WeakMap<MockEngine, PersonnelDomain>();
 /** The REST handlers reach the module installed on their engine through this accessor. */
@@ -480,8 +508,13 @@ export function installPersonnel(engine: MockEngine): void {
   const baseRoleOf = (family: ServiceFamily): string =>
     (ROLES.find((r) => r.family === family && !r.specialist && r.quickHire) ?? ROLES[0]!).code;
 
-  /** Creates, already onboarded, whatever each owned vehicle still lacks (QA helper + lazy seed of old saves). */
-  function staffVehicles(career: MockCareer, target: 'MIN' | 'OPTIMAL'): void {
+  /**
+   * Creates, already onboarded, whatever each owned vehicle still lacks (QA helper + lazy seed of old saves): each vehicle
+   * gets a crew of its own. With `qualifyAll` (the `staffAll` QA helper) every member of those crews holds the vehicle's
+   * qualifications, so any of them can make up the crew of either of two vehicles of the same station sent one after the
+   * other (dispatch draws from the station's pool, best candidates first, not from "the crew of MSB 1").
+   */
+  function staffVehicles(career: MockCareer, target: 'MIN' | 'OPTIMAL', qualifyAll = false): void {
     const s = state(career);
     const now = engine.now();
     const taken = new Set<string>(Object.values(s.crews).flat());
@@ -504,7 +537,7 @@ export function installPersonnel(engine: MockEngine): void {
       for (const q of type.requiredQualifications) {
         const lacking = selection.crew.filter((op) => !holds(op, q.qualification, now));
         const have = selection.crew.length - lacking.length;
-        for (const op of lacking.slice(0, Math.max(0, q.count - have)))
+        for (const op of qualifyAll ? lacking : lacking.slice(0, Math.max(0, q.count - have)))
           op.qualifications.push({ code: q.qualification, obtainedAt: iso(now), expiresAt: null });
       }
       for (const op of select().crew) taken.add(op.id);
@@ -1150,8 +1183,12 @@ export function installPersonnel(engine: MockEngine): void {
       };
     }
     const selection = previewFor(career, vehicle, type);
-    const warnings = option.warnings.filter((w) => w !== 'CREW_BELOW_OPTIMAL' && w !== 'CREW_TIRED');
+    const warnings = option.warnings.filter(
+      (w) => w !== 'CREW_BELOW_OPTIMAL' && w !== 'CREW_TIRED' && w !== 'CREW_ROLE_MISSING',
+    );
     if (!selection.blocked && selection.crew.length < type.crewOptimal) warnings.push('CREW_BELOW_OPTIMAL');
+    // A recommended role missing from the crew (the backend's CREW_ROLE_MISSING): the vehicle still leaves.
+    if (!selection.blocked && selection.missingRoles.length > 0) warnings.push('CREW_ROLE_MISSING');
     if (!selection.blocked && BANDS.indexOf(selection.maxFatigueBand) >= BANDS.indexOf('FATIGUED'))
       warnings.push('CREW_TIRED');
     const blocks = option.dispatchable && selection.blocked !== null;
@@ -1164,9 +1201,9 @@ export function installPersonnel(engine: MockEngine): void {
         available: selection.crew.length,
         min: type.crewMin,
         optimal: type.crewOptimal,
-        missingQualifications: selection.missing,
-        // Ditto: no role/qualification split or recovery-time projection in the simulator's simplified model.
-        missingRoles: [],
+        missingQualifications: selection.missingQualifications,
+        missingRoles: selection.missingRoles,
+        // No per-operator fatigue-recovery projection in the simulator's simplified model.
         restUntilSeconds: null,
         maxFatigueBand: selection.maxFatigueBand,
         efficiency: selection.efficiency,
@@ -1197,18 +1234,24 @@ export function installPersonnel(engine: MockEngine): void {
       });
       if (selection.blocked)
         throw new MockError(409, selection.blocked, `No crew for ${row.vehicle.callSign}`, {
+          vehicleId: row.vehicle.id,
           vehicleIds: [row.vehicle.id],
+          available: selection.crew.length,
+          min: row.type.crewMin,
           missing: selection.missing,
+          missingQualifications: selection.missingQualifications,
+          missingRoles: selection.missingRoles,
         });
       row.crew = selection.crew;
       for (const op of selection.crew) taken.add(op.id);
     }
+    // The top-up takes the best candidates left (the backend's fill order), not the holders of the required roles
+    // first: those would leave the next vehicle of the same station without its own.
     for (const row of plan) {
-      const extra = selectCrew(row.type, poolOf(row.vehicle.facilityId), {
+      const extra = crewCandidates(row.type, poolOf(row.vehicle.facilityId), {
         now,
         ownTeam: ownTeamOf(career, row.vehicle.id),
-        target: 'OPTIMAL',
-      }).crew.slice(0, Math.max(0, row.type.crewOptimal - row.crew.length));
+      }).ordered.slice(0, Math.max(0, row.type.crewOptimal - row.crew.length));
       row.crew = [...row.crew, ...extra];
       for (const op of extra) taken.add(op.id);
     }
@@ -1219,6 +1262,9 @@ export function installPersonnel(engine: MockEngine): void {
     }
     publish(career);
   });
+
+  // A dispatch undone for free (air-endurance.md §5): the crews go back AVAILABLE with no fatigue (never worked).
+  engine.hooks.dispatchCancelled.push((career) => reconcile(career));
 
   engine.hooks.vehicleReturned.push((career, vehicle) => {
     const s = state(career);
@@ -1328,9 +1374,25 @@ export function installPersonnel(engine: MockEngine): void {
     enroll,
     cancelEnrollment,
     staffAll: (career) => {
-      staffVehicles(career, 'OPTIMAL');
+      staffVehicles(career, 'OPTIMAL', true);
       publish(career);
       engine.save();
+    },
+    vehicleCrewGaps: (career) => {
+      const owned = new Set(state(career).people.map((op) => op.roleCode));
+      const offered = new Set(candidates(career).candidates.map((c) => c.roleCode));
+      return VEHICLE_TYPES.flatMap((type) => {
+        const missing = [
+          ...new Set(
+            type.requiredRoles
+              .map((need) => ROLES.find((r) => r.code === need.role))
+              .filter((role): role is NonNullable<typeof role> => !!role && !role.quickHire)
+              .map((role) => role.code)
+              .filter((code) => !owned.has(code) && !offered.has(code)),
+          ),
+        ].sort();
+        return missing.length > 0 ? [{ vehicleTypeCode: type.code, missingRoles: missing }] : [];
+      });
     },
   };
   domains.set(engine, domain);

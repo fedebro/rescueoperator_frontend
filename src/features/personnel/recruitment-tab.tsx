@@ -159,7 +159,7 @@ function QuickHire({ onSelect }: { onSelect: (id: string) => void }) {
             </div>
             {facility ? (
               <span
-                className="text-subtle tabular text-center text-[11px]"
+                className="text-subtle tabular text-center text-xs"
                 aria-live="polite"
                 data-testid="hire-beds-remaining"
               >
@@ -168,7 +168,7 @@ function QuickHire({ onSelect }: { onSelect: (id: string) => void }) {
             ) : null}
           </div>
           <div className="min-w-0 flex-1 text-sm">
-            <span className="text-subtle block text-[11px] font-semibold tracking-wide uppercase">
+            <span className="text-subtle block text-xs font-semibold tracking-wide uppercase">
               {t('total')}
             </span>
             <CreditAmount value={total.toString()} label={tc('credits')} />

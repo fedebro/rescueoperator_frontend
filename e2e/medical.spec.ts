@@ -49,7 +49,10 @@ test('patients: triage → hospital choice → transport → admitted', async ({
     await page.locator(`[data-testid="incident-card"][data-incident-id="${incidentId}"]`).click();
     const patients = page.getByTestId('incident-patients');
     await expect(patients).toBeVisible();
+    // Collapsed by default, with the count and the triage state in its header (03 §2.4); one tap opens it.
     await expect(patients.getByText('1 paziente')).toBeVisible();
+    await expect(patients).toHaveAttribute('data-expanded', 'false');
+    await patients.getByTestId('patients-toggle').click();
     await expect(page.getByTestId('patients-unassessed')).toContainText('Triage in corso');
     await expect(page.getByTestId('patient-card')).toHaveAttribute('data-patient-status', 'UNASSESSED');
     await expect(page.getByTestId('map')).not.toHaveAttribute('data-hospitals-layer', 'on');
@@ -155,6 +158,7 @@ test('below the HOSPITAL_CHOICE level only the recommended hospital can be confi
   });
   const incidentId = await qa<string>(page, 'spawn', 'MED_FALL', 2);
   await page.locator(`[data-testid="incident-card"][data-incident-id="${incidentId}"]`).click();
+  await page.getByTestId('patients-toggle').click();
   await page.getByTestId('send-recommended').click();
   await expect(page.getByTestId('patient-card')).not.toHaveAttribute('data-patient-status', 'UNASSESSED', {
     timeout: 60_000,

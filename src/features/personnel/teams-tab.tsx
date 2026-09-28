@@ -293,7 +293,7 @@ function TeamCard({
       ) : null}
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-subtle text-[11px] font-semibold tracking-wide uppercase">{t('vehicle')}</span>
+        <span className="text-subtle text-xs font-semibold tracking-wide uppercase">{t('vehicle')}</span>
         <Select
           label={t('vehicle')}
           value={team.vehicleId ?? NONE}
@@ -309,9 +309,7 @@ function TeamCard({
       </div>
       {departments && local.length > 0 ? (
         <div className="flex flex-col gap-1.5">
-          <span className="text-subtle text-[11px] font-semibold tracking-wide uppercase">
-            {t('department')}
-          </span>
+          <span className="text-subtle text-xs font-semibold tracking-wide uppercase">{t('department')}</span>
           <Select
             label={t('department')}
             value={team.departmentId ?? NONE}

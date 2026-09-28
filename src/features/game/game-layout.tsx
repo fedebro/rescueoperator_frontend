@@ -12,6 +12,7 @@ import { AwayReportDialog } from './away-report';
 import { TutorialOverlay } from './tutorial-overlay';
 import { InsufficientCreditsHost } from '@/features/monetization/insufficient-credits';
 import { FamilyUnlockCelebration } from '@/features/families/family-unlock-celebration';
+import { MajorAlertHost } from '@/features/major/major-alert';
 
 export function GameLayout({ children }: { children: React.ReactNode }) {
   const t = useTranslations('common');
@@ -33,6 +34,8 @@ export function GameLayout({ children }: { children: React.ReactNode }) {
       <OutcomeModal />
       <InsufficientCreditsHost />
       <FamilyUnlockCelebration />
+      {/* The full-screen alert of a major incident, over any page (D-24, study 06 §2.6). */}
+      <MajorAlertHost />
     </GameRuntime>
   );
 }

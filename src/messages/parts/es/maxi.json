@@ -1,0 +1,107 @@
+{
+  "maxi": {
+    "alert": {
+      "severity": "Gravedad de la escena principal",
+      "boosted": "Más grave de lo que tu nivel suele ver",
+      "sized": "Dimensionada según tu flota: unos {count} vehículos",
+      "linked": "{count, plural, one {# emergencia vinculada ya notificada} other {# emergencias vinculadas ya notificadas}}",
+      "reward": "Bonificación estimada",
+      "hint": "Envía ya unidades a la escena principal: si queda sin cubrir, la emergencia se extiende.",
+      "open": "Coordinar el operativo",
+      "dismiss": "Cerrar"
+    },
+    "view": {
+      "phase": "Fase de la gran emergencia",
+      "mainProgress": "Escena principal",
+      "expiresIn": "Nadie en el lugar: se pierde en",
+      "endsIn": "Fin previsto en",
+      "growth": "Extendida {level} veces de {max}",
+      "growthNext": "Si la escena principal sigue sin cubrir, se extiende en",
+      "otherNeeds": "Otras necesidades",
+      "external": "Apoyo externo",
+      "byReinforcements": "Cubierto por refuerzos",
+      "coverage": "{percent} % cubierto",
+      "groupAria": "{family}: {onScene} % en el lugar, {enRoute} % en camino",
+      "needsCovered": "{covered} de {total} necesidades cubiertas",
+      "enRouteShare": "+{percent} % en camino",
+      "withReinforcements": "Con refuerzos",
+      "severity": "Gravedad",
+      "sectorOpen": "Abrir {title}",
+      "sectorVehicles": "{count, plural, =0 {Ningún vehículo} one {# vehículo} other {# vehículos}}",
+      "reinforcements": "Refuerzos externos",
+      "quoteCover": "Cubren",
+      "quoteCost": "Bonificación",
+      "quoteEta": "En el lugar en",
+      "priority": "Apoyo prioritario",
+      "columnShare": "{percent} % de las necesidades",
+      "reinforcedTotal": "Cubierto por refuerzos: {percent} % de la gran emergencia",
+      "summary": "Resumen",
+      "reward": "Bonificación de la gran emergencia",
+      "xp": "+{xp} XP",
+      "quality": "Calidad {percent} %",
+      "rewardHint": "Se suma a la recompensa de cada emergencia: cuanto más la gestiona tu propia flota, más ganas.",
+      "fleet": "Dimensionada sobre {operational} vehículos operativos · objetivo {target}",
+      "loadError": "No se pudo cargar la gran emergencia.",
+      "close": "Cerrar",
+      "centerOnMap": "Centrar en el mapa",
+      "boosted": "Por encima de tu nivel",
+      "elapsed": "En curso desde hace",
+      "needs": "Necesidades por servicio",
+      "needsHint": "Todas las emergencias abiertas",
+      "needsNone": "Ninguna necesidad abierta",
+      "committed": "{count, plural, =0 {Ningún vehículo comprometido} one {# vehículo comprometido} other {# vehículos comprometidos}}",
+      "sectors": "Sectores · {count}"
+    },
+    "reinforcements": {
+      "requested": "Refuerzos solicitados",
+      "requestedBody": "La columna cubrirá el {percent} % de las necesidades."
+    },
+    "queue": {
+      "openAria": "Abrir la coordinación de la gran emergencia: {title}",
+      "sectors": "{count, plural, one {# sector} other {# sectores}}",
+      "pending": "{count, plural, one {# en espera} other {# en espera}}",
+      "coordinate": "Coordinar"
+    },
+    "member": {
+      "badge": "Gran",
+      "open": "Coordinar"
+    },
+    "strip": {
+      "aria": "Abrir la gran emergencia en curso: {title}",
+      "pending": "{count, plural, one {# sector en espera} other {# sectores en espera}}",
+      "open": "Coordinar"
+    },
+    "toast": {
+      "linked": "Nueva emergencia vinculada a la gran emergencia",
+      "coordinate": "Coordinar",
+      "phase": "Gran emergencia: fase de {phase}",
+      "endedBody": "Bonificación de {credits} créditos",
+      "summary": "Resumen"
+    },
+    "trophies": {
+      "title": "Grandes emergencias",
+      "subtitle": "Una medalla por cada tipo de gran emergencia gestionada: oro sin refuerzos y sin dejar que se extienda.",
+      "total": "{count, plural, =0 {Ninguna gestionada} one {# gestionada} other {# gestionadas}}",
+      "none": "Todavía no",
+      "handled": "{handled, plural, one {# gestionada} other {# gestionadas}} de {attempts}",
+      "best": "mejor {percent} %",
+      "locked": "desde el nivel {level}",
+      "history": "Últimas grandes emergencias"
+    },
+    "dispatch": {
+      "majorCap": "Gran emergencia: hasta {count} vehículos por envío ({selected} seleccionados)",
+      "capReached": "Como máximo {count} vehículos por envío: envía estos y luego añade los demás"
+    }
+  },
+  "ledger": {
+    "MAJOR_INCIDENT": "Bonificación de gran emergencia"
+  },
+  "notificationCenter": {
+    "major": "Gran emergencia"
+  },
+  "game": {
+    "queue": {
+      "majorMembers": "Emergencias de la gran emergencia"
+    }
+  }
+}

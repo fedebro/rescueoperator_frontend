@@ -55,7 +55,7 @@ export function InviteStatusChip({ status }: { status: InviteStatus }) {
     <span
       data-status={status}
       className={cn(
-        'inline-flex h-6 shrink-0 items-center gap-1 rounded-full border px-2 text-[11px] font-semibold whitespace-nowrap',
+        'inline-flex h-6 shrink-0 items-center gap-1 rounded-full border px-2 text-xs font-semibold whitespace-nowrap',
         className,
       )}
     >
@@ -320,9 +320,7 @@ export function InvitedList({ invited }: { invited: Invited[] }) {
         >
           <span className="min-w-0 flex-1">
             <span className="block truncate text-sm font-semibold">{r.directorName}</span>
-            <span className="tabular text-subtle block text-[11px]">
-              {formatDateTime(r.joinedAt, locale)}
-            </span>
+            <span className="tabular text-subtle block text-xs">{formatDateTime(r.joinedAt, locale)}</span>
           </span>
           <InviteStatusChip status={r.status} />
         </li>

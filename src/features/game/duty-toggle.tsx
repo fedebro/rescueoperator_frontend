@@ -11,7 +11,10 @@ import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { useCareerId, useSnapshot } from './hooks';
 
-/** On duty = the server generates incidents for this career. Off duty = started processes finish, nothing new spawns. */
+/**
+ * On duty = the server generates incidents for this career. Off duty = started processes finish, nothing new spawns.
+ * One place per layout (03 §2.9): the sheet's summary row below 1024 px, the top bar on desktop (+ Settings).
+ */
 export function DutyToggle({ compact }: { compact?: boolean }) {
   const careerId = useCareerId();
   const { career } = useSnapshot();
@@ -38,23 +41,32 @@ export function DutyToggle({ compact }: { compact?: boolean }) {
       toast({ tone: 'danger', title: errorMessage(e) });
     },
   });
-  return (
-    <div
-      className={cn(
-        'flex items-center gap-2',
-        !compact && 'border-border bg-surface-2 justify-between rounded-md border p-3',
-      )}
-    >
+  // Compact (sheet summary row on phones, top bar on desktop): the label and the switch are one 44 px target.
+  if (compact)
+    return (
       <label
         htmlFor={id}
-        className={cn('cursor-pointer', compact ? 'text-xs font-semibold' : 'flex flex-col')}
+        className="flex min-h-11 shrink-0 cursor-pointer items-center gap-2 text-xs font-semibold"
+        data-testid="duty-control"
       >
-        <span className={cn(career.onDuty ? 'text-success' : 'text-muted', !compact && 'font-semibold')}>
+        <span className={career.onDuty ? 'text-success' : 'text-muted'}>
           {career.onDuty ? t('on') : t('off')}
         </span>
-        {compact ? null : (
-          <span className="text-muted text-xs">{career.onDuty ? t('onHint') : t('offHint')}</span>
-        )}
+        <Switch
+          id={id}
+          checked={career.onDuty}
+          onCheckedChange={(v) => mutation.mutate(v)}
+          data-testid="duty-toggle"
+        />
+      </label>
+    );
+  return (
+    <div className="border-border bg-surface-2 flex items-center justify-between gap-2 rounded-md border p-3">
+      <label htmlFor={id} className="flex cursor-pointer flex-col">
+        <span className={cn('font-semibold', career.onDuty ? 'text-success' : 'text-muted')}>
+          {career.onDuty ? t('on') : t('off')}
+        </span>
+        <span className="text-muted text-xs">{career.onDuty ? t('onHint') : t('offHint')}</span>
       </label>
       <Switch
         id={id}

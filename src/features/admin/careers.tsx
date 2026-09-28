@@ -27,6 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useReasonedAction } from './confirm-with-reason';
 import { CreditAdjustmentDialog } from './credit-adjustment';
 import { SpawnIncidentDialog } from './spawn-incident';
+import { SpawnMajorDialog } from './spawn-major';
 import {
   AdminTable,
   DateCell,
@@ -182,6 +183,7 @@ function CareerInspector({ detail }: { detail: AdminCareerDetail }) {
   const [tab, setTab] = React.useState<string>('overview');
   const [adjusting, setAdjusting] = React.useState(false);
   const [spawning, setSpawning] = React.useState(false);
+  const [spawningMajor, setSpawningMajor] = React.useState(false);
   const mayAdjust = can('careers.creditAdjustment') && detail.creditAdjustmentLimit !== '0';
   const duty = useReasonedAction<boolean, AdminCareerRow>({
     run: (onDuty, reason) => adminApi.setDuty(career.id, onDuty, reason),
@@ -205,6 +207,16 @@ function CareerInspector({ detail }: { detail: AdminCareerDetail }) {
           <Button variant="secondary" onClick={() => setSpawning(true)}>
             <Siren className="size-4" aria-hidden />
             {t('spawnIncident')}
+          </Button>
+        ) : null}
+        {can('careers.spawnMajor') ? (
+          <Button
+            variant="secondary"
+            onClick={() => setSpawningMajor(true)}
+            data-testid="admin-spawn-major-open"
+          >
+            <Siren className="size-4" aria-hidden />
+            {t('spawnMajor')}
           </Button>
         ) : null}
         {can('careers.setDuty') ? (
@@ -274,6 +286,7 @@ function CareerInspector({ detail }: { detail: AdminCareerDetail }) {
         />
       ) : null}
       {spawning ? <SpawnIncidentDialog open onOpenChange={setSpawning} careerId={career.id} /> : null}
+      {spawningMajor ? <SpawnMajorDialog open onOpenChange={setSpawningMajor} careerId={career.id} /> : null}
       {duty.dialog}
     </>
   );
@@ -529,7 +542,7 @@ export function IncidentRowsTable({
       cell: (i) => (
         <span title={i.templateCode}>
           {name('incident', i.templateCode, 'title')}{' '}
-          <code className="text-subtle text-[11px]">{i.templateCode}</code>
+          <code className="text-subtle text-xs">{i.templateCode}</code>
         </span>
       ),
       sortValue: (i) => i.templateCode,

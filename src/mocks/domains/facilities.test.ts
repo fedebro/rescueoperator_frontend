@@ -85,9 +85,17 @@ describe('candidate sites', () => {
     expect(south.length).toBeGreaterThan(0);
     expect(south.every((s) => s.position[1] <= 42.445)).toBe(true);
     expect(listSites(w.engine, w.career, [0, 0, 1, 1])).toEqual([]);
-    const shared = listSites(w.engine, w.career, null, 'SHARED');
+    // Like the backend, nautical sites (Base nautica, D-23) are listed whatever the family unless `kind=STANDARD`.
+    const shared = listSites(w.engine, w.career, null, 'SHARED', 'STANDARD');
     expect(shared).toHaveLength(1);
-    expect(listSites(w.engine, w.career, null, 'EMS').every((s) => s.family === 'EMS')).toBe(true);
+    expect(listSites(w.engine, w.career, null, 'EMS', 'STANDARD').every((s) => s.family === 'EMS')).toBe(
+      true,
+    );
+    expect(
+      listSites(w.engine, w.career, null, 'EMS')
+        .filter((s) => s.family !== 'EMS')
+        .every((s) => s.nautical),
+    ).toBe(true);
   });
 
   it('locks options by family and by level, with the reason', () => {
@@ -151,9 +159,10 @@ describe('facility acquisition', () => {
     expect(
       code(() => acquireFacility(w.engine, w.career, { siteId: ems.id, facilityTypeCode: 'EMS_POST' })),
     ).toBe('SITE_NOT_AVAILABLE');
+    // backend contract: CAPACITY_EXCEEDED with `reason: FACILITY_NOT_OPERATIONAL`
     expect(
       code(() => w.engine.buyVehicle(w.career, { vehicleTypeCode: 'EMS_MSB', facilityId: detail.id })),
-    ).toBe('VALIDATION_ERROR');
+    ).toBe('CAPACITY_EXCEEDED');
     const setup = FACILITY_TYPES.find((f) => f.code === 'EMS_POST')!.setupSeconds;
     w.advance(setup - 1);
     expect(w.career.facilities.find((f) => f.id === detail.id)!.status).toBe('UNDER_CONSTRUCTION');
@@ -225,13 +234,14 @@ describe('facility promotion', () => {
     w.advance(FACILITY_TYPES.find((f) => f.code === 'FIRE_LOCAL_STATION')!.promotion!.buildSeconds + 1);
     const done = w.career.facilities[0]!;
     expect(done).toMatchObject({ typeCode: 'FIRE_DETACHMENT', promotion: null, status: 'OPERATIONAL' });
-    // FIRE_DETACHMENT base GROUND 10 + 2 garage levels × 2; WATER appears; used points are kept
+    // FIRE_DETACHMENT base GROUND 10 + 2 garage levels × 2; used points are kept. No WATER berths any more: boats
+    // live only in a Base nautica (D-23), so the catalog gives the detachment WATER 0.
     expect(done.capacities.find((c) => c.domain === 'GROUND')).toEqual({
       domain: 'GROUND',
       total: 14,
       used: groundBefore.used,
     });
-    expect(done.capacities.find((c) => c.domain === 'WATER')!.total).toBe(1);
+    expect(done.capacities.find((c) => c.domain === 'WATER')!.total).toBe(0);
     expect(done.capacities.find((c) => c.domain === 'PERSONNEL')!.total).toBe(20 + 2 * 4);
     expect(done.upgrades.find((u) => u.code === 'GARAGE')!.level).toBe(2);
     expect(w.career.notifications[0]!.title.key).toBe('notifications.facilityPromoted');
@@ -256,7 +266,8 @@ describe('vehicle transfer', () => {
   it('moves an AVAILABLE vehicle: capacity on both sides, IN_DELIVERY for the drive, then AVAILABLE', () => {
     const { w, targetId } = twoStations();
     const vehicle = w.career.vehicles[0]!;
-    expect(code(() => transferVehicle(w.engine, w.career, vehicle.id, targetId))).toBe('VALIDATION_ERROR'); // under construction
+    // under construction: CAPACITY_EXCEEDED `reason: FACILITY_NOT_OPERATIONAL` (backend contract)
+    expect(code(() => transferVehicle(w.engine, w.career, vehicle.id, targetId))).toBe('CAPACITY_EXCEEDED');
     w.advance(FACILITY_TYPES.find((f) => f.code === 'FIRE_LOCAL_STATION')!.setupSeconds + 1);
     const from = w.career.facilities[0]!;
     const usedBefore = from.capacities.find((c) => c.domain === 'GROUND')!.used;
@@ -296,7 +307,8 @@ describe('vehicle transfer', () => {
     expect(code(() => transferVehicle(w.engine, w.career, vehicle.id, vehicle.facilityId))).toBe(
       'VALIDATION_ERROR',
     );
-    expect(code(() => transferVehicle(w.engine, w.career, vehicle.id, ems.id))).toBe('VALIDATION_ERROR');
+    // incompatible type: CAPACITY_EXCEEDED `reason: INCOMPATIBLE_FACILITY` (backend contract)
+    expect(code(() => transferVehicle(w.engine, w.career, vehicle.id, ems.id))).toBe('CAPACITY_EXCEEDED');
     w.career.facilities = w.career.facilities.map((f) =>
       f.id === targetId ? { ...f, capacities: f.capacities.map((c) => ({ ...c, used: c.total })) } : f,
     );

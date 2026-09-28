@@ -3,7 +3,17 @@ import * as React from 'react';
 import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
-import { AlertTriangle, Radar, Send, Sparkles, Truck } from 'lucide-react';
+import {
+  AlertTriangle,
+  ChevronDown,
+  LifeBuoy,
+  MapPin,
+  Radar,
+  Send,
+  Sparkles,
+  Truck,
+  Waves,
+} from 'lucide-react';
 import type { IncidentDto, ServiceFamily } from '@/contracts';
 import { gameApi } from '@/lib/api/endpoints';
 import { qk } from '@/lib/api/query-keys';
@@ -16,18 +26,31 @@ import { soundEnabled, useSettingsStore } from '@/stores/settings';
 import { toast } from '@/stores/toast';
 import { useCatalogName, useI18nText } from '@/i18n/use-i18n-text';
 import { useServerNow } from '@/hooks/use-server-now';
+import { useIsDesktop } from '@/hooks/use-media-query';
 import { cn } from '@/lib/utils';
 import { FamilyBadge, GameIcon, TopdownGlyph, capabilityIconName, vehicleClassOf } from '@/design/icons';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CapabilityBar } from '@/components/ui/capability-bar';
 import { Checkbox } from '@/components/ui/switch';
+import { FooterPortal } from '@/components/ui/footer-slot';
 import { EmptyState, SectionTitle, Skeleton } from '@/components/ui/misc';
 import { StatusChip } from '@/components/ui/status-chip';
+import { Countdown } from '@/components/ui/countdown';
 import { DispatchCrewBlocked, DispatchCrewPreview, crewBlockOf } from '@/features/personnel/slots';
+import { AUTONOMY_WARNINGS } from '@/features/autonomy/autonomy';
+import {
+  ChainFuelStop,
+  DispatchAutonomyFlag,
+  DispatchFlightNote,
+  DispatchReloadNote,
+} from '@/features/autonomy/dispatch-autonomy';
+import { DispatchPatientCapacityNote } from '@/features/medical/mass-casualty';
 import { WarningNextAction, warningNextAction } from '@/features/coaching/warning-next-action';
 import { CoachMark } from '@/features/coaching/coach-mark';
 import { useFamilyLabel } from '@/features/facilities/site-details';
+import { DispatchWaterRoute } from '@/features/water/incident-water';
+import { isWaterIncident, requirementsBySide } from '@/features/water/water';
 import { useCareerId, useCatalog, useSnapshot, useVehicleTypeLookup } from './hooks';
 
 type FamilyFilter = 'ALL' | ServiceFamily;
@@ -40,33 +63,84 @@ export function RequirementBars({
   planned?: Map<string, number>;
 }) {
   const t = useTranslations('game.requirements');
+  const tn = useTranslations('nautical.requirements');
   const tx = useI18nText();
   const catalog = useCatalog();
   const nameOf = (code: string) =>
-    tx(catalog?.capabilities.find((c) => c.code === code)?.name ?? { key: `catalog.capability.${code}` });
+    tx(catalog?.capabilities?.find((c) => c.code === code)?.name ?? { key: `catalog.capability.${code}` });
   const legend = {
     onScene: t('onScene'),
     enRoute: t('enRoute'),
     planned: t('planned'),
     required: t('required'),
   };
+  const bar = (r: IncidentDto['requirements'][number]) =>
+    // A need the Coast Guard covers (D-68) is not the player's: a line with who covers it, no bar to fill.
+    r.externalSource === 'COAST_GUARD' ? (
+      <div
+        key={r.capability}
+        className="flex items-center gap-2 text-xs"
+        data-testid="requirement-coast-guard"
+        data-capability={r.capability}
+      >
+        <span aria-hidden className="text-muted">
+          <GameIcon name={capabilityIconName(r.capability)} size={16} />
+        </span>
+        <span className="text-fg min-w-0 flex-1 truncate font-semibold">{nameOf(r.capability)}</span>
+        <Badge tone="info">
+          <LifeBuoy className="size-3" aria-hidden />
+          {tn('coastGuard')}
+        </Badge>
+      </div>
+    ) : (
+      <CapabilityBar
+        key={r.capability}
+        label={nameOf(r.capability)}
+        icon={<GameIcon name={capabilityIconName(r.capability)} size={16} />}
+        required={r.required}
+        onScene={r.onScene}
+        enRoute={r.enRoute}
+        planned={planned?.get(r.capability) ?? 0}
+        level={r.level}
+        levelLabel={t(`level.${r.level}`)}
+        legend={legend}
+      />
+    );
+  // Water incidents (D-68): the needs served in the water (boats, aircraft — or the Coast Guard) apart from those served
+  // on the shore, at the meeting point (land units).
+  const sides = isWaterIncident(incident) ? requirementsBySide(incident.requirements) : null;
   return (
     <div className="flex flex-col gap-3">
-      {incident.requirements.map((r) => (
-        <CapabilityBar
-          key={r.capability}
-          label={nameOf(r.capability)}
-          icon={<GameIcon name={capabilityIconName(r.capability)} size={16} />}
-          required={r.required}
-          onScene={r.onScene}
-          enRoute={r.enRoute}
-          planned={planned?.get(r.capability) ?? 0}
-          level={r.level}
-          levelLabel={t(`level.${r.level}`)}
-          legend={legend}
-        />
-      ))}
-      <ul className="text-subtle flex flex-wrap gap-x-4 gap-y-1 text-[11px]" aria-hidden>
+      {sides
+        ? (
+            [
+              ['WATER', sides.water, Waves],
+              ['SHORE', sides.shore, MapPin],
+            ] as const
+          )
+            .filter(([, list]) => list.length > 0)
+            .map(([side, list, Icon]) => (
+              <section
+                key={side}
+                className="flex flex-col gap-2.5"
+                data-testid="requirement-side"
+                data-side={side}
+                aria-label={tn(side === 'WATER' ? 'water' : 'shore')}
+              >
+                <header className="flex items-baseline gap-2">
+                  <Icon className="text-info size-4 shrink-0 self-center" aria-hidden />
+                  <span className="text-fg text-xs font-bold tracking-wide uppercase">
+                    {tn(side === 'WATER' ? 'water' : 'shore')}
+                  </span>
+                  <span className="text-subtle min-w-0 truncate text-xs">
+                    {tn(side === 'WATER' ? 'waterHint' : 'shoreHint')}
+                  </span>
+                </header>
+                {list.map(bar)}
+              </section>
+            ))
+        : incident.requirements.map(bar)}
+      <ul className="text-subtle flex flex-wrap gap-x-4 gap-y-1 text-xs" aria-hidden>
         <li className="flex items-center gap-1">
           <span className="bg-success h-2 w-4 rounded-sm" />
           {legend.onScene}
@@ -95,6 +169,97 @@ export function RequirementBars({
 }
 
 /**
+ * Coverage the incident would have with what is on scene, on the way and `planned` on top: the share of the REQUIRED
+ * capability points met (all requirements when none is required) and the capabilities still short. Exported for tests.
+ */
+export function coverageForecast(
+  incident: Pick<IncidentDto, 'requirements'>,
+  planned: ReadonlyMap<string, number>,
+): { percent: number; missing: string[] } {
+  // Needs covered by external support (a locked family, the Coast Guard on the water) are not the player's to fill.
+  const own = incident.requirements.filter((r) => !r.external);
+  const required = own.filter((r) => r.level === 'REQUIRED');
+  const pool = required.length > 0 ? required : own;
+  let have = 0;
+  let need = 0;
+  const missing: string[] = [];
+  for (const r of pool) {
+    const covered = r.onScene + r.enRoute + (planned.get(r.capability) ?? 0);
+    have += Math.min(covered, r.required);
+    need += r.required;
+    if (covered < r.required) missing.push(r.capability);
+  }
+  return { percent: need > 0 ? Math.min(100, Math.round((have / need) * 100)) : 100, missing };
+}
+
+/**
+ * One line instead of the old sticky block of bars (03 §2.4): "Copertura prevista 85% · manca: Sanitario", with the
+ * full bars one tap away. Forecast = what the primary action would send (the manual pick once there is one).
+ */
+function RequirementSummary({
+  incident,
+  planned,
+  defaultOpen,
+}: {
+  incident: IncidentDto;
+  planned: Map<string, number>;
+  defaultOpen: boolean;
+}) {
+  const t = useTranslations('game.requirements');
+  const tx = useI18nText();
+  const catalog = useCatalog();
+  const [open, setOpen] = React.useState(defaultOpen);
+  const id = React.useId();
+  const { percent, missing } = coverageForecast(incident, planned);
+  const nameOf = (code: string) =>
+    tx(catalog?.capabilities?.find((c) => c.code === code)?.name ?? { key: `catalog.capability.${code}` });
+  const list =
+    missing.slice(0, 2).map(nameOf).join(', ') + (missing.length > 2 ? ` +${missing.length - 2}` : '');
+  return (
+    <div data-testid="coverage-summary" data-percent={percent} data-open={open}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        aria-controls={id}
+        className="-mx-1 flex min-h-11 w-[calc(100%+0.5rem)] items-center gap-2 rounded-md px-1 text-left text-sm"
+        data-testid="coverage-toggle"
+      >
+        <span className="text-muted shrink-0">{t('forecast')}</span>
+        <span
+          className={cn(
+            'tabular shrink-0 font-bold',
+            percent >= 100 ? 'text-success' : percent >= 60 ? 'text-warning' : 'text-danger',
+          )}
+        >
+          {percent}%
+        </span>
+        <span className="min-w-0 flex-1 truncate">
+          <span className="text-subtle" aria-hidden>
+            ·{' '}
+          </span>
+          {missing.length > 0 ? (
+            <span className="text-warning">{t('missing', { list })}</span>
+          ) : (
+            <span className="text-success">{t('covered')}</span>
+          )}
+        </span>
+        <ChevronDown
+          className={cn('text-muted size-4 shrink-0 transition-transform', open && 'rotate-180')}
+          aria-hidden
+        />
+        <span className="sr-only">{open ? t('hideDetails') : t('showDetails')}</span>
+      </button>
+      {open ? (
+        <div id={id} className="mt-2">
+          <RequirementBars incident={incident} planned={planned} />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/**
  * Codes the dispatch command can still throw for a vehicle that `dispatch-options` marked `dispatchable: true`: the
  * options list checks each vehicle on its own, but crew and consumables are a shared pool per facility, so two
  * vehicles that each look sendable in isolation can still compete for the same operator or the same last box of
@@ -115,17 +280,40 @@ const DISPATCH_STALE_CODES: ReadonlySet<ApiErrorCode> = new Set([
  * not launched for an incident it would contribute nothing to. Unlike a crew or stock block there is nothing to fix
  * and nothing to wait for, so the row shows the reason on its own, with no "how to fix it" link.
  */
-const ELIGIBILITY_BLOCKS = ['VEHICLE_DOMAIN_MISMATCH', 'AIR_SUPPORT_NOT_NEEDED'] as const;
+const ELIGIBILITY_BLOCKS = [
+  'VEHICLE_DOMAIN_MISMATCH',
+  'AIR_SUPPORT_NOT_NEEDED',
+  // Flight endurance: not even there and back with the reserve intact, a full tank included (air-endurance §1).
+  'ENDURANCE_INSUFFICIENT',
+] as const;
 type EligibilityBlock = (typeof ELIGIBILITY_BLOCKS)[number];
 export const eligibilityBlockOf = (
   option: DispatchOptionsResult['options'][number],
 ): EligibilityBlock | null => ELIGIBILITY_BLOCKS.find((code) => code === option.blockedReason) ?? null;
 
 /** Reason line for a vehicle that is ineligible by nature; mirrors the crew block's wording and styling. */
-function DispatchEligibilityBlock({ option }: { option: DispatchOptionsResult['options'][number] }) {
+function DispatchEligibilityBlock({
+  option,
+  incident,
+  boat,
+}: {
+  option: DispatchOptionsResult['options'][number];
+  incident: IncidentDto;
+  /** The vehicle is a boat (a WATER-domain type). */
+  boat: boolean;
+}) {
   const t = useTranslations('game.dispatch.ineligible');
+  const tn = useTranslations('nautical.dispatch');
   const block = eligibilityBlockOf(option);
   if (!block) return null;
+  // The water scene (D-68) says exactly why: a boat never reaches a land incident; a land unit at a water incident only
+  // works at the meeting point, for care, transport or security.
+  const text =
+    block === 'VEHICLE_DOMAIN_MISMATCH' && boat && !isWaterIncident(incident)
+      ? tn('boatOnLand')
+      : block === 'VEHICLE_DOMAIN_MISMATCH' && !boat && isWaterIncident(incident)
+        ? tn('landAtWater')
+        : t(block);
   return (
     <p
       className="text-danger mt-2 flex items-center gap-1 pl-[30px] text-xs font-semibold"
@@ -134,7 +322,7 @@ function DispatchEligibilityBlock({ option }: { option: DispatchOptionsResult['o
       data-blocked={block}
     >
       <AlertTriangle className="size-3.5 shrink-0" aria-hidden />
-      {t(block)}
+      {text}
     </p>
   );
 }
@@ -170,11 +358,13 @@ function ChainAction({
     ? Math.max(0, Math.round((Date.parse(chain.availableAt) - now) / 1000))
     : null;
 
+  // 44 px on touch screens (03 §2.10), the compact 32 px only where there is a mouse.
+  const size = 'h-11 lg:h-8';
   if (queuedHere)
     return (
       <div className="flex shrink-0 flex-col items-end gap-1">
         <Badge tone="info">{t('queued')}</Badge>
-        <Button size="sm" variant="ghost" onClick={onCancel} loading={cancelling}>
+        <Button size="sm" variant="ghost" className={size} onClick={onCancel} loading={cancelling}>
           {t('cancelQueue')}
         </Button>
       </div>
@@ -182,25 +372,45 @@ function ChainAction({
 
   if (chain.redirectEligible)
     return (
-      <Button size="sm" onClick={onChain} loading={chaining} data-testid="chain-redirect">
-        {t('redirect')}
-      </Button>
+      <div className="flex shrink-0 flex-col items-end gap-1">
+        <Button size="sm" className={size} onClick={onChain} loading={chaining} data-testid="chain-redirect">
+          {t('redirect')}
+        </Button>
+        {/* A redirect in reserve refuels at a pump on the way first: its seconds are already in the new ETA. */}
+        {chain.fuelStop ? <ChainFuelStop fuelStop={chain.fuelStop} /> : null}
+      </div>
     );
 
   return (
     <div className="flex shrink-0 flex-col items-end gap-1">
-      <Button size="sm" variant="secondary" onClick={onChain} loading={chaining} data-testid="chain-queue">
+      <Button
+        size="sm"
+        variant="secondary"
+        className={size}
+        onClick={onChain}
+        loading={chaining}
+        data-testid="chain-queue"
+      >
         {t('queue')}
       </Button>
       {chain.blockedReason ? (
-        <span className="text-subtle text-right text-[11px]">
+        <span
+          className="text-subtle text-right text-xs"
+          data-testid="chain-reason"
+          data-reason={chain.blockedReason}
+        >
           {t.has(`reason.${chain.blockedReason}` as never)
             ? t(`reason.${chain.blockedReason}` as never)
             : chain.blockedReason}
         </span>
-      ) : availableInSeconds !== null ? (
-        <span className="text-subtle text-[11px]">{t('availableIn', { time: formatClock(availableInSeconds) })}</span>
       ) : null}
+      {/* "Free at" = back home + the resupply stop the rule predicts (or the end of the stop it is making). */}
+      {availableInSeconds !== null ? (
+        <span className="text-subtle text-xs" data-testid="chain-available-in">
+          {t('availableIn', { time: formatClock(availableInSeconds) })}
+        </span>
+      ) : null}
+      {chain.fuelStop ? <ChainFuelStop fuelStop={chain.fuelStop} /> : null}
     </div>
   );
 }
@@ -213,6 +423,7 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
   const ts = useTranslations('status.vehicle');
   const tw = useTranslations('game.dispatch.warning');
   const tci = useTranslations('coaching.marks.crewInsufficient');
+  const tm = useTranslations('maxi.dispatch');
   const itemName = useCatalogName();
   /**
    * Warning codes are opaque strings; the stock ones carry the item code after a colon
@@ -232,6 +443,7 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
   const qc = useQueryClient();
   const errorMessage = useErrorMessage();
   const now = useServerNow(1000);
+  const desktop = useIsDesktop();
   const { vehicles, facilities } = useSnapshot();
   const typeOf = useVehicleTypeLookup();
   const familyLabel = useFamilyLabel();
@@ -278,6 +490,9 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
     () => new Set([...(manual ?? [])].filter((id) => dispatchable.has(id))),
     [manual, dispatchable],
   );
+  // One dispatch command sends at most `maxVehiclesPerDispatch` (12; 24 on a major's incidents, D-69): the rest next time.
+  const cap = data?.maxVehiclesPerDispatch ?? null;
+  const capReached = cap !== null && selected.size >= cap;
   const planned = React.useMemo(() => {
     const m = new Map<string, number>();
     for (const o of data?.options ?? [])
@@ -286,7 +501,10 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
     return m;
   }, [data, selected]);
   const insufficient = incident.requirements.some(
-    (r) => r.level === 'REQUIRED' && r.onScene + r.enRoute + (planned.get(r.capability) ?? 0) < r.required,
+    (r) =>
+      r.level === 'REQUIRED' &&
+      !r.external &&
+      r.onScene + r.enRoute + (planned.get(r.capability) ?? 0) < r.required,
   );
   // The first option warning with a known "go fix it" destination — one concrete next action, not one per badge.
   const actionableWarning = (data?.options ?? [])
@@ -355,7 +573,7 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
     setManual((prev) => {
       const next = new Set(prev ?? []);
       if (next.has(id)) next.delete(id);
-      else next.add(id);
+      else if (cap === null || [...next].filter((x) => dispatchable.has(x)).length < cap) next.add(id);
       return next;
     });
   const sameAsRecommended =
@@ -364,6 +582,16 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
   // via `chain` — that option list must render even when nothing can leave immediately (e.g. a one-vehicle fleet with
   // its only unit inbound from another call), or the chain action has nowhere to appear.
   const anyChainable = (data?.options ?? []).some((o) => o.chain);
+  const manualPick = manual !== null && !sameAsRecommended;
+  // What the primary action would add on top of what is already committed: the forecast of the summary line.
+  const forecast = React.useMemo(() => {
+    if (manualPick) return planned;
+    const m = new Map<string, number>();
+    for (const o of data?.options ?? [])
+      if (recommended.has(o.vehicleId) && o.dispatchable)
+        for (const c of o.contributes) m.set(c.code, (m.get(c.code) ?? 0) + c.value);
+    return m;
+  }, [manualPick, planned, data, recommended]);
 
   if (!data)
     return (
@@ -373,6 +601,22 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
         <Skeleton className="h-16" />
       </div>
     );
+
+  const sendRecommended = (
+    <Button
+      size={manualPick ? 'md' : 'lg'}
+      variant={manualPick ? 'secondary' : 'primary'}
+      className="w-full"
+      onClick={() => mutation.mutate([...recommended])}
+      loading={mutation.isPending || awaitingStaleRefetch}
+      disabled={recommended.size === 0 || awaitingStaleRefetch}
+      data-tutorial="send-recommended"
+      data-testid="send-recommended"
+    >
+      <Sparkles className="size-5" aria-hidden />
+      {t('sendRecommended', { count: recommended.size })}
+    </Button>
+  );
 
   return (
     <div className="flex flex-col gap-4 p-4" data-testid="dispatch-panel">
@@ -401,84 +645,87 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
           title={t('noneAvailableTitle')}
           description={t('noneAvailableHint')}
           action={
-            <Button asChild variant="secondary">
+            <Button asChild variant="secondary" className="h-11">
               <Link href="/game/shop">{t('goToShop')}</Link>
             </Button>
           }
         />
       ) : (
         <>
+          {/* The primary action lives in the inspector's pinned footer (always visible, also in the sheet's peek). */}
           {dispatchable.size > 0 ? (
-            <div className="flex flex-col gap-2">
-              <Button
-                size="lg"
-                className="w-full"
-                onClick={() => mutation.mutate([...recommended])}
-                loading={mutation.isPending || awaitingStaleRefetch}
-                disabled={recommended.size === 0 || awaitingStaleRefetch}
-                data-tutorial="send-recommended"
-                data-testid="send-recommended"
-              >
-                <Sparkles className="size-5" aria-hidden />
-                {t('sendRecommended', { count: recommended.size })}
-              </Button>
-              {manual !== null && !sameAsRecommended ? (
-                <Button
-                  size="lg"
-                  variant="secondary"
-                  className="w-full"
-                  onClick={() => mutation.mutate([...selected])}
-                  loading={mutation.isPending || awaitingStaleRefetch}
-                  disabled={selected.size === 0 || awaitingStaleRefetch}
-                  data-testid="send-selected"
-                >
-                  <Send className="size-4" aria-hidden />
-                  {t('sendSelected', { count: selected.size })}
-                </Button>
-              ) : null}
-              {!data.recommendationCoversRequired && manual === null ? (
-                <p className="text-warning flex items-start gap-2 text-xs">
-                  <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-                  {t('recommendationPartial')}
-                </p>
-              ) : null}
-              {insufficient && !sameAsRecommended && selected.size > 0 ? (
-                <p
-                  role="status"
-                  className="text-warning flex flex-wrap items-start gap-x-2 gap-y-1 text-xs"
-                  data-testid="insufficient-warning"
-                >
-                  <span className="flex items-start gap-2">
-                    <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-                    {t('insufficient')}
-                  </span>
-                  {actionableWarning ? (
-                    <WarningNextAction
-                      code={actionableWarning}
-                      className="text-skyline ml-5 inline-flex items-center gap-1 font-semibold hover:underline"
-                    />
-                  ) : null}
-                </p>
-              ) : null}
-            </div>
+            <FooterPortal>
+              <div className="flex flex-col gap-2" data-testid="dispatch-actions">
+                {manualPick ? (
+                  <Button
+                    size="lg"
+                    className="w-full"
+                    onClick={() => mutation.mutate([...selected])}
+                    loading={mutation.isPending || awaitingStaleRefetch}
+                    disabled={selected.size === 0 || awaitingStaleRefetch}
+                    data-testid="send-selected"
+                  >
+                    <Send className="size-4" aria-hidden />
+                    {t('sendSelected', { count: selected.size })}
+                  </Button>
+                ) : null}
+                {sendRecommended}
+              </div>
+            </FooterPortal>
           ) : null}
 
-          {/* Stuck to the top of the tab's own scroll container while the option list below scrolls, so the
-              coverage you're building stays visible without scrolling back up after each pick. Capped and
-              internally scrollable: a heavy multi-service incident can list 8-9 requirement bars, which would
-              otherwise fill the whole panel and leave no room to reach the vehicle list below it. */}
-          <div className="border-border bg-surface-1 sticky top-0 z-10 -mx-4 max-h-[42vh] overflow-y-auto border-b px-4 pb-3">
-            <SectionTitle>{t('requirements')}</SectionTitle>
-            <RequirementBars incident={incident} planned={planned} />
+          <div className="flex flex-col gap-1">
+            <RequirementSummary incident={incident} planned={forecast} defaultOpen={desktop} />
+            {!data.recommendationCoversRequired && manual === null && dispatchable.size > 0 ? (
+              <p className="text-warning flex items-start gap-2 text-xs">
+                <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                {t('recommendationPartial')}
+              </p>
+            ) : null}
+            {insufficient && !sameAsRecommended && selected.size > 0 ? (
+              <p
+                role="status"
+                className="text-warning flex flex-wrap items-start gap-x-2 gap-y-1 text-xs"
+                data-testid="insufficient-warning"
+              >
+                <span className="flex items-start gap-2">
+                  <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                  {t('insufficient')}
+                </span>
+                {actionableWarning ? (
+                  <WarningNextAction
+                    code={actionableWarning}
+                    className="text-skyline ml-5 inline-flex min-h-11 items-center gap-1 font-semibold hover:underline lg:min-h-0"
+                  />
+                ) : null}
+              </p>
+            ) : null}
           </div>
 
           <div>
             <SectionTitle>{t('options')}</SectionTitle>
+            {cap !== null && (incident.major || capReached) ? (
+              <p
+                className={cn(
+                  'mb-2 flex items-start gap-1.5 text-xs',
+                  capReached ? 'text-warning' : 'text-muted',
+                )}
+                role={capReached ? 'status' : undefined}
+                data-testid="dispatch-cap"
+                data-cap={cap}
+                data-reached={capReached}
+              >
+                <Truck className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                {capReached
+                  ? tm('capReached', { count: cap })
+                  : tm('majorCap', { count: cap, selected: selected.size })}
+              </p>
+            ) : null}
             {families.length > 1 ? (
               <div
                 role="group"
                 aria-label={t('filterByFamily')}
-                className="mt-2 mb-2 flex gap-1.5 overflow-x-auto pb-1"
+                className="mt-2 mb-2 flex flex-wrap gap-1.5"
                 data-testid="dispatch-family-filter"
               >
                 {(['ALL', ...families] as FamilyFilter[]).map((f) => (
@@ -488,7 +735,7 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
                     aria-pressed={familyFilter === f}
                     onClick={() => setFamilyFilter(f)}
                     className={cn(
-                      'flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold',
+                      'flex h-11 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold lg:h-9',
                       familyFilter === f
                         ? 'border-focus bg-surface-3 text-fg'
                         : 'border-border text-muted hover:bg-surface-3',
@@ -523,37 +770,48 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
                       data-testid="dispatch-option"
                     >
                       <div className="flex items-center gap-2.5">
-                        <Checkbox
-                          id={id}
-                          checked={checked}
-                          disabled={!o.dispatchable}
-                          onCheckedChange={() => toggle(o.vehicleId)}
-                          aria-label={t('selectVehicle', { callSign: vehicle.callSign })}
-                        />
-                        <TopdownGlyph
-                          vehicleClass={vehicleClassOf(type?.icon)}
-                          family={vehicle.family}
-                          size={28}
-                        />
-                        <label htmlFor={id} className="min-w-0 flex-1 cursor-pointer">
-                          <span className="flex items-center gap-1.5">
-                            <span className="text-fg truncate text-sm font-semibold">{vehicle.callSign}</span>
-                            {o.recommended ? <Badge tone="brand">{t('recommended')}</Badge> : null}
-                            {vehicle.movement?.purpose === 'PATROLLING' ? (
-                              <Badge tone="info" data-testid="dispatch-option-patrolling">
-                                <Radar className="size-3" aria-hidden />
-                                {tv('patrol.onPatrol')}
-                              </Badge>
-                            ) : null}
-                          </span>
-                          <span className="text-muted block truncate text-xs">
-                            {type ? tx(type.name) : vehicle.typeCode}
-                          </span>
-                          <span
-                            className="text-subtle block truncate text-xs"
-                            data-testid="dispatch-option-facility"
-                          >
-                            {facilityNameOf(vehicle.facilityId)}
+                        {/* The whole row (box, icon, names) is one target: the 20 px box alone was a thumb trap. */}
+                        <label
+                          htmlFor={id}
+                          className={cn(
+                            'flex min-h-11 min-w-0 flex-1 items-center gap-2.5',
+                            o.dispatchable ? 'cursor-pointer' : 'cursor-default',
+                          )}
+                        >
+                          <Checkbox
+                            id={id}
+                            checked={checked}
+                            disabled={!o.dispatchable || (capReached && !checked)}
+                            onCheckedChange={() => toggle(o.vehicleId)}
+                            aria-label={t('selectVehicle', { callSign: vehicle.callSign })}
+                          />
+                          <TopdownGlyph
+                            vehicleClass={vehicleClassOf(type?.icon)}
+                            family={vehicle.family}
+                            size={28}
+                          />
+                          <span className="min-w-0 flex-1">
+                            <span className="flex items-center gap-1.5">
+                              <span className="text-fg truncate text-sm font-semibold">
+                                {vehicle.callSign}
+                              </span>
+                              {o.recommended ? <Badge tone="brand">{t('recommended')}</Badge> : null}
+                              {vehicle.movement?.purpose === 'PATROLLING' ? (
+                                <Badge tone="info" data-testid="dispatch-option-patrolling">
+                                  <Radar className="size-3" aria-hidden />
+                                  {tv('patrol.onPatrol')}
+                                </Badge>
+                              ) : null}
+                            </span>
+                            <span className="text-muted block truncate text-xs">
+                              {type ? tx(type.name) : vehicle.typeCode}
+                            </span>
+                            <span
+                              className="text-subtle block truncate text-xs"
+                              data-testid="dispatch-option-facility"
+                            >
+                              {facilityNameOf(vehicle.facilityId)}
+                            </span>
                           </span>
                         </label>
                         {o.dispatchable ? (
@@ -561,7 +819,7 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
                             <span className="tabular text-fg block text-sm font-semibold">
                               {formatClock(o.etaSeconds)}
                             </span>
-                            <span className="tabular text-subtle block text-[11px]">
+                            <span className="tabular text-subtle block text-xs">
                               {formatDistance(o.distanceMeters, locale)}
                             </span>
                           </span>
@@ -576,7 +834,16 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
                             cancelling={cancellingId === o.vehicleId && cancelChainMutation.isPending}
                           />
                         ) : (
-                          <StatusChip status={vehicle.status} label={ts(vehicle.status)} />
+                          <span className="flex shrink-0 flex-col items-end gap-1">
+                            <StatusChip status={vehicle.status} label={ts(vehicle.status)} />
+                            {vehicle.status === 'RESTOCKING' && vehicle.busyUntil ? (
+                              <Countdown
+                                to={vehicle.busyUntil}
+                                doneLabel="…"
+                                className="text-muted text-xs"
+                              />
+                            ) : null}
+                          </span>
                         )}
                       </div>
                       {o.contributes.length > 0 || o.warnings.length > 0 ? (
@@ -587,15 +854,30 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
                               {c.value}
                             </Badge>
                           ))}
-                          {o.warnings.map((w) => (
-                            <Badge key={w} tone="warning">
-                              <AlertTriangle className="size-3" aria-hidden />
-                              {warningText(w)}
-                            </Badge>
-                          ))}
+                          {/* Autonomy (D-22): one discreet flag instead of a warning badge per code. */}
+                          <DispatchAutonomyFlag option={o} />
+                          {o.warnings
+                            .filter((w) => !AUTONOMY_WARNINGS.has(w))
+                            .map((w) => (
+                              <Badge key={w} tone="warning">
+                                <AlertTriangle className="size-3" aria-hidden />
+                                {warningText(w)}
+                              </Badge>
+                            ))}
                         </div>
                       ) : null}
-                      <DispatchEligibilityBlock option={o} />
+                      <DispatchReloadNote option={o} className="mt-1.5 pl-[30px]" />
+                      {/* Aircraft (flight endurance): minutes needed / on board, how long it can stay over the scene. */}
+                      <DispatchFlightNote option={o} className="mt-1.5 pl-[30px]" />
+                      {/* Mass-casualty care: the maxi ambulance carries 4, the field post treats on scene. */}
+                      <DispatchPatientCapacityNote tags={type?.tags} className="mt-1.5 pl-[30px]" />
+                      {/* Water incidents: where it goes (scene / meeting point) and a boat's way there. */}
+                      <DispatchWaterRoute option={o} className="mt-1.5 pl-[30px]" />
+                      <DispatchEligibilityBlock
+                        option={o}
+                        incident={incident}
+                        boat={type?.domain === 'WATER'}
+                      />
                       <DispatchCrewPreview option={o} />
                     </li>
                   );

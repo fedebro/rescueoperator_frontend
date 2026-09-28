@@ -26,6 +26,7 @@
       "hint": "Add Rescue Control to your home screen: it opens full screen, like an app.",
       "installedHint": "You are already using the installed app.",
       "unavailableHint": "This browser does not offer installation. Try the browser menu, or use Chrome, Edge or Safari.",
+      "inAppHint": "You are in another app’s browser (TikTok, Instagram…): open the game in your own browser, from the ⋯ menu → “Open in browser”, to install it.",
       "hintTitle": "Rescue Control as an app",
       "hintBody": "Install it to open your control room with one tap, full screen.",
       "iosTitle": "Install on iPhone and iPad",

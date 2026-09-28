@@ -177,7 +177,9 @@
       "BROKE_DOWN": "Guasto durante il servizio",
       "RECOVERY_STARTED": "Recupero con carro attrezzi ({cost} crediti)",
       "RECOVERY_STARTED_FREE": "Recupero con carro attrezzi (gratuito)",
-      "RECOVERED": "Rientrato in sede al traino"
+      "RECOVERED": "Rientrato in sede al traino",
+      "REFUELED": "Pieno di carburante in sede ({km} km)",
+      "REFUELED_ON_THE_WAY": "Pieno al distributore lungo il rientro ({km} km)"
     }
   },
   "notifications": {

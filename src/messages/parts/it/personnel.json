@@ -147,7 +147,8 @@
       "emptyTitle": "Nessun operatore trovato",
       "emptyHint": "Allarga i filtri oppure assumi nuovi operatori dalla scheda Assunzioni.",
       "count": "{shown} di {total} operatori",
-      "caption": "Organico della centrale"
+      "caption": "Organico della centrale",
+      "filters": "Filtri{count, plural, =0 {} other { (#)}}"
     },
     "locked": {
       "progress": "Sei al livello {level} di {required}"

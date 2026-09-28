@@ -1,0 +1,107 @@
+{
+  "maxi": {
+    "alert": {
+      "severity": "Gravité de la scène principale",
+      "boosted": "Plus grave que ce que votre niveau voit d’habitude",
+      "sized": "Dimensionnée sur votre flotte : environ {count} véhicules",
+      "linked": "{count, plural, one {# urgence liée déjà signalée} other {# urgences liées déjà signalées}}",
+      "reward": "Bonus estimé",
+      "hint": "Envoyez tout de suite des moyens sur la scène principale : sans couverture, l’urgence s’étend.",
+      "open": "Coordonner les secours",
+      "dismiss": "Fermer"
+    },
+    "view": {
+      "phase": "Phase de l’urgence majeure",
+      "mainProgress": "Scène principale",
+      "expiresIn": "Personne sur place : perdue dans",
+      "endsIn": "Fin prévue dans",
+      "growth": "Étendue {level} fois sur {max}",
+      "growthNext": "Si la scène principale reste sans couverture, elle s’étend dans",
+      "otherNeeds": "Autres besoins",
+      "external": "Soutien externe",
+      "byReinforcements": "Couvert par les renforts",
+      "coverage": "{percent} % couvert",
+      "groupAria": "{family} : {onScene} % sur place, {enRoute} % en route",
+      "needsCovered": "{covered} besoins couverts sur {total}",
+      "enRouteShare": "+{percent} % en route",
+      "withReinforcements": "Avec les renforts",
+      "severity": "Gravité",
+      "sectorOpen": "Ouvrir {title}",
+      "sectorVehicles": "{count, plural, =0 {Aucun véhicule} one {# véhicule} other {# véhicules}}",
+      "reinforcements": "Renforts externes",
+      "quoteCover": "Ils couvrent",
+      "quoteCost": "Bonus",
+      "quoteEta": "Sur place dans",
+      "priority": "Soutien prioritaire",
+      "columnShare": "{percent} % des besoins",
+      "reinforcedTotal": "Couvert par les renforts : {percent} % de l’urgence majeure",
+      "summary": "Bilan",
+      "reward": "Bonus de l’urgence majeure",
+      "xp": "+{xp} XP",
+      "quality": "Qualité {percent} %",
+      "rewardHint": "S’ajoute à la récompense de chaque urgence : plus votre propre flotte la gère, plus vous gagnez.",
+      "fleet": "Dimensionnée sur {operational} véhicules opérationnels · objectif {target}",
+      "loadError": "Impossible de charger l’urgence majeure.",
+      "close": "Fermer",
+      "centerOnMap": "Centrer sur la carte",
+      "boosted": "Au-delà de votre niveau",
+      "elapsed": "En cours depuis",
+      "needs": "Besoins par service",
+      "needsHint": "Toutes les urgences ouvertes",
+      "needsNone": "Aucun besoin ouvert",
+      "committed": "{count, plural, =0 {Aucun véhicule engagé} one {# véhicule engagé} other {# véhicules engagés}}",
+      "sectors": "Secteurs · {count}"
+    },
+    "reinforcements": {
+      "requested": "Renforts demandés",
+      "requestedBody": "La colonne couvrira {percent} % des besoins."
+    },
+    "queue": {
+      "openAria": "Ouvrir la coordination de l’urgence majeure : {title}",
+      "sectors": "{count, plural, one {# secteur} other {# secteurs}}",
+      "pending": "{count, plural, one {# en attente} other {# en attente}}",
+      "coordinate": "Coordonner"
+    },
+    "member": {
+      "badge": "Majeure",
+      "open": "Coordonner"
+    },
+    "strip": {
+      "aria": "Ouvrir l’urgence majeure en cours : {title}",
+      "pending": "{count, plural, one {# secteur en attente} other {# secteurs en attente}}",
+      "open": "Coordonner"
+    },
+    "toast": {
+      "linked": "Nouvelle urgence liée à l’urgence majeure",
+      "coordinate": "Coordonner",
+      "phase": "Urgence majeure : phase de {phase}",
+      "endedBody": "Bonus de {credits} crédits",
+      "summary": "Bilan"
+    },
+    "trophies": {
+      "title": "Urgences majeures",
+      "subtitle": "Une médaille pour chaque type d’urgence majeure gérée : l’or sans renforts et sans la laisser s’étendre.",
+      "total": "{count, plural, =0 {Aucune gérée} one {# gérée} other {# gérées}}",
+      "none": "Pas encore",
+      "handled": "{handled, plural, one {# gérée} other {# gérées}} sur {attempts}",
+      "best": "meilleure {percent} %",
+      "locked": "à partir du niveau {level}",
+      "history": "Dernières urgences majeures"
+    },
+    "dispatch": {
+      "majorCap": "Urgence majeure : jusqu’à {count} véhicules par envoi ({selected} sélectionnés)",
+      "capReached": "Au maximum {count} véhicules par envoi : envoyez ceux-ci, puis ajoutez les autres"
+    }
+  },
+  "ledger": {
+    "MAJOR_INCIDENT": "Bonus d’urgence majeure"
+  },
+  "notificationCenter": {
+    "major": "Urgence majeure"
+  },
+  "game": {
+    "queue": {
+      "majorMembers": "Urgences de l’urgence majeure"
+    }
+  }
+}

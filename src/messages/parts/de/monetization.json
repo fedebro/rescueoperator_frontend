@@ -62,7 +62,7 @@
       "REFUNDED": "Erstattet"
     },
     "shop": {
-      "title": "Credits-Shop",
+      "title": "Credits kaufen",
       "subtitle": "Unterstütze das Spiel und gib deiner Leitstelle Schwung. Immer freiwillig.",
       "balance": "Aktueller Kontostand",
       "purchasedBalance": "davon gekauft: {credits} (werden zuletzt ausgegeben)",

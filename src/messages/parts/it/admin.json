@@ -201,7 +201,8 @@
       "priority": "Priorità",
       "title2": "Titolo",
       "read": "Letta",
-      "unread": "Da leggere"
+      "unread": "Da leggere",
+      "spawnMajor": "Avvia maxi-emergenza"
     },
     "credit": {
       "title": "Rettifica Crediti",
@@ -551,6 +552,16 @@
       "filterTarget": "Filtra per ID dell’oggetto",
       "targetType": "Tipo di oggetto",
       "allTargets": "Tutti i tipi"
+    },
+    "spawnMajor": {
+      "title": "Avvia una maxi-emergenza",
+      "subtitle": "Strumento di test e assistenza: parte subito, dimensionata sulla flotta della carriera. Una sola alla volta.",
+      "scenario": "Scenario",
+      "auto": "Scelto dal generatore",
+      "reason": "Motivo (registrato nell’audit)",
+      "reasonRequired": "Indica un motivo di almeno 5 caratteri",
+      "submit": "Avvia",
+      "done": "Maxi-emergenza avviata"
     }
   }
 }

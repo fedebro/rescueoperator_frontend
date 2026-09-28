@@ -147,7 +147,8 @@
       "emptyTitle": "Keine Einsatzkräfte gefunden",
       "emptyHint": "Erweitere die Filter oder stelle im Reiter Einstellungen neue Kräfte ein.",
       "count": "{shown} von {total} Einsatzkräften",
-      "caption": "Personal der Leitstelle"
+      "caption": "Personal der Leitstelle",
+      "filters": "Filter{count, plural, =0 {} other { (#)}}"
     },
     "locked": {
       "progress": "Du bist auf Stufe {level} von {required}"

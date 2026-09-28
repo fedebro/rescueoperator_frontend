@@ -9,7 +9,9 @@
     },
     "external": {
       "familyTitle": "{family} — coperto dal supporto esterno",
-      "notice": "{count, plural, one {{families} non è ancora un tuo servizio: la sua parte è coperta dal supporto esterno e non pesa sulla tua valutazione.} other {{families} non sono ancora tuoi servizi: la loro parte è coperta dal supporto esterno e non pesa sulla tua valutazione.}} Invia solo i mezzi dei servizi che gestisci."
+      "notice": "{count, plural, one {{families} non è ancora un tuo servizio: la sua parte è coperta dal supporto esterno e non pesa sulla tua valutazione.} other {{families} non sono ancora tuoi servizi: la loro parte è coperta dal supporto esterno e non pesa sulla tua valutazione.}} Invia solo i mezzi dei servizi che gestisci.",
+      "chip": "{families}: supporto esterno",
+      "chipInfo": "Perché? Mostra la spiegazione"
     },
     "attribution": {
       "title": "Chi se ne occupa",
@@ -54,7 +56,7 @@
       "domainFilter": "Filtra per dominio",
       "airNote": "Vola in linea retta a {speed} km/h: ignora strade e traffico. Richiede una sede con elisuperficie (dominio Aria).",
       "trailerNote": "Raggiunge il posto su strada, trainato su carrello: un po’ più lento a partire.",
-      "trailerNoteWater": "Imbarcazione su carrello stradale: viaggia su strada fino all’acqua e occupa un posto d’ormeggio (dominio Acqua).",
+      "trailerNoteWater": "Imbarcazione su carrello: sta in una Base nautica e parte dall’ormeggio; fiumi e altri laghi li raggiunge su carrello (dominio Acqua).",
       "reason": {
         "familyLocked": "Servizio bloccato: si sblocca al livello {level}",
         "noFacility": "Nessuna sede operativa compatibile. Serve: {types}",

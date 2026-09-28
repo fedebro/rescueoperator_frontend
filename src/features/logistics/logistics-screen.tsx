@@ -40,7 +40,7 @@ export function LogisticsScreen() {
     <PageBody
       title={t('title')}
       subtitle={t('subtitle')}
-      actions={
+      help={
         <SectionHelpButton content={activeContent} label={tco('help.buttonLabel')} closeLabel={tc('close')} />
       }
     >

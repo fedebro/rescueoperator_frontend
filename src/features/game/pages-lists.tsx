@@ -3,7 +3,7 @@ import * as React from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
-import { Building2, Hammer, Lock, Truck } from 'lucide-react';
+import { Building2, Fuel, Hammer, Lock, MapPin, MapPinPlus, Truck } from 'lucide-react';
 import type { FacilityFamily, IncidentDto, VehicleDto } from '@/contracts';
 import { gameApi } from '@/lib/api/endpoints';
 import { facilitiesApi } from '@/lib/api/depth';
@@ -13,7 +13,12 @@ import { useErrorMessage } from '@/lib/api/error-message';
 import { compareAmount, formatClock, formatTime } from '@/lib/format';
 import { toast } from '@/stores/toast';
 import { useUiStore } from '@/stores/ui';
-import { useIsDesktop } from '@/hooks/use-media-query';
+import { useIsDesktop, useOperationsLayout } from '@/hooks/use-media-query';
+import { movementPoint } from '@/lib/geo';
+import { incidentScene } from '@/features/water/water';
+import { WaterBodyBadge, useIncidentPlace } from '@/features/water/incident-water';
+import { LegacyBoatChip, NauticalFacilityCard } from '@/features/water/nautical';
+import { serverNow } from '@/lib/clock';
 import { useCatalogName, useI18nText } from '@/i18n/use-i18n-text';
 import { cn } from '@/lib/utils';
 import { FamilyBadge, TopdownGlyph, vehicleClassOf } from '@/design/icons';
@@ -30,31 +35,48 @@ import { SpeedupButton } from '@/features/monetization/speedup-button';
 import { FacilityPersonnelSection } from '@/features/personnel/slots';
 import { FacilityStockSection } from '@/features/logistics/slots';
 import { SEVERITY_ORDER, useCareerId, useSnapshot, useVehicleTypeLookup } from './hooks';
-import { IncidentQueue } from './incident-queue';
 import { FacilitySummary } from './inspectors';
 import { requestCredits } from '@/features/monetization/insufficient-credits';
 import { ConstructionBanner, PromotionCard } from '@/features/facilities/facility-extras';
-import { NewFacilitySection } from '@/features/facilities/new-facility-section';
+import { NEW_FACILITY_ANCHOR, NewFacilitySection } from '@/features/facilities/new-facility-section';
 import { TransferVehicleButton } from '@/features/facilities/transfer-vehicle';
 import { useFamilyLabel } from '@/features/facilities/site-details';
 import { IncidentFamilies } from '@/features/families/family-chips';
 import { SectionHelpButton, SectionPrimer } from '@/features/coaching/section-primer';
+import { isAutonomyTracked, needsResupply } from '@/features/autonomy/autonomy';
+import { AutonomyChip } from '@/features/autonomy/gauge';
 import { PageBody } from './shell';
 
 /* ───────────────────────────── incidents ───────────────────────────── */
+/**
+ * "Tutte le emergenze". Desktop: the full sortable table (reached from the queue column's header). Phones and tablets
+ * have no separate page any more (D-34): the address still works — shortcuts, notifications, old links — and opens
+ * the map with the list itself expanded (full-height sheet on phones, the side panel on tablets).
+ */
 export function IncidentsScreen() {
+  const layout = useOperationsLayout();
+  const router = useRouter();
+  React.useEffect(() => {
+    if (layout === 'desktop') return;
+    useUiStore.getState().showQueue(layout === 'phone' ? 'full' : 'peek');
+    router.replace('/game');
+  }, [layout, router]);
+  return layout === 'desktop' ? <IncidentsTable /> : null;
+}
+
+function IncidentsTable() {
   const t = useTranslations('game.incidentsPage');
   const ti = useTranslations('game.incident');
   const tfam = useTranslations('families.queue');
   const ts = useTranslations('status.incident');
   const tx = useI18nText();
+  const placeOf = useIncidentPlace();
   const locale = useLocale();
-  const desktop = useIsDesktop();
   const router = useRouter();
   const { incidents, career } = useSnapshot();
   const select = useUiStore((s) => s.select);
   const open = (i: IncidentDto) => {
-    select({ kind: 'incident', id: i.id }, { focus: i.position });
+    select({ kind: 'incident', id: i.id }, { focus: incidentScene(i) });
     router.push('/game');
   };
   const rows = React.useMemo(() => [...incidents].sort(SEVERITY_ORDER), [incidents]);
@@ -90,8 +112,9 @@ export function IncidentsScreen() {
       header: t('col.address'),
       width: 'minmax(180px,2fr)',
       cell: (i) => (
-        <span className="text-muted" title={i.address}>
-          {i.address}
+        <span className="text-muted flex min-w-0 items-center gap-1.5" title={placeOf(i)}>
+          <WaterBodyBadge incident={i} compact />
+          <span className="truncate">{placeOf(i)}</span>
         </span>
       ),
     },
@@ -143,19 +166,15 @@ export function IncidentsScreen() {
   ];
   return (
     <PageBody title={t('title')} subtitle={t('subtitle', { count: incidents.length })}>
-      {desktop ? (
-        <DataTable
-          caption={t('title')}
-          columns={columns}
-          rows={rows}
-          rowKey={(i) => i.id}
-          onRowClick={open}
-          maxHeight="calc(100dvh - 220px)"
-          empty={<EmptyState title={t('empty')} />}
-        />
-      ) : (
-        <IncidentQueue onSelected={() => router.push('/game')} />
-      )}
+      <DataTable
+        caption={t('title')}
+        columns={columns}
+        rows={rows}
+        rowKey={(i) => i.id}
+        onRowClick={open}
+        maxHeight="calc(100dvh - 220px)"
+        empty={<EmptyState title={t('empty')} />}
+      />
     </PageBody>
   );
 }
@@ -169,6 +188,7 @@ export function FleetScreen() {
   const ttr = useTranslations('facilities.transfer');
   const tf = useTranslations('coaching.sections.fleet');
   const tco = useTranslations('coaching');
+  const ta = useTranslations('autonomy.fleet');
   const tx = useI18nText();
   const desktop = useIsDesktop();
   const router = useRouter();
@@ -182,11 +202,20 @@ export function FleetScreen() {
   const typeOf = useVehicleTypeLookup();
   const select = useUiStore((s) => s.select);
   const [filter, setFilter] = React.useState<'all' | 'available' | 'busy'>('all');
+  // "Da rifornire" (D-22 §3.4): a toggle on top of the status tabs (it is another axis), shown only once the onboard
+  // stock or the fuel is unlocked for this career.
+  const [resupplyOnly, setResupplyOnly] = React.useState(false);
+  const autonomyOn = vehicles.some((v) => isAutonomyTracked(v.autonomy));
+  const toResupply = vehicles.filter(needsResupply).length;
   const rows = vehicles.filter(
-    (v) => filter === 'all' || (filter === 'available' ? v.status === 'AVAILABLE' : v.status !== 'AVAILABLE'),
+    (v) =>
+      (filter === 'all' || (filter === 'available' ? v.status === 'AVAILABLE' : v.status !== 'AVAILABLE')) &&
+      (!resupplyOnly || !autonomyOn || needsResupply(v)),
   );
   const open = (v: VehicleDto) => {
-    select({ kind: 'vehicle', id: v.id }, { focus: v.position });
+    // A moving vehicle is centred where it IS now, not on its last stored position (03 §3 #4).
+    const position = v.movement ? movementPoint(v.movement, serverNow()).position : v.position;
+    select({ kind: 'vehicle', id: v.id }, { focus: position });
     router.push('/game');
   };
   const typeName = (v: VehicleDto) => {
@@ -219,8 +248,11 @@ export function FleetScreen() {
       header: t('col.type'),
       width: 'minmax(170px,2fr)',
       cell: (v) => (
-        <span className="text-muted truncate" title={typeName(v)}>
-          {typeName(v)}
+        <span className="flex min-w-0 items-center gap-1.5">
+          <span className="text-muted truncate" title={typeName(v)}>
+            {typeName(v)}
+          </span>
+          <LegacyBoatChip vehicle={v} className="shrink-0" />
         </span>
       ),
       sortValue: typeName,
@@ -263,6 +295,19 @@ export function FleetScreen() {
       ),
       sortValue: (v) => v.health,
     },
+    ...(autonomyOn
+      ? [
+          {
+            id: 'autonomy',
+            header: ta('column'),
+            width: '150px',
+            cell: (v: VehicleDto) =>
+              isAutonomyTracked(v.autonomy) ? <AutonomyChip autonomy={v.autonomy} /> : '—',
+            sortValue: (v: VehicleDto) =>
+              v.autonomy?.needsResupply ? -1 : (v.autonomy?.missionsLeftEstimate ?? Number.MAX_SAFE_INTEGER),
+          } satisfies Column<VehicleDto>,
+        ]
+      : []),
     {
       id: 'eta',
       header: tc('eta'),
@@ -292,13 +337,11 @@ export function FleetScreen() {
         count: vehicles.length,
         available: vehicles.filter((v) => v.status === 'AVAILABLE').length,
       })}
+      help={
+        <SectionHelpButton content={fleetContent} label={tco('help.buttonLabel')} closeLabel={tc('close')} />
+      }
       actions={
         <>
-          <SectionHelpButton
-            content={fleetContent}
-            label={tco('help.buttonLabel')}
-            closeLabel={tc('close')}
-          />
           <Button asChild variant="secondary">
             <a
               href="/game/shop"
@@ -321,6 +364,34 @@ export function FleetScreen() {
           <TabsTrigger value="busy">{t('filter.busy')}</TabsTrigger>
         </TabsList>
       </Tabs>
+      {autonomyOn ? (
+        <div>
+          <button
+            type="button"
+            aria-pressed={resupplyOnly}
+            onClick={() => setResupplyOnly((on) => !on)}
+            className={cn(
+              'flex h-11 items-center gap-1.5 rounded-full border px-3 text-sm font-semibold lg:h-9',
+              resupplyOnly
+                ? 'border-focus bg-surface-3 text-fg'
+                : 'border-border text-muted hover:bg-surface-3',
+            )}
+            data-testid="fleet-filter-resupply"
+            data-count={toResupply}
+          >
+            <Fuel className="size-4" aria-hidden />
+            {ta('filter')}
+            <span
+              className={cn(
+                'tabular grid h-5 min-w-5 place-items-center rounded-full px-1 text-xs',
+                toResupply > 0 ? 'bg-warning/20 text-warning' : 'bg-surface-3 text-muted',
+              )}
+            >
+              {toResupply}
+            </span>
+          </button>
+        </div>
+      ) : null}
       {desktop ? (
         <DataTable
           caption={t('title')}
@@ -351,6 +422,10 @@ export function FleetScreen() {
                   <span className="text-muted block truncate text-xs" title={typeName(v)}>
                     {typeName(v)}
                   </span>
+                  <LegacyBoatChip vehicle={v} className="mt-1" />
+                  {isAutonomyTracked(v.autonomy) ? (
+                    <AutonomyChip autonomy={v.autonomy} className="mt-1" />
+                  ) : null}
                 </span>
                 <span className="flex flex-col items-end gap-1">
                   <StatusChip status={v.status} label={ts(v.status)} />
@@ -379,6 +454,7 @@ export function FacilitiesScreen() {
   const tc = useTranslations('common');
   const tfac = useTranslations('coaching.sections.facilities');
   const tco = useTranslations('coaching');
+  const tmap = useTranslations('facilities.map');
   const name = useCatalogName();
   const familyLabel = useFamilyLabel();
   const { facilities } = useSnapshot();
@@ -399,16 +475,35 @@ export function FacilitiesScreen() {
     <PageBody
       title={t('title')}
       subtitle={t('subtitle', { count: facilities.length })}
-      actions={
+      help={
         <SectionHelpButton
           content={facilitiesContent}
           label={tco('help.buttonLabel')}
           closeLabel={tc('close')}
         />
       }
+      actions={
+        <>
+          {/* Acquiring a facility is a management action: its entry point lives here now, not on the map (03 §2.2). */}
+          <Button
+            variant="secondary"
+            className="h-11 lg:h-10"
+            onClick={() =>
+              document
+                .getElementById(NEW_FACILITY_ANCHOR)
+                ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }
+            data-testid="new-facility-jump"
+          >
+            <MapPinPlus className="size-4" aria-hidden />
+            {tmap('newFacility')}
+          </Button>
+        </>
+      }
     >
       <SectionPrimer content={facilitiesContent} />
-      <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
+      {/* minmax(0, …): a single implicit column sized to its content pushed the detail card past a phone's edge. */}
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
         <div className="flex flex-col gap-2">
           {families.length > 1 ? (
             <div
@@ -424,7 +519,7 @@ export function FacilitiesScreen() {
                   aria-pressed={familyFilter === f}
                   onClick={() => setFamilyFilter(f)}
                   className={cn(
-                    'flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold',
+                    'flex h-11 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold lg:h-9',
                     familyFilter === f
                       ? 'border-focus bg-surface-3 text-fg'
                       : 'border-border text-muted hover:bg-surface-3',
@@ -490,6 +585,7 @@ function FacilityDetail({ facilityId }: { facilityId: string }) {
   const tx = useI18nText();
   const name = useCatalogName();
   const qc = useQueryClient();
+  const router = useRouter();
   const errorMessage = useErrorMessage();
   const snapshot = useSnapshot();
   const live = snapshot.facilities.find((f) => f.id === facilityId);
@@ -522,7 +618,7 @@ function FacilityDetail({ facilityId }: { facilityId: string }) {
   return (
     <div className="flex flex-col gap-4" data-testid="facility-detail">
       <Card>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-start gap-3">
           <FamilyBadge family={live.family} size={44} title={name('facility', live.typeCode)} />
           <div className="min-w-0 flex-1">
             <h2 className="font-display truncate text-xl font-bold" title={live.name}>
@@ -535,12 +631,31 @@ function FacilityDetail({ facilityId }: { facilityId: string }) {
               {name('facility', live.typeCode)}
               {detail.data?.address ? ` · ${detail.data.address}` : ''}
             </p>
+            {/* Under the name, not beside it: beside it the chip was cut off on phones (03 §2.6). */}
+            <StatusChip status={live.status} label={ts(live.status)} className="mt-1.5" />
           </div>
-          <StatusChip status={live.status} label={ts(live.status)} />
         </div>
+        {/* Back to this facility on the map (03 §3 #5): selected, centred, its inspector open. */}
+        <Button
+          variant="secondary"
+          size="sm"
+          className="mt-3 h-11 lg:h-9"
+          onClick={() => {
+            useUiStore.getState().select({ kind: 'facility', id: live.id }, { focus: live.position });
+            router.push('/game');
+          }}
+          data-testid="facility-show-on-map"
+        >
+          <MapPin className="size-4" aria-hidden />
+          {tfa('showOnMap')}
+        </Button>
         <ConstructionBanner facility={live} className="mt-4" />
         <div className="mt-4">
           <FacilitySummary facility={live} />
+        </div>
+        {/* A Base nautica (D-23): its water, its berths and how its boats reach the incidents. */}
+        <div className="mt-4 empty:hidden">
+          <NauticalFacilityCard facility={live} />
         </div>
       </Card>
       <Card>
@@ -605,7 +720,7 @@ function FacilityDetail({ facilityId }: { facilityId: string }) {
                     <Button
                       variant={tooPoor ? 'outline' : 'secondary'}
                       size="sm"
-                      className="justify-between"
+                      className="h-11 justify-between lg:h-8"
                       loading={buy.isPending && buy.variables === u.code}
                       onClick={() => (tooPoor ? requestCredits(u.price) : buy.mutate(u.code))}
                     >

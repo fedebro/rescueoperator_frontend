@@ -112,11 +112,12 @@ test('hire → team with vehicle and readiness → course → crew preview and b
   });
 
   await test.step('the dispatch panel shows the crew preview of each option', async () => {
-    await qa(page, 'spawn', 'FIRE_TRASH_BIN', 1);
+    const incidentId = await qa<string>(page, 'spawn', 'FIRE_TRASH_BIN', 1);
     // A full navigation (the mock world persists): on phones the dev-server "Compiling…" pill can cover the map link.
     await page.goto('/game');
     await expect(page.getByTestId('topbar')).toBeVisible();
-    await page.getByTestId('incident-card').first().click();
+    // This call, not whichever random one happens to top the list.
+    await page.locator(`[data-testid="incident-card"][data-incident-id="${incidentId}"]`).click();
     const preview = page.getByTestId('dispatch-option').first().getByTestId('crew-preview');
     await expect(preview).toContainText('Equipaggio 5/5 (min 3)');
     await expect(preview).toContainText('Efficienza 100%');

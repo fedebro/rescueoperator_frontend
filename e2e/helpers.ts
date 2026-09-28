@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 /**
  * Shared Playwright plumbing for the feature specs. Every spec runs in both projects (desktop, mobile = Pixel 7).
@@ -7,11 +7,33 @@ import { expect, test, type Page } from '@playwright/test';
  */
 const problems = new WeakMap<Page, string[]>();
 
+/**
+ * WebKit reports a Next.js RSC prefetch (`?_rsc=`) cancelled by a navigation as a page error "… due to access control
+ * checks" when a service worker is in the path — here MSW, the mock backend (no service worker handles those requests in
+ * production). No application code is involved: not a problem of the app under test.
+ */
+export const isBenignBrowserNoise = (message: string): boolean =>
+  /\?_rsc=\S* due to access control checks/.test(message) ||
+  // The same WebKit wording for loads still in flight when a navigation tears the page down, with MSW's service worker in
+  // the path: a mock-API fetch (seen on the runways query of the persistent map) and a MapLibre `blob:` resource of the
+  // test page. WebKit truncates the message ("…/localhost:4000/api/v1/… due to access control checks."), so the patterns
+  // match the tail only. Only WebKit words cancellations this way: real request failures still fail on Chromium.
+  /localhost:\d+\/api\/v1\/\S+ due to access control checks/.test(message) ||
+  /blob:http:\/\/localhost:\d+\/[0-9a-f-]+ due to access control checks|^t?t?p:\/\/localhost:\d+\/[0-9a-f-]{36} due to access control checks/.test(
+    message,
+  );
+
+/** A page error with the top of its stack: a failure report that says where, not only what. */
+export const describePageError = (e: Error): string =>
+  `pageerror: ${e.message}${e.stack ? `\n${e.stack.split('\n').slice(0, 6).join('\n')}` : ''}`;
+
 export function trackProblems(): void {
   test.beforeEach(async ({ page }) => {
     const list: string[] = [];
     problems.set(page, list);
-    page.on('pageerror', (e) => list.push(`pageerror: ${e.message}`));
+    page.on('pageerror', (e) => {
+      if (!isBenignBrowserNoise(e.message)) list.push(describePageError(e));
+    });
     page.on('console', (m) => {
       if (
         m.type() === 'error' &&
@@ -31,6 +53,19 @@ export function trackProblems(): void {
 }
 
 export const isMobile = (page: Page): boolean => (page.viewportSize()?.width ?? 1440) < 1024;
+
+/**
+ * On phones toasts stack newest in front and only the front card takes input (the ones behind are `inert`): a toast
+ * pushed right after the one a test wants to act on (a coaching line, a new call) would hide its action. Closes the
+ * cards in front of `toast` until it is the front one. No-op on desktop (no `data-depth`).
+ */
+export async function bringToastToFront(page: Page, toast: Locator): Promise<void> {
+  for (let i = 0; i < 6; i += 1) {
+    const depth = await toast.getAttribute('data-depth');
+    if (depth === null || depth === '0') return;
+    await page.locator('[data-testid="toast"][data-depth="0"]').getByRole('button').last().click();
+  }
+}
 
 export interface BootOptions {
   level?: number;
@@ -65,9 +100,36 @@ export async function bootCareer(page: Page, projectName: string, opts: BootOpti
       tutorialDone: opts.tutorialDone ?? true,
     },
   );
+  await dismissInstallHint(page);
   await page.goto('/game');
   await expect(page.getByTestId('topbar')).toBeVisible();
   return directorName;
+}
+
+/**
+ * The one-time "install the app" hint is a toast raised 20 s into a session wherever an install is possible — on the
+ * iPhone project (iOS user agent) that is every game session. A toast landing at a random moment in front of the one a
+ * test is about to tap makes the run flaky, so booted careers start with it already seen (the same persisted flag the
+ * hint sets itself; the Settings entry, covered by platform.spec, does not depend on it). Takes effect on the next load.
+ */
+export async function dismissInstallHint(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const key = 'rc-settings';
+    let saved: { state?: Record<string, unknown>; version?: number } = {};
+    try {
+      saved = JSON.parse(localStorage.getItem(key) ?? '{}') as typeof saved;
+    } catch {
+      saved = {};
+    }
+    localStorage.setItem(
+      key,
+      JSON.stringify({
+        ...saved,
+        state: { ...saved.state, installHintDismissed: true },
+        version: saved.version ?? 1,
+      }),
+    );
+  });
 }
 
 /** Calls a mock QA helper: `qa(page, 'spawn', 'MED_FALL', 4)`. */

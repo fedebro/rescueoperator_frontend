@@ -33,7 +33,7 @@ export function Select({
         id={id}
         aria-label={label}
         className={cn(
-          'border-border-strong bg-surface-2 text-fg data-[placeholder]:text-subtle flex h-10 min-w-36 items-center justify-between gap-2 rounded-md border px-3 text-sm',
+          'border-border-strong bg-surface-2 text-fg data-[placeholder]:text-subtle flex h-10 min-w-36 items-center justify-between gap-2 rounded-md border px-3 text-sm pointer-coarse:min-h-11',
           className,
         )}
       >

@@ -27,6 +27,8 @@ export function LowStockAlert({ count, onOrder }: { count: number; onOrder?: () 
     >
       <CoachMark
         id="lowStock"
+        // The warehouse tabs sit right above the alert: the card goes under it.
+        prefer="below"
         when
         selector='[data-testid="low-stock-alert"]'
         title={tls('title')}
@@ -35,7 +37,13 @@ export function LowStockAlert({ count, onOrder }: { count: number; onOrder?: () 
       <AlertTriangle className="size-4 shrink-0" aria-hidden />
       <span className="min-w-0 flex-1">{t('lowAlert', { count })}</span>
       {onOrder ? (
-        <Button size="sm" variant="secondary" onClick={onOrder} data-testid="low-stock-order">
+        <Button
+          size="sm"
+          variant="secondary"
+          className="h-11 lg:h-8"
+          onClick={onOrder}
+          data-testid="low-stock-order"
+        >
           <ShoppingCart className="size-3.5" aria-hidden />
           {t('order')}
         </Button>
@@ -63,7 +71,8 @@ export function StockLines({ lines }: { lines: InventoryLine[] }) {
             <span className="min-w-0 flex-1 truncate text-sm font-semibold">{name('item', l.itemCode)}</span>
             <StockChip low={l.low} />
           </div>
-          <dl className="mt-2 grid grid-cols-4 gap-2 text-center">
+          {/* Sentence case, wrapping at a space if it must: the full word on a narrow phone, never "DISPONI…". */}
+          <dl className="mt-2 grid grid-cols-4 items-end gap-2 text-center">
             {(
               [
                 ['quantity', l.quantity],
@@ -73,7 +82,7 @@ export function StockLines({ lines }: { lines: InventoryLine[] }) {
               ] as const
             ).map(([key, value]) => (
               <div key={key} className="min-w-0">
-                <dt className="text-subtle truncate text-[10px] font-semibold tracking-wide uppercase">
+                <dt className="text-subtle text-xs leading-tight font-semibold break-words">
                   {t(`col.${key}`)}
                 </dt>
                 <dd className="tabular text-sm font-semibold" data-testid={`stock-${key}`}>

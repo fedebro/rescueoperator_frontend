@@ -136,7 +136,16 @@ export const HospitalOption = z.object({
   load: HospitalLoad, expectedHandoffSeconds: z.number().int(), score: z.number(), recommended: z.boolean(), reasons: z.array(I18nText),
 });
 /** ★POST /patients/:id/transport */
-export const TransportPatientBody = z.object({ hospitalId: publicId(IdPrefix.hospital), vehicleId: publicId(IdPrefix.vehicle).optional() });
+export const TransportPatientBody = z.object({
+  hospitalId: publicId(IdPrefix.hospital),
+  vehicleId: publicId(IdPrefix.vehicle).optional(),
+  /**
+   * Additive (mass-casualty care): with a multi-patient vehicle (EMS_MAXI, `patientCapacity` 4) the other patients of the SAME
+   * incident to carry on the same trip. Omitted = the server boards, worst triage first, every other patient waiting for
+   * transport whom this hospital can take, up to the capacity; `[]` = this patient only.
+   */
+  withPatientIds: z.array(publicId(IdPrefix.patient)).max(9).optional(),
+});
 
 /* ───────────── inventory ───────────── */
 
@@ -216,7 +225,13 @@ export const MaintenanceOverview = z.object({
 export type MaintenanceOverview = z.infer<typeof MaintenanceOverview>;
 
 /** ★POST /patients/:id/transport → the patient, the ambulance that took it and the incident it came from. */
-export const TransportPatientResult = z.object({ patient: PatientDto, vehicle: VehicleDto, incident: IncidentDto.optional() });
+export const TransportPatientResult = z.object({
+  patient: PatientDto,
+  vehicle: VehicleDto,
+  incident: IncidentDto.optional(),
+  /** Additive (mass-casualty care): the other patients boarded on the same multi-patient vehicle (empty for a normal ambulance). */
+  boarded: z.array(PatientDto).optional(),
+});
 export type TransportPatientResult = z.infer<typeof TransportPatientResult>;
 
 /* ───────────── water sources: where a water-supply aircraft refills (additive) ───────────── */

@@ -31,9 +31,16 @@ import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/misc';
 import { CoachMark } from '@/features/coaching/coach-mark';
-import { useCareerId, usePatchSnapshot, useSnapshot } from '@/features/game/hooks';
-import { TRANSPORT_CAPABILITY, hasCapability, useHospitalChoice, useHospitals } from './hooks';
+import { useCareerId, usePatchSnapshot, useSnapshot, useVehicleTypeLookup } from '@/features/game/hooks';
+import { TRANSPORT_CAPABILITY, hasCapability, useHospitalChoice, useHospitals, usePatients } from './hooks';
 import { LOAD_VISUALS, MedicalChip } from './visuals';
+import {
+  BoardingPicker,
+  MULTI_PATIENT_CAPACITY,
+  coPassengerCandidates,
+  isFieldPostType,
+  isMultiPatient,
+} from './mass-casualty';
 
 type Option = z.infer<typeof HospitalOption>;
 type Hospital = z.infer<typeof HospitalDto>;
@@ -221,10 +228,16 @@ export function TransportPanel({ patient, incident }: { patient: PatientDto; inc
   const errorMessage = useErrorMessage();
   const qc = useQueryClient();
   const choice = useHospitalChoice();
+  const typeOf = useVehicleTypeLookup();
+  const patients = usePatients(incident).data ?? [];
 
   const assigned = vehicles.filter((v) => v.incidentId === incident.id);
+  // A field post (EMS_PMA, NO_TRANSPORT) treats on scene and never carries anybody.
   const carriers = assigned.filter(
-    (v) => v.status === 'ON_SCENE' && hasCapability(v, [TRANSPORT_CAPABILITY]),
+    (v) =>
+      v.status === 'ON_SCENE' &&
+      hasCapability(v, [TRANSPORT_CAPABILITY]) &&
+      !isFieldPostType(typeOf(v.typeCode)?.tags),
   );
   const incoming = assigned.find(
     (v) => (v.status === 'PREPARING' || v.status === 'EN_ROUTE') && hasCapability(v, [TRANSPORT_CAPABILITY]),
@@ -243,10 +256,23 @@ export function TransportPanel({ patient, incident }: { patient: PatientDto; inc
   const recommended = options.data?.find((o) => o.recommended) ?? options.data?.[0];
   const [picked, setPicked] = React.useState<string | null>(null);
   const pickedId = picked ?? recommended?.hospitalId ?? '';
+  // Mass-casualty care: a multi-patient carrier (EMS_MAXI) boards other waiting patients of this incident on the same trip.
+  const multi = !!carrier && isMultiPatient(typeOf(carrier.typeCode)?.tags);
+  const [boarding, setBoarding] = React.useState<string[] | null>(null);
+  const preselected = coPassengerCandidates(patient, patients, MULTI_PATIENT_CAPACITY).preselected;
+  const withPatientIds = (boarding ?? preselected).filter((id) =>
+    patients.some((p) => p.id === id && p.status === 'AWAITING_TRANSPORT'),
+  );
 
   const transport = useMutation({
     mutationFn: (hospitalId: string) =>
-      medicalApi.transport(careerId, patient.id, { hospitalId, vehicleId: carrier?.id }),
+      medicalApi.transport(careerId, patient.id, {
+        hospitalId,
+        vehicleId: carrier?.id,
+        // The list only when the player edited it: untouched, the server boards the same default pick — and leaves out
+        // anyone this hospital cannot take instead of refusing the whole trip.
+        ...(multi && boarding !== null ? { withPatientIds } : {}),
+      }),
     onSuccess: (result, hospitalId) => {
       // The events follow; patching now keeps the map and the list in step with the tap.
       patchSnapshot((s) => ({
@@ -257,9 +283,17 @@ export function TransportPanel({ patient, incident }: { patient: PatientDto; inc
         ),
       }));
       const hospital = hospitals.find((h) => h.id === hospitalId);
+      const aboard = 1 + (result.boarded?.length ?? 0);
       toast({
         tone: 'success',
-        title: t('started', { callSign: result.vehicle.callSign, hospital: hospital?.name ?? '' }),
+        title:
+          aboard > 1
+            ? t('startedMulti', {
+                callSign: result.vehicle.callSign,
+                hospital: hospital?.name ?? '',
+                count: aboard,
+              })
+            : t('started', { callSign: result.vehicle.callSign, hospital: hospital?.name ?? '' }),
         durationMs: 3500,
       });
       track('patient_transported', {
@@ -338,10 +372,10 @@ export function TransportPanel({ patient, incident }: { patient: PatientDto; inc
         title={tht('title')}
         body={tht('body')}
       />
-      <h4 className="text-subtle text-[11px] font-bold tracking-[0.08em] uppercase">{t('title')}</h4>
+      <h4 className="text-subtle text-xs font-bold tracking-[0.08em] uppercase">{t('title')}</h4>
       <OptionSummary option={recommended} hospital={hospitals.find((h) => h.id === recommended.hospitalId)} />
       <div className="flex flex-col gap-1">
-        <span className="text-subtle text-[11px] font-semibold tracking-wide uppercase">{t('vehicle')}</span>
+        <span className="text-subtle text-xs font-semibold tracking-wide uppercase">{t('vehicle')}</span>
         {carriers.length > 1 ? (
           <Select
             label={t('vehicle')}
@@ -356,6 +390,15 @@ export function TransportPanel({ patient, incident }: { patient: PatientDto; inc
           </span>
         )}
       </div>
+      {multi ? (
+        <BoardingPicker
+          patient={patient}
+          patients={patients}
+          capacity={MULTI_PATIENT_CAPACITY}
+          value={withPatientIds}
+          onChange={setBoarding}
+        />
+      ) : null}
       <Button
         size="lg"
         className="w-full"
@@ -366,9 +409,14 @@ export function TransportPanel({ patient, incident }: { patient: PatientDto; inc
       >
         <Ambulance className="size-5 shrink-0" aria-hidden />
         <span className="truncate">
-          {t('confirmRecommended', {
-            hospital: hospitals.find((h) => h.id === recommended.hospitalId)?.name ?? '',
-          })}
+          {multi && withPatientIds.length > 0
+            ? t('confirmRecommendedMulti', {
+                hospital: hospitals.find((h) => h.id === recommended.hospitalId)?.name ?? '',
+                count: withPatientIds.length + 1,
+              })
+            : t('confirmRecommended', {
+                hospital: hospitals.find((h) => h.id === recommended.hospitalId)?.name ?? '',
+              })}
         </span>
       </Button>
       {choice.unlocked ? (

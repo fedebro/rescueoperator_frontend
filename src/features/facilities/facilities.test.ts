@@ -130,9 +130,25 @@ describe('candidate sites helpers', () => {
       'sit_2',
     ).features;
     expect(features.map((f) => f.properties)).toEqual([
-      { kind: 'site', id: 'sit_1', name: 'Site', image: 'site:0', sort: 0 },
-      { kind: 'site', id: 'sit_2', name: 'Site', image: 'site:1', sort: 1 },
+      { kind: 'site', id: 'sit_1', name: 'Site', image: 'site:0', sort: 0, nautical: 0 },
+      { kind: 'site', id: 'sit_2', name: 'Site', image: 'site:1', sort: 2, nautical: 0 },
     ]);
+    // A nautical site (D-23: where a Base nautica can be bought) gets the water-blue pin, above the family sites.
+    const nautical = siteFeatures(
+      [
+        site({
+          id: 'sit_4',
+          nautical: {
+            waterBody: 'SEA',
+            waterBodyId: 'sea:adriatic',
+            waterBodyName: 'Mare Adriatico',
+            berth: [14.23, 42.47],
+          },
+        }),
+      ],
+      null,
+    ).features[0]!.properties;
+    expect(nautical).toMatchObject({ image: 'site:0:N', sort: 1, nautical: 1 });
   });
   it('treats a site that only offers SHARED types as a shared site', () => {
     expect(

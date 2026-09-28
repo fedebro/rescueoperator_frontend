@@ -23,6 +23,10 @@ const isTab = (value: string | null): value is TabId => TABS.includes(value as T
  * /game/personnel. Deep links: `?tab=roster|teams|recruitment|training`, `?operator=<personnelId>` (notification action
  * OPEN_PERSONNEL, dispatch "fix it" links) and `?facility=<facilityId>` (roster pre-filtered from the facility page).
  */
+/** Phone tab geometry: stacked icon + label, centred, allowed to wrap on two short lines. */
+const TAB_CLASS =
+  'max-sm:h-auto max-sm:min-h-14 max-sm:flex-col max-sm:justify-center max-sm:gap-0.5 max-sm:px-1 max-sm:py-1.5 max-sm:text-center max-sm:text-xs max-sm:leading-tight max-sm:whitespace-normal';
+
 export function PersonnelScreen() {
   const t = useTranslations('personnel');
   const tc = useTranslations('common');
@@ -48,7 +52,7 @@ export function PersonnelScreen() {
     <PageBody
       title={t('title')}
       subtitle={t('subtitle')}
-      actions={
+      help={
         <SectionHelpButton
           content={personnelContent}
           label={tco('help.buttonLabel')}
@@ -57,29 +61,32 @@ export function PersonnelScreen() {
       }
     >
       <SectionPrimer content={personnelContent} />
+      {/* Labels on two lines rather than "PRONTI ALL'I…" on phones (03 §2.6). */}
       <Card className="grid grid-cols-3 gap-3">
-        <Stat label={t('summary.total')} value={people?.length ?? '—'} />
-        <Stat label={t('summary.ready')} value={ready ?? '—'} />
+        <Stat wrapLabel label={t('summary.total')} value={people?.length ?? '—'} />
+        <Stat wrapLabel label={t('summary.ready')} value={ready ?? '—'} />
         <Stat
+          wrapLabel
           label={t('summary.cost')}
           value={cost === undefined ? '—' : `${formatAmount(cost, locale)} ${tc('credits')}`}
         />
       </Card>
       <Tabs value={tab} onValueChange={(v) => isTab(v) && setTab(v)}>
-        <TabsList aria-label={t('title')}>
-          <TabsTrigger value="roster">
+        {/* Phones: four equal columns, icon over a (wrapping) label — every tab visible, none cut off. */}
+        <TabsList aria-label={t('title')} className="max-sm:grid max-sm:grid-cols-4 max-sm:px-0">
+          <TabsTrigger value="roster" className={TAB_CLASS}>
             <Users className="size-4" aria-hidden />
             {t('tabs.roster')}
           </TabsTrigger>
-          <TabsTrigger value="teams">
+          <TabsTrigger value="teams" className={TAB_CLASS}>
             <UsersRound className="size-4" aria-hidden />
             {t('tabs.teams')}
           </TabsTrigger>
-          <TabsTrigger value="recruitment">
+          <TabsTrigger value="recruitment" className={TAB_CLASS}>
             <UserPlus className="size-4" aria-hidden />
             {t('tabs.recruitment')}
           </TabsTrigger>
-          <TabsTrigger value="training">
+          <TabsTrigger value="training" className={TAB_CLASS}>
             <GraduationCap className="size-4" aria-hidden />
             {t('tabs.training')}
           </TabsTrigger>

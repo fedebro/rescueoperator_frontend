@@ -35,6 +35,12 @@ export const qk = {
     ['career', id, 'medical', 'options', patientId] as const,
   hospitals: (id: string) => ['career', id, 'medical', 'hospitals'] as const,
   waterSources: (id: string, incidentId: string) => ['career', id, 'water-sources', incidentId] as const,
+  /* major incidents (D-24 / D-69): the coordination view, its reinforcement quote, the history and the trophies */
+  majorRoot: (id: string) => ['career', id, 'major'] as const,
+  majorCurrent: (id: string) => ['career', id, 'major', 'current'] as const,
+  major: (id: string, majorId: string) => ['career', id, 'major', 'detail', majorId] as const,
+  majorList: (id: string) => ['career', id, 'major', 'list'] as const,
+  majorTrophies: (id: string) => ['career', id, 'major', 'trophies'] as const,
   inventory: (id: string) => ['career', id, 'inventory'] as const,
   inventoryItems: (id: string) => ['career', id, 'inventory', 'items'] as const,
   maintenance: (id: string) => ['career', id, 'maintenance'] as const,

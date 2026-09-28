@@ -243,6 +243,24 @@ describe('medical domain', () => {
     until(w, () => w.career.vehicles.find((v) => v.id === second.vehicleId)!.status === 'ON_SCENE');
   });
 
+  it('two ambulances staffed one after the other both leave the same station, each on its own dispatch', async () => {
+    const w = await world();
+    // `giveAmbulance` staffs each new ambulance on its own (two separate `staffAll`): the station then has two crews.
+    const first = w.qa.giveAmbulance();
+    const second = w.qa.giveAmbulance();
+    const a = spawnFall(w);
+    const b = w.engine.spawnIncident(w.career, 'MED_FALL', false, { severity: 4 }).id;
+    // The first one's top-up to its optimal crew takes the best candidates left, never both drivers of the station.
+    expect(() => w.engine.dispatch(w.career, a, [first.vehicleId])).not.toThrow();
+    const option = w.engine
+      .dispatchOptions(w.career, b)
+      .options.find((o) => o.vehicleId === second.vehicleId)!;
+    expect(option).toMatchObject({ dispatchable: true, blockedReason: null });
+    expect(option.crew).toMatchObject({ missingQualifications: [] });
+    expect(() => w.engine.dispatch(w.career, b, [second.vehicleId])).not.toThrow();
+    expect(w.career.vehicles.find((v) => v.id === second.vehicleId)!.status).toBe('PREPARING');
+  });
+
   it('gates the manual hospital choice behind the HOSPITAL_CHOICE feature and refuses closed hospitals', async () => {
     const w = await world(1, 4);
     w.qa.medicalConfig({ autoTransportSeconds: 3600, externalSeconds: 3600 });
@@ -274,5 +292,124 @@ describe('medical domain', () => {
     expect(w.medical.hospitals(w.career).find((h) => h.id === penne.id)!.load).toBe('SATURATED');
     w.advance(10 * 60_000, 10_000);
     expect(w.medical.hospitals(w.career).find((h) => h.id === penne.id)!.load).toBe('NORMAL');
+  });
+});
+
+describe('mass-casualty care (major incidents §1)', () => {
+  const TRIAGE_RANK: Record<string, number> = { RED: 0, ORANGE: 1, BLUE: 2, GREEN: 3, WHITE: 4 };
+  const multiPatient = (w: World) => {
+    w.engine.cancelActions(w.career, (a) => a.type === 'INCIDENT_SPAWN');
+    return w.engine.spawnIncident(w.career, 'MED_MULTI_PATIENT', false, { severity: 6 }).id;
+  };
+  const patientsAt = (w: World, incidentId: string) =>
+    medicalState(w.career).patients.filter((p) => p.dto.incidentId === incidentId);
+  const onScene = (w: World, vehicleId: string) =>
+    until(w, () => w.career.vehicles.find((v) => v.id === vehicleId)!.status === 'ON_SCENE');
+
+  it('the maxi ambulance boards the other waiting patients, worst code first, up to 4 in one trip', async () => {
+    const w = await world(1, 9);
+    w.qa.medicalConfig({ autoTransportSeconds: 3600, externalSeconds: 3600 });
+    (w.qa as unknown as { medicalConfig: (c: Record<string, unknown>) => void }).medicalConfig({
+      alwaysTransport: true,
+    });
+    const { vehicleId } = w.qa.giveAmbulance('EMS_MAXI');
+    const incidentId = multiPatient(w);
+    w.engine.dispatch(w.career, incidentId, [vehicleId]);
+    onScene(w, vehicleId);
+    const patients = patientsAt(w, incidentId);
+    expect(patients.length).toBeGreaterThanOrEqual(4);
+    for (const p of patients) w.qa.stabilize(p.dto.id);
+    const [first] = patients;
+    const hospital = w.medical.hospitalOptions(w.career, first!.dto.id).find((o) => o.recommended)!;
+    const result = w.medical.transport(w.career, first!.dto.id, { hospitalId: hospital.hospitalId });
+    expect(TransportPatientResult.safeParse(result).success).toBe(true);
+    expect(result.boarded).toHaveLength(3);
+    const ranks = result.boarded.map((b) => TRIAGE_RANK[b.triage!] ?? 9);
+    expect([...ranks].sort((a, b) => a - b)).toEqual(ranks);
+    for (const p of [result.patient, ...result.boarded])
+      expect(p).toMatchObject({
+        status: 'IN_TRANSPORT',
+        assignedVehicleId: vehicleId,
+        hospitalId: hospital.hospitalId,
+      });
+    expect(result.vehicle.status).toBe('TRANSPORTING');
+    // Everyone aboard arrives with the vehicle and is handed over.
+    until(w, () => w.career.vehicles.find((v) => v.id === vehicleId)!.status === 'AT_HOSPITAL');
+    expect(patientsAt(w, incidentId).filter((p) => p.dto.status === 'HANDOFF')).toHaveLength(4);
+  });
+
+  it('boards exactly the patients the player picked, within the capacity', async () => {
+    const w = await world(1, 9);
+    w.qa.medicalConfig({ autoTransportSeconds: 3600, externalSeconds: 3600 });
+    (w.qa as unknown as { medicalConfig: (c: Record<string, unknown>) => void }).medicalConfig({
+      alwaysTransport: true,
+    });
+    const { vehicleId } = w.qa.giveAmbulance('EMS_MAXI');
+    const incidentId = multiPatient(w);
+    w.engine.dispatch(w.career, incidentId, [vehicleId]);
+    onScene(w, vehicleId);
+    const patients = patientsAt(w, incidentId);
+    for (const p of patients) w.qa.stabilize(p.dto.id);
+    const [a, b, c, d, e] = patients.map((p) => p.dto.id);
+    const hospitalId = w.medical.hospitalOptions(w.career, a!).find((o) => o.recommended)!.hospitalId;
+    // Over the capacity: refused.
+    expect(() =>
+      w.medical.transport(w.career, a!, { hospitalId, vehicleId, withPatientIds: [b!, c!, d!, e ?? b!] }),
+    ).toThrow(expect.objectContaining({ code: 'VALIDATION_ERROR' }));
+    const result = w.medical.transport(w.career, a!, { hospitalId, vehicleId, withPatientIds: [c!] });
+    expect(result.boarded.map((p) => p.id)).toEqual([c]);
+    expect(patientsAt(w, incidentId).find((p) => p.dto.id === b)!.dto.status).toBe('AWAITING_TRANSPORT');
+  });
+
+  it('a normal ambulance carries one patient: a list of others is refused', async () => {
+    const w = await world(1, 9);
+    w.qa.medicalConfig({ autoTransportSeconds: 3600, externalSeconds: 3600 });
+    (w.qa as unknown as { medicalConfig: (c: Record<string, unknown>) => void }).medicalConfig({
+      alwaysTransport: true,
+    });
+    const { vehicleId } = w.qa.giveAmbulance('EMS_MSB');
+    const incidentId = multiPatient(w);
+    w.engine.dispatch(w.career, incidentId, [vehicleId]);
+    onScene(w, vehicleId);
+    const patients = patientsAt(w, incidentId);
+    for (const p of patients) w.qa.stabilize(p.dto.id);
+    const [a, b] = patients.map((p) => p.dto.id);
+    const hospitalId = w.medical.hospitalOptions(w.career, a!).find((o) => o.recommended)!.hospitalId;
+    expect(() => w.medical.transport(w.career, a!, { hospitalId, vehicleId, withPatientIds: [b!] })).toThrow(
+      expect.objectContaining({ code: 'CONFLICT', details: { reason: 'SINGLE_PATIENT_VEHICLE' } }),
+    );
+    expect(w.medical.transport(w.career, a!, { hospitalId, vehicleId }).boarded).toEqual([]);
+  });
+
+  it('the advanced medical post treats on scene, faster, and releases the lighter codes there', async () => {
+    const w = await world(1, 9);
+    w.qa.medicalConfig({ autoTransportSeconds: 3600, externalSeconds: 3600 });
+    (w.qa as unknown as { medicalConfig: (c: Record<string, unknown>) => void }).medicalConfig({
+      alwaysTransport: true,
+    });
+    const { vehicleId } = w.qa.giveAmbulance('EMS_PMA');
+    const incidentId = multiPatient(w);
+    w.engine.dispatch(w.career, incidentId, [vehicleId]);
+    onScene(w, vehicleId);
+    const light = new Set(['GREEN', 'WHITE', 'BLUE']);
+    until(w, () =>
+      patientsAt(w, incidentId).every(
+        (p) => p.dto.status === 'RELEASED_ON_SCENE' || p.dto.status === 'AWAITING_TRANSPORT',
+      ),
+    );
+    for (const p of patientsAt(w, incidentId)) {
+      const triage = p.dto.triage!;
+      if (light.has(triage)) expect(p.dto.status).toBe('RELEASED_ON_SCENE');
+    }
+    // It never carries anybody: no hospital option can use it.
+    const waiting = patientsAt(w, incidentId).find((p) => p.dto.status === 'AWAITING_TRANSPORT');
+    if (waiting) {
+      const hospitalId = w.medical
+        .hospitalOptions(w.career, waiting.dto.id)
+        .find((o) => o.recommended)!.hospitalId;
+      expect(() => w.medical.transport(w.career, waiting.dto.id, { hospitalId, vehicleId })).toThrow(
+        expect.objectContaining({ code: 'VEHICLE_NOT_AVAILABLE' }),
+      );
+    }
   });
 });

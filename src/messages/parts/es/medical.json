@@ -14,7 +14,9 @@
       "hospital": "Hospital",
       "externalAmbulance": "Ambulancia externa",
       "transportNotRequired": "No necesita traslado",
-      "openHospital": "Mostrar {hospital} en el mapa"
+      "openHospital": "Mostrar {hospital} en el mapa",
+      "expand": "Mostrar los pacientes",
+      "collapse": "Ocultar los pacientes"
     },
     "stability": {
       "label": "Estabilidad",
@@ -71,7 +73,9 @@
       "send": "Enviar {callSign}",
       "noAmbulance": "No hay ninguna ambulancia disponible en este momento.",
       "sent": "{callSign} enviado para el traslado",
-      "started": "{callSign} en camino a {hospital}"
+      "started": "{callSign} en camino a {hospital}",
+      "startedMulti": "{callSign} en camino a {hospital} con {count} pacientes",
+      "confirmRecommendedMulti": "Trasladar {count} pacientes a {hospital}"
     },
     "reasons": {
       "CLOSEST": "Es el más cercano",
@@ -94,6 +98,15 @@
       "incomingNone": "Ningún paciente en camino.",
       "notFound": "Hospital no encontrado.",
       "loadError": "No se han podido cargar los hospitales."
+    },
+    "massCasualty": {
+      "fieldPostTitle": "Puesto médico avanzado activo ({callSign})",
+      "fieldPostBody": "Atiende hasta 4 pacientes a la vez, más rápido; los códigos verde, blanco y azul reciben el alta en el lugar, sin traslado.",
+      "multiPatientNote": "Traslada hasta {count} pacientes por viaje",
+      "fieldPostNote": "Puesto médico avanzado: atiende en el lugar, no traslada",
+      "boardingTitle": "Embarcar también (hasta {count} pacientes)",
+      "boardingNone": "Ningún otro paciente en espera: puede llevar hasta {count} por viaje.",
+      "boardingHint": "{count, plural, one {# paciente a bordo} other {# pacientes a bordo}} de {capacity}"
     }
   },
   "status": {
@@ -123,7 +136,9 @@
     "patient_transport": "{callSign} traslada al paciente a {hospital}",
     "patient_transport_auto": "{callSign} traslada al paciente a {hospital} (hospital recomendado, confirmación automática)",
     "patient_external": "Paciente confiado a una ambulancia externa, con destino a {hospital}",
-    "patient_admitted": "Paciente entregado a {hospital}"
+    "patient_admitted": "Paciente entregado a {hospital}",
+    "patient_released_field_post": "Paciente atendido y dado de alta por el puesto médico avanzado",
+    "patient_transport_multi": "{callSign} traslada {count} pacientes a {hospital}"
   },
   "notifications": {
     "patientAwaitingTransport": "Paciente a la espera de traslado en {address}"

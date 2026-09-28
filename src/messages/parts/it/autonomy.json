@@ -1,0 +1,93 @@
+{
+  "autonomy": {
+    "title": "Autonomia",
+    "help": "Come funziona l’autonomia",
+    "fuel": "Carburante",
+    "stock": "Dotazione di bordo",
+    "fuelValue": "{km} km su {range}",
+    "flight": "Autonomia di volo",
+    "flightValue": "{minutes} min su {range}",
+    "stockValue": "{count, plural, one {# materiale} other {# materiali}}",
+    "itemsLow": "{count, plural, one {# da ricaricare} other {# da ricaricare}}",
+    "reserve": "Riserva",
+    "low": "Basso",
+    "full": "Pieno",
+    "missionsLeft": "{count, plural, =0 {Da rifornire} one {Autonomia: un’ultima missione} other {Autonomia: circa # missioni}}",
+    "missionsShort": "{count, plural, =0 {Da rifornire} one {1 missione} other {~# missioni}}",
+    "fullAutonomy": "Autonomia piena",
+    "needsResupply": "Da rifornire",
+    "resupplying": "Rifornimento in corso",
+    "readyIn": "Pronto tra",
+    "resupplyRequested": "Si rifornirà al prossimo rientro",
+    "returnToResupply": "Rientra a rifornire",
+    "returnToResupplyHint": "Ricarica materiali e carburante adesso, prima di un’emergenza grossa.",
+    "showItems": "Dettaglio materiali",
+    "hideItems": "Nascondi il dettaglio",
+    "itemQuantity": "{quantity} su {capacity}",
+    "itemLow": "Da ricaricare",
+    "resupplyResult": {
+      "RESTOCKING": "{callSign}: rifornimento avviato",
+      "RETURNING_TO_BASE": "{callSign} rientra in sede per rifornirsi",
+      "SCHEDULED_ON_RETURN": "{callSign} si rifornirà appena rientrato",
+      "ALREADY_FULL": "{callSign} ha già l’autonomia piena",
+      "ALREADY_RESUPPLYING": "{callSign} sta già facendo rifornimento"
+    },
+    "flag": {
+      "LAST_MISSION_BEFORE_RESUPPLY": "Ultima missione prima del rifornimento",
+      "FUEL_RESERVE": "Riserva",
+      "FUEL_RANGE_INSUFFICIENT": "Autonomia insufficiente"
+    },
+    "flagHelp": {
+      "LAST_MISSION_BEFORE_RESUPPLY": "Dopo questa missione rientrerà a rifornire.",
+      "FUEL_RESERVE": "Carburante insufficiente per andata e ritorno: non viene consigliato.",
+      "FUEL_RANGE_INSUFFICIENT": "Troppo lontano anche con il pieno: non viene consigliato."
+    },
+    "reloadBeforeDeparture": "Rifornisce prima di partire: +{time}, già nel tempo d’arrivo",
+    "fuelStop": "Sosta al distributore: +{time} · {credits} crediti",
+    "explain": {
+      "stockTitle": "Dotazione di bordo",
+      "stockBody": "Ogni mezzo porta con sé i suoi materiali (schiuma, assorbente, kit sanitari…) e li consuma in base alla difficoltà e alle condizioni della missione. Quando ne resta poco rientra in sede a ricaricare da solo; altrimenti è subito pronto per la chiamata successiva.",
+      "fuelTitle": "Carburante",
+      "fuelBody": "I mezzi hanno un’autonomia in chilometri: ogni tragitto la consuma, e sul posto la consumano anche pompe, scale e generatori. Sotto un quarto del serbatoio, finita la missione, il mezzo fa il pieno da solo. Non resta mai a secco e il carburante non costa Crediti in più.",
+      "dismiss": "Ho capito",
+      "flightTitle": "Autonomia di volo",
+      "flightBody": "Elicotteri e aerei hanno un’autonomia in minuti di volo: la consumano il decollo, ogni tratta, il tempo sopra la scena e ogni carico d’acqua. Quando resta solo il necessario per rientrare con la riserva, il velivolo lascia la scena, fa il pieno gratis alla sua base e poi torna da solo sull’emergenza, se è ancora aperta."
+    },
+    "coaching": {
+      "noStopTitle": "Aveva ancora autonomia: è subito pronto",
+      "noStopBody": "{callSign} è rientrato senza fermarsi a rifornire: puoi inviarlo subito a un’altra chiamata.",
+      "firstReserveTitle": "In riserva: finita la missione andrà a rifornirsi da solo",
+      "firstReserveBody": "{callSign} ha poco carburante: al rientro farà il pieno in sede.",
+      "firstBingoTitle": "Elicotteri e aerei hanno un’autonomia in minuti di volo",
+      "firstBingoBody": "{callSign} lascia la scena quando gli resta solo il volo di rientro con la riserva: fa il pieno gratis alla base e torna da solo."
+    },
+    "fleet": {
+      "filter": "Da rifornire",
+      "column": "Autonomia"
+    },
+    "ledgerDetail": "{callSign} · {km} km riforniti",
+    "bingo": {
+      "title": "{callSign}: autonomia di volo al limite",
+      "resume": "Rientra a fare il pieno e poi tornerà da solo sull’emergenza.",
+      "home": "Rientra alla sua base a fare il pieno.",
+      "show": "Vedi",
+      "resumed": "{callSign} riparte per l’emergenza dopo il pieno",
+      "willResume": "Dopo il pieno tornerà su"
+    },
+    "flagHelpFlight": {
+      "FUEL_RESERVE": "Minuti di volo insufficienti per andata e ritorno: non viene consigliato.",
+      "FUEL_RANGE_INSUFFICIENT": "Non basta per andata, ritorno e qualche minuto sul posto: non viene consigliato."
+    },
+    "flightNote": {
+      "needs": "Servono {needed} min di volo · a bordo {onBoard}",
+      "onScene": "{count, plural, =0 {Non può restare sul posto} one {Può restare sul posto circa # minuto} other {Può restare sul posto circa # minuti}}"
+    }
+  },
+  "game": {
+    "dispatch": {
+      "ineligible": {
+        "ENDURANCE_INSUFFICIENT": "Autonomia di volo insufficiente per andata e ritorno, anche con il pieno"
+      }
+    }
+  }
+}

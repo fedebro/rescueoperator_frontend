@@ -8,7 +8,7 @@ import {
   TeamDto,
   type RealtimeEnvelope,
 } from '@/contracts';
-import { PersonnelDetailDto, TrainingOverview } from '@/contracts';
+import { PersonnelDetailDto, TrainingOverview, VehicleCrewGapDto } from '@/contracts';
 import { VEHICLE_TYPES, xpThreshold } from '../data/catalog';
 import { PESCARA } from '../data/pescara';
 import { MockEngine, OTP_CODE, memoryStorage, type MockCareer } from '../engine';
@@ -142,6 +142,23 @@ describe('selectCrew', () => {
     expect(small.blocked).toBeNull();
     expect(small.efficiency).toBeLessThan(1);
     expect(selectCrew(APS, people, { ...opts, target: 'MIN' }).crew).toHaveLength(APS.crewMin);
+  });
+  it('like the backend: a missing qualification blocks, a missing role only warns, never more than the target', () => {
+    // Five licensed firefighters and no driver-operator: the crew leaves without the recommended role.
+    const licensed = Array.from({ length: 5 }, (_, i) =>
+      operator({ id: `per_l${i}`, qualifications: licence }),
+    );
+    const noRole = selectCrew(APS, licensed, opts);
+    expect(noRole.blocked).toBeNull();
+    expect(noRole.missingRoles).toEqual(['DRIVER_OPERATOR']);
+    expect(noRole.missingQualifications).toEqual([]);
+    // The minimum crew is exactly the minimum, whatever the size of the pool.
+    expect(selectCrew(APS, [...licensed, driver], { ...opts, target: 'MIN' }).crew).toHaveLength(APS.crewMin);
+    const unqualified = selectCrew(APS, crewOf(5), opts);
+    expect(unqualified).toMatchObject({
+      blocked: 'CREW_UNQUALIFIED',
+      missingQualifications: ['HEAVY_VEHICLE_LICENSE'],
+    });
   });
   it('never drafts operators of another family or busy ones', () => {
     const others = [operator({ family: 'EMS', roleCode: 'RESCUER' }), operator({ status: 'TRAINING' })];
@@ -448,5 +465,27 @@ describe('personnel domain', () => {
     expect(detail).toMatchObject({ status: 'INJURED', busyReason: 'INJURY', injury: { severity: 'MINOR' } });
     w.engine.completeNow(w.career, w.engine.findAction(w.career, ['INJURY_RECOVERED'], op.id)!);
     expect(w.domain.detail(w.career, op.id)).toMatchObject({ status: 'AVAILABLE', injury: null });
+  });
+
+  it('vehicle crew gaps: the specialist roles the career can neither staff nor hire now, per vehicle type', () => {
+    const w = world();
+    const gaps = z.array(VehicleCrewGapDto).parse(w.domain.vehicleCrewGaps(w.career));
+    // Quick-hire roles are never a gap; a specialist (candidate market only) is one while nobody holds or offers it.
+    const quick = new Set(['FIREFIGHTER', 'DRIVER_OPERATOR', 'RESCUER', 'DRIVER', 'OFFICER']);
+    for (const gap of gaps) {
+      expect(gap.missingRoles.length).toBeGreaterThan(0);
+      for (const role of gap.missingRoles) expect(quick.has(role)).toBe(false);
+    }
+    const offered = new Set(w.domain.candidates(w.career).candidates.map((c) => c.roleCode));
+    const heli = gaps.find((g) => g.vehicleTypeCode === 'FIRE_HELI');
+    if (offered.has('PILOT')) expect(heli?.missingRoles ?? []).not.toContain('PILOT');
+    else expect(heli?.missingRoles).toContain('PILOT');
+    // Holding the role closes the gap.
+    w.domain.staffAll(w.career);
+    w.engine.addVehicle(w.career, 'FIRE_HELI', hq(w.career).id, true);
+    w.domain.staffAll(w.career);
+    expect(
+      w.domain.vehicleCrewGaps(w.career).find((g) => g.vehicleTypeCode === 'FIRE_HELI')?.missingRoles ?? [],
+    ).not.toContain('PILOT');
   });
 });

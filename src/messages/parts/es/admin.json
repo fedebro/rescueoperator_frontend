@@ -201,7 +201,8 @@
       "priority": "Prioridad",
       "title2": "Título",
       "read": "Leída",
-      "unread": "Sin leer"
+      "unread": "Sin leer",
+      "spawnMajor": "Iniciar gran emergencia"
     },
     "credit": {
       "title": "Ajuste de Créditos",
@@ -551,6 +552,16 @@
       "filterTarget": "Filtrar por ID del objetivo",
       "targetType": "Tipo de objetivo",
       "allTargets": "Todos los tipos"
+    },
+    "spawnMajor": {
+      "title": "Iniciar una gran emergencia",
+      "subtitle": "Herramienta de pruebas y soporte: empieza ya, dimensionada según la flota de la carrera. Solo una a la vez.",
+      "scenario": "Escenario",
+      "auto": "Elegido por el generador",
+      "reason": "Motivo (se registra en la auditoría)",
+      "reasonRequired": "Indica un motivo de al menos 5 caracteres",
+      "submit": "Iniciar",
+      "done": "Gran emergencia iniciada"
     }
   }
 }

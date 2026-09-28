@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import catalog from '@/mocks/data/generated/catalog.json';
 import { PICTOGRAMS } from '@/design/icons/pictograms';
 import { catalogIconName, topdownSvg, vehicleClassOf } from '@/design/icons';
-import { imageSvg } from './images';
+import { clusterPictogramIndex, clusterPictogramKey, imageSvg } from './images';
 
 const expectSvg = (name: string) => {
   const spec = imageSvg(name);
@@ -46,6 +46,37 @@ describe('map images', () => {
     }
     expect(expectSvg('inc:MEDICAL:3')).toContain(PICTOGRAMS.cat_medical);
     expect(expectSvg('inc:SOMETHING_NEW:42')).toContain('>10</text>');
+  });
+
+  it('draws a cluster as what is inside: the most severe pictogram, its severity ring and the count', () => {
+    const fall = catalog.incidentTemplates.find((t) => t.code === 'MED_FALL')!;
+    const key = `${fall.category}|${fall.icon}`;
+    const index = clusterPictogramIndex(key);
+    expect(clusterPictogramIndex(key)).toBe(index);
+    expect(clusterPictogramKey(index)).toBe(key);
+    const svg = expectSvg(`clu:${index}:8:4`);
+    expect(svg).toContain(PICTOGRAMS[catalogIconName(fall.icon)]);
+    expect(svg).toContain('stroke="#F0503A"'); // severity 8
+    expect(svg).toContain('>4</text>');
+    expect(expectSvg(`clu:${index}:3:250`)).toContain('>99+</text>');
+    // An index this page never saw (a stale image name): a generic pictogram, never a crash.
+    expectSvg('clu:9999:5:2');
+  });
+
+  it('marks the pins of a major incident: thick halo and siren on the main scene, thin halo on a linked one', () => {
+    const plain = expectSvg('inc:FIRE:6');
+    const main = expectSvg('inc:FIRE:6:M');
+    const linked = expectSvg('inc:FIRE:3:L');
+    const MAJOR = '#FF4F86';
+    expect(plain).not.toContain(MAJOR);
+    // The halo is drawn under the pin, the siren badge over it (top-left corner).
+    expect(main.indexOf(MAJOR)).toBeLessThan(main.indexOf('fill="#0A1220"'));
+    expect(main).toMatch(/stroke="#FF4F86" stroke-width="7"/);
+    expect(main).toMatch(/<circle cx="9" cy="9" r="8" fill="#FF4F86"/);
+    expect(linked).toMatch(/stroke="#FF4F86" stroke-width="5"/);
+    expect(linked).not.toMatch(/<circle cx="9" cy="9" r="8" fill="#FF4F86"/);
+    // Flags combine: a linked incident on the water keeps its anchor badge.
+    expect(expectSvg('inc:WATER:4:WL')).toMatch(/stroke="#FF4F86" stroke-width="5"/);
   });
 
   it('draws hospitals, candidate sites, closures and starter sites', () => {

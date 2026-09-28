@@ -147,7 +147,8 @@
       "emptyTitle": "Ningún operador encontrado",
       "emptyHint": "Amplía los filtros o contrata nuevos operadores en la pestaña Contratación.",
       "count": "{shown} de {total} operadores",
-      "caption": "Plantilla de la central"
+      "caption": "Plantilla de la central",
+      "filters": "Filtros{count, plural, =0 {} other { (#)}}"
     },
     "locked": {
       "progress": "Estás en el nivel {level} de {required}"

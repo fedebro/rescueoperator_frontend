@@ -1,0 +1,93 @@
+{
+  "autonomy": {
+    "title": "Autonomía",
+    "help": "Cómo funciona la autonomía",
+    "fuel": "Combustible",
+    "stock": "Dotación a bordo",
+    "fuelValue": "{km} de {range} km",
+    "flight": "Autonomía de vuelo",
+    "flightValue": "{minutes} de {range} min",
+    "stockValue": "{count, plural, one {# material} other {# materiales}}",
+    "itemsLow": "{count, plural, one {# por recargar} other {# por recargar}}",
+    "reserve": "Reserva",
+    "low": "Bajo",
+    "full": "Lleno",
+    "missionsLeft": "{count, plural, =0 {Necesita reabastecerse} one {Autonomía: una última misión} other {Autonomía: unas # misiones}}",
+    "missionsShort": "{count, plural, =0 {Por reabastecer} one {1 misión} other {~# misiones}}",
+    "fullAutonomy": "Autonomía completa",
+    "needsResupply": "Necesita reabastecerse",
+    "resupplying": "Reabasteciéndose",
+    "readyIn": "Listo en",
+    "resupplyRequested": "Se reabastecerá en el próximo regreso",
+    "returnToResupply": "Volver a reabastecerse",
+    "returnToResupplyHint": "Recarga material y combustible ahora, antes de una gran emergencia.",
+    "showItems": "Detalle del material",
+    "hideItems": "Ocultar el detalle",
+    "itemQuantity": "{quantity} de {capacity}",
+    "itemLow": "Por recargar",
+    "resupplyResult": {
+      "RESTOCKING": "{callSign}: reabastecimiento iniciado",
+      "RETURNING_TO_BASE": "{callSign} vuelve a la base para reabastecerse",
+      "SCHEDULED_ON_RETURN": "{callSign} se reabastecerá en cuanto vuelva",
+      "ALREADY_FULL": "{callSign} ya tiene la autonomía completa",
+      "ALREADY_RESUPPLYING": "{callSign} ya se está reabasteciendo"
+    },
+    "flag": {
+      "LAST_MISSION_BEFORE_RESUPPLY": "Última misión antes de reabastecerse",
+      "FUEL_RESERVE": "Reserva",
+      "FUEL_RANGE_INSUFFICIENT": "Autonomía insuficiente"
+    },
+    "flagHelp": {
+      "LAST_MISSION_BEFORE_RESUPPLY": "Después de esta misión volverá a reabastecerse.",
+      "FUEL_RESERVE": "Combustible insuficiente para ida y vuelta: no se recomienda.",
+      "FUEL_RANGE_INSUFFICIENT": "Demasiado lejos incluso con el depósito lleno: no se recomienda."
+    },
+    "reloadBeforeDeparture": "Se reabastece antes de salir: +{time}, ya incluido en la hora de llegada",
+    "fuelStop": "Parada en la gasolinera: +{time} · {credits} créditos",
+    "explain": {
+      "stockTitle": "Dotación a bordo",
+      "stockBody": "Cada vehículo lleva su propio material (espuma, absorbente, kits sanitarios…) y lo consume según la dificultad de la misión y las condiciones en el lugar. Cuando le queda poco se recarga solo en la base; si no, queda listo al instante para la siguiente llamada.",
+      "fuelTitle": "Combustible",
+      "fuelBody": "Los vehículos tienen una autonomía en kilómetros: cada trayecto la consume, igual que las bombas, escaleras y generadores en el lugar. Por debajo de un cuarto de depósito, al acabar la misión, el vehículo reposta solo. Nunca se queda sin combustible y este no cuesta Créditos adicionales.",
+      "dismiss": "Entendido",
+      "flightTitle": "Autonomía de vuelo",
+      "flightBody": "Helicópteros y aviones tienen una autonomía en minutos de vuelo: la consumen el despegue, cada trayecto, el tiempo sobre la escena y cada carga de agua. Cuando solo queda lo necesario para volver con la reserva, la aeronave deja la escena, reposta gratis en su base y luego vuelve sola a la emergencia, si sigue abierta."
+    },
+    "coaching": {
+      "noStopTitle": "Aún tenía autonomía: listo de inmediato",
+      "noStopBody": "{callSign} ha vuelto sin pararse a reabastecerse: puedes enviarlo enseguida a otra llamada.",
+      "firstReserveTitle": "En reserva: tras la misión se reabastecerá solo",
+      "firstReserveBody": "{callSign} tiene poco combustible: al volver llenará el depósito en la base.",
+      "firstBingoTitle": "Helicópteros y aviones tienen una autonomía en minutos de vuelo",
+      "firstBingoBody": "{callSign} deja la escena cuando solo le queda el vuelo de regreso con la reserva: reposta gratis en la base y vuelve solo."
+    },
+    "fleet": {
+      "filter": "Por reabastecer",
+      "column": "Autonomía"
+    },
+    "ledgerDetail": "{callSign} · {km} km repostados",
+    "bingo": {
+      "title": "{callSign}: autonomía de vuelo al límite",
+      "resume": "Vuelve a repostar y luego regresará solo a la emergencia.",
+      "home": "Vuelve a su base a repostar.",
+      "show": "Ver",
+      "resumed": "{callSign} vuelve a la emergencia tras repostar",
+      "willResume": "Tras repostar volverá a"
+    },
+    "flagHelpFlight": {
+      "FUEL_RESERVE": "Minutos de vuelo insuficientes para ida y vuelta: no recomendado.",
+      "FUEL_RANGE_INSUFFICIENT": "No alcanza para ida, vuelta y unos minutos en el lugar: no recomendado."
+    },
+    "flightNote": {
+      "needs": "Necesita {needed} min de vuelo · {onBoard} a bordo",
+      "onScene": "{count, plural, =0 {No puede quedarse en el lugar} one {Puede quedarse en el lugar unos # minuto} other {Puede quedarse en el lugar unos # minutos}}"
+    }
+  },
+  "game": {
+    "dispatch": {
+      "ineligible": {
+        "ENDURANCE_INSUFFICIENT": "Autonomía de vuelo insuficiente para ida y vuelta, incluso con el depósito lleno"
+      }
+    }
+  }
+}

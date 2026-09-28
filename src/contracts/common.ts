@@ -24,6 +24,9 @@ export const IdPrefix = {
   candidate: 'cnd',
   maintenance: 'mnt',
   training: 'trn',
+  /* major incidents (D-24/D-69) */
+  majorIncident: 'mjr',
+  majorReinforcement: 'rnf',
 } as const;
 
 export const IsoDateTime = z.string().datetime({ offset: true });
@@ -69,10 +72,23 @@ export const ErrorCode = z.enum([
   'VEHICLE_NOT_AVAILABLE',
   'VEHICLE_NOT_RECALLABLE',
   'VEHICLE_NOT_CHAINABLE',
-  /** A WATER-domain vehicle (boat, ship) sent to an incident that is not on or at the water. */
+  /**
+   * A WATER-domain vehicle (boat) sent to an incident that is not on the water, or a GROUND vehicle sent to a water incident
+   * while it brings none of the shore-side capabilities the incident asks for (land units work at the meeting point).
+   */
   'VEHICLE_DOMAIN_MISMATCH',
+  /** D-23: a boat can only be bought for / transferred to a Base nautica (`NAUTICAL_BASE`), never a station on a street. */
+  'NEEDS_NAUTICAL_BASE',
+  /** D-23: a Base nautica can only be acquired on a nautical site (harbour, seafront, main lake: `SiteDto.nautical`). */
+  'NAUTICAL_SITE_REQUIRED',
   /** An aircraft sent to an incident none of whose requirements it can contribute anything to. */
   'AIR_SUPPORT_NOT_NEEDED',
+  /** An aircraft whose flight endurance (even after refuelling at base) cannot cover there and back with its reserve intact. */
+  'ENDURANCE_INSUFFICIENT',
+  /** The free undo of a dispatch came too late (config `dispatch.cancelGraceSeconds`): the vehicles can only be recalled. */
+  'CANCEL_WINDOW_EXPIRED',
+  /** The dispatch cannot be undone for free: a vehicle already left its origin, or it is not a player dispatch (`details.reason`). */
+  'DISPATCH_NOT_CANCELLABLE',
   'CREW_INSUFFICIENT',
   'CREW_UNQUALIFIED',
   'CREW_EXHAUSTED',

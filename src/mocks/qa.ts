@@ -26,6 +26,11 @@ export type QaHelpers = Record<string, (...args: never[]) => unknown> & {
   staffAll: () => void;
   /** Freezes / resumes the simulation clock so a transient phase can be inspected deterministically. */
   pause: (paused?: boolean) => void;
+  /**
+   * Adds `count` AVAILABLE vehicles of a type at once (default: to the headquarters), bypassing the shop — e.g. a fleet big
+   * enough for a major incident. Call `staffAll()` afterwards when the personnel system needs crews. Returns their ids.
+   */
+  addVehicles: (typeCode: string, count?: number, facilityId?: string) => string[];
 };
 
 export function installQa(engine: MockEngine): void {
@@ -88,6 +93,18 @@ export function installQa(engine: MockEngine): void {
       engine.save();
     },
     staffAll: () => undefined,
+    addVehicles: (typeCode, count = 1, facilityId) => {
+      const career = current();
+      const facility = career.facilities.find((f) => f.id === facilityId) ?? career.facilities[0]!;
+      const ids: string[] = [];
+      for (let i = 0; i < count; i++) ids.push(engine.addVehicle(career, typeCode, facility.id, true).id);
+      engine.emit(career, 'vehicle.updated', {
+        vehicles: career.vehicles.filter((v) => ids.includes(v.id)),
+        facility: career.facilities.find((f) => f.id === facility.id),
+      });
+      engine.save();
+      return ids;
+    },
     pause: (paused = true) => {
       engine.paused = paused;
     },

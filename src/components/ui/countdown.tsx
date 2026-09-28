@@ -63,7 +63,7 @@ export function Eta({
       to={arriveAt}
       doneLabel={doneLabel}
       className={className}
-      prefix={<span className="text-subtle text-[10px] font-bold tracking-wider uppercase">{label}</span>}
+      prefix={<span className="text-subtle text-xs font-bold tracking-wider uppercase">{label}</span>}
     />
   );
 }

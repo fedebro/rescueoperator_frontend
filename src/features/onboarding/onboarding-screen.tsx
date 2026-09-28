@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import type { GeoJSONSource, Map as MlMap } from 'maplibre-gl';
+import type { Map as MlMap } from 'maplibre-gl';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
@@ -15,6 +15,7 @@ import { useLatest } from '@/hooks/use-latest';
 import { useSessionGate } from '@/hooks/use-session';
 import { BaseMap } from '@/features/map/base-map';
 import { GAME_LABEL_FONT } from '@/features/map/style';
+import { geoJsonSource } from '@/features/map/game-layers';
 import { LanguageSelect } from '@/features/settings/language-select';
 import { Logo } from '@/components/brand/logo';
 import { BrandSplash } from '@/components/brand/splash';
@@ -52,6 +53,8 @@ function SitesMap({
     (map: MlMap) => {
       mapRef.current = map;
       map.addSource('sites', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      // The names in a source of their own: glyphs that cannot load take the labels down, never the sites to pick.
+      map.addSource('sites-labels', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
       map.addLayer({
         id: 'sites-ring',
         type: 'circle',
@@ -78,7 +81,7 @@ function SitesMap({
       map.addLayer({
         id: 'sites-label',
         type: 'symbol',
-        source: 'sites',
+        source: 'sites-labels',
         layout: {
           'text-field': ['get', 'name'],
           'text-font': GAME_LABEL_FONT,
@@ -104,14 +107,15 @@ function SitesMap({
   React.useEffect(() => {
     const map = mapRef.current;
     if (!ready || !map) return;
-    (map.getSource('sites') as GeoJSONSource | undefined)?.setData({
+    const data: GeoJSON.FeatureCollection = {
       type: 'FeatureCollection',
       features: sites.map((s) => ({
         type: 'Feature',
         geometry: { type: 'Point', coordinates: s.position },
         properties: { id: s.id, name: s.name, selected: s.id === selectedId ? 1 : 0 },
       })),
-    });
+    };
+    for (const id of ['sites', 'sites-labels']) geoJsonSource(map, id)?.setData(data);
   }, [ready, sites, selectedId]);
   React.useEffect(() => {
     const map = mapRef.current;
@@ -166,7 +170,7 @@ function SiteCard({ site, selected, onSelect }: { site: Site; selected: boolean;
         </span>
         <ProgressBar value={site.coveragePopulationPct / 100} label={t('coverage')} tone="success" />
       </span>
-      <span className="text-subtle grid grid-cols-3 gap-2 text-[11px]">
+      <span className="text-subtle grid grid-cols-3 gap-2 text-xs">
         <span>
           <span className="flex items-center gap-1">
             <Clock3 className="size-3" aria-hidden />
@@ -280,7 +284,7 @@ export function OnboardingScreen() {
           {!location ? (
             <div className="flex flex-col gap-4">
               <div>
-                <p className="text-skyline text-[11px] font-bold tracking-wider uppercase">
+                <p className="text-skyline text-xs font-bold tracking-wider uppercase">
                   {t('step', { current: 1, total: 2 })}
                 </p>
                 <h1 className="font-display mt-1 text-2xl font-extrabold">
@@ -361,7 +365,7 @@ export function OnboardingScreen() {
           ) : (
             <div className="flex flex-col gap-4">
               <div>
-                <p className="text-skyline text-[11px] font-bold tracking-wider uppercase">
+                <p className="text-skyline text-xs font-bold tracking-wider uppercase">
                   {t('step', { current: 2, total: 2 })}
                 </p>
                 <h1 className="font-display mt-1 text-2xl font-extrabold">

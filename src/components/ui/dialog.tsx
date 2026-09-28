@@ -33,17 +33,25 @@ export function DialogContent({
   closeLabel,
   children,
   className,
+  overlayClassName,
   hideClose,
   ...props
 }: Omit<React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>, 'title'> & {
   title: React.ReactNode;
   description?: React.ReactNode;
   closeLabel: string;
+  /** E.g. a clear overlay for a panel whose effect must stay visible behind it (the map layers). */
+  overlayClassName?: string;
   hideClose?: boolean;
 }) {
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="animate-fade-in bg-overlay fixed inset-0 z-[70] backdrop-blur-[2px]" />
+      <DialogPrimitive.Overlay
+        className={cn(
+          'animate-fade-in bg-overlay fixed inset-0 z-[70] backdrop-blur-[2px]',
+          overlayClassName,
+        )}
+      />
       <DialogBody
         {...props}
         aria-describedby={description ? undefined : props['aria-describedby']}

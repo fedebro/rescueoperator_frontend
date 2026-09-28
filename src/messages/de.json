@@ -64,8 +64,13 @@
     "HOSPITAL_NOT_COMPATIBLE": "Das gewählte Krankenhaus kann diesen Patienten nicht aufnehmen.",
     "INVALID_STATE_TRANSITION": "Diese Aktion ist im Moment nicht möglich.",
     "FEATURE_DISABLED": "Diese Funktion ist noch nicht aktiv.",
-    "VEHICLE_DOMAIN_MISMATCH": "Dieses Fahrzeug erreicht diesen Einsatzort nicht: Land und Wasser brauchen unterschiedliche Fahrzeuge.",
-    "AIR_SUPPORT_NOT_NEEDED": "Dieser Einsatz verlangt kein Luftfahrzeug."
+    "VEHICLE_DOMAIN_MISMATCH": "Dieses Fahrzeug kann hier nicht arbeiten: Auf dem Wasser braucht es Boote, und bei einem Einsatz auf dem Wasser arbeiten Landfahrzeuge nur am Sammelpunkt.",
+    "AIR_SUPPORT_NOT_NEEDED": "Dieser Einsatz verlangt kein Luftfahrzeug.",
+    "NEEDS_NAUTICAL_BASE": "Boote können nur für eine Wasserrettungsstation gekauft oder dorthin verlegt werden.",
+    "NAUTICAL_SITE_REQUIRED": "Eine Wasserrettungsstation lässt sich nur an einem Wasserstandort eröffnen: Hafen, Uferpromenade oder See.",
+    "ENDURANCE_INSUFFICIENT": "Die Flugausdauer reicht nicht für Hin- und Rückflug mit Reserve: Wähle ein anderes Fahrzeug.",
+    "CANCEL_WINDOW_EXPIRED": "Zu spät, um die Entsendung rückgängig zu machen: Du kannst die Fahrzeuge nur noch zurückrufen.",
+    "DISPATCH_NOT_CANCELLABLE": "Diese Entsendung lässt sich nicht mehr rückgängig machen: Ein Fahrzeug ist bereits ausgerückt. Rufe es über seine Karte zurück."
   },
   "errorBoundary": {
     "title": "Ein Fehler ist aufgetreten",
@@ -242,7 +247,7 @@
       "more": "Mehr",
       "personnel": "Personal",
       "logistics": "Logistik",
-      "credits": "Credits-Shop",
+      "credits": "Credits kaufen",
       "network": "Dein Netzwerk"
     },
     "topbar": {
@@ -293,19 +298,30 @@
       "label": "Einsatzkarte"
     },
     "sheet": {
-      "handle": "Panel: Ziehen oder drücken, um die Höhe zu ändern"
+      "handle": "Panel: Ziehen oder drücken, um die Höhe zu ändern",
+      "collapse": "Einklappen"
     },
     "inspector": {
       "label": "Details zur Auswahl",
       "centerOnMap": "Auf Karte zentrieren",
-      "close": "Details schließen"
+      "close": "Details schließen",
+      "closed": {
+        "resolved": "Einsatz abgeschlossen",
+        "expired": "Einsatz abgelaufen",
+        "failed": "Einsatz gescheitert",
+        "cancelled": "Einsatz abgebrochen",
+        "closed": "Einsatz beendet"
+      },
+      "backToList": "Zurück zur Liste"
     },
     "queue": {
       "title": "Einsätze",
       "pending": "{count, plural, one {# wartet} other {# warten}}",
       "emptyTitle": "Alles ruhig",
       "emptyOnDuty": "Kein aktiver Einsatz. Der nächste Notruf kommt bestimmt bald.",
-      "emptyOffDuty": "Du bist außer Dienst: Es kommen keine neuen Einsätze."
+      "emptyOffDuty": "Du bist außer Dienst: Es kommen keine neuen Einsätze.",
+      "summary": "{count, plural, =0 {Keine Einsätze} one {# Einsatz} other {# Einsätze}}",
+      "allIncidents": "Alle Einsätze"
     },
     "incident": {
       "severity": "Schweregrad",
@@ -339,7 +355,12 @@
         "REQUIRED": "Erforderlich",
         "RECOMMENDED": "Empfohlen",
         "OPTIONAL": "Optional"
-      }
+      },
+      "forecast": "Erwartete Abdeckung",
+      "missing": "fehlt: {list}",
+      "covered": "Bedarf gedeckt",
+      "showDetails": "Bedarfsdetails anzeigen",
+      "hideDetails": "Bedarfsdetails ausblenden"
     },
     "dispatch": {
       "requirements": "Was gebraucht wird",
@@ -393,7 +414,9 @@
           "INVENTORY_NEEDS_RESTOCK": "Muss zuerst aufgefüllt werden",
           "CREW_INSUFFICIENT": "Besatzung unzureichend",
           "CREW_UNQUALIFIED": "Besatzung hat nicht die erforderliche Qualifikation",
-          "CREW_EXHAUSTED": "Besatzung zu erschöpft"
+          "CREW_EXHAUSTED": "Besatzung zu erschöpft",
+          "VEHICLE_RESTOCKING": "Wird an der Wache nachgefüllt",
+          "FUEL_RESERVE": "Muss zuerst tanken"
         }
       }
     },
@@ -595,7 +618,7 @@
       },
       "DISPATCH": {
         "title": "Jede Sekunde zählt",
-        "body": "Die Balken zeigen, was vor Ort gebraucht wird. Die Leitstelle schlägt dir bereits die besten Fahrzeuge vor: ein Tipp, und sie rücken sofort aus."
+        "body": "Die Leitstelle schlägt dir bereits die besten Fahrzeuge für den Bedarf vor Ort vor: ein Tipp auf die Schaltfläche unten, und sie rücken sofort aus."
       },
       "WATCH_ARRIVAL": {
         "title": "Deine Fahrzeuge sind unterwegs",
@@ -609,6 +632,20 @@
         "title": "Eine Stadt kommt mit einem Fahrzeug nicht aus",
         "body": "Nutze die Belohnung für ein zweites Fahrzeug: Von jetzt an warten Einsätze nicht mehr — mehr einsatzbereite Fahrzeuge bedeuten mehr Leben, die gleichzeitig versorgt werden."
       }
+    },
+    "quickDispatch": {
+      "send": "Senden",
+      "sendAria": "Empfohlene Fahrzeuge alarmieren: {title}",
+      "sent": "{count, plural, one {# Fahrzeug alarmiert} other {# Fahrzeuge alarmiert}}",
+      "partial": "teilweise Abdeckung",
+      "undo": "Rückgängig",
+      "undone": "Alarmierung zurückgenommen: Fahrzeuge zurückgerufen",
+      "undoFailed": "Die Alarmierung konnte nicht zurückgenommen werden",
+      "noRecommendation": "Kein empfohlenes Fahrzeug verfügbar",
+      "open": "Öffnen",
+      "cancelled": "Alarmierung storniert",
+      "recalledInstead": "Zu spät für eine kostenlose Stornierung: Fahrzeuge zurückgerufen",
+      "recall": "Zurückrufen"
     }
   },
   "settings": {
@@ -1038,7 +1075,8 @@
     "SUPPLIES": "Vorräte",
     "SPEEDUP": "Beschleunigung",
     "EXTERNAL_SUPPORT": "Externe Unterstützung",
-    "LEVEL_UP": "Prämie für Stufe {level}"
+    "LEVEL_UP": "Prämie für Stufe {level}",
+    "FUEL": "Kraftstoff an der Tankstelle"
   },
   "outcome": {
     "note": {
@@ -1061,7 +1099,9 @@
     "incident_resolving": "Arbeit vor Ort beendet: Abschlussarbeiten laufen",
     "incident_cancelled": "Einsatz abgebrochen",
     "ung_arrived": "Externe Unterstützung vor Ort",
-    "ung_done": "Externe Unterstützung: Arbeit abgeschlossen"
+    "ung_done": "Externe Unterstützung: Arbeit abgeschlossen",
+    "vehicle_resupply_before_departure": "{callSign} füllt vor der Abfahrt nach",
+    "vehicle_refuel_stop": "{callSign} hält zum Tanken an einer Tankstelle"
   },
   "away": {
     "event": {

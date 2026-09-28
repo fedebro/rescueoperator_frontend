@@ -62,7 +62,7 @@
       "REFUNDED": "Refunded"
     },
     "shop": {
-      "title": "Credits",
+      "title": "Buy Credits",
       "subtitle": "Support the game and give your control room a boost. Optional, always.",
       "balance": "Current balance",
       "purchasedBalance": "of which purchased: {credits} (spent last)",

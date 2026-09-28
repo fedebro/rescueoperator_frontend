@@ -1,0 +1,130 @@
+{
+  "nautical": {
+    "section": "Emergency on the water",
+    "body": {
+      "SEA": "At sea",
+      "LAKE": "On the lake",
+      "RIVER": "On the river",
+      "UNKNOWN": "On the water"
+    },
+    "focusScene": "Point on the water",
+    "focusMeeting": "Meeting point",
+    "roles": "Boats go to the point on the water; land units stop at the meeting point on the road, where the boat brings the rescued.",
+    "coastGuard": {
+      "title": "A boat is needed — the Coast Guard steps in",
+      "titleCovered": "Your boats are not enough — the Coast Guard steps in",
+      "titleNoCoastGuard": "A boat is needed",
+      "covers": "{provider} handles the rescue on the water ({list}).",
+      "shore": "Send your land units to the meeting point.",
+      "reward": "Reward reduced to {percent}%.",
+      "noCoastGuard": "The Coast Guard does not work on rivers and lakes: you need a boat of your own, which gets there on its trailer.",
+      "buyBase": "Buy a marine base",
+      "buyBoat": "Buy a boat"
+    },
+    "requirements": {
+      "water": "On the water",
+      "waterHint": "boats and aircraft, at the emergency point",
+      "shore": "Ashore",
+      "shoreHint": "land units, at the meeting point",
+      "coastGuard": "Coast Guard"
+    },
+    "dispatch": {
+      "toScene": "On the water",
+      "toMeetingPoint": "To the meeting point",
+      "route": {
+        "DIRECT": "leaves from its berth",
+        "TRAILER": "on its trailer, launched at {place}",
+        "BANK": "on its trailer, launched from the bank"
+      },
+      "launchPoint": "a launch point",
+      "legs": "{road} by road, {water} on the water",
+      "landAtWater": "Brings nothing needed at the meeting point: the rescue on the water needs a boat",
+      "boatOnLand": "A boat cannot reach an emergency on land"
+    },
+    "shop": {
+      "title": "Where boats are kept",
+      "body": "Boats are kept only at a marine base, in a harbour, on the seafront or on a lake. On the same water they leave straight from their berth; rivers and other lakes are reached on a trailer.",
+      "none": "You do not have a marine base yet.",
+      "fromLevel": "from level {level}",
+      "bases": "Your marine bases",
+      "building": "Under construction",
+      "berths": "{free, plural, =0 {Berths full} one {# free berth of {total}} other {# free berths of {total}}}",
+      "legacyMove": "{count, plural, one {One boat is still at a fire station: move it to the marine base for free.} other {# boats are still at a fire station: move them to the marine base for free.}}",
+      "legacyKeep": "{count, plural, one {One boat is still at a fire station: it keeps working, and with a marine base you can move it for free.} other {# boats are still at a fire station: they keep working, and with a marine base you can move them for free.}}",
+      "buyBase": "Buy a marine base",
+      "buyAnotherBase": "Another marine base",
+      "showSites": "Nautical sites on the map",
+      "noFacility": "You need a marine base: boats are not kept at fire stations.",
+      "noBerth": "Berths full: extend the pier of your marine base.",
+      "pier": "Extend the pier"
+    },
+    "site": {
+      "badge": "Nautical site",
+      "badgeNamed": "Nautical site · {name}",
+      "filter": "Nautical",
+      "listHint": "Harbours, seafront and lakes: the only place to open a marine base and keep boats.",
+      "candidate": "Available nautical site",
+      "mapTitle": "Nautical sites",
+      "mapHint": "{count, plural, =0 {No nautical site nearby} one {# nautical site: tap it for the marine base} other {# nautical sites: tap one for the marine base}}",
+      "conditionsTitle": "Marine base: conditions",
+      "price": "Cost",
+      "level": "From level {level}",
+      "berths": "{count, plural, one {# berth} other {# berths}}, up to {max} with the pier",
+      "hosts": "Hosts the boats of the Fire Brigade, EMS and Police",
+      "water": "Berth on: {name}",
+      "berthOnWater": "Berth on the water: boats leave from here"
+    },
+    "facility": {
+      "title": "Marine base",
+      "water": "Marine base on: {name}",
+      "berths": "Berths in use: {used} of {total}",
+      "howItWorks": "On the same water boats leave straight from their berth; rivers and other lakes are reached on a trailer, up to a launch point. The pier adds berths.",
+      "buyBoat": "Buy a boat"
+    },
+    "transfer": {
+      "offer": "Move to the marine base for free",
+      "hint": "This boat is still at a fire station: move it to {facility} for free.",
+      "noBerth": "Boat still at a fire station: free a berth or extend the pier to move it to the marine base for free.",
+      "noBase": "Boat still at a fire station: it keeps working. With a marine base you can move it for free.",
+      "buyBase": "Buy a marine base",
+      "onlyAvailable": "It moves once it is available at its facility.",
+      "done": "{callSign} is moving to {facility}",
+      "boatOnly": "Boats are kept only at a marine base"
+    },
+    "fleet": {
+      "movable": "Movable for free",
+      "legacy": "At a fire station"
+    },
+    "errors": {
+      "NEEDS_NAUTICAL_BASE": "Boats are kept only at a marine base: buy one on a nautical site.",
+      "NAUTICAL_SITE_REQUIRED": "A marine base can only open on a nautical site: a harbour, the seafront or a lake.",
+      "NO_ROOM_WATER": "Berths full at this marine base ({used} of {total}): extend the pier.",
+      "NO_ROOM": "No free space at this facility ({used} of {total}): {upgrade}.",
+      "INCOMPATIBLE_FACILITY": "This facility cannot host this vehicle.",
+      "FACILITY_NOT_OPERATIONAL": "The facility is still under construction: you can use it as soon as it is operational."
+    },
+    "upgrade": {
+      "GARAGE": "extend the garage",
+      "HELIPAD": "build the helipad"
+    },
+    "fix": {
+      "title": "Could not complete it",
+      "buyBase": "Buy a marine base",
+      "showNauticalSites": "Show the nautical sites",
+      "pier": "Extend the pier",
+      "garage": "Extend the garage",
+      "helipad": "Build the helipad",
+      "newFacility": "Acquire a facility",
+      "facility": "Open the facility"
+    }
+  },
+  "game": {
+    "dispatch": {
+      "chain": {
+        "reason": {
+          "BOAT_NEEDS_BASE": "Must go back to its marine base first"
+        }
+      }
+    }
+  }
+}

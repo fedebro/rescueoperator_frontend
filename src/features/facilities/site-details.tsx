@@ -8,7 +8,6 @@ import type { SiteDto, SyncSnapshot } from '@/contracts';
 import { facilitiesApi } from '@/lib/api/depth';
 import { qk } from '@/lib/api/query-keys';
 import { isApiError } from '@/lib/api/errors';
-import { useErrorMessage } from '@/lib/api/error-message';
 import { track } from '@/lib/analytics';
 import { compareAmount, formatClock, formatDistance } from '@/lib/format';
 import { haversineMeters } from '@/lib/geo';
@@ -22,6 +21,8 @@ import { SectionTitle, Stat } from '@/components/ui/misc';
 import { requestCredits } from '@/features/monetization/insufficient-credits';
 import { useFamilies } from '@/features/families/use-families';
 import { useCareerId, useCatalog, useSnapshot } from '@/features/game/hooks';
+import { NauticalConditions } from '@/features/water/nautical';
+import { useFixItToast } from './error-fix';
 
 type SiteOption = SiteDto['options'][number];
 
@@ -70,7 +71,7 @@ function OptionRow({
   const tc = useTranslations('common');
   const name = useCatalogName();
   const qc = useQueryClient();
-  const errorMessage = useErrorMessage();
+  const fixItToast = useFixItToast();
   const catalog = useCatalog();
   const families = useFamilies();
   const { career } = useSnapshot();
@@ -95,16 +96,19 @@ function OptionRow({
       });
       onAcquired?.(facility.id);
     },
+    // NAUTICAL_SITE_REQUIRED and the other refusals come with where to go to fix them.
     onError: (e) => {
       if (isApiError(e, 'INSUFFICIENT_CREDITS')) requestCredits(option.price);
-      else toast({ tone: 'danger', title: errorMessage(e) });
+      else fixItToast(e, { family: option.family });
     },
   });
+  // The site's garage size applies to the types that have a garage (a Base nautica keeps boats only, D-23).
+  const hasGarage = type?.domains.includes('GROUND') ?? true;
   const capacity = (['GROUND', 'AIR', 'WATER', 'PERSONNEL'] as const)
     .map((d) => ({
       d,
       n:
-        d === 'GROUND'
+        d === 'GROUND' && hasGarage
           ? Math.max(site.capacityPoints, type?.baseCapacity[d] ?? 0)
           : (type?.baseCapacity[d] ?? 0),
     }))
@@ -130,7 +134,7 @@ function OptionRow({
         </div>
         <Badge>{t('tier', { tier: option.tier })}</Badge>
       </div>
-      <ul className="text-muted flex flex-wrap gap-x-3 gap-y-0.5 text-[11px]">
+      <ul className="text-muted flex flex-wrap gap-x-3 gap-y-0.5 text-xs">
         {capacity.map(({ d, n }) => (
           <li key={d}>
             {td(`domain.${d}`)} <span className="tabular text-fg">{n}</span>
@@ -204,18 +208,37 @@ export function SiteDetails({
           {site.address}
         </p>
       ) : null}
-      <div className="grid grid-cols-3 gap-3">
-        <Stat label={t('capacity')} value={site.capacityPoints} />
-        <Stat
-          label={t('expansion')}
-          value={<span className="font-sans text-sm">{t(`expansionLevel.${site.expansionPotential}`)}</span>}
-        />
-        <Stat
-          label={t('nearest')}
-          value={<span className="text-sm">{nearest === null ? '—' : formatDistance(nearest, locale)}</span>}
-        />
-      </div>
-      <p className="text-subtle text-xs">{t(`profile.${site.profile}`)}</p>
+      {site.nautical ? (
+        // A nautical site (D-23): the conditions of the Base nautica instead of garage size and growth.
+        <>
+          <NauticalConditions site={site} />
+          <Stat
+            label={t('nearest')}
+            value={
+              <span className="text-sm">{nearest === null ? '—' : formatDistance(nearest, locale)}</span>
+            }
+          />
+        </>
+      ) : (
+        <>
+          <div className="grid grid-cols-3 gap-3">
+            <Stat label={t('capacity')} value={site.capacityPoints} />
+            <Stat
+              label={t('expansion')}
+              value={
+                <span className="font-sans text-sm">{t(`expansionLevel.${site.expansionPotential}`)}</span>
+              }
+            />
+            <Stat
+              label={t('nearest')}
+              value={
+                <span className="text-sm">{nearest === null ? '—' : formatDistance(nearest, locale)}</span>
+              }
+            />
+          </div>
+          <p className="text-subtle text-xs">{t(`profile.${site.profile}`)}</p>
+        </>
+      )}
       {site.owned ? (
         <div className="border-success/40 bg-success/10 flex flex-col gap-2 rounded-md border p-3 text-sm">
           <span className="text-success flex items-center gap-2 font-semibold">

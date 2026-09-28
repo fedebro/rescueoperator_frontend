@@ -28,7 +28,7 @@ export function Timeline({ items, label }: { items: TimelineItem[]; label: strin
           <span
             aria-hidden
             className={cn(
-              'bg-surface-1 z-[1] grid size-6 shrink-0 place-items-center rounded-full border-2 text-[10px]',
+              'bg-surface-1 z-[1] grid size-6 shrink-0 place-items-center rounded-full border-2 text-xs',
               DOT[item.tone ?? 'neutral'],
             )}
           >
@@ -36,7 +36,7 @@ export function Timeline({ items, label }: { items: TimelineItem[]; label: strin
           </span>
           <div className="min-w-0 flex-1 pt-0.5">
             <p className="text-fg text-sm">{item.title}</p>
-            <time className="tabular text-subtle text-[11px]">{item.time}</time>
+            <time className="tabular text-subtle text-xs">{item.time}</time>
           </div>
         </li>
       ))}

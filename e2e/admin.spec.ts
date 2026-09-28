@@ -8,6 +8,7 @@ import { bootCareer, isMobile, qa, trackProblems } from './helpers';
 trackProblems();
 
 const ADMIN = 'admin@rescue-control.test';
+const GAME_ADMIN = 'gameadmin@rescue-control.test';
 const SUPPORT = 'support@rescue-control.test';
 
 /** A normal player career that the staff account will inspect. Must run before `bootCareer` (it signs the player in). */
@@ -251,6 +252,49 @@ test('role guard: support cannot adjust or publish (UI and API), players get the
   await page.getByLabel('Nuova nota').fill('Contattato via email');
   await page.getByRole('button', { name: 'Aggiungi nota' }).click();
   await expect(page.getByText('Nota aggiunta')).toBeVisible();
+});
+
+test('a game admin starts a major incident for a career: scenario, mandatory reason, audit, one at a time', async ({
+  page,
+}, info) => {
+  const player = await createPlayer(page, info.project.name);
+  await bootCareer(page, info.project.name, { email: GAME_ADMIN });
+  await page.goto(`/admin/careers/${player.careerId}`);
+  await expect(page.getByRole('heading', { name: player.directorName })).toBeVisible();
+
+  await page.getByTestId('admin-spawn-major-open').click();
+  const dialog = page.getByRole('dialog', { name: 'Avvia una maxi-emergenza' });
+  await expect(dialog).toContainText(player.careerId);
+  // The reason is mandatory (it goes to the audit log).
+  await dialog.getByRole('button', { name: 'Avvia', exact: true }).click();
+  await expect(dialog.getByText('Indica un motivo di almeno 5 caratteri')).toBeVisible();
+  // A scenario of the catalog (default: the generator's own pick), below its first level it still gets its first scene.
+  await dialog.getByRole('combobox', { name: 'Scenario' }).click();
+  await page
+    .getByRole('option', { name: /Incendio in un complesso residenziale · MAJ_RESIDENTIAL_FIRE/ })
+    .click();
+  await dialog.getByLabel('Motivo (registrato nell’audit)').fill('Prova del generatore di maxi-emergenze');
+  await dialog.getByRole('button', { name: 'Avvia', exact: true }).click();
+  await expect(page.getByTestId('toast').filter({ hasText: 'Maxi-emergenza avviata' })).toBeVisible();
+  await expect(dialog).toBeHidden();
+
+  // The event is on the career right away: its main scene is among the career's incidents.
+  await page.getByRole('tab', { name: 'Emergenze' }).click();
+  await expect(page.getByText('FIRE_APARTMENT_BLOCK').first()).toBeVisible();
+
+  // One at a time: a second start is refused while this one runs.
+  await page.getByTestId('admin-spawn-major-open').click();
+  await dialog.getByLabel('Motivo (registrato nell’audit)').fill('Seconda prova, deve essere rifiutata');
+  await dialog.getByRole('button', { name: 'Avvia', exact: true }).click();
+  await expect(
+    page.getByTestId('toast').filter({ hasText: 'L’operazione è in conflitto con lo stato attuale' }),
+  ).toBeVisible();
+  await dialog.getByRole('button', { name: 'Annulla' }).click();
+  await expect(dialog).toBeHidden();
+
+  await openSection(page, 'Registro attività');
+  await expect(page.getByText('major_incident.spawn').first()).toBeVisible();
+  await expect(page.getByText('Prova del generatore di maxi-emergenze').first()).toBeVisible();
 });
 
 test('a normal player gets the translated 403 page', async ({ page }, info) => {

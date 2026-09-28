@@ -49,6 +49,7 @@ export function catalogDto(engine: MockEngine, career: MockCareer): z.infer<type
       name: text(`capability.${c.code}.name`),
       icon: c.icon,
       group: c.group,
+      shoreSide: c.shoreSide,
     })),
     vehicleTypes: VEHICLE_TYPES.map((v) => {
       const reason = lockReason(career, v.family, Math.max(v.requiredLevel, resolvedFamilyLevel(v.family)));
@@ -73,6 +74,7 @@ export function catalogDto(engine: MockEngine, career: MockCareer): z.infer<type
         lockedReason: reason,
         movement: v.movement,
         airSpeedKmh: v.airSpeedKmh,
+        waterSpeedKmh: v.waterSpeedKmh,
         sirenFactor: v.sirenFactor,
         preparationSeconds: Math.round(v.preparationSeconds / engine.speed),
         tags: v.tags,

@@ -37,6 +37,49 @@ interface Challenge {
   email: string;
 }
 
+/**
+ * The pending sign-in code survives a reload of the tab (sessionStorage: this tab only, gone when it closes). In-app
+ * browsers (TikTok, Instagram…) often reload the page when the player comes back from the mail app with the code: without
+ * this the code they just read would lead nowhere and they would have to start over (and wait for the resend cooldown).
+ * Kept as long as a code is valid (10 minutes, D-50). Storage may be unavailable: then it simply is not kept.
+ */
+const PENDING_KEY = 'rc-otp-pending';
+const PENDING_TTL_MS = 10 * 60_000;
+function savePending(challenge: Challenge | null): void {
+  try {
+    if (challenge) sessionStorage.setItem(PENDING_KEY, JSON.stringify({ ...challenge, savedAt: Date.now() }));
+    else sessionStorage.removeItem(PENDING_KEY);
+  } catch {
+    /* storage blocked: the step is simply not kept across a reload */
+  }
+}
+function loadPending(): Challenge | null {
+  try {
+    const raw = sessionStorage.getItem(PENDING_KEY);
+    if (!raw) return null;
+    const saved = JSON.parse(raw) as Partial<Challenge> & { savedAt?: number };
+    if (
+      typeof saved.challengeId !== 'string' ||
+      typeof saved.maskedEmail !== 'string' ||
+      typeof saved.email !== 'string' ||
+      typeof saved.resendAvailableAt !== 'string' ||
+      typeof saved.savedAt !== 'number' ||
+      Date.now() - saved.savedAt > PENDING_TTL_MS
+    ) {
+      sessionStorage.removeItem(PENDING_KEY);
+      return null;
+    }
+    return {
+      challengeId: saved.challengeId,
+      maskedEmail: saved.maskedEmail,
+      email: saved.email,
+      resendAvailableAt: saved.resendAvailableAt,
+    };
+  } catch {
+    return null;
+  }
+}
+
 const emailSchema = z.object({ email: z.string().trim().email().max(254) });
 const profileSchema = z.object({
   directorName: DirectorName,
@@ -57,8 +100,11 @@ export function AuthScreen() {
   const errorMessage = useErrorMessage();
   const setSession = useAuthStore((s) => s.setSession);
 
-  const [step, setStep] = React.useState<Step>('email');
-  const [challenge, setChallenge] = React.useState<Challenge | null>(null);
+  // Back from the mail app after a reload of the tab: straight to the code step of the pending sign-in. (Read once, on the
+  // client: the session gate shows the splash until it has checked the session, server and first render alike.)
+  const [pending] = React.useState(loadPending);
+  const [step, setStep] = React.useState<Step>(pending ? 'otp' : 'email');
+  const [challenge, setChallenge] = React.useState<Challenge | null>(pending);
   const [code, setCode] = React.useState('');
   const [error, setError] = React.useState<string | null>(null);
   const [busy, setBusy] = React.useState(false);
@@ -101,7 +147,9 @@ export function AuthScreen() {
     try {
       // Invite hand-off (contract: `attribution.referralCode` of the OTP request).
       const res = await authApi.requestOtp({ email, locale, ...inviteAttribution() });
-      setChallenge({ ...res, email });
+      const next = { ...res, email };
+      setChallenge(next);
+      savePending(next);
       setCode('');
       setStep('otp');
     } catch (e) {
@@ -122,6 +170,7 @@ export function AuthScreen() {
         ...(profile ?? {}),
       });
       setAccessToken(result.accessToken, result.accessTokenExpiresAt);
+      savePending(null);
       setSession(result.user);
       settleInviteCode(result.isNewUser);
       if (result.user.locale !== locale) void authApi.updateMe({ locale }).catch(() => undefined);
@@ -184,6 +233,8 @@ export function AuthScreen() {
               variant="ghost"
               size="sm"
               onClick={() => {
+                // Back to the e-mail: the pending code is abandoned (another address may follow).
+                if (step === 'otp') savePending(null);
                 setStep(step === 'profile' ? 'otp' : 'email');
                 setError(null);
               }}
@@ -363,7 +414,7 @@ export function AuthScreen() {
             </form>
           ) : null}
         </div>
-        <p className="text-subtle pb-4 text-center text-[11px] lg:hidden">{tc('disclaimer')}</p>
+        <p className="text-subtle pb-4 text-center text-xs lg:hidden">{tc('disclaimer')}</p>
       </section>
     </main>
   );

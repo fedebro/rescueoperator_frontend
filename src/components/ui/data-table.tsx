@@ -93,7 +93,7 @@ export function DataTable<T>({
         <div className="min-w-max">
           <div
             role="row"
-            className="border-border bg-surface-2 text-subtle grid h-9 items-center border-b text-[11px] font-semibold tracking-wide uppercase"
+            className="border-border bg-surface-2 text-subtle grid h-9 items-center border-b text-xs font-semibold tracking-wide uppercase"
             style={{ gridTemplateColumns: template }}
           >
             {columns.map((c) => {

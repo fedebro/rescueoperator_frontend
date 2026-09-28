@@ -3,6 +3,7 @@ import { QueryClient } from '@tanstack/react-query';
 import type { SyncSnapshot } from '@/contracts';
 import { qk } from '@/lib/api/query-keys';
 import { CAREER_ID, INCIDENT_ID, envelope, incident, snapshot, vehicle } from '@/test/fixtures';
+import { MAJOR_ID, majorDto } from '@/test/major-fixtures';
 import { applyEvent, parseEnvelope } from './reconcile';
 import { RealtimeController } from './controller';
 import type { TransportHandlers } from './transport';
@@ -97,6 +98,118 @@ describe('applyEvent', () => {
     const lvl = applyEvent(snapshot(), envelope('level.reached', 11, { level: 2 }));
     if (lvl.kind !== 'applied') throw new Error('not applied');
     expect(lvl.effects).toContainEqual({ type: 'level.reached', level: 2 });
+  });
+});
+
+describe('applyEvent — major incidents (`career.updated` with `{ major }`)', () => {
+  const applied = (r: ReturnType<typeof applyEvent>) => {
+    if (r.kind !== 'applied') throw new Error(`not applied: ${r.kind}`);
+    return r;
+  };
+
+  it('a major that was not the active one has started: it becomes the active one', () => {
+    const r = applied(applyEvent(snapshot(), envelope('career.updated', 11, { major: majorDto() })));
+    expect(r.snapshot.activeMajorIncidentId).toBe(MAJOR_ID);
+    expect(r.effects).toContainEqual(
+      expect.objectContaining({
+        type: 'major.updated',
+        started: true,
+        major: expect.objectContaining({ id: MAJOR_ID }),
+      }),
+    );
+  });
+
+  it('a change of the running major (phase, growth, reinforcements) is not a new start', () => {
+    const r = applied(
+      applyEvent(
+        snapshot({ activeMajorIncidentId: MAJOR_ID }),
+        envelope('career.updated', 11, { major: majorDto({ phase: 'CONTAINMENT' }) }),
+      ),
+    );
+    expect(r.effects).toContainEqual(expect.objectContaining({ type: 'major.updated', started: false }));
+  });
+
+  it('the end clears the active major and refreshes the economy and the progression', () => {
+    const r = applied(
+      applyEvent(
+        snapshot({ activeMajorIncidentId: MAJOR_ID }),
+        envelope('career.updated', 11, {
+          major: majorDto({ status: 'ENDED', outcome: 'SUCCESS', phase: 'ENDED' }),
+        }),
+      ),
+    );
+    expect(r.snapshot.activeMajorIncidentId).toBeNull();
+    expect(r.effects).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: 'major.updated', started: false }),
+        { type: 'invalidate', scope: 'economy' },
+        { type: 'invalidate', scope: 'progression' },
+      ]),
+    );
+  });
+
+  it('a major view this client cannot read never blocks the event: the major queries are refetched', () => {
+    const r = applied(
+      applyEvent(
+        snapshot(),
+        envelope('career.updated', 11, { major: { id: 'mjr_newer', shape: 'unknown' }, credits: '9' }),
+      ),
+    );
+    expect(r.snapshot.career.credits).toBe('9');
+    expect(r.effects).toContainEqual({ type: 'invalidate', scope: 'major' });
+    expect(r.effects.some((e) => e.type === 'major.updated')).toBe(false);
+  });
+});
+
+describe('applyEvent — aircraft at bingo, vehicles committed', () => {
+  it('an aircraft turned back at bingo, with the incident it flies back to once refuelled', () => {
+    const r = applyEvent(
+      snapshot(),
+      envelope('vehicle.updated', 11, {
+        vehicle: vehicle({ status: 'RETURNING' }),
+        bingo: true,
+        queued: true,
+        queuedIncidentId: INCIDENT_ID,
+      }),
+    );
+    if (r.kind !== 'applied') throw new Error('not applied');
+    expect(r.effects).toContainEqual(
+      expect.objectContaining({ type: 'vehicle.bingo', queuedIncidentId: INCIDENT_ID }),
+    );
+  });
+
+  it('a bingo without the rotation only goes home', () => {
+    const r = applyEvent(
+      snapshot(),
+      envelope('vehicle.updated', 11, { vehicle: vehicle({ status: 'RETURNING' }), bingo: true }),
+    );
+    if (r.kind !== 'applied') throw new Error('not applied');
+    expect(r.effects).toContainEqual(
+      expect.objectContaining({ type: 'vehicle.bingo', queuedIncidentId: null }),
+    );
+  });
+
+  it('says when a vehicle is committed to an incident (an automatic dispatch included), once', () => {
+    const committed = vehicle({ status: 'PREPARING', incidentId: INCIDENT_ID });
+    const r = applyEvent(
+      snapshot(),
+      envelope('incident.updated', 11, {
+        incident: incident({ status: 'RESPONDING' }),
+        vehicles: [committed],
+      }),
+    );
+    if (r.kind !== 'applied') throw new Error('not applied');
+    expect(r.effects).toContainEqual({
+      type: 'vehicle.committed',
+      vehicle: committed,
+      incidentId: INCIDENT_ID,
+    });
+    const again = applyEvent(
+      r.snapshot,
+      envelope('vehicle.updated', 12, { vehicle: { ...committed, status: 'EN_ROUTE' } }),
+    );
+    if (again.kind !== 'applied') throw new Error('not applied');
+    expect(again.effects.some((e) => e.type === 'vehicle.committed')).toBe(false);
   });
 });
 

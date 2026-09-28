@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { z } from 'zod';
-import { Anchor, Building2, Lock, Plane, Truck, Users } from 'lucide-react';
+import { AlertTriangle, Anchor, ArrowRight, Building2, Lock, Plane, Truck, Users } from 'lucide-react';
 import {
   ServiceFamily as ServiceFamilySchema,
   VehicleCrewGapDto,
@@ -16,7 +16,6 @@ import type { CatalogDto } from '@/lib/api/types';
 import { api } from '@/lib/api/client';
 import { gameApi } from '@/lib/api/endpoints';
 import { isApiError } from '@/lib/api/errors';
-import { useErrorMessage } from '@/lib/api/error-message';
 import { compareAmount, formatClock } from '@/lib/format';
 import { toast } from '@/stores/toast';
 import { useCatalogName, useI18nText } from '@/i18n/use-i18n-text';
@@ -30,6 +29,9 @@ import { EmptyState, Skeleton } from '@/components/ui/misc';
 import { Select } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { requestCredits } from '@/features/monetization/insufficient-credits';
+import { useFixItToast, type FixIt } from '@/features/facilities/error-fix';
+import { BoatHomeCard } from '@/features/water/nautical';
+import { NAUTICAL_SITES_HREF, nauticalBases } from '@/features/water/water';
 import { FamiliesOverview } from '@/features/families/families-overview';
 import { useFamilies } from '@/features/families/use-families';
 import { CoachMark } from '@/features/coaching/coach-mark';
@@ -37,6 +39,10 @@ import { SectionHelpButton, SectionPrimer } from '@/features/coaching/section-pr
 import { pickIdleSuggestion } from '@/features/coaching/idle-suggestion';
 import { useIdleSuggestionCopy } from '@/features/coaching/idle-suggestion-copy';
 import { useCareerId, useCatalog, useSnapshot } from './hooks';
+
+/** The shop's domain tab from the URL (`?domain=WATER` from the Base nautica, the incident panel…). */
+const domainParam = (value: string | null): DomainFilter =>
+  value && (DOMAIN_FILTERS as readonly string[]).includes(value) ? (value as DomainFilter) : 'ALL';
 import { PageBody } from './shell';
 
 type VehicleType = CatalogDto['vehicleTypes'][number];
@@ -95,6 +101,7 @@ export function VehicleOffer({
   host,
   familyLevel,
   missingCrewRoles,
+  rejection,
 }: {
   type: VehicleType;
   onBuy: (type: VehicleType, facility: FacilityDto) => void;
@@ -102,14 +109,41 @@ export function VehicleOffer({
   host: HostState;
   familyLevel: number;
   missingCrewRoles?: readonly string[];
+  /** The last refusal of the server for this model, with its fix-it link (never a generic "not enough room"). */
+  rejection?: FixIt | null;
 }) {
   const t = useTranslations('game.shop');
   const tf = useTranslations('families.shop');
+  const tn = useTranslations('nautical.shop');
   const td = useTranslations('game.facility');
   const tc = useTranslations('common');
   const tx = useI18nText();
   const name = useCatalogName();
-  const { career } = useSnapshot();
+  const { career, facilities } = useSnapshot();
+  // Boats live only in a Base nautica (D-23): their blocked reasons point there, not to a new fire station.
+  const boat = type.domain === 'WATER';
+  const fullBase = boat ? nauticalBases(facilities).find((f) => f.status === 'OPERATIONAL') : undefined;
+  const blockedText =
+    host.kind === 'NO_FACILITY'
+      ? boat
+        ? tn('noFacility')
+        : tf('reason.noFacility', {
+            types: type.compatibleFacilityTypes
+              .slice(0, 2)
+              .map((code) => name('facility', code))
+              .join(', '),
+          })
+      : boat
+        ? tn('noBerth')
+        : tf('reason.noCapacity', { domain: td(`domain.${type.domain}`) });
+  const blockedLink =
+    host.kind === 'NO_FACILITY'
+      ? boat
+        ? { href: NAUTICAL_SITES_HREF, label: tn('buyBase') }
+        : { href: `/game/facilities?new=${type.family}`, label: tf('newFacility') }
+      : boat && fullBase
+        ? { href: `/game/facilities?id=${fullBase.id}`, label: tn('pier') }
+        : { href: `/game/facilities?new=${type.family}`, label: tf('manageFacilities') };
   const affordable = compareAmount(career.credits, type.price) >= 0;
   const canHost = host.kind === 'OK';
   const DomainIcon = DOMAIN_ICON[type.domain];
@@ -169,7 +203,7 @@ export function VehicleOffer({
           </li>
         ))}
       </ul>
-      <dl className="text-subtle grid grid-cols-3 gap-2 text-[11px]">
+      <dl className="text-subtle grid grid-cols-3 gap-2 text-xs">
         <div>
           <dt>{t('crew')}</dt>
           <dd className="tabular text-fg">
@@ -227,7 +261,7 @@ export function VehicleOffer({
       ) : host.kind === 'OK' ? (
         <>
           <p
-            className="text-subtle -mb-1 flex items-center gap-1.5 truncate text-[11px]"
+            className="text-subtle -mb-1 flex items-center gap-1.5 truncate text-xs"
             data-testid="delivery-target"
             title={`${t('deliverTo')}: ${host.facility.name}`}
           >
@@ -253,41 +287,52 @@ export function VehicleOffer({
           className="border-border-strong text-muted flex flex-col gap-1.5 rounded-md border border-dashed px-3 py-2 text-xs"
           data-testid="blocked-reason"
           data-reason={host.kind}
-          title={
-            host.kind === 'NO_FACILITY'
-              ? tf('reason.noFacility', {
-                  types: type.compatibleFacilityTypes
-                    .slice(0, 2)
-                    .map((code) => name('facility', code))
-                    .join(', '),
-                })
-              : tf('reason.noCapacity', { domain: td(`domain.${type.domain}`) })
-          }
+          title={blockedText}
         >
           <span className="flex items-start gap-1.5">
-            <Building2 className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-            <span>
-              {host.kind === 'NO_FACILITY'
-                ? tf('reason.noFacility', {
-                    types: type.compatibleFacilityTypes
-                      .slice(0, 2)
-                      .map((code) => name('facility', code))
-                      .join(', '),
-                  })
-                : tf('reason.noCapacity', { domain: td(`domain.${type.domain}`) })}
-            </span>
+            {boat ? (
+              <Anchor className="text-info mt-0.5 size-3.5 shrink-0" aria-hidden />
+            ) : (
+              <Building2 className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+            )}
+            <span>{blockedText}</span>
           </span>
           <span className="flex items-center justify-between gap-2">
             <Link
-              href={`/game/facilities?new=${type.family}`}
-              className="text-skyline font-semibold underline-offset-4 hover:underline"
+              href={blockedLink.href}
+              className="text-skyline inline-flex min-h-11 items-center font-semibold underline-offset-4 hover:underline lg:min-h-0"
+              data-testid="blocked-fix"
             >
-              {host.kind === 'NO_FACILITY' ? tf('newFacility') : tf('manageFacilities')}
+              {blockedLink.label}
             </Link>
             <CreditAmount value={type.price} label={tc('credits')} size="sm" tone="plain" />
           </span>
         </div>
       )}
+      {rejection ? (
+        <div
+          className="border-danger/40 bg-danger/10 flex flex-col gap-1 rounded-md border px-3 py-2 text-xs"
+          role="alert"
+          data-testid="buy-rejection"
+          data-code={rejection.code}
+          data-reason={rejection.reason ?? undefined}
+        >
+          <span className="text-fg flex items-start gap-1.5">
+            <AlertTriangle className="text-danger mt-0.5 size-3.5 shrink-0" aria-hidden />
+            {rejection.message}
+          </span>
+          {rejection.fix ? (
+            <Link
+              href={rejection.fix.href}
+              className="text-skyline inline-flex min-h-11 items-center gap-1 self-start font-semibold hover:underline lg:min-h-0"
+              data-testid="buy-rejection-fix"
+            >
+              {rejection.fix.label}
+              <ArrowRight className="size-3.5" aria-hidden />
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
     </li>
   );
 }
@@ -303,13 +348,26 @@ export function ShopScreen() {
 
 /** `?family=EMS` (unlock celebration, deep links) preselects the family; a new value remounts the content. */
 function ShopRoute() {
-  const requested = useSearchParams().get('family');
-  const parsed = ServiceFamilySchema.safeParse(requested);
+  const params = useSearchParams();
+  const parsed = ServiceFamilySchema.safeParse(params.get('family'));
   const initialFamily = parsed.success && parsed.data !== 'UNG' ? parsed.data : 'FIRE';
-  return <ShopContent key={initialFamily} initialFamily={initialFamily} />;
+  const initialDomain = domainParam(params.get('domain'));
+  return (
+    <ShopContent
+      key={`${initialFamily}:${initialDomain}`}
+      initialFamily={initialFamily}
+      initialDomain={initialDomain}
+    />
+  );
 }
 
-function ShopContent({ initialFamily }: { initialFamily: ServiceFamily }) {
+function ShopContent({
+  initialFamily,
+  initialDomain,
+}: {
+  initialFamily: ServiceFamily;
+  initialDomain: DomainFilter;
+}) {
   const careerId = useCareerId();
   const t = useTranslations('game.shop');
   const tf = useTranslations('families.shop');
@@ -317,15 +375,17 @@ function ShopContent({ initialFamily }: { initialFamily: ServiceFamily }) {
   const tco = useTranslations('coaching');
   const tsh = useTranslations('coaching.sections.shop');
   const tlf = useTranslations('coaching.marks.lockedFamily');
-  const errorMessage = useErrorMessage();
   const catalog = useCatalog();
   const { facilities, career } = useSnapshot();
   const families = useFamilies();
   const crewGaps = useVehicleCrewGaps(careerId).data ?? [];
   const name = useCatalogName();
   const [family, setFamily] = React.useState<ServiceFamily>(initialFamily);
-  const [domain, setDomain] = React.useState<DomainFilter>('ALL');
+  const [domain, setDomain] = React.useState<DomainFilter>(initialDomain);
   const [facilityId, setFacilityId] = React.useState<string | undefined>(undefined);
+  // The last refusal per model (NEEDS_NAUTICAL_BASE, no free berth…): shown in its card with the fix-it link.
+  const [rejections, setRejections] = React.useState<Record<string, FixIt>>({});
+  const fixItToast = useFixItToast();
 
   const buy = useMutation({
     mutationFn: ({
@@ -360,12 +420,16 @@ function ShopContent({ initialFamily }: { initialFamily: ServiceFamily }) {
         void gameApi.tutorialAdvance(careerId, 'DONE').catch(() => undefined);
       }
     },
-    onError: (e, { type }) => {
+    onError: (e, { type, facility }) => {
       if (isApiError(e, 'INSUFFICIENT_CREDITS')) requestCredits(type.price);
-      else toast({ tone: 'danger', title: errorMessage(e) });
+      else {
+        const mapped = fixItToast(e, { facilityId: facility.id, family: type.family });
+        setRejections((r) => ({ ...r, [type.code]: mapped }));
+      }
     },
   });
   const onBuy = (type: VehicleType, facility: FacilityDto) => {
+    setRejections(({ [type.code]: _dropped, ...rest }) => rest);
     if (compareAmount(career.credits, type.price) < 0) requestCredits(type.price);
     else
       buy.mutate({
@@ -429,16 +493,19 @@ function ShopContent({ initialFamily }: { initialFamily: ServiceFamily }) {
       title={t('title')}
       subtitle={t('subtitle')}
       actions={
-        <div className="flex items-center gap-2">
+        // Phones: its own full-width row, the label on one line and the facility truncated (03 §2.6).
+        <div className="flex w-full min-w-0 items-center gap-2 sm:w-auto">
           {hosts.length > 0 ? (
             <>
-              <span className="text-muted text-xs font-semibold">{t('deliverTo')}</span>
+              <span className="text-muted shrink-0 text-xs font-semibold whitespace-nowrap">
+                {t('deliverTo')}
+              </span>
               <Select
                 label={t('deliverTo')}
                 value={preferred?.id}
                 onValueChange={setFacilityId}
                 options={hosts.map((f) => ({ value: f.id, label: `${f.name} — ${freeOf(f)}` }))}
-                className="max-w-72"
+                className="h-11 min-w-0 flex-1 sm:max-w-72 sm:flex-none lg:h-10 [&>span:first-child]:truncate"
               />
             </>
           ) : null}
@@ -469,16 +536,19 @@ function ShopContent({ initialFamily }: { initialFamily: ServiceFamily }) {
             const count = d === 'ALL' ? familyTypes.length : familyTypes.filter((v) => v.domain === d).length;
             return (
               <TabsTrigger key={d} value={d} className="gap-1.5" data-testid={`domain-filter-${d}`}>
-                {Icon ? <Icon className="size-3.5" aria-hidden /> : null}
-                {tf(`domain.${d}`)}
-                <span className="text-subtle tabular text-[11px]">{count}</span>
+                {Icon ? <Icon className="size-4" aria-hidden /> : null}
+                {/* Phones: icon + count for the domains, so the four tabs fit without a hidden scroll. */}
+                <span className={Icon ? 'max-sm:sr-only' : undefined}>{tf(`domain.${d}`)}</span>
+                <span className="text-subtle tabular text-xs">{count}</span>
               </TabsTrigger>
             );
           })}
         </TabsList>
       </Tabs>
+      {/* Water tab (studio 05 §2.7): where boats live and which of the player's bases can take one now. */}
+      {domain === 'WATER' && familyTypes.some((v) => v.domain === 'WATER') ? <BoatHomeCard /> : null}
       {!catalog ? (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {[0, 1, 2].map((i) => (
             <Skeleton key={i} className="h-52" />
           ))}
@@ -486,7 +556,8 @@ function ShopContent({ initialFamily }: { initialFamily: ServiceFamily }) {
       ) : types.length === 0 ? (
         <EmptyState title={t('empty')} description={idleCopy?.text} action={idleAction} />
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        // minmax(0, …): the implicit single column sized to the longest card pushed the cards off a phone's edge.
+        <ul className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {types.map((type) => (
             <VehicleOffer
               key={type.code}
@@ -496,6 +567,7 @@ function ShopContent({ initialFamily }: { initialFamily: ServiceFamily }) {
               host={resolveHost(type, facilities, preferred?.id)}
               familyLevel={familyLevel}
               missingCrewRoles={crewGaps.find((g) => g.vehicleTypeCode === type.code)?.missingRoles}
+              rejection={rejections[type.code] ?? null}
             />
           ))}
         </ul>

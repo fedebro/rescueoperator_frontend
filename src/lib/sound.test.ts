@@ -1,8 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import {
   MIN_GAP_MS,
   SOUND_CUES,
   incidentCue,
+  installSoundUnlock,
   notificationCue,
   playCue,
   resetSoundForTests,
@@ -86,5 +87,27 @@ describe('sound set', () => {
   it('stays silent before any user gesture', () => {
     resetSoundForTests();
     expect(playCue('confirm', prefs)).toBe(false);
+  });
+
+  describe('where the browser refuses audio (in-app browsers)', () => {
+    const original = window.AudioContext;
+    afterEach(() => {
+      window.AudioContext = original;
+      resetSoundForTests();
+    });
+
+    it('stays silent and never throws: not on the first tap, not on a cue (the major siren included)', () => {
+      resetSoundForTests();
+      window.AudioContext = class {
+        constructor() {
+          throw new Error('NotAllowedError: audio is not allowed in this web view');
+        }
+      } as unknown as typeof AudioContext;
+      const stop = installSoundUnlock();
+      expect(() => window.dispatchEvent(new Event('pointerdown'))).not.toThrow();
+      expect(playCue('major', prefs)).toBe(false);
+      expect(playCue('incident.critical', prefs)).toBe(false);
+      stop();
+    });
   });
 });

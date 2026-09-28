@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { Amount, FacilityFamily, I18nText, IdPrefix, IsoDateTime, LngLat, ServiceFamily, SupportedLocale, publicId } from './common';
-import { FacilityDto, VehicleDto } from './game';
+import { FacilityDto, SiteNauticalDto, VehicleDto } from './game';
 import { FacilityDetailDto } from './core-loop';
 
 /* Wave 2a (backend-integration): catalog i18n, sites & facilities, coverage & stipend, milestones. All additive within v1. */
@@ -14,11 +14,16 @@ export const CatalogI18nBundle = z.object({
 });
 export type CatalogI18nBundle = z.infer<typeof CatalogI18nBundle>;
 
-/** GET /careers/:id/sites?bbox=w,s,e,n[&family=] — candidate sites where a new facility can be acquired. */
+/**
+ * GET /careers/:id/sites?bbox=w,s,e,n[&family=][&kind=ALL|STANDARD|NAUTICAL] — candidate sites where a new facility can be
+ * acquired. `kind` defaults to ALL: nautical sites (Base nautica, `nautical` set) are listed whatever `family`.
+ */
 export const SiteOptionDto = z.object({
   facilityTypeCode: z.string(), family: FacilityFamily, tier: z.number().int(), price: Amount, requiredLevel: z.number().int(), setupSeconds: z.number().int(),
   available: z.boolean(), lockedReason: z.string().nullable(),
 });
+/* `WaterBodyKind` and `SiteNauticalDto` moved to game.ts (the Base nautica's `FacilityDto.nautical` needs them); re-exported by the index. */
+
 export const SiteDto = z.object({
   id: publicId(IdPrefix.site),
   name: z.string(),
@@ -33,6 +38,8 @@ export const SiteDto = z.object({
   /** True when this career already owns a facility on the site. */
   owned: z.boolean(),
   options: z.array(SiteOptionDto),
+  /** Additive (water geodata): set on nautical sites, `null`/absent on every other site. */
+  nautical: SiteNauticalDto.nullable().optional(),
 });
 export type SiteDto = z.infer<typeof SiteDto>;
 

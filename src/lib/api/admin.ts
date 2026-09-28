@@ -45,6 +45,7 @@ import {
   FacilityDto,
   IncidentDto,
   LedgerEntryDto,
+  MajorIncidentDto,
   NotificationDto,
   type PlatformRole,
   VehicleDto,
@@ -94,6 +95,7 @@ export const ADMIN_PERMISSIONS = {
   'careers.creditAdjustment': 'GAME_ADMIN',
   'careers.creditAdjustmentLarge': 'SUPER_ADMIN',
   'careers.spawnIncident': 'GAME_ADMIN',
+  'careers.spawnMajor': 'GAME_ADMIN',
   'careers.setDuty': 'GAME_ADMIN',
   'incidents.forceResolve': 'GAME_ADMIN',
   'incidents.cancel': 'GAME_ADMIN',
@@ -214,6 +216,9 @@ export const adminApi = {
     }),
   spawnIncident: (careerId: string, body: AdminSpawnIncidentRequest) =>
     api.command(`/admin/careers/${id(careerId)}/spawn-incident`, body, { schema: IncidentDto }),
+  /** QA / support: starts a major incident now (★POST /admin/careers/:id/major-incident, audited `major_incident.spawn`). */
+  spawnMajor: (careerId: string, body: { scenarioCode?: string; reason: string }) =>
+    api.command(`/admin/careers/${id(careerId)}/major-incident`, body, { schema: MajorIncidentDto }),
   setDuty: (careerId: string, onDuty: boolean, reason: string) =>
     api.command(`/admin/careers/${id(careerId)}/duty`, { onDuty, reason }, { schema: AdminCareerRow }),
 

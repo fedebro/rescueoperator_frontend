@@ -30,14 +30,41 @@ const levels = data<{ maxLevel: number; ranks: Obj[]; levels: Obj[] }>('levels.y
 const roles = data<{ parameters: Obj; roles: Obj[] }>('personnel-roles.yaml');
 const economy = data<Obj>('economy.yaml');
 const meta = data<Obj>('catalog.yaml');
+const vehicleFile = data<{ vehicleTypes: Obj[]; mobilityProfiles: Obj[] }>('vehicle-types.yaml');
+const profileOf = (v: Obj): Obj | undefined =>
+  vehicleFile.mobilityProfiles.find((m) => m.code === v.mobilityProfile);
+
+/**
+ * Vehicle autonomy (D-22): the tank of a type = its own `autonomy.fuelRangeKm`, else its mobility profile's range (null =
+ * no fuel tracked: foot teams, aircraft). Resolved here exactly like the backend loader does.
+ */
+const autonomyOf = (v: Obj) => {
+  const own = (v.autonomy ?? {}) as Obj;
+  const range = own.fuelRangeKm ?? profileOf(v)?.fuelRangeKm ?? null;
+  // Aircraft (flight endurance, phase 3): a full tank in REAL minutes of flight, own override else the profile's.
+  const endurance = own.enduranceMinutes ?? profileOf(v)?.enduranceMinutes ?? null;
+  return {
+    fuelRangeKm: typeof range === 'number' ? range : null,
+    enduranceMinutes: typeof endurance === 'number' ? endurance : null,
+    fuelPerMinuteOnScene: typeof own.fuelPerMinuteOnScene === 'number' ? own.fuelPerMinuteOnScene : 0,
+    onboardCapacity: (own.onboardCapacity ?? {}) as Record<string, number>,
+  };
+};
+
+/** Major incidents (D-24/D-69): the generator settings and the scenarios, as the backend loader reads them. */
+const majors = data<{ settings: Obj; scenarios: Obj[] }>('major-incidents.yaml');
+const weightedList = (list: unknown) =>
+  ((list ?? []) as Obj[]).map((x) => ({ template: String(x.template), weight: Number(x.weight ?? 1) }));
 
 const catalog = {
   version: String(meta.version),
   families: data<{ families: Obj[] }>('service-families.yaml').families,
-  capabilities: data<{ capabilities: Obj[] }>('capabilities.yaml').capabilities.map((c) =>
-    pick(c, ['code', 'group', 'icon']),
-  ),
-  vehicleTypes: data<{ vehicleTypes: Obj[] }>('vehicle-types.yaml').vehicleTypes.map((v) => ({
+  // `shoreSide` (water scene, D-68): a land unit delivers it from the meeting point of a water incident.
+  capabilities: data<{ capabilities: Obj[] }>('capabilities.yaml').capabilities.map((c) => ({
+    ...pick(c, ['code', 'group', 'icon']),
+    shoreSide: c.shoreSide === true,
+  })),
+  vehicleTypes: vehicleFile.vehicleTypes.map((v) => ({
     ...pick(v, [
       'code',
       'family',
@@ -58,11 +85,13 @@ const catalog = {
       'maintenance',
       'compatibleFacilityTypes',
       'icon',
+      'mobilityProfile',
+      'costPerKm',
     ]),
-    movement:
-      (data<{ mobilityProfiles: Obj[] }>('vehicle-types.yaml').mobilityProfiles.find(
-        (m) => m.code === v.mobilityProfile,
-      )?.movement as string | undefined) ?? 'ROAD',
+    // Boats (D-68): cruise speed on the water, km/h — the water leg is a straight line at this speed.
+    waterSpeedKmh: typeof v.waterSpeedKmh === 'number' ? v.waterSpeedKmh : null,
+    movement: (profileOf(v)?.movement as string | undefined) ?? 'ROAD',
+    autonomy: autonomyOf(v),
   })),
   facilityTypes: data<{ facilityTypes: Obj[] }>('facility-types.yaml').facilityTypes.map((f) =>
     pick(f, [
@@ -96,6 +125,8 @@ const catalog = {
       'starterStock',
       'lowStockThreshold',
       'icon',
+      // Autonomy (D-22): onboard capacity, one mission's need, load time… — the single resupply rule reads them.
+      'consumption',
     ]),
   ),
   roles: roles.roles.map((r) =>
@@ -142,6 +173,13 @@ const catalog = {
       'icon',
     ]),
     severity: pick(t.severity as Obj, ['min', 'max', 'distribution']),
+    // Placement (water scene, D-68): `WATER_EDGE` templates spawn on the water bodies of `water.bodies` only.
+    location: t.location
+      ? {
+          placement: String((t.location as Obj).placement ?? 'ANY'),
+          water: ((t.location as Obj).water as Obj | undefined) ?? null,
+        }
+      : null,
     bands: (t.bands as Obj[]).map((b) =>
       pick(b, ['severity', 'minLevel', 'requirements', 'workUnits', 'patients', 'ung']),
     ),
@@ -165,7 +203,30 @@ const catalog = {
     'speedup',
     'maintenance',
     'medical',
+    'autonomy',
+    // `resolution.maxVehiclesPerDispatch` (12): one dispatch command's limit on a normal call.
+    'resolution',
   ]),
+  majorIncidents: {
+    settings: majors.settings,
+    scenarios: majors.scenarios.map((s) => ({
+      code: String(s.code),
+      primaryFamily: String(s.primaryFamily),
+      mainTemplates: ((s.mainTemplates ?? []) as Obj[]).map((m) => ({
+        template: String(m.template),
+        fromLevel: Number(m.fromLevel),
+      })),
+      weight: Number(s.weight ?? 1),
+      conditions: (s.conditions ?? {}) as Obj,
+      onlyWhen: (s.onlyWhen ?? null) as Obj | null,
+      phases: Object.fromEntries(
+        Object.entries((s.phases ?? {}) as Obj).map(([phase, list]) => [phase, weightedList(list)]),
+      ),
+      growth: weightedList(s.growth),
+      areaRadiusMeters: Number(s.areaRadiusMeters),
+      icon: String(s.icon),
+    })),
+  },
 };
 
 /** Flatten nested YAML texts to dotted keys; arrays (incident report blocks) stay arrays — same as the backend bundle. */

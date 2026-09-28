@@ -1,19 +1,21 @@
 'use client';
 import * as React from 'react';
 import { useTranslations } from 'next-intl';
-import { Check, Stethoscope, TriangleAlert, X } from 'lucide-react';
+import { Check, ChevronDown, Stethoscope, TriangleAlert, X } from 'lucide-react';
 import type { IncidentDto, PatientDto } from '@/contracts';
 import { useUiStore } from '@/stores/ui';
 import { useCatalogName } from '@/i18n/use-i18n-text';
 import { GameIcon, capabilityIconName } from '@/design/icons';
 import { Countdown } from '@/components/ui/countdown';
-import { SectionTitle, Skeleton } from '@/components/ui/misc';
+import { Skeleton } from '@/components/ui/misc';
+import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { SectionPrimer } from '@/features/coaching/section-primer';
+import { SectionHelpButton, SectionPrimer } from '@/features/coaching/section-primer';
 import { useSnapshot } from '@/features/game/hooks';
 import { MEDICAL_CAPABILITIES, hasCapability, useHospitals, usePatients } from './hooks';
 import { StabilityGauge } from './stability-gauge';
 import { SendVehicleList, TransportPanel } from './transport-panel';
+import { FieldPostBanner } from './mass-casualty';
 import { MedicalChip, PATIENT_STATUS_VISUALS, TRIAGE_VISUALS } from './visuals';
 
 const PHASE_BY_STATUS: Partial<
@@ -84,7 +86,7 @@ function PatientCard({
 
       {patient.needs.length > 0 && !onTheMove ? (
         <div className="flex flex-col gap-1">
-          <span className="text-subtle text-[11px] font-semibold tracking-wide uppercase">
+          <span className="text-subtle text-xs font-semibold tracking-wide uppercase">
             {t('needs.title')}
           </span>
           <ul className="flex flex-wrap gap-1.5">
@@ -171,12 +173,31 @@ function PatientCard({
   );
 }
 
-/** SLOT (owner: medical agent) — patients list + hospital choice inside the incident inspector. */
+/** Most urgent first: what the collapsed header shows as the one-glance summary. */
+const TRIAGE_ORDER: Record<NonNullable<PatientDto['triage']>, number> = {
+  RED: 0,
+  ORANGE: 1,
+  BLUE: 2,
+  GREEN: 3,
+  WHITE: 4,
+};
+
+/**
+ * SLOT (owner: medical agent) — patients list + hospital choice inside the incident inspector.
+ * Collapsed by default with the count and the most urgent triage in its header ("Pazienti · 1 paziente", 03 §2.4),
+ * so the dispatch list stays in reach; it opens by itself when a patient waits for the hospital decision.
+ */
 export function IncidentPatients({ incident }: { incident: IncidentDto }) {
   const t = useTranslations('medical.patients');
   const tm = useTranslations('coaching.sections.medical');
+  const tco = useTranslations('coaching');
+  const tc = useTranslations('common');
+  const name = useCatalogName();
   const { vehicles } = useSnapshot();
   const patients = usePatients(incident);
+  // null = automatic (open only while a transport decision is pending); a tap makes it the player's choice.
+  const [open, setOpen] = React.useState<boolean | null>(null);
+  const bodyId = React.useId();
   const medicalContent = {
     sectionKey: 'medical',
     title: tm('title'),
@@ -186,7 +207,12 @@ export function IncidentPatients({ incident }: { incident: IncidentDto }) {
   if (incident.patientCount === 0) return null;
 
   const list = patients.data ?? [];
+  const awaitingTransport = list.some((p) => p.status === 'AWAITING_TRANSPORT');
+  const expanded = open ?? awaitingTransport;
   const allUnassessed = list.length > 0 && list.every((p) => p.status === 'UNASSESSED');
+  const worst = list
+    .filter((p) => p.triage)
+    .sort((a, b) => TRIAGE_ORDER[a.triage!] - TRIAGE_ORDER[b.triage!])[0]?.triage;
   const medicalAssigned = vehicles.some(
     (v) =>
       v.incidentId === incident.id &&
@@ -196,46 +222,82 @@ export function IncidentPatients({ incident }: { incident: IncidentDto }) {
 
   return (
     <section
-      className="border-border flex flex-col gap-2 border-b p-4"
+      className="border-border flex flex-col gap-2 border-b px-4 py-1"
       aria-label={t('title')}
       data-testid="incident-patients"
+      data-expanded={expanded}
     >
-      <SectionTitle
-        action={<span className="text-muted text-xs">{t('count', { count: incident.patientCount })}</span>}
-      >
-        {t('title')}
-      </SectionTitle>
-      <SectionPrimer content={medicalContent} />
-      {patients.isLoading ? (
-        <Skeleton className="h-20" />
-      ) : patients.isError && list.length === 0 ? (
-        <p className="text-danger text-sm">{t('loadError')}</p>
-      ) : (
-        <>
-          {allUnassessed ? (
-            <div
-              className="border-border bg-surface-2 flex flex-col gap-2 rounded-md border p-3"
-              data-testid="patients-unassessed"
-            >
-              <p className="flex items-center gap-1.5 text-sm font-semibold">
-                <Stethoscope className="text-info size-4 shrink-0" aria-hidden />
-                {t('unassessedTitle')}
-              </p>
-              <p className="text-muted text-xs">
-                {medicalAssigned ? t('unassessedHint') : t('unassessedNoMedical')}
-              </p>
-              {!medicalAssigned && incident.status === 'RESOLVING' ? (
-                <SendVehicleList incident={incident} capabilities={MEDICAL_CAPABILITIES} />
+      <div className="flex items-center gap-1">
+        <h2 className="min-w-0 flex-1">
+          <button
+            type="button"
+            onClick={() => setOpen(!expanded)}
+            aria-expanded={expanded}
+            aria-controls={bodyId}
+            className="flex min-h-11 w-full items-center gap-2 text-left"
+            data-testid="patients-toggle"
+          >
+            <span className="text-subtle text-xs font-bold tracking-[0.08em] uppercase">{t('title')}</span>
+            <span className="text-muted text-xs">{t('count', { count: incident.patientCount })}</span>
+            {worst ? (
+              <MedicalChip visual={TRIAGE_VISUALS[worst]} label={name('triage', worst)} />
+            ) : !expanded && (allUnassessed || list.length === 0) ? (
+              <span className="text-subtle truncate text-xs">{t('triageUnknown')}</span>
+            ) : null}
+            <ChevronDown
+              className={cn(
+                'text-muted ml-auto size-4 shrink-0 transition-transform',
+                expanded && 'rotate-180',
+              )}
+              aria-hidden
+            />
+            <span className="sr-only">{expanded ? t('collapse') : t('expand')}</span>
+          </button>
+        </h2>
+        {/* The patients primer, on demand (it only shows once by itself). */}
+        <SectionHelpButton
+          content={medicalContent}
+          label={tco('help.buttonLabel')}
+          closeLabel={tc('close')}
+        />
+      </div>
+      {expanded ? (
+        <div id={bodyId} className="flex flex-col gap-2 pb-3">
+          <SectionPrimer content={medicalContent} />
+          {/* Mass-casualty care: a field post (EMS_PMA) on scene treats 4 at once and releases the lighter codes. */}
+          <FieldPostBanner incident={incident} />
+          {patients.isLoading ? (
+            <Skeleton className="h-20" />
+          ) : patients.isError && list.length === 0 ? (
+            <p className="text-danger text-sm">{t('loadError')}</p>
+          ) : (
+            <>
+              {allUnassessed ? (
+                <div
+                  className="border-border bg-surface-2 flex flex-col gap-2 rounded-md border p-3"
+                  data-testid="patients-unassessed"
+                >
+                  <p className="flex items-center gap-1.5 text-sm font-semibold">
+                    <Stethoscope className="text-info size-4 shrink-0" aria-hidden />
+                    {t('unassessedTitle')}
+                  </p>
+                  <p className="text-muted text-xs">
+                    {medicalAssigned ? t('unassessedHint') : t('unassessedNoMedical')}
+                  </p>
+                  {!medicalAssigned && incident.status === 'RESOLVING' ? (
+                    <SendVehicleList incident={incident} capabilities={MEDICAL_CAPABILITIES} />
+                  ) : null}
+                </div>
               ) : null}
-            </div>
-          ) : null}
-          <ul className="flex flex-col gap-2">
-            {list.map((patient, index) => (
-              <PatientCard key={patient.id} patient={patient} index={index} incident={incident} />
-            ))}
-          </ul>
-        </>
-      )}
+              <ul className="flex flex-col gap-2">
+                {list.map((patient, index) => (
+                  <PatientCard key={patient.id} patient={patient} index={index} incident={incident} />
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+      ) : null}
     </section>
   );
 }

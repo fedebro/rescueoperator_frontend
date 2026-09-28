@@ -27,5 +27,14 @@ export const worldHandlers: DomainHandlers = ({ engine, url, ok, route, careerOf
         return ok(list);
       }),
     ),
+    // Real runway geometry comes from the geodata import, which the mock world does not have: no runways drawn.
+    // Without this handler the request fell through to the network (a page error on WebKit's service worker).
+    http.get(
+      url(`${C}/runways`),
+      route((ctx) => {
+        careerOf(ctx);
+        return ok([]);
+      }),
+    ),
   ];
 };

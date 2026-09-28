@@ -142,13 +142,11 @@ function SpeedupDialog({
         ) : quote.data ? (
           <dl className="border-border bg-surface-2 grid grid-cols-2 gap-3 rounded-md border p-3 text-sm">
             <div>
-              <dt className="text-subtle text-[11px] font-semibold tracking-wide uppercase">
-                {t('remaining')}
-              </dt>
+              <dt className="text-subtle text-xs font-semibold tracking-wide uppercase">{t('remaining')}</dt>
               <dd className="tabular text-base font-semibold">{formatClock(quote.data.remainingSeconds)}</dd>
             </div>
             <div>
-              <dt className="text-subtle text-[11px] font-semibold tracking-wide uppercase">{t('cost')}</dt>
+              <dt className="text-subtle text-xs font-semibold tracking-wide uppercase">{t('cost')}</dt>
               <dd data-testid="speedup-cost">
                 {free ? (
                   <span className="text-success text-base font-semibold">{t('free')}</span>
@@ -339,7 +337,7 @@ function SpeedupAllDialog({
           <Skeleton className="h-20" />
         ) : quotes.data ? (
           <dl className="border-border bg-surface-2 rounded-md border p-3 text-sm">
-            <dt className="text-subtle text-[11px] font-semibold tracking-wide uppercase">{t('allCost')}</dt>
+            <dt className="text-subtle text-xs font-semibold tracking-wide uppercase">{t('allCost')}</dt>
             <dd data-testid="speedup-all-cost">
               {free ? (
                 <span className="text-success text-base font-semibold">{t('free')}</span>

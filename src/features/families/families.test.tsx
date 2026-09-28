@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import type { IncidentDto } from '@/contracts';
 import { CatalogTextsOverride } from '@/i18n/catalog-texts';
 import { renderWithIntl } from '@/test/render';
@@ -60,10 +60,17 @@ describe('IncidentExternalSupport', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('explains which locked family is covered by external support', () => {
+  it('says which locked family is covered by external support in a chip, with the explanation one tap away', () => {
     ui(<IncidentExternalSupport incident={incident({})} />);
     const notice = screen.getByTestId('external-families-notice');
-    expect(notice).toHaveTextContent('Polizia non è ancora un tuo servizio');
+    expect(notice).toHaveTextContent('Polizia: supporto esterno');
+    expect(notice).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByTestId('external-families-info')).not.toBeInTheDocument();
+    fireEvent.click(notice);
+    expect(notice).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByTestId('external-families-info')).toHaveTextContent(
+      'Polizia non è ancora un tuo servizio',
+    );
     expect(screen.getByTestId('external-support')).toHaveAttribute('data-phase', 'NOTICE');
   });
 

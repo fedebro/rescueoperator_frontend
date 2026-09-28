@@ -87,6 +87,65 @@ export function movementProgress(
   return Math.min(MAX_CLIENT_PROGRESS, Math.max(0, raw));
 }
 
+export type MovementSegment = NonNullable<MovementDto['segments']>[number];
+export type SegmentMode = MovementSegment['mode'];
+
+/**
+ * Where a moving vehicle is at `nowMs` (capped at 98% of the leg, like `movementProgress`). A boat's mixed leg (D-68:
+ * trailer on the road, launch pause, water) is interpolated inside the segment that contains that instant — the road and
+ * the water parts do not move at the same speed, and a launch is a pause; every other movement along its whole path.
+ */
+export function movementPoint(
+  movement: Pick<MovementDto, 'path' | 'departAt' | 'arriveAt' | 'segments'>,
+  nowMs: number,
+): PathPoint & { mode: SegmentMode | null } {
+  const t = movementProgress(movement, nowMs);
+  const segments = movement.segments ?? [];
+  if (segments.length === 0) return { ...pointAlong(movement.path, t), mode: null };
+  const depart = Date.parse(movement.departAt);
+  const arrive = Date.parse(movement.arriveAt);
+  const at = depart + t * Math.max(0, arrive - depart);
+  const found = segments.findIndex((s) => at < Date.parse(s.arriveAt));
+  const segment = segments[found === -1 ? segments.length - 1 : found]!;
+  if (segment.path.length < 2)
+    return { position: segment.path[0]!, bearing: 0, segment: 0, mode: segment.mode };
+  const from = Date.parse(segment.departAt);
+  const to = Date.parse(segment.arriveAt);
+  const f = to > from ? Math.min(1, Math.max(0, (at - from) / (to - from))) : 1;
+  return { ...pointAlong(segment.path, f), mode: segment.mode };
+}
+
+/**
+ * What is left of a movement at `nowMs`, piece by piece: one piece (mode null) for an ordinary leg; for a boat the rest
+ * of the current segment and every segment after it — ROAD (solid on the map), WATER (dashed), and the LAUNCH / RECOVERY
+ * stops (one point each: where the trailer puts the boat into, or takes it out of, the water).
+ */
+export function remainingPieces(
+  movement: Pick<MovementDto, 'path' | 'departAt' | 'arriveAt' | 'segments'>,
+  nowMs: number,
+): { mode: SegmentMode | null; path: LngLat[] }[] {
+  const t = movementProgress(movement, nowMs);
+  const segments = movement.segments ?? [];
+  if (segments.length === 0) return [{ mode: null, path: remainingPath(movement.path, t) }];
+  const depart = Date.parse(movement.departAt);
+  const arrive = Date.parse(movement.arriveAt);
+  const at = depart + t * Math.max(0, arrive - depart);
+  const out: { mode: SegmentMode | null; path: LngLat[] }[] = [];
+  for (const s of segments) {
+    const end = Date.parse(s.arriveAt);
+    if (end <= at && s !== segments[segments.length - 1]) continue;
+    if (s.path.length < 2) {
+      out.push({ mode: s.mode, path: [s.path[0]!] });
+      continue;
+    }
+    const start = Date.parse(s.departAt);
+    const f = at > start && end > start ? Math.min(1, (at - start) / (end - start)) : 0;
+    const rest = f > 0 ? remainingPath(s.path, f) : [...s.path];
+    if (rest.length >= 2) out.push({ mode: s.mode, path: rest });
+  }
+  return out;
+}
+
 export function boundsOf(points: readonly LngLat[]): [number, number, number, number] | null {
   if (points.length === 0) return null;
   let w = Infinity,

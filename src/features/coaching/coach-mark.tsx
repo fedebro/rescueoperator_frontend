@@ -25,6 +25,11 @@ export interface CoachMarkProps {
   body: string;
   actionLabel?: string;
   actionHref?: string;
+  /**
+   * Which side of the target the card prefers when both have room (default: above). `below` for a target at the top of a
+   * page whose navigation (tabs, header) sits right above it: the card must never cover the way around the screen.
+   */
+  prefer?: 'above' | 'below';
 }
 
 /**
@@ -36,7 +41,16 @@ export interface CoachMarkProps {
  * wrapper, the card itself is the only clickable surface), is silent entirely when the player turned "Suggerimenti
  * attivi" off in Settings, and is always dismissible from the keyboard (Escape, or the close button).
  */
-export function CoachMark({ id, when, selector, title, body, actionLabel, actionHref }: CoachMarkProps) {
+export function CoachMark({
+  id,
+  when,
+  selector,
+  title,
+  body,
+  actionLabel,
+  actionHref,
+  prefer = 'above',
+}: CoachMarkProps) {
   // Coach marks can render outside of a career (e.g. an admin-only account with no career of their own): fall back
   // to a fixed pseudo-id rather than crashing, same as `SectionPrimer`.
   const careerId = useCareerIdOptional() ?? '_no_career';
@@ -88,7 +102,10 @@ export function CoachMark({ id, when, selector, title, body, actionLabel, action
   // bottom of the whole screen, which could land it on top of the very controls it was explaining when the target
   // sat low in a tall, scrollable panel (e.g. the hospital-transport panel on a phone) — a real "never blocks input"
   // regression a real e2e run caught (`medical.spec.ts`, mobile: `choose-other-hospital` covered by the coach mark).
-  const placeAbove = spaceAbove >= cardHeightEstimate || spaceAbove >= spaceBelow;
+  const placeAbove =
+    prefer === 'below'
+      ? !(spaceBelow >= cardHeightEstimate || spaceBelow >= spaceAbove)
+      : spaceAbove >= cardHeightEstimate || spaceAbove >= spaceBelow;
   const verticalStyle: React.CSSProperties = placeAbove
     ? { bottom: Math.max(12, viewportH - target.top + gap) }
     : { top: Math.min(target.bottom + gap, Math.max(12, viewportH - cardHeightEstimate)) };

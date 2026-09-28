@@ -269,9 +269,7 @@ export function AdminTable<T>({
                 .filter((c) => c.header !== '' && c.id !== titleColumn)
                 .map((c) => (
                   <React.Fragment key={c.id}>
-                    <dt className="text-subtle text-[11px] font-semibold tracking-wide uppercase">
-                      {c.header}
-                    </dt>
+                    <dt className="text-subtle text-xs font-semibold tracking-wide uppercase">{c.header}</dt>
                     <dd className="min-w-0 break-words">{c.cell(row)}</dd>
                   </React.Fragment>
                 ))}
@@ -301,7 +299,7 @@ export function DefinitionGrid({ items }: { items: [label: string, value: React.
     <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
       {items.map(([label, value]) => (
         <div key={label} className="flex min-w-0 flex-col">
-          <dt className="text-subtle text-[11px] font-semibold tracking-wide uppercase">{label}</dt>
+          <dt className="text-subtle text-xs font-semibold tracking-wide uppercase">{label}</dt>
           <dd className="text-fg min-w-0 text-sm break-words">{value}</dd>
         </div>
       ))}

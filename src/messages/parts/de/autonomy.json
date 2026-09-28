@@ -1,0 +1,93 @@
+{
+  "autonomy": {
+    "title": "Autonomie",
+    "help": "So funktioniert die Autonomie",
+    "fuel": "Kraftstoff",
+    "stock": "Bordausstattung",
+    "fuelValue": "{km} von {range} km",
+    "flight": "Flugzeit",
+    "flightValue": "{minutes} von {range} Min.",
+    "stockValue": "{count, plural, one {# Artikel} other {# Artikel}}",
+    "itemsLow": "{count, plural, one {# nachzufüllen} other {# nachzufüllen}}",
+    "reserve": "Reserve",
+    "low": "Niedrig",
+    "full": "Voll",
+    "missionsLeft": "{count, plural, =0 {Muss nachfüllen} one {Autonomie: ein letzter Einsatz} other {Autonomie: etwa # Einsätze}}",
+    "missionsShort": "{count, plural, =0 {Nachfüllen} one {1 Einsatz} other {~# Einsätze}}",
+    "fullAutonomy": "Volle Autonomie",
+    "needsResupply": "Muss nachfüllen",
+    "resupplying": "Wird nachgefüllt",
+    "readyIn": "Bereit in",
+    "resupplyRequested": "Füllt bei der nächsten Rückkehr nach",
+    "returnToResupply": "Zum Nachfüllen zurückkehren",
+    "returnToResupplyHint": "Material und Kraftstoff jetzt auffüllen, vor einem großen Einsatz.",
+    "showItems": "Material im Detail",
+    "hideItems": "Details ausblenden",
+    "itemQuantity": "{quantity} von {capacity}",
+    "itemLow": "Nachfüllen",
+    "resupplyResult": {
+      "RESTOCKING": "{callSign}: Nachfüllen gestartet",
+      "RETURNING_TO_BASE": "{callSign} kehrt zum Nachfüllen zur Wache zurück",
+      "SCHEDULED_ON_RETURN": "{callSign} füllt nach, sobald es zurück ist",
+      "ALREADY_FULL": "{callSign} hat bereits volle Autonomie",
+      "ALREADY_RESUPPLYING": "{callSign} wird bereits nachgefüllt"
+    },
+    "flag": {
+      "LAST_MISSION_BEFORE_RESUPPLY": "Letzter Einsatz vor dem Nachfüllen",
+      "FUEL_RESERVE": "Reserve",
+      "FUEL_RANGE_INSUFFICIENT": "Reichweite zu gering"
+    },
+    "flagHelp": {
+      "LAST_MISSION_BEFORE_RESUPPLY": "Nach diesem Einsatz kehrt es zum Nachfüllen zurück.",
+      "FUEL_RESERVE": "Zu wenig Kraftstoff für Hin- und Rückfahrt: nicht empfohlen.",
+      "FUEL_RANGE_INSUFFICIENT": "Selbst mit vollem Tank zu weit: nicht empfohlen."
+    },
+    "reloadBeforeDeparture": "Füllt vor der Abfahrt nach: +{time}, schon in der Ankunftszeit enthalten",
+    "fuelStop": "Tankstopp: +{time} · {credits} Credits",
+    "explain": {
+      "stockTitle": "Bordausstattung",
+      "stockBody": "Jedes Fahrzeug führt sein eigenes Material mit (Schaummittel, Bindemittel, Sanitätskits …) und verbraucht es je nach Schwierigkeit des Einsatzes und den Bedingungen vor Ort. Wird es knapp, füllt es an der Wache selbstständig nach; sonst ist es sofort für den nächsten Einsatz bereit.",
+      "fuelTitle": "Kraftstoff",
+      "fuelBody": "Fahrzeuge haben eine Autonomie in Kilometern: Jede Fahrt verbraucht sie, ebenso Pumpen, Drehleitern und Stromerzeuger vor Ort. Unter einem Viertel Tankinhalt tankt das Fahrzeug nach dem Einsatz selbstständig. Es bleibt nie liegen, und Kraftstoff kostet keine zusätzlichen Credits.",
+      "dismiss": "Verstanden",
+      "flightTitle": "Flugzeit",
+      "flightBody": "Hubschrauber und Flugzeuge haben eine Flugzeit in Minuten: Start, jede Strecke, die Zeit über dem Einsatzort und jede Wasseraufnahme verbrauchen sie. Bleibt nur noch, was für den Rückflug mit Reserve nötig ist, verlässt das Luftfahrzeug den Einsatzort, tankt kostenlos an seiner Basis und kehrt dann selbstständig zum Einsatz zurück, falls er noch läuft."
+    },
+    "coaching": {
+      "noStopTitle": "Noch genug Autonomie: sofort wieder einsatzbereit",
+      "noStopBody": "{callSign} ist ohne Nachfüllstopp zurückgekehrt: du kannst es sofort zum nächsten Einsatz schicken.",
+      "firstReserveTitle": "Auf Reserve: Nach dem Einsatz füllt es selbstständig nach",
+      "firstReserveBody": "{callSign} hat wenig Kraftstoff: Bei der Rückkehr tankt es an der Wache voll.",
+      "firstBingoTitle": "Hubschrauber und Flugzeuge haben eine Flugzeit in Minuten",
+      "firstBingoBody": "{callSign} verlässt den Einsatzort, wenn nur noch der Rückflug mit Reserve bleibt: Es tankt kostenlos an der Basis und kehrt selbstständig zurück."
+    },
+    "fleet": {
+      "filter": "Nachzufüllen",
+      "column": "Autonomie"
+    },
+    "ledgerDetail": "{callSign} · {km} km nachgetankt",
+    "bingo": {
+      "title": "{callSign}: Flugzeit am Limit",
+      "resume": "Es fliegt zum Tanken zurück und kehrt dann selbstständig zum Einsatz zurück.",
+      "home": "Es fliegt zum Tanken zu seiner Basis zurück.",
+      "show": "Anzeigen",
+      "resumed": "{callSign} fliegt nach dem Tanken zurück zum Einsatz",
+      "willResume": "Nach dem Tanken zurück zu"
+    },
+    "flagHelpFlight": {
+      "FUEL_RESERVE": "Zu wenig Flugminuten für Hin- und Rückflug: nicht empfohlen.",
+      "FUEL_RANGE_INSUFFICIENT": "Reicht nicht für Hin- und Rückflug und einige Minuten vor Ort: nicht empfohlen."
+    },
+    "flightNote": {
+      "needs": "Benötigt {needed} Min. Flugzeit · {onBoard} an Bord",
+      "onScene": "{count, plural, =0 {Kann nicht vor Ort bleiben} one {Kann etwa # Minute vor Ort bleiben} other {Kann etwa # Minuten vor Ort bleiben}}"
+    }
+  },
+  "game": {
+    "dispatch": {
+      "ineligible": {
+        "ENDURANCE_INSUFFICIENT": "Flugzeit reicht selbst vollgetankt nicht für Hin- und Rückflug"
+      }
+    }
+  }
+}

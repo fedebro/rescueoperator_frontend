@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { describePageError, isBenignBrowserNoise } from './helpers';
 
 /**
  * The whole core loop against the in-browser mock backend, in both layouts (projects: desktop, mobile):
@@ -11,7 +12,9 @@ const problems = new WeakMap<Page, string[]>();
 test.beforeEach(async ({ page }) => {
   const list: string[] = [];
   problems.set(page, list);
-  page.on('pageerror', (e) => list.push(`pageerror: ${e.message}`));
+  page.on('pageerror', (e) => {
+    if (!isBenignBrowserNoise(e.message)) list.push(describePageError(e));
+  });
   page.on('console', (m) => {
     if (
       m.type() === 'error' &&
@@ -86,7 +89,8 @@ test('core loop: from sign-up to a second vehicle, surviving a reload', async ({
     await expect(page.getByTestId('tutorial')).toHaveAttribute('data-step', 'WELCOME');
     await expect(page.getByTestId('map')).toHaveAttribute('data-ready', 'true');
     await expect(page.getByTestId('credits')).toContainText('400');
-    await expect(page.getByTestId('active-incidents')).toContainText('1');
+    // The incident count lives in the queue (the sheet's summary row on phones), not in the top bar any more.
+    await expect(page.getByTestId('incident-card')).toHaveCount(1);
     await expect(page.locator('.maplibregl-ctrl-attrib')).toContainText('OpenStreetMap');
     if (isMobile(page)) await expect(page.getByTestId('bottom-nav').getByRole('link')).toHaveCount(5);
     await page.getByTestId('tutorial-start').click();
@@ -102,7 +106,6 @@ test('core loop: from sign-up to a second vehicle, surviving a reload', async ({
     await page.getByTestId('send-recommended').click();
     await expect(page.getByTestId('toast').filter({ hasText: 'Mezzo inviato' })).toBeVisible();
     await expect(page.getByTestId('assigned-vehicle')).toHaveCount(1);
-    await expect(page.getByTestId('available-vehicles')).toContainText('0');
   });
 
   await test.step('watch the arrival and the work on scene', async () => {
@@ -159,7 +162,7 @@ test('core loop: from sign-up to a second vehicle, surviving a reload', async ({
     await goTo(page, 'Flotta');
     await expect(page.getByText('APS 2', { exact: true })).toBeVisible();
     await expect(page.getByText('APS 1', { exact: true })).toBeVisible();
-    await expect(page.getByTestId('available-vehicles')).toContainText('2', { timeout: 30_000 });
+    await expect(page.getByText('2 mezzi · 2 disponibili')).toBeVisible({ timeout: 30_000 });
   });
 
   await test.step('reload: session restored from the refresh cookie, state intact', async () => {
@@ -171,7 +174,7 @@ test('core loop: from sign-up to a second vehicle, surviving a reload', async ({
   });
 
   await test.step('other screens render in this layout', async () => {
-    await goTo(page, 'Sedi', true);
+    await goTo(page, 'Sedi');
     await expect(page.getByTestId('facility-detail')).toBeVisible();
     await expect(page.getByTestId('upgrade-offer').first()).toBeVisible();
     await goTo(page, 'Bilancio', true);

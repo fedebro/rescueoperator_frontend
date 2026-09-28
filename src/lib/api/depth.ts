@@ -56,9 +56,20 @@ const c = (careerId: string) => `/careers/${careerId}`;
 type Target = z.infer<typeof SpeedupTarget>;
 
 export const facilitiesApi = {
-  /** Candidate sites inside a bbox `[w,s,e,n]`. */
-  sites: (careerId: string, bbox: [number, number, number, number], family?: string) =>
-    api.get(`${c(careerId)}/sites`, { query: { bbox: bbox.join(','), family }, schema: z.array(SiteDto) }),
+  /**
+   * Candidate sites inside a bbox `[w,s,e,n]`. `kind` (water, D-23): ALL (default: nautical sites are listed whatever
+   * the family), STANDARD (family sites only) or NAUTICAL (only where a Base nautica can be bought).
+   */
+  sites: (
+    careerId: string,
+    bbox: [number, number, number, number],
+    family?: string,
+    kind?: 'ALL' | 'STANDARD' | 'NAUTICAL',
+  ) =>
+    api.get(`${c(careerId)}/sites`, {
+      query: { bbox: bbox.join(','), family, kind },
+      schema: z.array(SiteDto),
+    }),
   acquire: (careerId: string, body: z.infer<typeof AcquireFacilityBody>) =>
     api.command(`${c(careerId)}/facilities`, body, { schema: FacilityDetailV2Dto }),
   detail: (careerId: string, id: string) =>
@@ -123,7 +134,12 @@ export const medicalApi = {
   patient: (careerId: string, id: string) => api.get(`${c(careerId)}/patients/${id}`, { schema: PatientDto }),
   hospitalOptions: (careerId: string, patientId: string) =>
     api.get(`${c(careerId)}/patients/${patientId}/hospital-options`, { schema: z.array(HospitalOption) }),
-  transport: (careerId: string, patientId: string, body: { hospitalId: string; vehicleId?: string }) =>
+  /** A multi-patient vehicle (EMS_MAXI) boards `withPatientIds` too (omitted = the server's own pick, `[]` = alone). */
+  transport: (
+    careerId: string,
+    patientId: string,
+    body: { hospitalId: string; vehicleId?: string; withPatientIds?: string[] },
+  ) =>
     api.command(`${c(careerId)}/patients/${patientId}/transport`, body, { schema: TransportPatientResult }),
   hospitals: (careerId: string) => api.get(`${c(careerId)}/hospitals`, { schema: z.array(HospitalDto) }),
 };

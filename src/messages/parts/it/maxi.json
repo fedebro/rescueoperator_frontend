@@ -1,0 +1,107 @@
+{
+  "maxi": {
+    "alert": {
+      "severity": "Gravità della scena principale",
+      "boosted": "Più grave di quanto il tuo livello vede di solito",
+      "sized": "Dimensionata sulla tua flotta: circa {count} mezzi",
+      "linked": "{count, plural, one {# emergenza collegata già segnalata} other {# emergenze collegate già segnalate}}",
+      "reward": "Bonus stimato",
+      "hint": "Invia subito i mezzi sulla scena principale: se resta scoperta, l’emergenza si allarga.",
+      "open": "Coordina i soccorsi",
+      "dismiss": "Chiudi"
+    },
+    "view": {
+      "phase": "Fase della maxi-emergenza",
+      "mainProgress": "Scena principale",
+      "expiresIn": "Nessuno sul posto: si perde tra",
+      "endsIn": "Fine prevista tra",
+      "growth": "Allargata {level} volte su {max}",
+      "growthNext": "Se la scena principale resta scoperta si allarga tra",
+      "otherNeeds": "Altre necessità",
+      "external": "Supporto esterno",
+      "byReinforcements": "Coperto dai rinforzi",
+      "coverage": "{percent}% coperto",
+      "groupAria": "{family}: {onScene}% sul posto, {enRoute}% in arrivo",
+      "needsCovered": "{covered} su {total} necessità coperte",
+      "enRouteShare": "+{percent}% in arrivo",
+      "withReinforcements": "Con i rinforzi",
+      "severity": "Gravità",
+      "sectorOpen": "Apri {title}",
+      "sectorVehicles": "{count, plural, =0 {Nessun mezzo} one {# mezzo} other {# mezzi}}",
+      "reinforcements": "Rinforzi esterni",
+      "quoteCover": "Coprono",
+      "quoteCost": "Bonus",
+      "quoteEta": "Sul posto tra",
+      "priority": "Supporto prioritario",
+      "columnShare": "{percent}% delle necessità",
+      "reinforcedTotal": "Coperto dai rinforzi: {percent}% della maxi-emergenza",
+      "summary": "Riepilogo",
+      "reward": "Bonus della maxi-emergenza",
+      "xp": "+{xp} XP",
+      "quality": "Qualità {percent}%",
+      "rewardHint": "Si aggiunge alla ricompensa di ogni emergenza: più la gestisci con la tua flotta, più guadagni.",
+      "fleet": "Dimensionata su {operational} mezzi operativi · obiettivo {target}",
+      "loadError": "Impossibile caricare la maxi-emergenza.",
+      "close": "Chiudi",
+      "centerOnMap": "Centra sulla mappa",
+      "boosted": "Oltre il tuo livello",
+      "elapsed": "In corso da",
+      "needs": "Necessità per servizio",
+      "needsHint": "Tutte le emergenze aperte",
+      "needsNone": "Nessuna necessità aperta",
+      "committed": "{count, plural, =0 {Nessun mezzo impegnato} one {# mezzo impegnato} other {# mezzi impegnati}}",
+      "sectors": "Settori · {count}"
+    },
+    "reinforcements": {
+      "requested": "Rinforzi richiesti",
+      "requestedBody": "La colonna coprirà il {percent}% delle necessità."
+    },
+    "queue": {
+      "openAria": "Apri il coordinamento della maxi-emergenza: {title}",
+      "sectors": "{count, plural, one {# settore} other {# settori}}",
+      "pending": "{count, plural, one {# in attesa} other {# in attesa}}",
+      "coordinate": "Coordina"
+    },
+    "member": {
+      "badge": "Maxi",
+      "open": "Coordina"
+    },
+    "strip": {
+      "aria": "Apri la maxi-emergenza in corso: {title}",
+      "pending": "{count, plural, one {# settore in attesa} other {# settori in attesa}}",
+      "open": "Coordina"
+    },
+    "toast": {
+      "linked": "Nuova emergenza collegata alla maxi-emergenza",
+      "coordinate": "Coordina",
+      "phase": "Maxi-emergenza: fase di {phase}",
+      "endedBody": "Bonus di {credits} crediti",
+      "summary": "Riepilogo"
+    },
+    "trophies": {
+      "title": "Maxi-emergenze",
+      "subtitle": "Una medaglia per ogni tipo di maxi-emergenza gestita: oro senza rinforzi e senza farla allargare.",
+      "total": "{count, plural, =0 {Nessuna gestita} one {# gestita} other {# gestite}}",
+      "none": "Non ancora",
+      "handled": "{handled, plural, one {# gestita} other {# gestite}} su {attempts}",
+      "best": "migliore {percent}%",
+      "locked": "dal livello {level}",
+      "history": "Ultime maxi-emergenze"
+    },
+    "dispatch": {
+      "majorCap": "Maxi-emergenza: fino a {count} mezzi per invio ({selected} selezionati)",
+      "capReached": "Massimo {count} mezzi per invio: invia questi, poi aggiungi gli altri"
+    }
+  },
+  "ledger": {
+    "MAJOR_INCIDENT": "Bonus maxi-emergenza"
+  },
+  "notificationCenter": {
+    "major": "Maxi-emergenza"
+  },
+  "game": {
+    "queue": {
+      "majorMembers": "Emergenze della maxi-emergenza"
+    }
+  }
+}

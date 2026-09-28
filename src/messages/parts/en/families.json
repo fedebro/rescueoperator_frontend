@@ -9,7 +9,9 @@
     },
     "external": {
       "familyTitle": "{family} — covered by external support",
-      "notice": "{count, plural, one {{families} is not one of your services yet: its part is covered by external support and does not count against your rating.} other {{families} are not your services yet: their part is covered by external support and does not count against your rating.}} Only send vehicles of the services you run."
+      "notice": "{count, plural, one {{families} is not one of your services yet: its part is covered by external support and does not count against your rating.} other {{families} are not your services yet: their part is covered by external support and does not count against your rating.}} Only send vehicles of the services you run.",
+      "chip": "{families}: external support",
+      "chipInfo": "Why? Show the explanation"
     },
     "attribution": {
       "title": "Who handles what",
@@ -54,7 +56,7 @@
       "domainFilter": "Filter by domain",
       "airNote": "Flies straight at {speed} km/h, ignoring roads and traffic. Needs a facility with a helipad (Air domain).",
       "trailerNote": "Reaches the scene by road on a trailer: a little slower to get going.",
-      "trailerNoteWater": "Boat on a road trailer: it drives to the water and takes a mooring slot (Water domain).",
+      "trailerNoteWater": "Boat on a road trailer: it is kept at a marine base and leaves from its berth; rivers and other lakes are reached on the trailer (Water domain).",
       "reason": {
         "familyLocked": "Service locked: unlocks at level {level}",
         "noFacility": "No compatible operational facility. Needed: {types}",

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { bootCareer, goTo, trackProblems } from './helpers';
+import { bootCareer, goTo, qa, trackProblems } from './helpers';
 
 /**
  * Hover-visible tooltips / titles on truncated names and icon-only status signals: Fleet (vehicle type name + the
@@ -13,6 +13,8 @@ trackProblems();
 
 test('fleet: a vehicle with a long type name is inspectable via title', async ({ page }, info) => {
   await bootCareer(page, info.project.name, { level: 3, credits: 5000 });
+  // A silent world: no random call (and its "Nuova emergenza" toast) lands next to the purchase confirmation.
+  await qa(page, 'quiet');
   await goTo(page, 'Acquisti');
   await expect(page).toHaveURL(/\/game\/shop$/);
 
@@ -21,7 +23,7 @@ test('fleet: a vehicle with a long type name is inspectable via title', async ({
   const offer = page.locator('[data-testid="vehicle-offer"][data-code="FIRE_4X4"]');
   await expect(offer).toBeVisible();
   await offer.getByTestId('buy-vehicle').click();
-  await expect(page.getByTestId('toast')).toBeVisible();
+  await expect(page.getByTestId('toast').filter({ hasText: 'ordinato' })).toBeVisible();
 
   await goTo(page, 'Flotta');
   await expect(page).toHaveURL(/\/game\/fleet$/);

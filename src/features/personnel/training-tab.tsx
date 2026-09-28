@@ -334,7 +334,7 @@ function EnrollForm({
             const used = s.used + (pickedByFacility.get(facilityId) ?? 0);
             return (
               <li key={facilityId}>
-                <Badge tone={used >= s.total ? 'warning' : 'neutral'} className="text-[11px]">
+                <Badge tone={used >= s.total ? 'warning' : 'neutral'} className="text-xs">
                   <GraduationCap className="size-3" aria-hidden />
                   {facilities.find((f) => f.id === facilityId)?.name ?? '—'} ·{' '}
                   {t('slotsUsed', { used, total: s.total })}

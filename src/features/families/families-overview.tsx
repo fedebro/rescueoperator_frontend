@@ -51,12 +51,13 @@ export function FamiliesOverview({
             className={f.unlocked ? '' : 'opacity-50 grayscale'}
           />
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-semibold" title={tx(f.name)}>
+            {/* Two lines rather than "Emergenza S…" on a phone's 176 px card. */}
+            <span className="line-clamp-2 block text-sm leading-tight font-semibold" title={tx(f.name)}>
               {tx(f.name)}
             </span>
             <span
               className={cn(
-                'mt-0.5 flex items-start gap-1 text-[11px] leading-tight',
+                'mt-0.5 flex items-start gap-1 text-xs leading-tight',
                 f.unlocked ? 'text-success' : 'text-muted',
               )}
             >

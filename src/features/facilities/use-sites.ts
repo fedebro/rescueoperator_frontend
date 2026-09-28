@@ -18,19 +18,22 @@ export function sitesBbox(
 /**
  * Candidate sites of the career area. The key lives under the `world` root (invalidated by `facility.updated`) and
  * also carries what changes the lock state of the options: level, unlocked families, number of facilities.
+ * `kind: 'NAUTICAL'` asks the server for the nautical sites only (`GET /sites?kind=NAUTICAL`).
  */
-export function useSites(enabled = true) {
+export function useSites(enabled = true, kind: 'ALL' | 'NAUTICAL' = 'ALL') {
   const careerId = useCareerId();
   const { career, facilities } = useSnapshot();
   const bbox = sitesBbox(career.bounds);
   return useQuery({
     queryKey: [
       ...qk.sites(careerId, bbox.join(',')),
+      kind,
       career.level,
       career.unlockedFamilies.join(','),
       facilities.length,
     ],
-    queryFn: () => facilitiesApi.sites(careerId, bbox),
+    // `NAUTICAL` (D-23): only where a Base nautica can be bought — never crowded out by the family sites.
+    queryFn: () => facilitiesApi.sites(careerId, bbox, undefined, kind === 'ALL' ? undefined : kind),
     enabled,
     staleTime: 60_000,
     placeholderData: (prev) => prev,

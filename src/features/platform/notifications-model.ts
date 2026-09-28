@@ -70,6 +70,13 @@ export function sameText(
   return a.key === b.key && JSON.stringify(a.params ?? {}) === JSON.stringify(b.params ?? {});
 }
 
+/**
+ * The backend's "Emergenza grave" (`notification.SEVERE_INCIDENT.*`, from the configured severity up): the call itself is
+ * announced by the new-incident toast, so this one only goes to the centre and the badge.
+ */
+export const isSevereIncidentNotification = (n: Pick<Notification, 'title'>): boolean =>
+  n.title.key === 'notification.SEVERE_INCIDENT.title';
+
 export type ActionTarget =
   | { type: 'select'; kind: 'incident' | 'vehicle'; id: string }
   | { type: 'navigate'; href: string }

@@ -95,7 +95,8 @@
     "detail": {
       "upgradesAfterConstruction": "Las ampliaciones se podrán construir cuando la sede esté operativa.",
       "capsHint": "Los niveles máximos dependen del tipo de sede ({type}): asciéndela para subirlos.",
-      "notOperational": "Disponible cuando la sede esté operativa"
+      "notOperational": "Disponible cuando la sede esté operativa",
+      "showOnMap": "Mostrar en el mapa"
     }
   },
   "notifications": {

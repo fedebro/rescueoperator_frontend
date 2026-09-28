@@ -26,6 +26,7 @@
       "hint": "Füge Rescue Control zum Startbildschirm hinzu: Es öffnet sich im Vollbild, wie eine App.",
       "installedHint": "Du nutzt bereits die installierte App.",
       "unavailableHint": "Dieser Browser bietet keine Installation an. Versuche es über das Browsermenü oder mit Chrome, Edge oder Safari.",
+      "inAppHint": "Du bist im Browser einer anderen App (TikTok, Instagram…): Öffne das Spiel über das Menü ⋯ → „Im Browser öffnen“ in deinem Browser, um es zu installieren.",
       "hintTitle": "Rescue Control als App",
       "hintBody": "Installiere sie, um deine Leitstelle mit einem Tipp im Vollbild zu öffnen.",
       "iosTitle": "Auf iPhone und iPad installieren",

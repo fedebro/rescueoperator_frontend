@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
-import type { GeoJSONSource, Map as MlMap, MapMouseEvent } from 'maplibre-gl';
+import type { Map as MlMap, MapMouseEvent } from 'maplibre-gl';
 import { CloudSun, Crosshair, Eraser, PenLine, Siren, Trash2, Undo2 } from 'lucide-react';
 import { WeatherCode } from '@/contracts';
 import { CLOSURE_REASON_KEYS, adminApi, closureReasonKey, type AdminClosureRow } from '@/lib/api/admin';
@@ -11,6 +11,7 @@ import { useCatalogName } from '@/i18n/use-i18n-text';
 import { useLatest } from '@/hooks/use-latest';
 import { formatDateTime } from '@/lib/format';
 import { BaseMap } from '@/features/map/base-map';
+import { geoJsonSource } from '@/features/map/game-layers';
 import { Button } from '@/components/ui/button';
 import type { Column } from '@/components/ui/data-table';
 import { Field, Input } from '@/components/ui/input';
@@ -166,16 +167,15 @@ export function AdminWorld() {
   // React state → map sources.
   React.useEffect(() => {
     if (!mapReady) return;
-    (mapRef.current?.getSource(SRC_DRAFT) as GeoJSONSource | undefined)?.setData(
-      draftCollection(vertices, closed),
-    );
+    if (mapRef.current) geoJsonSource(mapRef.current, SRC_DRAFT)?.setData(draftCollection(vertices, closed));
   }, [mapReady, vertices, closed]);
   React.useEffect(() => {
     if (!mapReady) return;
-    (mapRef.current?.getSource(SRC_CLOSURES) as GeoJSONSource | undefined)?.setData({
-      type: 'FeatureCollection',
-      features: (closures.data ?? []).map((c) => polygonFeature(c.polygon, c.id)),
-    });
+    if (mapRef.current)
+      geoJsonSource(mapRef.current, SRC_CLOSURES)?.setData({
+        type: 'FeatureCollection',
+        features: (closures.data ?? []).map((c) => polygonFeature(c.polygon, c.id)),
+      });
   }, [mapReady, closures.data]);
   React.useEffect(() => {
     const canvas = mapRef.current?.getCanvas();

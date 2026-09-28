@@ -71,7 +71,7 @@ export function MilestonesCard() {
                   aria-expanded={open}
                   aria-controls={panelId}
                   onClick={() => setExpanded((s) => ({ ...s, [phase]: !open }))}
-                  className="hover:bg-surface-3 flex min-h-10 w-full items-center justify-between gap-2 rounded-md px-1 text-left text-sm font-semibold"
+                  className="hover:bg-surface-3 flex min-h-11 w-full items-center justify-between gap-2 rounded-md px-1 text-left text-sm font-semibold lg:min-h-10"
                 >
                   <span>{isKnownPhase(phase) ? t(`phase.${phase}`) : phase}</span>
                   <span className="tabular text-muted text-xs">
@@ -245,7 +245,7 @@ export function ReputationCard() {
               <span
                 key={b.code}
                 className={cn(
-                  'truncate text-center text-[10px] leading-tight',
+                  'truncate text-center text-xs leading-tight',
                   b.code === band.code ? 'text-fg font-semibold' : 'text-subtle',
                 )}
                 style={{ width: `${b.to - b.from + 1}%` }}

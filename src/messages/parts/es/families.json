@@ -9,7 +9,9 @@
     },
     "external": {
       "familyTitle": "{family} — cubierto por el apoyo externo",
-      "notice": "{count, plural, one {{families} todavía no es uno de tus servicios: su parte la cubre el apoyo externo y no cuenta en tu valoración.} other {{families} todavía no son tus servicios: su parte la cubre el apoyo externo y no cuenta en tu valoración.}} Envía solo vehículos de los servicios que gestionas."
+      "notice": "{count, plural, one {{families} todavía no es uno de tus servicios: su parte la cubre el apoyo externo y no cuenta en tu valoración.} other {{families} todavía no son tus servicios: su parte la cubre el apoyo externo y no cuenta en tu valoración.}} Envía solo vehículos de los servicios que gestionas.",
+      "chip": "{families}: apoyo externo",
+      "chipInfo": "¿Por qué? Mostrar la explicación"
     },
     "attribution": {
       "title": "Quién se encarga",
@@ -54,7 +56,7 @@
       "domainFilter": "Filtrar por dominio",
       "airNote": "Vuela en línea recta a {speed} km/h, sin carreteras ni tráfico. Necesita una sede con helipuerto (dominio Aire).",
       "trailerNote": "Llega por carretera sobre remolque: algo más lento al salir.",
-      "trailerNoteWater": "Embarcación sobre remolque: va por carretera hasta el agua y ocupa un amarre (dominio Agua).",
+      "trailerNoteWater": "Embarcación en remolque de carretera: se guarda en una base náutica y sale de su amarre; los ríos y otros lagos se alcanzan en remolque (dominio Agua).",
       "reason": {
         "familyLocked": "Servicio bloqueado: se desbloquea en el nivel {level}",
         "noFacility": "Ninguna sede operativa compatible. Hace falta: {types}",

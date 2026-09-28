@@ -9,7 +9,9 @@
     },
     "external": {
       "familyTitle": "{family} — couvert par le soutien externe",
-      "notice": "{count, plural, one {{families} n’est pas encore l’un de vos services : sa part est couverte par le soutien externe et ne pèse pas sur votre évaluation.} other {{families} ne sont pas encore vos services : leur part est couverte par le soutien externe et ne pèse pas sur votre évaluation.}} Envoyez uniquement les véhicules des services que vous gérez."
+      "notice": "{count, plural, one {{families} n’est pas encore l’un de vos services : sa part est couverte par le soutien externe et ne pèse pas sur votre évaluation.} other {{families} ne sont pas encore vos services : leur part est couverte par le soutien externe et ne pèse pas sur votre évaluation.}} Envoyez uniquement les véhicules des services que vous gérez.",
+      "chip": "{families} : soutien externe",
+      "chipInfo": "Pourquoi ? Afficher l’explication"
     },
     "attribution": {
       "title": "Qui s’en occupe",
@@ -54,7 +56,7 @@
       "domainFilter": "Filtrer par domaine",
       "airNote": "Vole en ligne droite à {speed} km/h, sans routes ni trafic. Nécessite une base avec hélisurface (domaine Air).",
       "trailerNote": "Rejoint les lieux par la route sur remorque : un peu plus lent au départ.",
-      "trailerNoteWater": "Embarcation sur remorque : elle roule jusqu’à l’eau et occupe une place d’amarrage (domaine Eau).",
+      "trailerNoteWater": "Bateau sur remorque routière : il est gardé dans une base nautique et part de son amarrage ; les rivières et les autres lacs se rejoignent sur remorque (domaine Eau).",
       "reason": {
         "familyLocked": "Service verrouillé : se débloque au niveau {level}",
         "noFacility": "Aucune base opérationnelle compatible. Il faut : {types}",

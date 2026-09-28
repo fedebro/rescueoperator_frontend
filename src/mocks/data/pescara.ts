@@ -1,4 +1,6 @@
+import type { SiteNauticalDto } from '@/contracts';
 import type { LngLat } from '@/lib/geo';
+import { NAUTICAL_SITES, WATER_BODIES } from './water';
 
 export const PESCARA = {
   id: 'IT-068028',
@@ -151,6 +153,8 @@ export interface MockCandidateSite {
   expansionPotential: 'LOW' | 'MEDIUM' | 'HIGH';
   profile: 'CENTRAL' | 'BALANCED' | 'PERIPHERAL';
   compatibleFacilityTypes: string[];
+  /** Nautical sites (D-23): harbour / seafront / lake, where only a Base nautica can be built — with its berth. */
+  nautical?: SiteNauticalDto;
 }
 const site = (
   key: string,
@@ -361,6 +365,18 @@ export const CANDIDATE_SITES: MockCandidateSite[] = [
     'CENTRAL',
     ['COORDINATION_CENTER'],
   ),
+  // Nautical sites of the geodata (listing family FIRE like the real release; the Base nautica itself is SHARED).
+  ...NAUTICAL_SITES.map((n) => ({
+    ...site(n.key, n.name, false, 'FIRE', n.position, n.address, n.capacityPoints, 'LOW', 'PERIPHERAL', [
+      'NAUTICAL_BASE',
+    ]),
+    nautical: {
+      waterBody: WATER_BODIES[n.bodyId]!.type as 'SEA' | 'LAKE',
+      waterBodyId: n.bodyId,
+      waterBodyName: WATER_BODIES[n.bodyId]!.name,
+      berth: n.berth,
+    },
+  })),
 ];
 
 /** Inland spots (approximate, all on land) used to place mock incidents. */

@@ -177,7 +177,9 @@
       "BROKE_DOWN": "Panne en service",
       "RECOVERY_STARTED": "Récupération par dépanneuse ({cost} crédits)",
       "RECOVERY_STARTED_FREE": "Récupération par dépanneuse (gratuite)",
-      "RECOVERED": "Ramené au site en remorque"
+      "RECOVERED": "Ramené au site en remorque",
+      "REFUELED": "Plein fait à la base ({km} km)",
+      "REFUELED_ON_THE_WAY": "Plein à une station-service sur le retour ({km} km)"
     }
   },
   "notifications": {

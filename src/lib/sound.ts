@@ -22,7 +22,8 @@ export type SoundName =
   | 'notification.critical'
   | 'credits'
   | 'error'
-  | 'confirm';
+  | 'confirm'
+  | 'major';
 
 interface Note {
   freq: number;
@@ -177,6 +178,18 @@ export const SOUND_CUES: Record<SoundName, SoundCue> = {
     throttleMs: 150,
     notes: [{ freq: 1200, at: 0, dur: 0.05, type: 'sine', level: 0.5 }],
   },
+  /** The major incident's own alarm (06 §2.6): a two-tone siren sweep over a low drone — unlike any other cue. */
+  major: {
+    category: 'alerts',
+    throttleMs: 1000,
+    notes: [
+      { freq: 620, to: 930, at: 0, dur: 0.2, type: 'sawtooth' },
+      { freq: 930, to: 620, at: 0.2, dur: 0.2, type: 'sawtooth' },
+      { freq: 620, to: 930, at: 0.42, dur: 0.2, type: 'sawtooth' },
+      { freq: 930, to: 620, at: 0.62, dur: 0.24, type: 'sawtooth' },
+      { freq: 310, at: 0, dur: 0.86, type: 'square', level: 0.35 },
+    ],
+  },
 };
 
 /** Severity 1–10 → which "new incident" cue plays. */
@@ -212,14 +225,19 @@ export function resetSoundForTests(): void {
   lastAny = { at: Number.NEGATIVE_INFINITY, category: 'feedback' };
 }
 
+/** Never throws: some in-app browsers (TikTok, Instagram…) refuse or cap audio contexts — then the game is silent. */
 function audioContext(): AudioContext | null {
   if (typeof window === 'undefined') return null;
-  const Ctor =
-    window.AudioContext ??
-    (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-  if (!Ctor) return null;
-  ctx ??= new Ctor();
-  return ctx;
+  try {
+    const Ctor =
+      window.AudioContext ??
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!Ctor) return null;
+    ctx ??= new Ctor();
+    return ctx;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -231,9 +249,13 @@ export function installSoundUnlock(): () => void {
   unlockInstalled = true;
   const unlock = () => {
     unlocked = true;
-    const audio = audioContext();
-    if (audio?.state === 'suspended') void audio.resume().catch(() => undefined);
     remove();
+    try {
+      const audio = audioContext();
+      if (audio?.state === 'suspended') void audio.resume().catch(() => undefined);
+    } catch {
+      /* audio is strictly optional */
+    }
   };
   const remove = () => {
     window.removeEventListener('pointerdown', unlock);

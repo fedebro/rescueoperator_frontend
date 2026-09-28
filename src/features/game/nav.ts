@@ -1,14 +1,13 @@
 import {
+  BadgeEuro,
   BarChart3,
   Building2,
-  Coins,
   Map as MapIcon,
   Menu,
   Package,
   Settings,
   Share2,
   ShoppingCart,
-  Siren,
   Trophy,
   Truck,
   Users,
@@ -25,10 +24,12 @@ export interface NavItem {
   gate?: { monetization: true; flag: 'creditShop' | 'referrals' };
 }
 
-/** Desktop sidebar: every section. */
+/**
+ * Desktop sidebar: every section. No "Emergenze" entry (D-34): the incident list is the operations screen's own queue
+ * column, with the full table one click away from its header (`/game/incidents` still works).
+ */
 export const SIDEBAR_ITEMS: NavItem[] = [
   { href: '/game', labelKey: 'operations', icon: MapIcon },
-  { href: '/game/incidents', labelKey: 'incidents', icon: Siren },
   { href: '/game/facilities', labelKey: 'facilities', icon: Building2 },
   { href: '/game/fleet', labelKey: 'fleet', icon: Truck },
   { href: '/game/personnel', labelKey: 'personnel', icon: Users },
@@ -37,9 +38,11 @@ export const SIDEBAR_ITEMS: NavItem[] = [
   { href: '/game/progression', labelKey: 'progression', icon: Trophy },
   { href: '/game/economy', labelKey: 'economy', icon: Wallet },
   {
+    // Real money (03 §3 #3): its own name ("Ricarica Crediti") and a euro badge, never mistaken for "Acquisti" (the cart,
+    // where vehicles and facilities are bought with the game's Credits).
     href: '/game/credits',
     labelKey: 'credits',
-    icon: Coins,
+    icon: BadgeEuro,
     gate: { monetization: true, flag: 'creditShop' },
   },
   {
@@ -51,11 +54,15 @@ export const SIDEBAR_ITEMS: NavItem[] = [
   { href: '/game/settings', labelKey: 'settings', icon: Settings },
 ];
 
-/** Mobile bottom navigation: exactly five thumb-reachable items; everything else lives under "More". */
+/**
+ * Mobile bottom navigation (D-34): Mappa · Flotta · Sedi · Acquisti · Altro — exactly five thumb-reachable items;
+ * everything else lives under "More". The incident list lives in the map's bottom sheet (its waiting count is the
+ * badge on "Mappa").
+ */
 export const BOTTOM_ITEMS: NavItem[] = [
   { href: '/game', labelKey: 'map', icon: MapIcon },
-  { href: '/game/incidents', labelKey: 'incidents', icon: Siren },
   { href: '/game/fleet', labelKey: 'fleet', icon: Truck },
+  { href: '/game/facilities', labelKey: 'facilities', icon: Building2 },
   { href: '/game/shop', labelKey: 'shop', icon: ShoppingCart, tutorialId: 'nav-shop' },
   { href: '/game/more', labelKey: 'more', icon: Menu },
 ];

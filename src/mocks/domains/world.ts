@@ -189,7 +189,7 @@ export function installWorld(engine: MockEngine): void {
   const syncWorld = (career: MockCareer, force = false): void => {
     const state = worldState(career);
     state.closures = state.closures.filter((c) => c.endsAt === null || c.endsAt > engine.now());
-    const world = engine.snapshot(career).world;
+    const world = engine.world(career);
     const signature = signatureOf(world);
     if (!force && signature === state.signature) return;
     const first = state.signature === '';
@@ -201,7 +201,7 @@ export function installWorld(engine: MockEngine): void {
   engine.hooks.travelFactor.push((career, path) => {
     // The tutorial drive is never slowed down (first-session pacing, analisi/05 §5).
     if (!career.summary.tutorial.completed) return 1;
-    const world = engine.snapshot(career).world;
+    const world = engine.world(career);
     return (world.trafficMultiplier ?? 1) * closureFactor(path, activeClosures(career));
   });
 
@@ -254,16 +254,22 @@ export function installWorld(engine: MockEngine): void {
   };
 
   /* ───────────── coverage ───────────── */
+  // Boats never count as land coverage, and a Base nautica (WATER-only) serves no land cell (D-68, coverage.service).
   const coverageFacilities = (career: MockCareer): CoverageFacility[] =>
     career.facilities
-      .filter((f) => f.status === 'OPERATIONAL')
+      .filter((f) => f.status === 'OPERATIONAL' && !engine.isNauticalFacility(f))
       .map((f) => ({
         id: f.id,
         position: f.position,
         families: [
           ...new Set(
             career.vehicles
-              .filter((v) => v.facilityId === f.id && !NOT_SERVING.has(v.status))
+              .filter(
+                (v) =>
+                  v.facilityId === f.id &&
+                  !NOT_SERVING.has(v.status) &&
+                  VEHICLE_TYPES.find((t) => t.code === v.typeCode)?.domain !== 'WATER',
+              )
               .map((v) => v.family),
           ),
         ].sort() as ServiceFamily[],
@@ -585,7 +591,7 @@ export function installWorld(engine: MockEngine): void {
 
   /* ───────────── public surface (REST handlers + QA) ───────────── */
   const api: WorldApi = {
-    world: (career) => engine.snapshot(career).world,
+    world: (career) => engine.world(career),
     coverage: (career) => {
       checkCoverage(career);
       return worldState(career).coverage ?? recomputeCoverage(career, false);

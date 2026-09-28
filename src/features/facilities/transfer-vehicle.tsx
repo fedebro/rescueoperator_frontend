@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl';
 import { ArrowRightLeft, Ban, CheckCircle2, Hammer, MapPin } from 'lucide-react';
 import type { FacilityDto, VehicleDto } from '@/contracts';
 import { facilitiesApi } from '@/lib/api/depth';
-import { useErrorMessage } from '@/lib/api/error-message';
 import { track } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
 import { toast } from '@/stores/toast';
@@ -13,6 +12,7 @@ import { FamilyBadge } from '@/design/icons';
 import { Button, IconButton } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useCareerId, usePatchSnapshot, useSnapshot, useVehicleTypeLookup } from '@/features/game/hooks';
+import { useFixItToast } from './error-fix';
 
 export type TransferState = 'OK' | 'CURRENT' | 'INCOMPATIBLE' | 'NOT_OPERATIONAL' | 'FULL';
 export interface TransferTarget {
@@ -67,9 +67,10 @@ export function TransferVehicleButton({
 }) {
   const careerId = useCareerId();
   const t = useTranslations('facilities.transfer');
+  const tn = useTranslations('nautical.transfer');
   const td = useTranslations('game.facility');
   const tc = useTranslations('common');
-  const errorMessage = useErrorMessage();
+  const fixItToast = useFixItToast();
   const patch = usePatchSnapshot();
   const { facilities } = useSnapshot();
   const type = useVehicleTypeLookup()(vehicle.typeCode);
@@ -93,9 +94,11 @@ export function TransferVehicleButton({
       });
       setOpen(false);
     },
-    onError: (e) => toast({ tone: 'danger', title: errorMessage(e) }),
+    // NEEDS_NAUTICAL_BASE, no free berth…: the refusal says where to go to fix it.
+    onError: (e, facilityId) => fixItToast(e, { facilityId, family: vehicle.family }),
   });
   if (facilities.length < 2) return null;
+  const boat = type?.domain === 'WATER';
   const available = vehicle.status === 'AVAILABLE';
   const targets = transferTargets(vehicle, type, facilities);
   const trigger = compact ? (
@@ -162,7 +165,11 @@ export function TransferVehicleButton({
                       </span>
                       <span className="text-muted flex items-center gap-1 text-xs">
                         <Icon className="size-3 shrink-0" aria-hidden />
-                        {state === 'OK' ? t('state.OK', { free }) : t(`state.${state}`)}
+                        {state === 'OK'
+                          ? t('state.OK', { free })
+                          : state === 'INCOMPATIBLE' && boat
+                            ? tn('boatOnly')
+                            : t(`state.${state}`)}
                       </span>
                     </span>
                   </button>

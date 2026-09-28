@@ -1,0 +1,130 @@
+{
+  "nautical": {
+    "section": "Urgence sur l’eau",
+    "body": {
+      "SEA": "En mer",
+      "LAKE": "Sur le lac",
+      "RIVER": "Sur la rivière",
+      "UNKNOWN": "Sur l’eau"
+    },
+    "focusScene": "Point sur l’eau",
+    "focusMeeting": "Point de rassemblement",
+    "roles": "Les bateaux vont au point sur l’eau ; les moyens terrestres s’arrêtent au point de rassemblement sur la route, où le bateau ramène les personnes secourues.",
+    "coastGuard": {
+      "title": "Il faut un bateau — les garde-côtes interviennent",
+      "titleCovered": "Vos bateaux ne suffisent pas — les garde-côtes interviennent",
+      "titleNoCoastGuard": "Il faut un bateau",
+      "covers": "{provider} se charge du secours sur l’eau ({list}).",
+      "shore": "Envoyez vos moyens terrestres au point de rassemblement.",
+      "reward": "Récompense réduite à {percent} %.",
+      "noCoastGuard": "Sur les rivières et les lacs, les garde-côtes n’interviennent pas : il vous faut votre propre bateau, qui s’y rend sur remorque.",
+      "buyBase": "Acheter une base nautique",
+      "buyBoat": "Acheter un bateau"
+    },
+    "requirements": {
+      "water": "Sur l’eau",
+      "waterHint": "bateaux et moyens aériens, au point de l’urgence",
+      "shore": "À terre",
+      "shoreHint": "moyens terrestres, au point de rassemblement",
+      "coastGuard": "Garde-côtes"
+    },
+    "dispatch": {
+      "toScene": "Sur l’eau",
+      "toMeetingPoint": "Au point de rassemblement",
+      "route": {
+        "DIRECT": "part de son amarrage",
+        "TRAILER": "sur remorque, mise à l’eau à {place}",
+        "BANK": "sur remorque, mise à l’eau depuis la rive"
+      },
+      "launchPoint": "un point de mise à l’eau",
+      "legs": "{road} par la route, {water} sur l’eau",
+      "landAtWater": "N’apporte rien d’utile au point de rassemblement : le secours sur l’eau demande un bateau",
+      "boatOnLand": "Un bateau ne peut pas atteindre une urgence à terre"
+    },
+    "shop": {
+      "title": "Où sont gardés les bateaux",
+      "body": "Les bateaux se gardent uniquement dans une base nautique, au port, sur le front de mer ou sur un lac. Sur la même eau, ils partent directement de leur amarrage ; les rivières et les autres lacs se rejoignent sur remorque.",
+      "none": "Vous n’avez pas encore de base nautique.",
+      "fromLevel": "dès le niveau {level}",
+      "bases": "Vos bases nautiques",
+      "building": "En construction",
+      "berths": "{free, plural, =0 {Amarrages complets} one {# amarrage libre sur {total}} other {# amarrages libres sur {total}}}",
+      "legacyMove": "{count, plural, one {Un bateau est encore dans une caserne : transférez-le gratuitement vers la base nautique.} other {# bateaux sont encore dans une caserne : transférez-les gratuitement vers la base nautique.}}",
+      "legacyKeep": "{count, plural, one {Un bateau est encore dans une caserne : il reste opérationnel, et avec une base nautique vous le transférez gratuitement.} other {# bateaux sont encore dans une caserne : ils restent opérationnels, et avec une base nautique vous les transférez gratuitement.}}",
+      "buyBase": "Acheter une base nautique",
+      "buyAnotherBase": "Une autre base nautique",
+      "showSites": "Sites nautiques sur la carte",
+      "noFacility": "Il faut une base nautique : les bateaux ne se gardent pas dans les casernes.",
+      "noBerth": "Amarrages complets : agrandissez le ponton de votre base nautique.",
+      "pier": "Agrandir le ponton"
+    },
+    "site": {
+      "badge": "Site nautique",
+      "badgeNamed": "Site nautique · {name}",
+      "filter": "Nautiques",
+      "listHint": "Ports, front de mer et lacs : le seul endroit pour ouvrir une base nautique et garder des bateaux.",
+      "candidate": "Site nautique disponible",
+      "mapTitle": "Sites nautiques",
+      "mapHint": "{count, plural, =0 {Aucun site nautique à proximité} one {# site nautique : touchez-le pour la base nautique} other {# sites nautiques : touchez-en un pour la base nautique}}",
+      "conditionsTitle": "Base nautique : conditions",
+      "price": "Coût",
+      "level": "Dès le niveau {level}",
+      "berths": "{count, plural, one {# place de bateau} other {# places de bateau}}, jusqu’à {max} avec le ponton",
+      "hosts": "Accueille les bateaux des sapeurs-pompiers, des secours médicaux et de la police",
+      "water": "Amarrage sur : {name}",
+      "berthOnWater": "Amarrage sur l’eau : les bateaux partent d’ici"
+    },
+    "facility": {
+      "title": "Base nautique",
+      "water": "Base nautique sur : {name}",
+      "berths": "Amarrages occupés : {used} sur {total}",
+      "howItWorks": "Sur la même eau, les bateaux partent directement de leur amarrage ; les rivières et les autres lacs se rejoignent sur remorque jusqu’à un point de mise à l’eau. Le ponton ajoute des amarrages.",
+      "buyBoat": "Acheter un bateau"
+    },
+    "transfer": {
+      "offer": "Transférer gratuitement vers la base nautique",
+      "hint": "Ce bateau est encore dans une caserne : transférez-le gratuitement vers {facility}.",
+      "noBerth": "Bateau encore dans une caserne : libérez un amarrage ou agrandissez le ponton pour le transférer gratuitement vers la base nautique.",
+      "noBase": "Bateau encore dans une caserne : il reste opérationnel. Avec une base nautique, vous le transférez gratuitement.",
+      "buyBase": "Acheter une base nautique",
+      "onlyAvailable": "Il est transféré dès qu’il est disponible à sa base.",
+      "done": "{callSign} part vers {facility}",
+      "boatOnly": "Les bateaux se gardent uniquement dans une base nautique"
+    },
+    "fleet": {
+      "movable": "Transférable gratuitement",
+      "legacy": "En caserne"
+    },
+    "errors": {
+      "NEEDS_NAUTICAL_BASE": "Les bateaux se gardent uniquement dans une base nautique : achetez-en une sur un site nautique.",
+      "NAUTICAL_SITE_REQUIRED": "Une base nautique ne s’ouvre que sur un site nautique : port, front de mer ou lac.",
+      "NO_ROOM_WATER": "Amarrages complets dans cette base nautique ({used} sur {total}) : agrandissez le ponton.",
+      "NO_ROOM": "Plus de place dans cette base ({used} sur {total}) : {upgrade}.",
+      "INCOMPATIBLE_FACILITY": "Cette base ne peut pas accueillir ce véhicule.",
+      "FACILITY_NOT_OPERATIONAL": "La base est encore en construction : vous pourrez l’utiliser dès qu’elle sera opérationnelle."
+    },
+    "upgrade": {
+      "GARAGE": "agrandissez la remise",
+      "HELIPAD": "construisez l’hélisurface"
+    },
+    "fix": {
+      "title": "Opération impossible",
+      "buyBase": "Acheter une base nautique",
+      "showNauticalSites": "Voir les sites nautiques",
+      "pier": "Agrandir le ponton",
+      "garage": "Agrandir la remise",
+      "helipad": "Construire l’hélisurface",
+      "newFacility": "Acquérir une base",
+      "facility": "Ouvrir la base"
+    }
+  },
+  "game": {
+    "dispatch": {
+      "chain": {
+        "reason": {
+          "BOAT_NEEDS_BASE": "Doit d’abord rentrer à sa base nautique"
+        }
+      }
+    }
+  }
+}

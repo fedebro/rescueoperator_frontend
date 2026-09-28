@@ -41,6 +41,7 @@ import {
   setFlag,
   type ConfigVersion,
 } from '../domains/admin';
+import { majorOf } from '../domains/major';
 import type { Ctx, DomainHandlers, HandlerKit } from './kit';
 
 type Account = ReturnType<HandlerKit['authed']>;
@@ -451,6 +452,22 @@ export const adminHandlers: DomainHandlers = (kit) => {
         const reason = typeof body.reason === 'string' && body.reason.trim() ? body.reason.trim() : null;
         audit(engine, by, 'career.spawn_incident', 'incident', incident.id, reason ?? parsed.templateCode);
         return incident;
+      }),
+    ),
+    /* QA / support: a major incident now (D-24 / D-69) — GAME_ADMIN, audited like the backend's `major_incident.spawn`. */
+    http.post(
+      admin('/careers/:id/major-incident'),
+      command((ctx, body) => {
+        const by = actor(ctx, 'careers.spawnMajor');
+        const reason = assertReason(body.reason);
+        const scenarioCode =
+          typeof body.scenarioCode === 'string' && body.scenarioCode ? body.scenarioCode : undefined;
+        if (scenarioCode && !/^MAJ_[A-Z0-9_]+$/.test(scenarioCode))
+          throw new MockError(422, 'VALIDATION_ERROR', 'Invalid scenario code', { fields: ['scenarioCode'] });
+        const career = careerById(engine, ctx.params.id);
+        const major = majorOf(engine).start(career, { scenarioCode });
+        audit(engine, by, 'major_incident.spawn', 'major_incident', major.id, reason);
+        return major;
       }),
     ),
     http.post(

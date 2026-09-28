@@ -14,7 +14,9 @@
       "hospital": "Krankenhaus",
       "externalAmbulance": "Externer Rettungswagen",
       "transportNotRequired": "Kein Transport nötig",
-      "openHospital": "{hospital} auf der Karte zeigen"
+      "openHospital": "{hospital} auf der Karte zeigen",
+      "expand": "Patienten anzeigen",
+      "collapse": "Patienten ausblenden"
     },
     "stability": {
       "label": "Stabilität",
@@ -71,7 +73,9 @@
       "send": "{callSign} schicken",
       "noAmbulance": "Im Moment ist kein Rettungswagen verfügbar.",
       "sent": "{callSign} für den Transport alarmiert",
-      "started": "{callSign} unterwegs nach {hospital}"
+      "started": "{callSign} unterwegs nach {hospital}",
+      "startedMulti": "{callSign} unterwegs nach {hospital} mit {count} Patienten",
+      "confirmRecommendedMulti": "{count} Patienten nach {hospital} bringen"
     },
     "reasons": {
       "CLOSEST": "Es liegt am nächsten",
@@ -94,6 +98,15 @@
       "incomingNone": "Keine Patienten auf Anfahrt.",
       "notFound": "Krankenhaus nicht gefunden.",
       "loadError": "Die Krankenhäuser konnten nicht geladen werden."
+    },
+    "massCasualty": {
+      "fieldPostTitle": "Behandlungsplatz aktiv ({callSign})",
+      "fieldPostBody": "Er versorgt bis zu 4 Patienten gleichzeitig und schneller; grüne, weiße und blaue Sichtungskategorien werden vor Ort entlassen, ohne Transport.",
+      "multiPatientNote": "Transportiert bis zu {count} Patienten pro Fahrt",
+      "fieldPostNote": "Behandlungsplatz: versorgt vor Ort, transportiert niemanden",
+      "boardingTitle": "Ebenfalls einladen (bis zu {count} Patienten)",
+      "boardingNone": "Kein weiterer Patient wartet: Er kann bis zu {count} pro Fahrt mitnehmen.",
+      "boardingHint": "{count, plural, one {# Patient an Bord} other {# Patienten an Bord}} von {capacity}"
     }
   },
   "status": {
@@ -123,7 +136,9 @@
     "patient_transport": "{callSign} transportiert den Patienten nach {hospital}",
     "patient_transport_auto": "{callSign} transportiert den Patienten nach {hospital} (empfohlenes Krankenhaus, automatisch bestätigt)",
     "patient_external": "Patient einem externen Rettungswagen übergeben, Ziel {hospital}",
-    "patient_admitted": "Patient an {hospital} übergeben"
+    "patient_admitted": "Patient an {hospital} übergeben",
+    "patient_released_field_post": "Patient vom Behandlungsplatz versorgt und entlassen",
+    "patient_transport_multi": "{callSign} bringt {count} Patienten nach {hospital}"
   },
   "notifications": {
     "patientAwaitingTransport": "Patient wartet auf Transport in {address}"

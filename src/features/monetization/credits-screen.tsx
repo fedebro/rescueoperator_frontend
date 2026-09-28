@@ -214,7 +214,7 @@ export function PurchaseHistory({ purchases, packages }: { purchases: Purchase[]
         >
           <span className="min-w-0 flex-1">
             <span className="block truncate text-sm font-semibold">{nameOf(p)}</span>
-            <span className="tabular text-subtle block text-[11px]">
+            <span className="tabular text-subtle block text-xs">
               {formatDateTime(p.createdAt, locale)} · {formatPrice(p.priceMinor, p.currency, locale)}
             </span>
             <CreditAmount value={p.credits} label={tc('credits')} size="sm" />

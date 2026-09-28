@@ -23,7 +23,11 @@ export const TUTORIAL_STEPS = [
 ] as const;
 export type TutorialStep = (typeof TUTORIAL_STEPS)[number];
 
-/** Which element each step points at. Steps advance on REAL actions (selecting, dispatching, buying), never on "next". */
+/**
+ * Which element each step points at. Steps advance on REAL actions (selecting, dispatching, buying), never on "next".
+ * All of them are on screen without scrolling in every layout: the first queue card is part of the phone sheet's
+ * peek, the send button lives in the inspector's pinned footer, "Acquisti" is in both navigations.
+ */
 const TARGET: Partial<Record<TutorialStep, string>> = {
   SELECT_INCIDENT: '[data-tutorial="incident-queue"] [data-testid="incident-card"]',
   DISPATCH: '[data-tutorial="send-recommended"]',
@@ -51,10 +55,10 @@ function clampToViewport(r: DOMRect, margin = 8) {
  * Guided tutorial: a spotlight (pure box-shadow cut-out, pointer-events: none — the real control stays clickable)
  * plus a coach card. Explanations can be skipped at any time; skipping never blocks play.
  *
- * The card is always docked at the same safe spot — centered for the WELCOME briefing, top-anchored (below the
- * topbar) for every step that spotlights something further down the screen. Anchoring only ever at the top means it
- * can never compete for space with the bottom sheet or the bottom nav on a phone, which is what made the previous
- * "flip to bottom past 55% of the viewport" heuristic feel cramped there.
+ * The card is always docked at the same safe spot — centered for the WELCOME briefing, top-anchored for every step
+ * that spotlights something further down the screen: just below the top bar on phones (the top bar row is where
+ * toasts appear, and the bottom belongs to the sheet and the nav); on tablets and desktop past the queue panel /
+ * column, over the map, so it never covers the queue card it points at.
  */
 export function TutorialOverlay() {
   const careerId = useCareerId();
@@ -79,23 +83,19 @@ export function TutorialOverlay() {
   });
   const advanceRef = useLatest(advance.mutate);
 
-  // Real-action triggers (the server also advances on its own; both are forward-only and idempotent).
+  // Real-action triggers (the server also advances on its own; both are forward-only and idempotent). The tutorial
+  // incident has no one-tap "Invia" on its card, but should it ever be dispatched without opening it, the steps
+  // still move on instead of pointing at a card that no longer waits.
   const tutorialIncident = incidents.find((i) => i.isTutorial);
   React.useEffect(() => {
-    if (step === 'SELECT_INCIDENT' && selection?.kind === 'incident') advanceRef.current('DISPATCH');
-    if (step === 'DISPATCH' && tutorialIncident && tutorialIncident.status !== 'PENDING_RESPONSE')
+    const dispatched = !!tutorialIncident && tutorialIncident.status !== 'PENDING_RESPONSE';
+    if (step === 'SELECT_INCIDENT' && selection?.kind === 'incident' && !dispatched)
+      advanceRef.current('DISPATCH');
+    if ((step === 'SELECT_INCIDENT' || step === 'DISPATCH') && dispatched)
       advanceRef.current('WATCH_ARRIVAL');
     if ((step === 'WATCH_ARRIVAL' || step === 'DISPATCH') && pendingOutcomes.length > 0 && !tutorialIncident)
       advanceRef.current('OUTCOME');
   }, [step, selection, tutorialIncident, pendingOutcomes.length, advanceRef]);
-
-  // On phones the queue and the dispatch panel both live in the bottom sheet: keep it open enough to spotlight.
-  React.useEffect(() => {
-    if (step === 'SELECT_INCIDENT' || step === 'DISPATCH') {
-      const current = useUiStore.getState().sheetSnap;
-      if (current === 'peek') useUiStore.getState().setSheetSnap('half');
-    }
-  }, [step]);
 
   const rawTarget = useTargetRect(
     step === 'BUY_VEHICLE' && pathname.startsWith('/game/shop')
@@ -139,14 +139,16 @@ export function TutorialOverlay() {
           'border-border-strong bg-surface-2 shadow-panel animate-fade-in pointer-events-auto absolute overflow-hidden rounded-xl border',
           isWelcome
             ? 'inset-x-4 top-1/2 mx-auto max-w-sm -translate-y-1/2 sm:inset-x-auto'
-            : 'inset-x-3 top-[calc(var(--rc-safe-top)+12px)] mx-auto max-w-sm lg:inset-x-auto lg:left-[calc(var(--rc-sidebar-w)+16px)] lg:mx-0',
+            : 'inset-x-3 top-[calc(var(--rc-safe-top)+var(--rc-topbar-h)+8px)] mx-auto max-w-sm md:inset-x-auto md:left-[356px] md:mx-0 lg:top-[calc(var(--rc-safe-top)+12px)] lg:left-[calc(var(--rc-sidebar-w)+336px)]',
         )}
       >
-        <div className={cn('flex items-start gap-3 p-4', isWelcome && 'flex-col items-center pt-6 text-center')}>
+        <div
+          className={cn('flex items-start gap-3 p-4', isWelcome && 'flex-col items-center pt-6 text-center')}
+        >
           <span
             aria-hidden
             className={cn(
-              'bg-brand/15 text-brand-hot grid shrink-0 place-items-center rounded-full',
+              'bg-brand/15 text-brand-text grid shrink-0 place-items-center rounded-full',
               isWelcome ? 'size-14' : 'size-9',
             )}
           >
@@ -155,7 +157,7 @@ export function TutorialOverlay() {
           <div className={cn('min-w-0 flex-1', isWelcome && 'flex-none')}>
             {!isWelcome ? (
               <div
-                className="text-skyline mb-1 flex items-center gap-1.5 text-[11px] font-bold tracking-wider uppercase"
+                className="text-skyline mb-1 flex items-center gap-1.5 text-xs font-bold tracking-wider uppercase"
                 aria-hidden
               >
                 {Array.from({ length: totalSteps }, (_, i) => (
@@ -163,7 +165,11 @@ export function TutorialOverlay() {
                     key={i}
                     className={cn(
                       'h-1.5 rounded-full transition-all',
-                      i === index - 1 ? 'bg-brand-hot w-5' : i < index - 1 ? 'bg-brand-hot/50 w-1.5' : 'bg-surface-4 w-1.5',
+                      i === index - 1
+                        ? 'bg-brand w-5'
+                        : i < index - 1
+                          ? 'bg-brand/50 w-1.5'
+                          : 'bg-surface-4 w-1.5',
                     )}
                   />
                 ))}
@@ -181,23 +187,28 @@ export function TutorialOverlay() {
             <button
               type="button"
               onClick={() => advance.mutate('DONE')}
-              className="text-subtle hover:text-fg hover:bg-surface-3 -m-1 shrink-0 rounded-full p-1"
+              className="text-subtle hover:text-fg hover:bg-surface-3 -m-2.5 grid size-11 shrink-0 place-items-center rounded-full"
               aria-label={t('skip')}
               data-testid="tutorial-skip"
             >
-              <X className="size-4" aria-hidden />
+              <X className="size-5" aria-hidden />
             </button>
           ) : null}
         </div>
         {isWelcome ? (
           <div className="bg-surface-1 flex flex-col gap-2 p-4 pt-3">
-            <Button size="md" className="w-full" onClick={() => advance.mutate('SELECT_INCIDENT')} data-testid="tutorial-start">
+            <Button
+              size="md"
+              className="w-full"
+              onClick={() => advance.mutate('SELECT_INCIDENT')}
+              data-testid="tutorial-start"
+            >
               {t('start')}
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="w-full"
+              className="h-11 w-full lg:h-8"
               onClick={() => advance.mutate('DONE')}
               data-testid="tutorial-skip"
             >

@@ -47,7 +47,7 @@ describe('colour tokens reach WCAG AA on the dark surfaces', () => {
     },
   );
 
-  it.each(['success', 'warning', 'danger', 'info', 'credits', 'xp', 'skyline', 'brand-hover'])(
+  it.each(['success', 'warning', 'danger', 'info', 'credits', 'xp', 'skyline', 'brand-hover', 'major'])(
     '%s as text ≥ 4.5:1 on bg … surface-2',
     (token) => {
       for (const surface of ['bg', 'surface-1', 'surface-2'])

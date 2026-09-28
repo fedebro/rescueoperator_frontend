@@ -1,15 +1,24 @@
 import { http } from 'msw';
 import { MockError } from '../engine';
 import { logisticsOf, type WorkKind } from '../domains/logistics';
+import { autonomyOf } from '../domains/autonomy';
 import type { DomainHandlers } from './kit';
 
 const REPAIR_KINDS: WorkKind[] = ['REPAIR', 'FREE_EMERGENCY_REPAIR'];
 
-/** REST handlers of the `logistics` area: inventory + maintenance (ROUTES.md "Inventory & maintenance"). */
+/** REST handlers of the `logistics` area: inventory + maintenance + vehicle autonomy (ROUTES.md "Inventory & maintenance"). */
 export const logisticsHandlers: DomainHandlers = (kit) => {
   const { url, ok, route, command, careerOf, C, engine } = kit;
   const domain = () => logisticsOf(engine);
   return [
+    /* ★ manual "return to resupply" (D-22 §3.4): `ResupplyVehicleResult` */
+    http.post(
+      url(`${C}/vehicles/:vehicleId/resupply`),
+      command(
+        (ctx, _body, career) => autonomyOf(engine).requestResupply(career, String(ctx.params.vehicleId)),
+        201,
+      ),
+    ),
     http.get(
       url(`${C}/inventory`),
       route((ctx) => {

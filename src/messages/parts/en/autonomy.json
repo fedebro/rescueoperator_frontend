@@ -1,0 +1,93 @@
+{
+  "autonomy": {
+    "title": "Autonomy",
+    "help": "How autonomy works",
+    "fuel": "Fuel",
+    "stock": "Onboard supplies",
+    "fuelValue": "{km} of {range} km",
+    "flight": "Flight endurance",
+    "flightValue": "{minutes} of {range} min",
+    "stockValue": "{count, plural, one {# item} other {# items}}",
+    "itemsLow": "{count, plural, one {# to reload} other {# to reload}}",
+    "reserve": "Reserve",
+    "low": "Low",
+    "full": "Full",
+    "missionsLeft": "{count, plural, =0 {Needs resupplying} one {Autonomy: one last mission} other {Autonomy: about # missions}}",
+    "missionsShort": "{count, plural, =0 {To resupply} one {1 mission} other {~# missions}}",
+    "fullAutonomy": "Full autonomy",
+    "needsResupply": "Needs resupplying",
+    "resupplying": "Resupplying",
+    "readyIn": "Ready in",
+    "resupplyRequested": "Will resupply on its next return",
+    "returnToResupply": "Return to resupply",
+    "returnToResupplyHint": "Reload supplies and fuel now, before a big emergency.",
+    "showItems": "Supplies in detail",
+    "hideItems": "Hide the details",
+    "itemQuantity": "{quantity} of {capacity}",
+    "itemLow": "To reload",
+    "resupplyResult": {
+      "RESTOCKING": "{callSign}: resupply started",
+      "RETURNING_TO_BASE": "{callSign} is heading back to base to resupply",
+      "SCHEDULED_ON_RETURN": "{callSign} will resupply as soon as it is back",
+      "ALREADY_FULL": "{callSign} is already at full autonomy",
+      "ALREADY_RESUPPLYING": "{callSign} is already resupplying"
+    },
+    "flag": {
+      "LAST_MISSION_BEFORE_RESUPPLY": "Last mission before resupplying",
+      "FUEL_RESERVE": "Reserve",
+      "FUEL_RANGE_INSUFFICIENT": "Not enough range"
+    },
+    "flagHelp": {
+      "LAST_MISSION_BEFORE_RESUPPLY": "After this mission it goes back to resupply.",
+      "FUEL_RESERVE": "Not enough fuel for the round trip: not recommended.",
+      "FUEL_RANGE_INSUFFICIENT": "Too far even with a full tank: not recommended."
+    },
+    "reloadBeforeDeparture": "Resupplies before leaving: +{time}, already in the arrival time",
+    "fuelStop": "Fuel-station stop: +{time} · {credits} credits",
+    "explain": {
+      "stockTitle": "Onboard supplies",
+      "stockBody": "Every vehicle carries its own supplies (foam, absorbent, medical kits…) and uses them up according to how hard the mission is and the conditions on scene. When it runs low it reloads at base on its own; otherwise it is ready for the next call straight away.",
+      "fuelTitle": "Fuel",
+      "fuelBody": "Vehicles have an autonomy in kilometres: every journey uses it up, and so do pumps, ladders and generators working on scene. Below a quarter of a tank the vehicle refuels on its own once the mission is over. It never runs dry, and fuel costs no extra Credits.",
+      "dismiss": "Understood",
+      "flightTitle": "Flight endurance",
+      "flightBody": "Helicopters and planes have an endurance in minutes of flight: take-off, every leg, the time over the scene and every water scoop use it. When only what it needs to fly home with its reserve is left, the aircraft leaves the scene, refuels for free at its base and then flies back to the emergency on its own, if it is still open."
+    },
+    "coaching": {
+      "noStopTitle": "It still had autonomy: ready again right away",
+      "noStopBody": "{callSign} came back without stopping to resupply: you can send it straight to another call.",
+      "firstReserveTitle": "On reserve: it will resupply on its own after this mission",
+      "firstReserveBody": "{callSign} is low on fuel: it will fill up at base when it gets back.",
+      "firstBingoTitle": "Helicopters and planes have an endurance in minutes of flight",
+      "firstBingoBody": "{callSign} leaves the scene when only the flight home with its reserve is left: it refuels for free at base and comes back on its own."
+    },
+    "fleet": {
+      "filter": "To resupply",
+      "column": "Autonomy"
+    },
+    "ledgerDetail": "{callSign} · {km} km refilled",
+    "bingo": {
+      "title": "{callSign}: flight endurance at its limit",
+      "resume": "It heads back to refuel, then flies back to the emergency on its own.",
+      "home": "It heads back to its base to refuel.",
+      "show": "View",
+      "resumed": "{callSign} is flying back to the emergency after refuelling",
+      "willResume": "After refuelling it goes back to"
+    },
+    "flagHelpFlight": {
+      "FUEL_RESERVE": "Not enough flight minutes for there and back: not recommended.",
+      "FUEL_RANGE_INSUFFICIENT": "Not enough for there, back and a few minutes on scene: not recommended."
+    },
+    "flightNote": {
+      "needs": "Needs {needed} min of flight · {onBoard} on board",
+      "onScene": "{count, plural, =0 {Cannot stay on scene} one {Can stay on scene about # minute} other {Can stay on scene about # minutes}}"
+    }
+  },
+  "game": {
+    "dispatch": {
+      "ineligible": {
+        "ENDURANCE_INSUFFICIENT": "Not enough flight endurance for there and back, even with a full tank"
+      }
+    }
+  }
+}

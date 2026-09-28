@@ -8,6 +8,10 @@
       "buttonLabel": "Aiuto su questa sezione"
     },
     "dismissPrimerLabel": "Ignora il suggerimento",
+    "primer": {
+      "more": "Scopri di più",
+      "less": "Mostra meno"
+    },
     "gotIt": "Ho capito",
     "warningNextAction": {
       "hire": "Assumi personale",

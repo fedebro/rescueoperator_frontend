@@ -18,7 +18,7 @@ export function ErrorView({ error, reset }: { error: Error & { digest?: string }
       <div className="flex max-w-md flex-col items-center gap-3">
         <h1 className="font-display text-2xl font-extrabold">{t('title')}</h1>
         <p className="text-muted text-sm">{t('body')}</p>
-        {error.digest ? <code className="text-subtle text-[11px]">{error.digest}</code> : null}
+        {error.digest ? <code className="text-subtle text-xs">{error.digest}</code> : null}
         <div className="mt-2 flex gap-2">
           <Button onClick={reset}>{t('retry')}</Button>
           <Button asChild variant="secondary">

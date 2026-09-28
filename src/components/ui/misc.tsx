@@ -95,7 +95,7 @@ export function SectionTitle({
   const Heading = level === 2 ? 'h2' : 'h3';
   return (
     <div className={cn('mb-2 flex items-center justify-between gap-2', className)}>
-      <Heading className="text-subtle text-[11px] font-bold tracking-[0.08em] uppercase">{children}</Heading>
+      <Heading className="text-subtle text-xs font-bold tracking-[0.08em] uppercase">{children}</Heading>
       {action}
     </div>
   );
@@ -105,14 +105,25 @@ export function Stat({
   label,
   value,
   className,
+  wrapLabel,
 }: {
   label: string;
   value: React.ReactNode;
   className?: string;
+  /** Let a long label take two lines instead of an ellipsis (narrow three-up rows on phones). */
+  wrapLabel?: boolean;
 }) {
   return (
     <div className={cn('flex min-w-0 flex-col', className)}>
-      <span className="text-subtle truncate text-[11px] font-semibold tracking-wide uppercase">{label}</span>
+      <span
+        className={cn(
+          'text-subtle text-xs font-semibold tracking-wide uppercase',
+          wrapLabel ? 'line-clamp-2 leading-tight' : 'truncate',
+        )}
+        title={label}
+      >
+        {label}
+      </span>
       <span className="tabular text-fg truncate text-base font-semibold">{value}</span>
     </div>
   );

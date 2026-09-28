@@ -18,7 +18,13 @@ import { Popover } from './popover';
 import { useCoverage, useReducedMotion, useWorld } from './use-world';
 import { useWorldUi } from './world-ui';
 
-export const WORLD_SRC = { coverage: 'rc-world-coverage', closures: 'rc-world-closures' } as const;
+export const WORLD_SRC = {
+  coverage: 'rc-world-coverage',
+  closures: 'rc-world-closures',
+  // The labels in sources of their own: glyphs that cannot load take the labels down, never the areas.
+  coverageLabels: 'rc-world-coverage-labels',
+  closureLabels: 'rc-world-closures-labels',
+} as const;
 export const WORLD_LAYER = {
   tint: 'rc-world-tint',
   coverageFill: 'rc-world-coverage-fill',
@@ -108,8 +114,7 @@ export function WorldMapOverlay({ map }: { map: MlMap }) {
       },
       beforeId,
     );
-    map.addSource(WORLD_SRC.coverage, { type: 'geojson', data: EMPTY });
-    map.addSource(WORLD_SRC.closures, { type: 'geojson', data: EMPTY });
+    for (const id of Object.values(WORLD_SRC)) map.addSource(id, { type: 'geojson', data: EMPTY });
     const hidden = { visibility: 'none' } as const;
     map.addLayer(
       {
@@ -147,7 +152,7 @@ export function WorldMapOverlay({ map }: { map: MlMap }) {
       {
         id: WORLD_LAYER.coverageLabel,
         type: 'symbol',
-        source: WORLD_SRC.coverage,
+        source: WORLD_SRC.coverageLabels,
         minzoom: 11.5,
         layout: {
           ...hidden,
@@ -209,7 +214,7 @@ export function WorldMapOverlay({ map }: { map: MlMap }) {
       {
         id: WORLD_LAYER.closureLabel,
         type: 'symbol',
-        source: WORLD_SRC.closures,
+        source: WORLD_SRC.closureLabels,
         minzoom: 12,
         layout: {
           ...hidden,
@@ -265,7 +270,7 @@ export function WorldMapOverlay({ map }: { map: MlMap }) {
   // Closures.
   const highlighted = useWorldUi((s) => s.highlightedClosureId);
   React.useEffect(() => {
-    setSourceData(map, WORLD_SRC.closures, {
+    const data: FeatureCollection = {
       type: 'FeatureCollection',
       features: world.closures
         .filter((c) => c.polygon.length >= 3)
@@ -289,7 +294,9 @@ export function WorldMapOverlay({ map }: { map: MlMap }) {
             },
           };
         }),
-    });
+    };
+    setSourceData(map, WORLD_SRC.closures, data);
+    setSourceData(map, WORLD_SRC.closureLabels, data);
   }, [map, world.closures, highlighted, t, tx]);
   React.useEffect(() => {
     setVisibility(map, CLOSURE_LAYERS, layers.closures);
@@ -307,6 +314,7 @@ export function WorldMapOverlay({ map }: { map: MlMap }) {
       if (cancelled) return;
       const data = coverageFeatures(coverage, family, (h3) => cellToBoundary(h3, true) as LngLat[]);
       setSourceData(map, WORLD_SRC.coverage, data);
+      setSourceData(map, WORLD_SRC.coverageLabels, data);
       setCoverageCells(data.features.length);
     });
     return () => {
@@ -326,6 +334,11 @@ export function MapLayersControl() {
   const cells = useWorldUi((s) => s.coverageCells);
   const layers = useUiStore((s) => s.mapLayers);
   const active = Object.values(layers).filter(Boolean).length;
+  // The map outlives its screen (persistent-map.tsx): leaving the map closes its layers panel.
+  const parked = useUiStore((s) => s.mapParked);
+  React.useEffect(() => {
+    if (parked) setOpen(false);
+  }, [parked, setOpen]);
 
   const onOpenChange = (next: boolean) => {
     setOpen(next);
@@ -378,7 +391,14 @@ export function MapLayersControl() {
       ) : (
         <Dialog open={open} onOpenChange={onOpenChange}>
           {button({ onClick: () => onOpenChange(true), 'aria-haspopup': 'dialog' })}
-          <DialogContent title={t('title')} closeLabel={t('close')}>
+          {/* Phones (03 §2.7): a low panel over a clear map — what each switch turns on stays in view above it. */}
+          <DialogContent
+            title={t('title')}
+            closeLabel={t('close')}
+            overlayClassName="bg-transparent backdrop-blur-none"
+            className="max-h-[52dvh]"
+            data-testid="map-layers-sheet"
+          >
             <LayersPanel />
           </DialogContent>
         </Dialog>

@@ -21,11 +21,7 @@ export function ServerOfflineScreen() {
   }, []);
 
   return (
-    <div
-      className="h-dvh-safe bg-bg grid place-items-center p-6"
-      role="alert"
-      data-testid="server-offline"
-    >
+    <div className="h-dvh-safe bg-bg grid place-items-center p-6" role="alert" data-testid="server-offline">
       <div className="flex max-w-sm flex-col items-center gap-5 text-center">
         <Logo variant="stacked" className="w-40 opacity-80" />
         <div className="bg-danger/10 text-danger grid size-14 place-items-center rounded-full">

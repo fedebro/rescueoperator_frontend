@@ -12,6 +12,8 @@ import { api } from '@/lib/api/client';
  */
 export type CatalogMessages = Record<string, string | string[]>;
 const CatalogTextsContext = React.createContext<CatalogMessages>({});
+/** The bundle has arrived — or failed for good: texts computed once (a toast) can be resolved now or never. */
+const CatalogReadyContext = React.createContext(true);
 
 export function CatalogTextsProvider({ children }: { children: React.ReactNode }) {
   const locale = useLocale() as SupportedLocale;
@@ -23,10 +25,19 @@ export function CatalogTextsProvider({ children }: { children: React.ReactNode }
     retry: 1,
   });
   const messages = bundle.data?.messages ?? EMPTY;
-  return <CatalogTextsContext.Provider value={messages}>{children}</CatalogTextsContext.Provider>;
+  return (
+    <CatalogReadyContext.Provider value={bundle.isSuccess || bundle.isError}>
+      <CatalogTextsContext.Provider value={messages}>{children}</CatalogTextsContext.Provider>
+    </CatalogReadyContext.Provider>
+  );
 }
 const EMPTY: CatalogMessages = {};
 export const useCatalogMessages = (): CatalogMessages => React.useContext(CatalogTextsContext);
+/**
+ * False while the catalog texts are on their way. React output re-renders when they arrive; a text computed ONCE (a toast
+ * raised by a realtime event) would keep its fallback — the game runtime waits for this before listening to events.
+ */
+export const useCatalogReady = (): boolean => React.useContext(CatalogReadyContext);
 /** Test helper / storybook: inject a bundle without fetching. */
 export const CatalogTextsOverride = CatalogTextsContext.Provider;
 

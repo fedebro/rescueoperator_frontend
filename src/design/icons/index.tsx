@@ -10,17 +10,19 @@ import { PICTOGRAM_NAMES, VEHICLE_CLASSES, type PictogramName, type VehicleClass
 
 import {
   CATALOG_ICONS,
+  MAJOR_ICONS,
   catalogIconName,
   facilityIconKey,
   hasCatalogIcon,
   incidentIconName,
+  majorIconName,
   vehicleClassOf,
   vehiclePictogramOf,
 } from './catalog-map';
 
 export { PICTOGRAM_NAMES, VEHICLE_CLASSES, type PictogramName, type VehicleClass };
 export { vehicleClassOf, vehiclePictogramOf, incidentIconName, catalogIconName, facilityIconKey };
-export { CATALOG_ICONS, hasCatalogIcon };
+export { CATALOG_ICONS, hasCatalogIcon, MAJOR_ICONS, majorIconName };
 
 export const FAMILY_COLORS: Record<AnyFamily, { primary: string; dark: string }> = {
   SHARED: { primary: '#6B7FA3', dark: '#3A4763' },

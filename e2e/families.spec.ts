@@ -28,6 +28,9 @@ test('family unlock, mixed incident and the external-support phase', async ({ pa
   test.setTimeout(240_000);
   // Slower mock clock: the RESOLVING phase must stay on screen long enough to be inspected; waits are fast-forwarded.
   await bootCareer(page, testInfo.project.name, { level: 2, credits: 30_000, speed: 4 });
+  // A silent world: every `fastForward` below would otherwise also bring random calls (one may carry the same title
+  // as the mixed incident, or end in its own report while this one is being inspected).
+  await qa(page, 'quiet');
 
   await test.step('shop: EMS is locked and says when it opens', async () => {
     await goTo(page, 'Acquisti');
@@ -157,17 +160,19 @@ test('family unlock, mixed incident and the external-support phase', async ({ pa
     );
     await expect(support.getByTestId('road-closed').first()).toBeVisible();
     await expect(page.getByTestId('send-recommended')).toHaveCount(0);
-    // The incident list page reports the phase in both layouts — as a table row on desktop and as a queue card on
-    // mobile (`pages-lists.tsx` switches on `useIsDesktop`), so the assertion has to switch too.
-    await goTo(page, 'Emergenze');
-    if (isMobile(page))
+    // The list reports the phase in both layouts: on phones it is the sheet's own queue (back from the inspector;
+    // no page change, which would restart the paused engine), on desktop the full table one click from the queue
+    // column's header (`/game/incidents`).
+    if (isMobile(page)) {
+      await page.getByTestId('inspector-close').click();
       await expect(
         page.locator(`[data-testid="incident-card"][data-incident-id="${incidentId}"]`),
       ).toHaveAttribute('data-status', 'RESOLVING');
-    else
-      await expect(page.getByRole('row').filter({ hasText: 'Incidente stradale' }).first()).toContainText(
-        'In chiusura',
-      );
+    } else {
+      await page.getByTestId('all-incidents').click();
+      await expect(page).toHaveURL(/\/game\/incidents$/);
+      await expect(page.locator(`[data-row-key="${incidentId}"]`)).toContainText('In chiusura');
+    }
     await qa(page, 'pause', false);
   });
 });

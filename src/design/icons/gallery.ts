@@ -28,6 +28,7 @@ const GROUPS: readonly (readonly [prefix: string, family?: ServiceFamily])[] = [
   ['facility-aib-'],
   ['facility-alpine-'],
   ['facility-coordination-'],
+  ['facility-nautical-'],
   ['incident-fire-'],
   ['incident-med-'],
   ['incident-road-'],

@@ -147,7 +147,8 @@
       "emptyTitle": "No operators found",
       "emptyHint": "Widen the filters or hire new operators from the Recruitment tab.",
       "count": "{shown} of {total} operators",
-      "caption": "Control centre roster"
+      "caption": "Control centre roster",
+      "filters": "Filters{count, plural, =0 {} other { (#)}}"
     },
     "locked": {
       "progress": "You are at level {level} of {required}"

@@ -6,7 +6,15 @@ import { renderWithIntl } from '@/test/render';
 import { resetClockForTests, observeServerTime } from '@/lib/clock';
 import { useUiStore } from '@/stores/ui';
 import { soundEnabled } from '@/stores/settings';
-import { BottomSheet, resolveSnap, snapHeights, type SheetSnap } from './bottom-sheet';
+import {
+  BottomSheet,
+  SHEET_GESTURE,
+  nextTapSnap,
+  releaseVelocity,
+  resolveSnap,
+  snapHeights,
+  type SheetSnap,
+} from './bottom-sheet';
 import { Button, IconButton } from './button';
 import { CapabilityBar } from './capability-bar';
 import { Countdown } from './countdown';
@@ -136,13 +144,48 @@ describe('CreditAmount & Countdown', () => {
 });
 
 describe('BottomSheet', () => {
-  it('computes three snap heights and resolves the nearest one, biased by velocity', () => {
+  it('computes three snap heights (half ≈ 55%) and resolves a slow release to the nearest one', () => {
     const h = snapHeights(800, 112);
-    expect(h).toEqual({ peek: 112, half: 384, full: 800 });
+    expect(h).toEqual({ peek: 112, half: 440, full: 800 });
     expect(resolveSnap(130, 0, h)).toBe('peek');
     expect(resolveSnap(420, 0, h)).toBe('half');
-    expect(resolveSnap(420, 1.5, h)).toBe('full');
-    expect(resolveSnap(420, -2, h)).toBe('peek');
+    expect(resolveSnap(700, 0.2, h)).toBe('full'); // slower than a flick: still the nearest
+  });
+  it('a flick moves exactly one snap from where the sheet is — never skipping half', () => {
+    const h = snapHeights(800, 112);
+    const fast = SHEET_GESTURE.flickVelocity + 0.5;
+    expect(resolveSnap(444, fast, h)).toBe('full'); // 4 px above half = "at half": one step up
+    expect(resolveSnap(444, -fast, h)).toBe('peek'); // … and one step down
+    expect(resolveSnap(400, fast, h)).toBe('half'); // below half, flicked up: half first
+    expect(resolveSnap(150, fast, h)).toBe('half'); // from near peek: half, not full
+    expect(resolveSnap(760, -fast, h)).toBe('half'); // from near full: half, never straight to peek
+    expect(resolveSnap(600, fast, h)).toBe('full'); // a long drag that already passed half can go on
+    expect(resolveSnap(300, -fast, h)).toBe('peek');
+  });
+  it('two-snap screens (landscape phones) only know peek and full', () => {
+    const h = snapHeights(300, 150);
+    expect(resolveSnap(200, 0, h, ['peek', 'full'])).toBe('peek');
+    expect(resolveSnap(200, 1, h, ['peek', 'full'])).toBe('full');
+    expect(nextTapSnap('peek', ['peek', 'full'])).toBe('full');
+    expect(nextTapSnap('full', ['peek', 'full'])).toBe('peek');
+  });
+  it('the tap cycle is peek → half → full → half', () => {
+    expect(nextTapSnap('peek')).toBe('half');
+    expect(nextTapSnap('half')).toBe('full');
+    expect(nextTapSnap('full')).toBe('half');
+  });
+  it('averages the release velocity over the last window, and a finger that rested has no velocity', () => {
+    // Only the samples of the last 90 ms count: 60 px upwards in 80 ms = 0.75 px/ms (the slow start is ignored).
+    const samples = [
+      { t: 0, y: 500 },
+      { t: 200, y: 490 },
+      { t: 220, y: 450 },
+      { t: 260, y: 420 },
+      { t: 300, y: 390 },
+    ];
+    expect(releaseVelocity(samples, 300)).toBeCloseTo(60 / 80, 5);
+    expect(releaseVelocity(samples, 600)).toBe(0);
+    expect(releaseVelocity([{ t: 0, y: 10 }], 5)).toBe(0);
   });
   it('cycles snaps from the handle and with the arrow keys', async () => {
     const Harness = () => {
@@ -159,11 +202,61 @@ describe('BottomSheet', () => {
     expect(sheet).toHaveAttribute('data-snap', 'peek');
     await userEvent.click(handle);
     expect(sheet).toHaveAttribute('data-snap', 'half');
+    await userEvent.click(handle);
+    expect(sheet).toHaveAttribute('data-snap', 'full');
+    // From full a tap goes back to half, never straight down to peek.
+    await userEvent.click(handle);
+    expect(sheet).toHaveAttribute('data-snap', 'half');
     fireEvent.keyDown(handle, { key: 'ArrowUp' });
     expect(sheet).toHaveAttribute('data-snap', 'full');
     fireEvent.keyDown(handle, { key: 'ArrowDown' });
     fireEvent.keyDown(handle, { key: 'ArrowDown' });
     expect(sheet).toHaveAttribute('data-snap', 'peek');
+  });
+  it('a tap on the strip header cycles too, a tap on a button inside it does not', async () => {
+    const onButton = vi.fn();
+    const Harness = () => {
+      const [s, set] = React.useState<SheetSnap>('peek');
+      return (
+        <BottomSheet
+          snap={s}
+          onSnapChange={set}
+          handleLabel="Pannello"
+          header={
+            <div>
+              <span>3 emergenze</span>
+              <button type="button" onClick={onButton}>
+                In servizio
+              </button>
+            </div>
+          }
+        >
+          <p>contenuto</p>
+        </BottomSheet>
+      );
+    };
+    render(<Harness />);
+    const sheet = screen.getByRole('region', { name: 'Pannello' });
+    await userEvent.click(screen.getByText('3 emergenze'));
+    expect(sheet).toHaveAttribute('data-snap', 'half');
+    await userEvent.click(screen.getByRole('button', { name: 'In servizio' }));
+    expect(onButton).toHaveBeenCalledTimes(1);
+    expect(sheet).toHaveAttribute('data-snap', 'half');
+  });
+  it('shows the collapse button only in full, and it goes back to half', async () => {
+    const Harness = () => {
+      const [s, set] = React.useState<SheetSnap>('full');
+      return (
+        <BottomSheet snap={s} onSnapChange={set} handleLabel="Pannello" collapseLabel="Riduci">
+          <p>contenuto</p>
+        </BottomSheet>
+      );
+    };
+    render(<Harness />);
+    const sheet = screen.getByRole('region', { name: 'Pannello' });
+    await userEvent.click(screen.getByTestId('sheet-collapse'));
+    expect(sheet).toHaveAttribute('data-snap', 'half');
+    expect(screen.queryByTestId('sheet-collapse')).not.toBeInTheDocument();
   });
 });
 
@@ -201,6 +294,26 @@ describe('stores', () => {
     expect(useUiStore.getState().selection).toEqual({ kind: 'vehicle', id: 'v' });
     useUiStore.getState().clearSelection();
     expect(useUiStore.getState()).toMatchObject({ selection: null, sheetSnap: 'peek' });
+  });
+  it('closing the inspector returns the sheet to the height the list had, however many inspectors were opened', () => {
+    const ui = useUiStore.getState();
+    ui.setSheetSnap('full');
+    ui.select({ kind: 'incident', id: 'a' });
+    expect(useUiStore.getState()).toMatchObject({ sheetSnap: 'half', sheetRestore: 'full' });
+    useUiStore.getState().setSheetSnap('peek'); // the player lowers the inspector
+    useUiStore.getState().select({ kind: 'vehicle', id: 'v' }); // then opens an assigned vehicle
+    expect(useUiStore.getState()).toMatchObject({ sheetSnap: 'half', sheetRestore: 'full' });
+    useUiStore.getState().clearSelection();
+    expect(useUiStore.getState()).toMatchObject({ selection: null, sheetSnap: 'full', sheetRestore: null });
+    // A tap on the empty map lowers the sheet but keeps the selection.
+    useUiStore.getState().select({ kind: 'incident', id: 'b' });
+    useUiStore.getState().lowerSheet();
+    expect(useUiStore.getState()).toMatchObject({
+      selection: { kind: 'incident', id: 'b' },
+      sheetSnap: 'peek',
+    });
+    useUiStore.getState().showQueue('peek');
+    expect(useUiStore.getState()).toMatchObject({ selection: null, sheetSnap: 'peek', sheetRestore: null });
   });
   it('sound defaults: on for desktop, explicit choice always wins', () => {
     expect(soundEnabled(null)).toBe(true); // jsdom: no coarse pointer

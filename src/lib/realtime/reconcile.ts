@@ -3,6 +3,7 @@ import {
   FacilityDto,
   IncidentDto,
   IncidentOutcomeDto,
+  MajorIncidentDto,
   RealtimeEnvelope,
   VehicleDto,
   WorldContextDto,
@@ -37,6 +38,22 @@ export type Effect =
   | { type: 'vehicle.rerouted'; vehicle: VehicleDto; delaySeconds: number }
   /** The vehicle is moving to another facility (reuses IN_DELIVERY, `transfer: true` on the event). */
   | { type: 'vehicle.transferring'; vehicle: VehicleDto }
+  /** Back at its facility: AVAILABLE at once, or RESTOCKING when the single resupply rule stopped it (D-22). */
+  | { type: 'vehicle.returned'; vehicle: VehicleDto }
+  /** Its fuel just went under the reserve light (D-22): it will resupply on its own after the mission. */
+  | { type: 'vehicle.reserve'; vehicle: VehicleDto }
+  /**
+   * An aircraft turned back at "bingo" (flight endurance): the flight home + the reserve is all it has left. With
+   * `queuedIncidentId` it flies back to that incident on its own once refuelled.
+   */
+  | { type: 'vehicle.bingo'; vehicle: VehicleDto; queuedIncidentId: string | null }
+  /** A vehicle was just committed to an incident (a dispatch, an automatic one included). */
+  | { type: 'vehicle.committed'; vehicle: VehicleDto; incidentId: string }
+  /**
+   * A major incident changed (`career.updated` with `{ major }`): started (`started`: it was not the active one), phase,
+   * growth, reinforcements, or ended.
+   */
+  | { type: 'major.updated'; major: MajorIncidentDto; started: boolean }
   | { type: 'level.reached'; level: number }
   | { type: 'unlock.granted'; codes: string[] }
   | { type: 'stipend.paid'; amount: string }
@@ -55,7 +72,8 @@ export type Effect =
         | 'inventory'
         | 'maintenance'
         | 'world'
-        | 'monetization';
+        | 'monetization'
+        | 'major';
     };
 
 const Payload = z
@@ -78,6 +96,15 @@ const Payload = z
     rerouted: z.boolean().optional(),
     previousArriveAt: z.string().optional(),
     transfer: z.boolean().optional(),
+    /** `vehicle.updated` of an aircraft turned back at "bingo" (+ the incident it goes back to once refuelled). */
+    bingo: z.boolean().optional(),
+    queued: z.boolean().optional(),
+    queuedIncidentId: z.string().nullable().optional(),
+    /**
+     * Major incidents: `career.updated` carries `{ major }` on every change of the running (or just ended) major. Parsed on
+     * its own below: a view newer than this client never blocks the rest of the event.
+     */
+    major: z.unknown().optional(),
     featureFlags: z.record(z.boolean()).optional(),
     configVersion: z.string().optional(),
   })
@@ -122,6 +149,11 @@ export function applyEvent(snapshot: SyncSnapshot, envelope: RealtimeEnvelope): 
     next = { ...next, facilities: upsert(next.facilities, facility) };
   }
   for (const vehicle of [...(p.vehicles ?? []), ...(p.vehicle ? [p.vehicle] : [])]) {
+    const before = next.vehicles.find((v) => v.id === vehicle.id);
+    if (vehicle.autonomy?.fuel?.reserve === true && before?.autonomy?.fuel?.reserve !== true)
+      effects.push({ type: 'vehicle.reserve', vehicle });
+    if (vehicle.incidentId !== null && before && before.incidentId !== vehicle.incidentId)
+      effects.push({ type: 'vehicle.committed', vehicle, incidentId: vehicle.incidentId });
     next = { ...next, vehicles: upsert(next.vehicles, vehicle) };
   }
   for (const incident of [...(p.incidents ?? []), ...(p.incident ? [p.incident] : [])]) {
@@ -143,6 +175,21 @@ export function applyEvent(snapshot: SyncSnapshot, envelope: RealtimeEnvelope): 
         result: incident.status.toLowerCase() as 'resolved',
       });
   }
+  const major = p.major === undefined ? null : MajorIncidentDto.safeParse(p.major);
+  if (major?.success) {
+    const m = major.data;
+    const wasActive = snapshot.activeMajorIncidentId === m.id;
+    const active =
+      m.status === 'ACTIVE'
+        ? m.id
+        : next.activeMajorIncidentId === m.id
+          ? null
+          : (next.activeMajorIncidentId ?? null);
+    next = { ...next, activeMajorIncidentId: active };
+    effects.push({ type: 'major.updated', major: m, started: m.status === 'ACTIVE' && !wasActive });
+    if (m.status === 'ENDED')
+      effects.push({ type: 'invalidate', scope: 'economy' }, { type: 'invalidate', scope: 'progression' });
+  } else if (major) effects.push({ type: 'invalidate', scope: 'major' });
   if (p.outcome) {
     if (!next.pendingOutcomes.some((o) => o.incidentId === p.outcome!.incidentId)) {
       next = { ...next, pendingOutcomes: [...next.pendingOutcomes, p.outcome] };
@@ -183,6 +230,12 @@ export function applyEvent(snapshot: SyncSnapshot, envelope: RealtimeEnvelope): 
               : Math.max(0, Math.round((now - previous) / 1000)),
         });
       }
+      if (p.vehicle && p.bingo)
+        effects.push({
+          type: 'vehicle.bingo',
+          vehicle: p.vehicle,
+          queuedIncidentId: p.queued ? (p.queuedIncidentId ?? null) : null,
+        });
       if (p.vehicle && p.transfer) {
         effects.push(
           { type: 'vehicle.transferring', vehicle: p.vehicle },
@@ -192,6 +245,7 @@ export function applyEvent(snapshot: SyncSnapshot, envelope: RealtimeEnvelope): 
       }
       break;
     case 'vehicle.returned':
+      if (p.vehicle) effects.push({ type: 'vehicle.returned', vehicle: p.vehicle });
       effects.push(
         { type: 'invalidate', scope: 'maintenance' },
         { type: 'invalidate', scope: 'inventory' },

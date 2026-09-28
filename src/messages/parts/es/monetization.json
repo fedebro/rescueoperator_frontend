@@ -62,7 +62,7 @@
       "REFUNDED": "Reembolsado"
     },
     "shop": {
-      "title": "Créditos",
+      "title": "Recargar Créditos",
       "subtitle": "Apoya el juego y dale un impulso a tu central. Opcional, siempre.",
       "balance": "Saldo actual",
       "purchasedBalance": "de los cuales comprados: {credits} (se gastan al final)",

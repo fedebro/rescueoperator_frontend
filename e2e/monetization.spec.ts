@@ -23,7 +23,7 @@ async function buySecondEngine(page: Page): Promise<void> {
 async function expectNoMonetizationNav(page: Page): Promise<void> {
   if (isMobile(page)) await page.getByTestId('bottom-nav').getByRole('link', { name: 'Altro' }).click();
   await expect(page.getByRole('link', { name: 'Impostazioni' }).first()).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Negozio Crediti' })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Ricarica Crediti' })).toHaveCount(0);
   await expect(page.getByRole('link', { name: 'La tua rete' })).toHaveCount(0);
 }
 
@@ -45,7 +45,7 @@ test('gate → shop checkout → rewarded video → referral network', async ({ 
 
   await test.step('after an organic purchase the entries appear', async () => {
     await buySecondEngine(page);
-    await goTo(page, 'Negozio Crediti', true);
+    await goTo(page, 'Ricarica Crediti', true);
     await expect(page).toHaveURL(/\/game\/credits$/);
     await expect(page.getByTestId('credit-package')).toHaveCount(5);
     // EUR price always visible on every package.

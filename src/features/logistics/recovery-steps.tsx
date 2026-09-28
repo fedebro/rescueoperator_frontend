@@ -73,7 +73,7 @@ export function RecoverySteps({ vehicle, order }: { vehicle: VehicleDto; order: 
                 <span className={cn('block text-sm', state === 'pending' ? 'text-subtle' : 'font-semibold')}>
                   {t(`step.${step.key}`)}
                 </span>
-                <span className="text-muted block text-[11px]">{t(`state.${state}`)}</span>
+                <span className="text-muted block text-xs">{t(`state.${state}`)}</span>
               </span>
               {state === 'current' && step.key === 'BROKEN_DOWN' ? (
                 <Eta

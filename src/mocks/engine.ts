@@ -14,10 +14,11 @@ import type {
 } from '@/contracts';
 import type { z } from 'zod';
 import type { NotificationDto as NotificationSchema } from '@/contracts';
-import { haversineMeters, pathLengthMeters, pointAlong, type LngLat } from '@/lib/geo';
+import { haversineMeters, movementPoint, pathLengthMeters, type LngLat } from '@/lib/geo';
 import {
   FACILITY_TYPES,
   INCIDENT_TEMPLATES,
+  type MockIncidentTemplate,
   TUTORIAL_TEMPLATE,
   UNG_TYPES,
   UPGRADE_TYPES,
@@ -31,6 +32,8 @@ import {
   xpThreshold,
   FAMILIES,
   ECONOMY,
+  MAJOR_SETTINGS,
+  MAX_VEHICLES_PER_DISPATCH,
 } from './data/catalog';
 import { INCIDENT_SPOTS, PESCARA, STARTER_SITES, mockRoute } from './data/pescara';
 import { newId } from './ulid';
@@ -90,12 +93,37 @@ export interface EngineHooks {
     career: MockCareer,
     vehicle: VehicleDto,
     option: MockDispatchOption,
+    incident: IncidentDto,
   ) => MockDispatchOption)[];
   /** A vehicle is leaving its facility for an incident. Return 'BREAKDOWN' to abort the departure (the hook owns the vehicle from there). */
   vehicleDeparting: ((career: MockCareer, vehicle: VehicleDto, at: number) => 'OK' | 'BREAKDOWN')[];
   vehicleArrived: ((career: MockCareer, vehicle: VehicleDto, incident: IncidentDto, at: number) => void)[];
-  /** A vehicle is back at its facility (wear, restock, fatigue, crew release). */
-  vehicleReturned: ((career: MockCareer, vehicle: VehicleDto, leg: DispatchLeg | null) => void)[];
+  /**
+   * A vehicle is back at its facility (wear, resupply stop, fatigue, crew release). `at` = the arrival instant (absent when
+   * a domain replays the hook for a vehicle towed home).
+   */
+  vehicleReturned: ((
+    career: MockCareer,
+    vehicle: VehicleDto,
+    leg: DispatchLeg | null,
+    at?: number,
+  ) => void)[];
+  /** A vehicle heads home (scene left, recall on the way, hospital hand-off done): `before` = what it was doing. */
+  vehicleSentHome: ((career: MockCareer, before: VehicleDto, after: VehicleDto, at: number) => void)[];
+  /** A vehicle broke down where it was (`before` = its state just before): the domains close what it was doing. */
+  vehicleBrokeDown: ((career: MockCareer, before: VehicleDto, at: number) => void)[];
+  /**
+   * Seconds a dispatched vehicle still spends at base before it leaves (the reload before departure of D-22). Called once
+   * per vehicle by `dispatch`, after the dispatch checks: the hook applies what it announces.
+   */
+  departureDelay: ((career: MockCareer, vehicle: VehicleDto, incident: IncidentDto, at: number) => number)[];
+  /** The on-scene work of an incident is complete (reward time), before any vehicle is sent home. */
+  workDone: ((career: MockCareer, incident: IncidentDto, at: number) => void)[];
+  /**
+   * Decorates a vehicle DTO on every way out of the engine (snapshot, events, REST) with derived read-model fields — the
+   * autonomy block (D-22). Must be pure and cheap: it runs on every patch.
+   */
+  vehicleView: ((career: MockCareer, vehicle: VehicleDto) => VehicleDto)[];
   /** A new incident exists (create patients, reserve stock…). */
   incidentSpawned: ((career: MockCareer, incident: IncidentDto) => void)[];
   /** On-scene work finished. Return true while something still keeps the incident RESOLVING (patients to transport…). */
@@ -119,6 +147,91 @@ export interface EngineHooks {
   touched: ((career: MockCareer) => void)[];
   /** Amounts deducted from the periodic stipend (personnel cost per period, D-41). Never makes it negative. */
   stipendDeductions: ((career: MockCareer) => number)[];
+  /**
+   * Where a new incident of this template happens (water scene, D-68): the first non-null answer wins, `null` = the core's
+   * land spots. Throw a MockError when the template cannot be placed at all (a water template without a water point).
+   */
+  spawnPlace: ((
+    career: MockCareer,
+    template: MockIncidentTemplate,
+    opts: SpawnOptions,
+  ) => SpawnPlace | null)[];
+  /** Weight multiplier of a template in the organic spawn pool (0 = never now): the water spawn gate. */
+  spawnWeight: ((career: MockCareer, template: MockIncidentTemplate) => number)[];
+  /** The outbound leg of a vehicle to an incident when it is not a plain road/air trip (a boat's mixed leg). */
+  planLeg: ((career: MockCareer, vehicle: VehicleDto, incident: IncidentDto) => MockLeg | null)[];
+  /** The way home of a vehicle leaving `from` when it is not a plain road/air trip (a boat on the water). */
+  planHome: ((career: MockCareer, vehicle: VehicleDto, from: LngLat, at: number) => MockLeg | null)[];
+  /** What a vehicle brings to THIS incident (a land unit at a water incident: its shore-side capabilities only). */
+  sceneCapabilities: ((
+    career: MockCareer,
+    vehicle: VehicleDto,
+    incident: IncidentDto,
+    capabilities: VehicleDto['capabilities'],
+  ) => VehicleDto['capabilities'])[];
+  /**
+   * A dispatch was undone for free (★POST /dispatches/:id/cancel): `vehicles` are AVAILABLE again exactly as before — the
+   * domains give back what the dispatch took (crew, the reload before departure).
+   */
+  dispatchCancelled: ((
+    career: MockCareer,
+    vehicles: VehicleDto[],
+    incident: IncidentDto,
+    at: number,
+  ) => void)[];
+  /** Decorates the sync snapshot (e.g. `activeMajorIncidentId`). */
+  snapshotView: ((career: MockCareer, snapshot: SyncSnapshot) => SyncSnapshot)[];
+}
+
+/** Options of `spawnIncident` (QA, admin, domains). */
+export interface SpawnOptions {
+  severity?: number;
+  /** Admin / QA: place it here (a water template: the nearest water point to it). */
+  position?: LngLat;
+  address?: string;
+  /** QA only: the nearest spot at or beyond that distance from the headquarters. */
+  minDistanceMeters?: number;
+  /** Set by the organic spawn loop: the water domain then keeps to the waters the career can handle. */
+  organic?: boolean;
+  /** QA: the kind of water of a water template (else any the template allows). */
+  waterBody?: 'SEA' | 'LAKE' | 'RIVER';
+  /**
+   * Runs once the incident exists, BEFORE its `incident.created` is announced (a major incident attaches `major` here, like
+   * the backend's `createIncident({ beforeAnnounce })`): the event already carries what it sets.
+   */
+  beforeAnnounce?: (career: MockCareer, incident: IncidentDto) => void;
+}
+/**
+ * A place chosen by a domain (water scene, D-68). `position` is where land units stop (the meeting point on the shore
+ * road); a water incident also has its `scene` on the water, the water body and the water's edge where boats land people.
+ */
+export interface SpawnPlace {
+  position: LngLat;
+  address: string;
+  municipality?: string;
+  scene?: LngLat;
+  waterBody?: { type: 'SEA' | 'LAKE' | 'RIVER'; id: string; name: string | null };
+  /** Called once the incident exists, before `incidentSpawned` (the domain keeps what the DTO does not carry). */
+  onCreated?: (career: MockCareer, incident: IncidentDto) => void;
+}
+/** One piece of a planned leg; offsets are server seconds from the departure (like `travelSeconds`, before `speed`). */
+export interface MockLegSegment {
+  mode: 'ROAD' | 'LAUNCH' | 'WATER' | 'RECOVERY';
+  path: LngLat[];
+  meters: number;
+  startSeconds: number;
+  endSeconds: number;
+}
+/** A planned leg: path + server seconds (before the demo `speed`), with a boat's segments when it has any. */
+export interface MockLeg {
+  path: LngLat[];
+  distanceMeters: number;
+  seconds: number;
+  segments?: MockLegSegment[];
+  /** Metres that burn fuel (a boat: the water only — the trailer tows it on the road). Default: `distanceMeters`. */
+  fuelMeters?: number;
+  /** Where the vehicle ends up (default: the last point of `path`). */
+  end?: LngLat;
 }
 export interface MockDispatchOption {
   vehicleId: string;
@@ -139,6 +252,30 @@ export interface MockDispatchOption {
     efficiency: number;
     restUntilSeconds: number | null;
   };
+  /** Autonomy for THIS incident (D-22), set by the autonomy domain for AVAILABLE vehicles once something is tracked. */
+  autonomy?: {
+    fuelNeededKm: number | null;
+    fuelKm: number | null;
+    enoughFuel: boolean;
+    resupplyBeforeDepartureSeconds: number;
+    lastMissionBeforeResupply: boolean;
+    /** Unit of `fuelNeededKm` / `fuelKm`: `MIN` = minutes of flight of an aircraft. */
+    fuelUnit?: 'KM' | 'MIN';
+    /** Aircraft: REAL minutes it can stay over the scene before turning back to refuel. */
+    onSceneMinutes?: number | null;
+  };
+  /** Water incidents: where this vehicle goes — the scene on the water (boats, aircraft) or the meeting point (land). */
+  destination?: 'SCENE' | 'MEETING_POINT';
+  /** Boats: how they get there (from the berth, by trailer to a launch point, or launched from the bank). */
+  boatRoute?: {
+    kind: 'DIRECT' | 'TRAILER' | 'BANK';
+    roadMeters: number;
+    waterMeters: number;
+    launchSeconds: number;
+    launchPoint: { name: string | null; position: LngLat } | null;
+  };
+  /** Internal: flagged (reserve, range) — never recommended, still selectable. Stripped from the response. */
+  notRecommended?: boolean;
 }
 
 interface LedgerRow {
@@ -156,6 +293,33 @@ export interface DispatchLeg {
   distanceMeters: number;
   dispatchedAt: number;
   arrivedAt: number | null;
+  /** Metres that burn fuel when they differ from `distanceMeters` (a boat: the water part only). */
+  fuelMeters?: number;
+  /** A boat's outbound pieces (D-68): where the trailer launched it, for the way back. */
+  segments?: MockLegSegment[];
+}
+
+/**
+ * A player dispatch, kept for the free undo (`★POST /dispatches/:id/cancel`, air-endurance.md §5): what the incident was
+ * before it (status, expiry, escalation and the due times of their pending actions) so a cancel restores it exactly.
+ */
+export interface MockDispatchRecord {
+  id: string;
+  incidentId: string;
+  vehicleIds: string[];
+  at: number;
+  origin: 'PLAYER' | 'QUEUE' | 'REDIRECT';
+  /** Epoch ms; null = no free undo (tutorial). */
+  cancellableUntil: number | null;
+  prior: {
+    status: IncidentDto['status'];
+    expiresAt: string | null;
+    nextEscalationAt: string | null;
+    escalating: boolean;
+    expireDueAt: number | null;
+    escalateDueAt: number | null;
+  };
+  cancelled: boolean;
 }
 
 export interface MockCareer {
@@ -187,6 +351,8 @@ export interface MockCareer {
   rewarded: Record<string, true>;
   /** Ring buffer of the last emitted envelopes, so `GET /sync?since=` can replay them like the real outbox does. */
   outbox?: RealtimeEnvelope[];
+  /** The last player dispatches (free undo), newest last. Optional: older saves have none. */
+  dispatches?: MockDispatchRecord[];
 }
 
 interface MockUser {
@@ -292,6 +458,11 @@ const emptyHooks = (): EngineHooks => ({
   vehicleDeparting: [],
   vehicleArrived: [],
   vehicleReturned: [],
+  vehicleSentHome: [],
+  vehicleBrokeDown: [],
+  departureDelay: [],
+  workDone: [],
+  vehicleView: [],
   incidentSpawned: [],
   resolvingBlockers: [],
   retainVehicles: [],
@@ -304,7 +475,23 @@ const emptyHooks = (): EngineHooks => ({
   facilityDetail: [],
   touched: [],
   stipendDeductions: [],
+  spawnPlace: [],
+  spawnWeight: [],
+  planLeg: [],
+  planHome: [],
+  sceneCapabilities: [],
+  dispatchCancelled: [],
+  snapshotView: [],
 });
+
+/** `dispatch.cancelGraceSeconds` (6 REAL seconds): the free undo window of a dispatch — wall time, whatever the demo speed. */
+export const CANCEL_GRACE_MS = 6000;
+/** `notifications.severeIncidentMinSeverity` of the backend config: from this severity a new call is also notified. */
+export const SEVERE_INCIDENT_MIN_SEVERITY = 7;
+
+/** Where an incident really is: on the water for a water incident (D-68), its position otherwise. */
+export const sceneOf = (incident: Pick<IncidentDto, 'position' | 'scenePosition'>): LngLat =>
+  incident.scenePosition ?? incident.position;
 
 /** Capacity rows of a facility type; GROUND may be overridden by the real site's capacity points. */
 export function capacitiesFor(base: Record<string, number>, ground?: number): FacilityDto['capacities'] {
@@ -660,7 +847,7 @@ export class MockEngine {
         this.onWorkDone(career, action.ref, at);
         break;
       case 'VEHICLE_RETURNED':
-        this.onReturned(career, action.ref);
+        this.onReturned(career, action.ref, at);
         break;
       case 'VEHICLE_DELIVERED':
         this.onDelivered(career, action.ref);
@@ -687,7 +874,21 @@ export class MockEngine {
   }
 
   /* ───────────── events ───────────── */
+  /** A vehicle as the outside world sees it: the stored DTO + the derived read-model fields of the domains. */
+  view(career: MockCareer, vehicle: VehicleDto): VehicleDto {
+    return this.hooks.vehicleView.reduce((v, hook) => hook(career, v), vehicle);
+  }
+
   emit(career: MockCareer, type: RealtimeEventType, payload: Record<string, unknown>): void {
+    // Every vehicle leaving the engine carries its read model as of NOW (e.g. the autonomy left after a mission).
+    const isVehicle = (v: unknown): v is VehicleDto =>
+      typeof v === 'object' && v !== null && 'id' in v && 'typeCode' in v && 'status' in v;
+    if (isVehicle(payload.vehicle)) payload = { ...payload, vehicle: this.view(career, payload.vehicle) };
+    if (Array.isArray(payload.vehicles))
+      payload = {
+        ...payload,
+        vehicles: payload.vehicles.map((v: unknown) => (isVehicle(v) ? this.view(career, v) : v)),
+      };
     career.seq += 1;
     const now = iso(this.now());
     const envelope: RealtimeEnvelope = {
@@ -846,7 +1047,7 @@ export class MockEngine {
       callSign: `${short} ${n}`,
       facilityId,
       status: instant ? 'AVAILABLE' : 'IN_DELIVERY',
-      position: facility.position,
+      position: this.homePositionOf(facility, typeCode),
       movement: null,
       incidentId: null,
       capabilities: Object.entries(type.caps).map(([code, value]) => ({ code, value })),
@@ -855,7 +1056,7 @@ export class MockEngine {
       crew: { min: type.crewMin, optimal: type.crewOptimal, assigned: type.crewOptimal },
       busyUntil,
     };
-    career.vehicles.push(vehicle);
+    career.vehicles.push(this.view(career, vehicle));
     const domain = type.domain;
     career.facilities = career.facilities.map((f) =>
       f.id !== facilityId
@@ -868,7 +1069,7 @@ export class MockEngine {
           },
     );
     if (!instant) this.schedule(career, 'VEHICLE_DELIVERED', type.deliverySeconds, vehicle.id);
-    return vehicle;
+    return career.vehicles.find((v) => v.id === vehicle.id) ?? vehicle;
   }
 
   buyVehicle(career: MockCareer, body: { vehicleTypeCode: string; facilityId: string }): VehicleDto {
@@ -881,13 +1082,7 @@ export class MockEngine {
       });
     if (type.requiredLevel > career.summary.level)
       throw new MockError(422, 'LEVEL_TOO_LOW', 'Level too low', { requiredLevel: type.requiredLevel });
-    if (facility.status !== 'OPERATIONAL' || !type.compatibleFacilityTypes.includes(facility.typeCode))
-      throw new MockError(422, 'VALIDATION_ERROR', 'Facility not compatible with this vehicle type', {
-        compatibleFacilityTypes: type.compatibleFacilityTypes,
-      });
-    const cap = facility.capacities.find((c) => c.domain === type.domain);
-    if (!cap || cap.total - cap.used < type.capacityPoints)
-      throw new MockError(422, 'CAPACITY_EXCEEDED', 'No room in this facility', { domain: type.domain });
+    this.assertCanHost(type, facility);
     this.credit(
       career,
       -type.price,
@@ -917,9 +1112,117 @@ export class MockEngine {
     });
   }
 
+  /** A Base nautica (D-23): the facility type that keeps boats — the only one whose domains include WATER. */
+  isNauticalFacility(facility: Pick<FacilityDto, 'typeCode'>): boolean {
+    return FACILITY_TYPES.find((f) => f.code === facility.typeCode)?.domains.includes('WATER') ?? false;
+  }
+
+  /** Where a vehicle rests at its facility: a boat at a Base nautica on its berth (on the water), everything else at the door. */
+  homePositionOf(facility: Pick<FacilityDto, 'position' | 'nautical'>, typeCode: string): LngLat {
+    const boat = VEHICLE_TYPES.find((t) => t.code === typeCode)?.domain === 'WATER';
+    return boat && facility.nautical ? facility.nautical.berth : facility.position;
+  }
+
+  /**
+   * The shop / transfer gate, as the backend's `ShopService`: a boat only into a Base nautica (`NEEDS_NAUTICAL_BASE`, before
+   * anything else, so the player gets the real reason), then compatibility and construction (`CAPACITY_EXCEEDED` with
+   * `reason` INCOMPATIBLE_FACILITY / FACILITY_NOT_OPERATIONAL), then room (`NO_ROOM` + the upgrade that adds it).
+   */
+  assertCanHost(
+    type: (typeof VEHICLE_TYPES)[number],
+    facility: FacilityDto,
+    points: number = type.capacityPoints,
+  ): void {
+    if (type.domain === 'WATER' && !this.isNauticalFacility(facility))
+      throw new MockError(409, 'NEEDS_NAUTICAL_BASE', 'Boats can only be kept at a Base nautica', {
+        reason: 'NEEDS_NAUTICAL_BASE',
+        facilityTypeCode: facility.typeCode,
+      });
+    if (facility.status !== 'OPERATIONAL' || !type.compatibleFacilityTypes.includes(facility.typeCode))
+      throw new MockError(409, 'CAPACITY_EXCEEDED', 'This facility cannot host that vehicle', {
+        reason: facility.status !== 'OPERATIONAL' ? 'FACILITY_NOT_OPERATIONAL' : 'INCOMPATIBLE_FACILITY',
+      });
+    const cap = facility.capacities.find((c) => c.domain === type.domain);
+    if (!cap || cap.total - cap.used < points)
+      throw new MockError(409, 'CAPACITY_EXCEEDED', 'No room in this facility', {
+        reason: 'NO_ROOM',
+        domain: type.domain,
+        total: cap?.total ?? 0,
+        used: cap?.used ?? 0,
+        needed: points,
+        upgrade: type.domain === 'WATER' ? 'PIER' : type.domain === 'AIR' ? 'HELIPAD' : 'GARAGE',
+      });
+  }
+
+  /** Where a vehicle of this type goes for this incident: boats and aircraft to the scene, land units to `position`. */
+  destinationOf(vehicle: Pick<VehicleDto, 'typeCode'>, incident: IncidentDto): LngLat {
+    const type = VEHICLE_TYPES.find((t) => t.code === vehicle.typeCode);
+    return type && type.domain !== 'GROUND' ? sceneOf(incident) : incident.position;
+  }
+
+  /** The outbound leg of a vehicle (a domain may plan it, e.g. a boat's trailer + water leg), else road / air. */
+  legFor(career: MockCareer, vehicle: VehicleDto, incident: IncidentDto): MockLeg {
+    for (const hook of this.hooks.planLeg) {
+      const leg = hook(career, vehicle, incident);
+      if (leg) return leg;
+    }
+    const to = this.destinationOf(vehicle, incident);
+    const { path, distanceMeters } = this.route(
+      vehicle.position,
+      to,
+      vehicle.id + incident.id,
+      vehicle.typeCode,
+    );
+    return {
+      path,
+      distanceMeters,
+      seconds: this.travelSeconds(distanceMeters, vehicle.typeCode, career, path),
+    };
+  }
+
+  /** What a vehicle brings to this incident (a land unit at a water incident: its shore-side capabilities only). */
+  sceneCapabilities(
+    career: MockCareer,
+    vehicle: VehicleDto,
+    incident: IncidentDto,
+  ): VehicleDto['capabilities'] {
+    return this.hooks.sceneCapabilities.reduce(
+      (caps, hook) => hook(career, vehicle, incident, caps),
+      vehicle.capabilities,
+    );
+  }
+
+  /** The movement DTO of a planned leg departing at `at`: its segments tile [departAt, arriveAt] exactly. */
+  movementOf(leg: MockLeg, at: number, purpose: NonNullable<VehicleDto['movement']>['purpose']) {
+    const arriveAt = at + this.dur(leg.seconds);
+    const span = arriveAt - at;
+    const total = Math.max(1e-6, leg.segments?.reduce((m, s) => Math.max(m, s.endSeconds), 0) ?? 0);
+    const movement: NonNullable<VehicleDto['movement']> = {
+      path: leg.path.length >= 2 ? leg.path : [leg.path[0]!, leg.path[0]!],
+      departAt: iso(at),
+      arriveAt: iso(arriveAt),
+      distanceMeters: leg.distanceMeters,
+      purpose,
+      ...(leg.segments && leg.segments.length > 0
+        ? {
+            segments: leg.segments.map((s) => ({
+              mode: s.mode,
+              path: s.path,
+              departAt: iso(at + (span * s.startSeconds) / total),
+              arriveAt: iso(at + (span * s.endSeconds) / total),
+              distanceMeters: s.meters,
+            })),
+          }
+        : {}),
+    };
+    return { movement, arriveAt };
+  }
+
   patchVehicle(career: MockCareer, id: string, patch: Partial<VehicleDto>): VehicleDto | null {
     let out: VehicleDto | null = null;
-    career.vehicles = career.vehicles.map((v) => (v.id === id ? (out = { ...v, ...patch }) : v));
+    career.vehicles = career.vehicles.map((v) =>
+      v.id === id ? (out = this.view(career, { ...v, ...patch })) : v,
+    );
     return out;
   }
   patchIncident(career: MockCareer, id: string, patch: Partial<IncidentDto>): IncidentDto | null {
@@ -932,8 +1235,10 @@ export class MockEngine {
     const facility = career.facilities.find((f) => f.id === facilityId);
     if (!facility) throw new MockError(404, 'NOT_FOUND', 'Facility not found');
     const facilityType = FACILITY_TYPES.find((f) => f.code === facility.typeCode);
-    const availableUpgrades = UPGRADE_TYPES.filter(
-      (u) => (facilityType?.upgradeCaps[u.code] ?? u.maxLevel) > 0,
+    // Like the backend: a facility type offers exactly the upgrades of its `upgradeCaps` (the Base nautica its Pontile,
+    // no garage; a fire station no pier).
+    const availableUpgrades = UPGRADE_TYPES.filter((u) =>
+      facilityType ? (facilityType.upgradeCaps[u.code] ?? 0) > 0 : u.maxLevel > 0,
     ).map((u) => {
       const current = facility.upgrades.find((x) => x.code === u.code);
       const level = current?.level ?? 0;
@@ -1049,17 +1354,27 @@ export class MockEngine {
     return levelRow(career.summary.level).maxActiveIncidents;
   }
 
+  /**
+   * Incidents that count in the active cap: the members of a major incident do not (D-69 — the major is its own event,
+   * outside the cap), exactly like the backend's `countActive`.
+   */
+  activeCount(career: MockCareer): number {
+    return career.incidents.filter((i) => !i.major).length;
+  }
+
   scheduleSpawn(career: MockCareer): void {
     if (career.actions.some((a) => a.type === 'INCIDENT_SPAWN')) return;
     if (!career.summary.onDuty || !['BUY_VEHICLE', 'DONE', null].includes(career.summary.tutorial.step))
       return;
-    this.schedule(career, 'INCIDENT_SPAWN', 35 + this.random() * 50, career.summary.id);
+    // While a major incident runs, normal calls keep coming but `spawnSlowdown` (2.5×) slower (D-69).
+    const slowdown = career.incidents.some((i) => i.major) ? MAJOR_SETTINGS.spawnSlowdown : 1;
+    this.schedule(career, 'INCIDENT_SPAWN', (35 + this.random() * 50) * slowdown, career.summary.id);
   }
 
   private onSpawn(career: MockCareer): void {
     // D-11: nothing new while the player is away (no /sync for 3 real minutes) or off duty.
     const away = this.now() - career.lastSeenAt > 180_000;
-    if (career.summary.onDuty && !away && career.incidents.length < this.activeCap(career)) {
+    if (career.summary.onDuty && !away && this.activeCount(career) < this.activeCap(career)) {
       const pool = INCIDENT_TEMPLATES.filter(
         (t) =>
           !t.tutorial &&
@@ -1067,11 +1382,17 @@ export class MockEngine {
           // Incidents of a family appear only after its unlock; the OTHER families of a mixed incident may still be locked:
           // their part is covered by external support (analisi/05 §4).
           career.summary.unlockedFamilies.includes(t.primaryFamily),
-      );
-      const total = pool.reduce((s, t) => s + t.weight, 0);
+      )
+        // Domain gates (water: only what the career's boats — or the Coast Guard — can handle, D-68).
+        .map((t) => ({
+          t,
+          weight: this.hooks.spawnWeight.reduce((w, hook) => w * hook(career, t), t.weight),
+        }))
+        .filter((x) => x.weight > 0);
+      const total = pool.reduce((s, x) => s + x.weight, 0);
       let r = this.random() * total;
-      const template = pool.find((t) => (r -= t.weight) <= 0) ?? pool[0]!;
-      this.spawnIncident(career, template.code, false);
+      const picked = pool.find((x) => (r -= x.weight) <= 0) ?? pool[0];
+      if (picked) this.spawnIncident(career, picked.t.code, false, { organic: true });
     }
     if (!away) this.scheduleSpawn(career);
   }
@@ -1080,25 +1401,37 @@ export class MockEngine {
     career: MockCareer,
     templateCode: string,
     tutorial: boolean,
-    opts: { severity?: number; position?: LngLat; address?: string; minDistanceMeters?: number } = {},
+    opts: SpawnOptions = {},
   ): IncidentDto {
     const t = INCIDENT_TEMPLATES.find((x) => x.code === templateCode);
     if (!t) throw new MockError(404, 'NOT_FOUND', 'Unknown incident template');
+    // A domain may place it (a water template goes on the water, with its meeting point on the shore road).
+    let place: SpawnPlace | null = null;
+    for (const hook of this.hooks.spawnPlace) {
+      place = hook(career, t, opts);
+      if (place) break;
+    }
     const base = career.facilities[0]!.position;
     const spots = INCIDENT_SPOTS.filter((s) => !career.incidents.some((i) => i.address === s.address));
     const sorted = [...spots].sort(
       (a, b) => haversineMeters(base, a.position) - haversineMeters(base, b.position),
     );
-    const spot = opts.position
-      ? { position: opts.position, address: opts.address ?? INCIDENT_SPOTS[0]!.address }
-      : tutorial
-        ? (sorted.find((s) => haversineMeters(base, s.position) > 900) ?? sorted[0]!)
-        : // `minDistanceMeters` (QA only): the nearest spot at or beyond that distance, so a test that needs an
-          // OBSERVABLE travel phase does not depend on which random spot came out.
-          opts.minDistanceMeters !== undefined
-          ? (sorted.find((s) => haversineMeters(base, s.position) >= opts.minDistanceMeters!) ??
-            sorted[sorted.length - 1]!)
-          : (spots[Math.floor(this.random() * spots.length)] ?? INCIDENT_SPOTS[0]!);
+    const spot = place
+      ? place
+      : opts.position
+        ? { position: opts.position, address: opts.address ?? INCIDENT_SPOTS[0]!.address }
+        : tutorial
+          ? (sorted.find((s) => haversineMeters(base, s.position) > 900) ?? sorted[0]!)
+          : // `minDistanceMeters` (QA only): the nearest spot at or beyond that distance, so a test that needs an
+            // OBSERVABLE travel phase does not depend on which random spot came out.
+            opts.minDistanceMeters !== undefined
+            ? (sorted.find((s) => haversineMeters(base, s.position) >= opts.minDistanceMeters!) ??
+              sorted[sorted.length - 1]!)
+            : (spots[Math.floor(this.random() * spots.length)] ?? INCIDENT_SPOTS[0]!);
+    const municipality = place?.municipality ?? PESCARA.name;
+    // Like the backend's `reportPlaceParams`: the report and radio say "{street}, {municipality}" — never the town twice.
+    const suffix = `, ${municipality}`;
+    const street = spot.address.endsWith(suffix) ? spot.address.slice(0, -suffix.length) : spot.address;
     // Severity: weighted by the template distribution, limited to bands the career level allows.
     const allowed = Object.entries(t.distribution).filter(
       ([sev]) => bandFor(t, Number(sev)).minLevel <= career.summary.level,
@@ -1126,13 +1459,13 @@ export class MockEngine {
         detail: blocks(4),
         condition: blocks(3),
         closing: blocks(3),
-        address: spot.address,
-        municipality: PESCARA.name,
+        address: street,
+        municipality,
       }),
       summary: text(`incident.${t.code}.summary`),
-      radio: text(`incident.${t.code}.radio`, { address: spot.address, municipality: PESCARA.name }),
+      radio: text(`incident.${t.code}.radio`, { address: street, municipality }),
       icon: t.icon,
-      municipality: PESCARA.name,
+      municipality,
       street: spot.address,
       address: spot.address,
       position: spot.position,
@@ -1158,6 +1491,7 @@ export class MockEngine {
         enRoute: 0,
         family: req.family,
         external: externalFamilies.includes(req.family),
+        externalSource: externalFamilies.includes(req.family) ? ('FAMILY' as const) : null,
       })),
       assignedVehicleIds: [],
       patientCount: 0,
@@ -1166,16 +1500,41 @@ export class MockEngine {
       externalFamilies,
       externalSupport: [],
       rewardedAt: null,
+      // Water scene (D-68): the marker on the water, land units at the meeting point (`position`) on the shore road.
+      domain: place?.waterBody ? 'WATER' : 'LAND',
+      waterBody: place?.waterBody ?? null,
+      scenePosition: place?.scene ?? spot.position,
+      meetingPoint: place?.waterBody ? spot.position : null,
+      waterSupport: null,
     };
     career.incidents.push(incident);
+    place?.onCreated?.(career, incident);
     this.log(career, incident.id, 'incident.created', text('timeline.incident_created'), now);
     if (!tutorial) {
       this.schedule(career, 'INCIDENT_EXPIRE', 600, incident.id);
       this.schedule(career, 'INCIDENT_ESCALATE', 240, incident.id);
     }
     for (const hook of this.hooks.incidentSpawned) hook(career, incident);
+    opts.beforeAnnounce?.(career, career.incidents.find((i) => i.id === incident.id) ?? incident);
     const created = career.incidents.find((i) => i.id === incident.id) ?? incident;
     this.emit(career, 'incident.created', { incident: created });
+    // A severe call is also traced in the notification centre (the backend's `fromDomainEvent`, `incident.created`):
+    // never the tutorial nor a major's member (the major has its own alert).
+    if (!tutorial && !created.major && created.severity >= SEVERE_INCIDENT_MIN_SEVERITY)
+      this.notify(career, {
+        category: 'OPERATIONS',
+        priority: created.severity >= 9 ? 'CRITICAL' : 'IMPORTANT',
+        title: { key: 'notification.SEVERE_INCIDENT.title', params: { fallback: 'Emergenza grave' } },
+        body: {
+          key: 'notification.SEVERE_INCIDENT.body',
+          params: {
+            severity: created.severity,
+            address: created.address,
+            fallback: `Nuova emergenza di gravità ${created.severity}: ${created.address}`,
+          },
+        },
+        action: { kind: 'OPEN_INCIDENT', targetId: created.id },
+      });
     return created;
   }
 
@@ -1184,8 +1543,12 @@ export class MockEngine {
     const incident = career.incidents.find((i) => i.id === incidentId);
     if (!incident) return null;
     const assigned = career.vehicles.filter((v) => v.incidentId === incidentId);
+    // A land unit at a water incident counts only for what it does at the meeting point (D-68).
     const sum = (list: VehicleDto[], cap: string) =>
-      list.reduce((s, v) => s + (v.capabilities.find((c) => c.code === cap)?.value ?? 0), 0);
+      list.reduce(
+        (s, v) => s + (this.sceneCapabilities(career, v, incident).find((c) => c.code === cap)?.value ?? 0),
+        0,
+      );
     const onScene = assigned.filter((v) => v.status === 'ON_SCENE');
     const enRoute = assigned.filter((v) => v.status === 'PREPARING' || v.status === 'EN_ROUTE');
     const requirements = incident.requirements.map((r) => ({
@@ -1261,14 +1624,10 @@ export class MockEngine {
     const options: MockDispatchOption[] = career.vehicles
       .filter((v) => v.incidentId !== incidentId)
       .map((v) => {
-        const { distanceMeters, path } = this.route(
-          v.position,
-          incident.position,
-          v.id + incident.id,
-          v.typeCode,
-        );
+        // Boats and aircraft go to the scene, land units to the meeting point of a water incident (D-68).
+        const leg = this.legFor(career, v, incident);
         const dispatchable = v.status === 'AVAILABLE';
-        const contributes = v.capabilities.filter((c) =>
+        const contributes = this.sceneCapabilities(career, v, incident).filter((c) =>
           incident.requirements.some((r) => r.capability === c.code),
         );
         const warnings: string[] = [];
@@ -1278,17 +1637,15 @@ export class MockEngine {
         const prep = VEHICLE_TYPES.find((t) => t.code === v.typeCode)?.preparationSeconds ?? 12;
         const option: MockDispatchOption = {
           vehicleId: v.id,
-          etaSeconds: Math.round(
-            (prep + this.travelSeconds(distanceMeters, v.typeCode, career, path)) / this.speed,
-          ),
-          distanceMeters: Math.round(distanceMeters),
+          etaSeconds: Math.round((prep + leg.seconds) / this.speed),
+          distanceMeters: Math.round(leg.distanceMeters),
           dispatchable,
           blockedReason: dispatchable ? null : 'VEHICLE_NOT_AVAILABLE',
           warnings,
           contributes,
           recommended: false,
         };
-        return this.hooks.dispatchOption.reduce((o, hook) => hook(career, v, o), option);
+        return this.hooks.dispatchOption.reduce((o, hook) => hook(career, v, o, incident), option);
       })
       .sort((a, b) => Number(b.dispatchable) - Number(a.dispatchable) || a.etaSeconds - b.etaSeconds);
     // greedy recommendation: fastest vehicles that still add missing REQUIRED/RECOMMENDED capability
@@ -1296,7 +1653,11 @@ export class MockEngine {
       needed.map((r) => [r.capability, Math.max(0, r.required - r.onScene - r.enRoute)]),
     );
     const recommendedVehicleIds: string[] = [];
-    for (const o of options.filter((x) => x.dispatchable)) {
+    // Never recommend more than one dispatch command may send (a major's scaled scene can ask for more: send the rest later).
+    const perDispatch = this.maxVehiclesPerDispatch(incident);
+    // A vehicle flagged by a domain (fuel reserve, out of range) stays selectable but is never recommended.
+    for (const o of options.filter((x) => x.dispatchable && !x.notRecommended)) {
+      if (recommendedVehicleIds.length >= perDispatch) break;
       const useful = o.contributes.some((c) => (missing.get(c.code) ?? 0) > 0);
       if (!useful) continue;
       recommendedVehicleIds.push(o.vehicleId);
@@ -1306,10 +1667,26 @@ export class MockEngine {
     const recommendationCoversRequired = incident.requirements
       .filter((r) => r.level === 'REQUIRED' && !r.external)
       .every((r) => (missing.get(r.capability) ?? 0) === 0);
-    return { options, recommendedVehicleIds, recommendationCoversRequired };
+    for (const o of options) delete o.notRecommended;
+    return {
+      options,
+      recommendedVehicleIds,
+      recommendationCoversRequired,
+      maxVehiclesPerDispatch: perDispatch,
+    };
   }
 
-  dispatch(career: MockCareer, incidentId: string, vehicleIds: string[]) {
+  /** How many vehicles ONE dispatch may send to this incident: 12 for a normal call, 24 on a major's incidents (D-69). */
+  maxVehiclesPerDispatch(incident: Pick<IncidentDto, 'major'>): number {
+    return incident.major ? MAJOR_SETTINGS.maxVehiclesPerDispatch : MAX_VEHICLES_PER_DISPATCH;
+  }
+
+  dispatch(
+    career: MockCareer,
+    incidentId: string,
+    vehicleIds: string[],
+    origin: MockDispatchRecord['origin'] = 'PLAYER',
+  ) {
     const incident = career.incidents.find((i) => i.id === incidentId);
     if (!incident) throw new MockError(404, 'NOT_FOUND', 'Incident not found');
     // A RESOLVING incident still accepts vehicles while a domain queue keeps it open (a patient waiting for an ambulance).
@@ -1317,6 +1694,10 @@ export class MockEngine {
       incident.status === 'RESOLVING' && this.hooks.resolvingBlockers.some((h) => h(career, incident));
     if (!['PENDING_RESPONSE', 'RESPONDING', 'ON_SCENE'].includes(incident.status) && !openQueue)
       throw new MockError(409, 'INCIDENT_NOT_DISPATCHABLE', 'Incident cannot receive vehicles');
+    if (vehicleIds.length > this.maxVehiclesPerDispatch(incident))
+      throw new MockError(400, 'VALIDATION_ERROR', 'Too many vehicles in one dispatch', {
+        max: this.maxVehiclesPerDispatch(incident),
+      });
     const vehicles = vehicleIds.map((id) => career.vehicles.find((v) => v.id === id));
     if (vehicles.some((v) => !v || v.status !== 'AVAILABLE'))
       throw new MockError(409, 'VEHICLE_NOT_AVAILABLE', 'One or more vehicles are not available', {
@@ -1324,16 +1705,20 @@ export class MockEngine {
       });
     for (const hook of this.hooks.dispatchCheck) hook(career, incident, vehicles as VehicleDto[]);
     const now = this.now();
+    // What the free undo restores: the incident as it was, with the due times of its expiry / escalation actions.
+    const dueOf = (type: string) =>
+      career.actions.find((a) => a.type === type && a.ref === incidentId)?.dueAt ?? null;
+    const prior: MockDispatchRecord['prior'] = {
+      status: incident.status,
+      expiresAt: incident.expiresAt,
+      nextEscalationAt: incident.nextEscalationAt,
+      escalating: incident.escalating,
+      expireDueAt: dueOf('INCIDENT_EXPIRE'),
+      escalateDueAt: dueOf('INCIDENT_ESCALATE'),
+    };
+    let firstDeparture = Number.POSITIVE_INFINITY;
     const updated: VehicleDto[] = [];
     for (const v of vehicles as VehicleDto[]) {
-      const prep = VEHICLE_TYPES.find((t) => t.code === v.typeCode)?.preparationSeconds ?? 12;
-      const patched = this.patchVehicle(career, v.id, {
-        status: 'PREPARING',
-        incidentId,
-        busyUntil: iso(now + this.dur(prep)),
-      })!;
-      updated.push(patched);
-      this.schedule(career, 'VEHICLE_DEPART', prep, v.id);
       this.log(
         career,
         incidentId,
@@ -1342,6 +1727,17 @@ export class MockEngine {
         now,
         v.id,
       );
+      // A vehicle at base that must reload first (D-22) leaves later: the seconds are already in its option's ETA.
+      const reload = this.hooks.departureDelay.reduce((s, hook) => s + hook(career, v, incident, now), 0);
+      const prep = (VEHICLE_TYPES.find((t) => t.code === v.typeCode)?.preparationSeconds ?? 12) + reload;
+      const patched = this.patchVehicle(career, v.id, {
+        status: 'PREPARING',
+        incidentId,
+        busyUntil: iso(now + this.dur(prep)),
+      })!;
+      updated.push(patched);
+      this.schedule(career, 'VEHICLE_DEPART', prep, v.id);
+      firstDeparture = Math.min(firstDeparture, now + this.dur(prep));
     }
     this.cancelActions(
       career,
@@ -1356,8 +1752,135 @@ export class MockEngine {
       career.summary.tutorial.step === 'WELCOME'
     )
       if (incident.isTutorial) this.advanceTutorial(career, 'WATCH_ARRIVAL');
+    const record = this.recordDispatch(career, {
+      incidentId,
+      vehicleIds: updated.map((v) => v.id),
+      at: now,
+      origin,
+      // Free undo: `cancelGraceSeconds` after the dispatch, or sooner when a vehicle leaves its origin sooner; never on the
+      // tutorial, never for a dispatch the player did not make (a queue, a redirect).
+      cancellableUntil:
+        incident.isTutorial || origin !== 'PLAYER' ? null : Math.min(now + CANCEL_GRACE_MS, firstDeparture),
+      prior,
+    });
     this.save();
-    return { dispatchId: this.id('dsp'), incident: next, vehicles: updated };
+    return {
+      dispatchId: record.id,
+      incident: next,
+      vehicles: updated,
+      cancellableUntil: record.cancellableUntil === null ? null : iso(record.cancellableUntil),
+    };
+  }
+
+  private recordDispatch(
+    career: MockCareer,
+    record: Omit<MockDispatchRecord, 'id' | 'cancelled'>,
+  ): MockDispatchRecord {
+    const full: MockDispatchRecord = { ...record, id: this.id('dsp'), cancelled: false };
+    career.dispatches = [...(career.dispatches ?? []), full].slice(-50);
+    return full;
+  }
+
+  /**
+   * ★POST /dispatches/:id/cancel — the free undo (air-endurance.md §5): within `cancellableUntil`, and only while every
+   * vehicle of the dispatch is still at its origin (PREPARING). Each one is AVAILABLE again as before (the domains give back
+   * the crew and the reload before departure), the incident gets back its ORIGINAL expiry and escalation — never a new
+   * window —, the timeline gets a neutral line, nothing is charged. A replay on a cancelled dispatch answers the same.
+   */
+  cancelDispatch(career: MockCareer, dispatchId: string) {
+    const record = (career.dispatches ?? []).find((d) => d.id === dispatchId);
+    if (!record) throw new MockError(404, 'NOT_FOUND', 'Dispatch not found');
+    const incident = career.incidents.find((i) => i.id === record.incidentId);
+    const result = () => ({
+      dispatchId: record.id,
+      status: 'CANCELLED' as const,
+      incident: career.incidents.find((i) => i.id === record.incidentId) ?? incident!,
+      vehicles: record.vehicleIds.flatMap((id) => {
+        const v = career.vehicles.find((x) => x.id === id);
+        return v ? [this.view(career, v)] : [];
+      }),
+    });
+    if (record.cancelled && incident) return result();
+    if (record.origin !== 'PLAYER')
+      throw new MockError(409, 'DISPATCH_NOT_CANCELLABLE', 'Not a player dispatch', {
+        reason: 'NOT_A_PLAYER_DISPATCH',
+      });
+    if (!incident)
+      throw new MockError(409, 'DISPATCH_NOT_CANCELLABLE', 'The incident is closed', {
+        reason: 'DISPATCH_CLOSED',
+      });
+    if (incident.isTutorial)
+      throw new MockError(409, 'DISPATCH_NOT_CANCELLABLE', 'The tutorial dispatch stays', {
+        reason: 'TUTORIAL',
+      });
+    const now = this.now();
+    if (record.cancellableUntil === null || now > record.cancellableUntil)
+      throw new MockError(409, 'CANCEL_WINDOW_EXPIRED', 'Too late to cancel: recall the vehicles instead', {
+        dispatchedAt: iso(record.at),
+        cancellableUntil: record.cancellableUntil === null ? null : iso(record.cancellableUntil),
+      });
+    // A vehicle recalled meanwhile (AVAILABLE again) does not stop the others from being cancelled.
+    const vehicles = record.vehicleIds
+      .map((id) => career.vehicles.find((v) => v.id === id))
+      .filter((v): v is VehicleDto => !!v && v.incidentId === incident.id);
+    const departed = vehicles.filter((v) => v.status !== 'PREPARING');
+    if (departed.length > 0)
+      throw new MockError(409, 'DISPATCH_NOT_CANCELLABLE', 'A vehicle has already left', {
+        reason: 'VEHICLE_DEPARTED',
+        vehicles: departed.map((v) => ({ id: v.id, status: v.status })),
+      });
+    const restored: VehicleDto[] = [];
+    for (const v of vehicles) {
+      this.cancelActions(career, (a) => a.ref === v.id && a.type === 'VEHICLE_DEPART');
+      restored.push(
+        this.patchVehicle(career, v.id, { status: 'AVAILABLE', incidentId: null, busyUntil: null })!,
+      );
+      this.log(
+        career,
+        incident.id,
+        'vehicle.dispatch_cancelled',
+        text('timeline.vehicle_dispatch_cancelled', { callSign: v.callSign }),
+        now,
+        v.id,
+      );
+    }
+    for (const hook of this.hooks.dispatchCancelled) hook(career, restored, incident, now);
+    record.cancelled = true;
+    let next = this.recompute(career, incident.id, now) ?? incident;
+    if (next.status === 'PENDING_RESPONSE' && record.prior.status === 'PENDING_RESPONSE') {
+      // The ORIGINAL deadline (re-armed at the same instant, or at once if it passed meanwhile), never a new window.
+      this.cancelActions(
+        career,
+        (a) => (a.type === 'INCIDENT_EXPIRE' || a.type === 'INCIDENT_ESCALATE') && a.ref === incident.id,
+      );
+      if (record.prior.expireDueAt !== null)
+        career.actions.push({
+          id: this.id('act'),
+          type: 'INCIDENT_EXPIRE',
+          dueAt: Math.max(now, record.prior.expireDueAt),
+          ref: incident.id,
+        });
+      if (record.prior.escalateDueAt !== null)
+        career.actions.push({
+          id: this.id('act'),
+          type: 'INCIDENT_ESCALATE',
+          dueAt: Math.max(now, record.prior.escalateDueAt),
+          ref: incident.id,
+        });
+      next =
+        this.patchIncident(career, incident.id, {
+          expiresAt: record.prior.expiresAt,
+          nextEscalationAt: record.prior.nextEscalationAt,
+          escalating: record.prior.escalating,
+        }) ?? next;
+    }
+    this.emit(career, 'vehicle.updated', {
+      vehicles: restored.map((v) => career.vehicles.find((x) => x.id === v.id) ?? v),
+      dispatchCancelled: true,
+    });
+    this.emit(career, 'incident.updated', { incident: next });
+    this.save();
+    return result();
   }
 
   private onDepart(career: MockCareer, vehicleId: string, at: number): void {
@@ -1369,26 +1892,23 @@ export class MockEngine {
       if (next) this.emit(career, 'incident.updated', { incident: next });
       return;
     }
-    const { path, distanceMeters } = this.route(
-      v.position,
-      incident.position,
-      v.id + incident.id,
-      v.typeCode,
-    );
-    const seconds = this.travelSeconds(distanceMeters, v.typeCode, career, path);
-    const arriveAt = at + this.dur(seconds);
+    // A boat's leg may be mixed (trailer on the road, launch, water: D-68); everything else drives or flies straight.
+    const leg = this.legFor(career, v, incident);
+    const { movement, arriveAt } = this.movementOf(leg, at, 'TO_INCIDENT');
     const patched = this.patchVehicle(career, v.id, {
       status: 'EN_ROUTE',
       busyUntil: iso(arriveAt),
-      movement: { path, departAt: iso(at), arriveAt: iso(arriveAt), distanceMeters, purpose: 'TO_INCIDENT' },
+      movement,
     })!;
     career.legs.push({
       vehicleId: v.id,
       incidentId: incident.id,
-      path,
-      distanceMeters,
+      path: leg.path,
+      distanceMeters: leg.distanceMeters,
       dispatchedAt: at,
       arrivedAt: null,
+      ...(leg.fuelMeters !== undefined ? { fuelMeters: leg.fuelMeters } : {}),
+      ...(leg.segments ? { segments: leg.segments } : {}),
     });
     career.actions.push({ id: this.id('act'), type: 'VEHICLE_ARRIVE', dueAt: arriveAt, ref: v.id });
     this.log(
@@ -1412,7 +1932,8 @@ export class MockEngine {
     }
     const patched = this.patchVehicle(career, v.id, {
       status: 'ON_SCENE',
-      position: incident.position,
+      // Boats and aircraft work on the scene (on the water), land units at the meeting point (D-68).
+      position: this.destinationOf(v, incident),
       movement: null,
       busyUntil: null,
     })!;
@@ -1437,13 +1958,22 @@ export class MockEngine {
   sendHome(career: MockCareer, v: VehicleDto, at: number, from?: LngLat): VehicleDto {
     const facility = career.facilities.find((f) => f.id === v.facilityId)!;
     const start = from ?? v.position;
-    const { path, distanceMeters } = this.route(
-      start,
-      facility.position,
-      v.id + 'home' + String(at),
-      v.typeCode,
-    );
-    const arriveAt = at + this.dur(this.travelSeconds(distanceMeters, v.typeCode, career, path));
+    // A boat on the water goes home by water (landing the rescued first), then its trailer if it came by road (D-68).
+    let home: MockLeg | null = null;
+    for (const hook of this.hooks.planHome) {
+      home = hook(career, v, start, at);
+      if (home) break;
+    }
+    if (!home) {
+      const { path, distanceMeters } = this.route(
+        start,
+        facility.position,
+        v.id + 'home' + String(at),
+        v.typeCode,
+      );
+      home = { path, distanceMeters, seconds: this.travelSeconds(distanceMeters, v.typeCode, career, path) };
+    }
+    const { movement, arriveAt } = this.movementOf(home, at, 'TO_BASE');
     this.cancelActions(
       career,
       (a) =>
@@ -1451,32 +1981,37 @@ export class MockEngine {
         (a.type === 'VEHICLE_ARRIVE' || a.type === 'VEHICLE_DEPART' || a.type === 'VEHICLE_RETURNED'),
     );
     career.actions.push({ id: this.id('act'), type: 'VEHICLE_RETURNED', dueAt: arriveAt, ref: v.id });
-    return this.patchVehicle(career, v.id, {
+    const returning = this.patchVehicle(career, v.id, {
       status: 'RETURNING',
       incidentId: null,
       position: start,
       busyUntil: iso(arriveAt),
-      movement: { path, departAt: iso(at), arriveAt: iso(arriveAt), distanceMeters, purpose: 'TO_BASE' },
+      movement,
     })!;
+    // Domains account the leg that just ended (fuel on scene / on the way) and may reshape the way home (fuel stop).
+    for (const hook of this.hooks.vehicleSentHome) hook(career, v, returning, at);
+    return career.vehicles.find((x) => x.id === v.id) ?? returning;
   }
 
-  private onReturned(career: MockCareer, vehicleId: string): void {
+  private onReturned(career: MockCareer, vehicleId: string, at: number = this.now()): void {
     const v = career.vehicles.find((x) => x.id === vehicleId);
     if (!v || v.status !== 'RETURNING') return;
     const facility = career.facilities.find((f) => f.id === v.facilityId)!;
     this.patchVehicle(career, v.id, {
       status: 'AVAILABLE',
-      position: facility.position,
+      // A boat moors at its berth, on the water (D-68).
+      position: this.homePositionOf(facility, v.typeCode),
       movement: null,
       busyUntil: null,
     });
     const leg = [...career.legs].reverse().find((l) => l.vehicleId === v.id) ?? null;
-    // Wear, restock, crew fatigue and release are owned by the domain modules.
+    // Wear, the resupply stop (D-22), crew fatigue and release are owned by the domain modules.
     for (const hook of this.hooks.vehicleReturned)
       hook(
         career,
         career.vehicles.find((x) => x.id === v.id)!,
         leg,
+        at,
       );
     this.emit(career, 'vehicle.returned', { vehicle: career.vehicles.find((x) => x.id === v.id)! });
   }
@@ -1493,13 +2028,8 @@ export class MockEngine {
       this.cancelActions(career, (a) => a.ref === v.id && a.type === 'VEHICLE_DEPART');
       patched = this.patchVehicle(career, v.id, { status: 'AVAILABLE', incidentId: null, busyUntil: null })!;
     } else {
-      const from = v.movement
-        ? pointAlong(
-            v.movement.path,
-            (now - Date.parse(v.movement.departAt)) /
-              Math.max(1, Date.parse(v.movement.arriveAt) - Date.parse(v.movement.departAt)),
-          ).position
-        : v.position;
+      // Where it is now — inside the current segment of a boat's mixed leg.
+      const from = v.movement ? movementPoint(v.movement, now).position : v.position;
       patched = this.sendHome(career, v, now, from);
     }
     if (incidentId) {
@@ -1531,6 +2061,8 @@ export class MockEngine {
    * units (UNG) to call in — the incident stays RESOLVING until they are done, then leaves the world as RESOLVED.
    */
   finishWork(career: MockCareer, incident: IncidentDto, at: number): void {
+    // The mission's consumption (D-22) is taken now, from the vehicles still on the incident.
+    for (const hook of this.hooks.workDone) hook(career, incident, at);
     const t = INCIDENT_TEMPLATES.find((x) => x.code === incident.templateCode);
     const band = t ? bandFor(t, incident.severity) : null;
     const support = (band?.ung ?? [])
@@ -1571,7 +2103,9 @@ export class MockEngine {
     career.rewarded[incident.id] = true;
     const vehicles: VehicleDto[] = [];
     for (const v of career.vehicles.filter((x) => x.incidentId === incident.id && !retained.has(x.id)))
-      vehicles.push(this.sendHome(career, v, at, v.status === 'ON_SCENE' ? incident.position : undefined));
+      vehicles.push(
+        this.sendHome(career, v, at, v.status === 'ON_SCENE' ? this.destinationOf(v, incident) : undefined),
+      );
     const { outcome } = this.reward(career, resolving, at);
     this.log(career, incident.id, 'incident.resolving', text('timeline.incident_resolving'), at);
     const next = this.patchIncident(career, incident.id, {
@@ -1664,7 +2198,9 @@ export class MockEngine {
     const firstArrival = career.firstArrival[incident.id] ?? at;
     const responseSeconds = Math.round(((firstArrival - created) / 1000) * this.speed);
     const durationSeconds = Math.round(((at - created) / 1000) * this.speed);
-    const gross = Math.round(t.baseReward * t.complexity * (0.7 + 0.1 * incident.severity));
+    // The Coast Guard did the water part (D-68): reward and XP × its share (0.6), never a failure for the missing boat.
+    const share = incident.waterSupport?.rewardShare ?? 1;
+    const gross = Math.round(t.baseReward * t.complexity * (0.7 + 0.1 * incident.severity) * share);
     const timeliness = Math.max(0, Math.min(1, 1.15 - responseSeconds / 240));
     const adequacy = incident.coverageRatio;
     const patients = this.hooks.patientOutcome
@@ -1686,13 +2222,17 @@ export class MockEngine {
     );
     const net = Math.max(Math.round(gross * 0.3), Math.round(gross * quality) - travel - scene);
     const tutorialXp = incident.isTutorial ? 40 : 0;
-    const xp = Math.round(t.baseXp * (0.7 + 0.1 * incident.severity) * quality) + tutorialXp;
+    const xp = Math.round(t.baseXp * (0.7 + 0.1 * incident.severity) * quality * share) + tutorialXp;
     const stars = quality >= 1 ? 3 : quality >= 0.8 ? 2 : 1;
     const notes: I18nText[] = [];
     if (timeliness >= 0.8) notes.push(text('outcome.note.FAST_RESPONSE'));
     if (adequacy < 1) notes.push(text('outcome.note.UNDER_RESOURCED'));
     if ((incident.externalFamilies ?? []).length) notes.push(text('outcome.note.EXTERNAL_SUPPORT'));
+    if (incident.waterSupport) notes.push(text('outcome.note.COAST_GUARD'));
     if (incident.isTutorial) notes.push(text('outcome.note.TUTORIAL_BONUS'));
+    // A member of a major incident moves no reputation of its own: the major's final step does (D-69).
+    const member = !!incident.major;
+    if (member) notes.push(text('major.note.MEMBER'));
     const outcome: IncidentOutcomeDto = {
       incidentId: incident.id,
       result: adequacy >= 1 ? 'SUCCESS' : 'PARTIAL',
@@ -1706,7 +2246,7 @@ export class MockEngine {
       ],
       netCredits: String(net),
       xp: String(xp),
-      reputationDelta: stars - 1,
+      reputationDelta: member ? 0 : stars - 1,
       notes,
     };
     career.pendingOutcomes.push(outcome);
@@ -1722,10 +2262,11 @@ export class MockEngine {
       text('ledger.MISSION_REWARD', { incident: incident.templateCode }),
     );
     if (incident.isTutorial) this.credit(career, TUTORIAL_BONUS, 'MILESTONE', true, text('ledger.MILESTONE'));
-    career.summary = {
-      ...career.summary,
-      reputation: Math.max(0, Math.min(100, career.summary.reputation + (stars - 1))),
-    };
+    if (!member)
+      career.summary = {
+        ...career.summary,
+        reputation: Math.max(0, Math.min(100, career.summary.reputation + (stars - 1))),
+      };
     return { outcome };
   }
 
@@ -1757,7 +2298,9 @@ export class MockEngine {
     for (const v of career.vehicles.filter(
       (x) => x.incidentId === incident.id && ['PREPARING', 'EN_ROUTE', 'ON_SCENE'].includes(x.status),
     ))
-      vehicles.push(this.sendHome(career, v, at, v.status === 'ON_SCENE' ? incident.position : undefined));
+      vehicles.push(
+        this.sendHome(career, v, at, v.status === 'ON_SCENE' ? this.destinationOf(v, incident) : undefined),
+      );
     for (const hook of this.hooks.incidentClosed) hook(career, closed, status);
 
     if (status === 'RESOLVED') {
@@ -1782,7 +2325,9 @@ export class MockEngine {
     } else {
       career.stats.failed += 1;
       career.away.failed += 1;
-      career.summary = { ...career.summary, reputation: Math.max(0, career.summary.reputation - 2) };
+      // A major's member moves no reputation of its own (its major's final step does, D-69).
+      if (!incident.major)
+        career.summary = { ...career.summary, reputation: Math.max(0, career.summary.reputation - 2) };
       this.log(
         career,
         incident.id,
@@ -1838,7 +2383,8 @@ export class MockEngine {
     return career.summary;
   }
 
-  snapshot(career: MockCareer): SyncSnapshot {
+  /** The world context of the career right now (day phase, weather, traffic…), as the snapshot serves it. */
+  world(career: MockCareer): SyncSnapshot['world'] {
     const now = this.now();
     const hour = Number(
       new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hour12: false, timeZone: PESCARA.timezone }).format(
@@ -1853,18 +2399,25 @@ export class MockEngine {
       trafficLevel: hour >= 8 && hour <= 9 ? 'MODERATE' : 'LIGHT',
       closures: [],
     };
-    return {
+    return this.hooks.world.reduce((w, hook) => hook(career, w), baseWorld);
+  }
+
+  snapshot(career: MockCareer): SyncSnapshot {
+    // Derived read models may have moved without a patch (a level-up unlocking autonomy, a shelf refilled): refresh them.
+    career.vehicles = career.vehicles.map((v) => this.view(career, v));
+    const base: SyncSnapshot = {
       seq: career.seq,
       career: career.summary,
       facilities: career.facilities,
       vehicles: career.vehicles,
       incidents: career.incidents,
-      world: this.hooks.world.reduce((w, hook) => hook(career, w), baseWorld),
+      world: this.world(career),
       pendingOutcomes: career.pendingOutcomes,
       unreadNotifications: career.notifications.filter((n) => !n.readAt).length,
       featureFlags: this.state.featureFlags,
       configVersion: 'mock-1',
     };
+    return this.hooks.snapshotView.reduce((snap, hook) => hook(career, snap), base);
   }
 
   /** Heartbeat: a /sync call marks the player as present and restarts generation after an absence. */

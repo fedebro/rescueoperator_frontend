@@ -2,7 +2,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { Search, Users } from 'lucide-react';
+import { Search, SlidersHorizontal, Users } from 'lucide-react';
 import type { PersonnelDto } from '@/contracts';
 import { useIsDesktop } from '@/hooks/use-media-query';
 import { useServerNow } from '@/hooks/use-server-now';
@@ -41,6 +41,9 @@ export const EMPTY_FILTERS: RosterFilters = {
   qualification: ALL,
   search: '',
 };
+
+/** The select filters (everything but the free-text search). */
+const FILTER_KEYS = ['facility', 'family', 'role', 'status', 'band', 'qualification'] as const;
 
 /** Pure roster filter (unit-tested): every criterion is optional (`ALL`), the search matches first + last name. */
 export function filterRoster(people: PersonnelDto[], f: RosterFilters, nowMs: number): PersonnelDto[] {
@@ -81,6 +84,8 @@ export function RosterTab({
     facility: initialFacility ?? ALL,
   });
   const set = (key: keyof RosterFilters) => (value: string) => setFilters((f) => ({ ...f, [key]: value }));
+  const [filtersOpen, setFiltersOpen] = React.useState(false);
+  const selectsId = React.useId();
 
   const all = React.useMemo(() => people.data ?? [], [people.data]);
   const rows = React.useMemo(() => filterRoster(all, filters, now), [all, filters, now]);
@@ -89,6 +94,10 @@ export function RosterTab({
   const unique = (values: string[]) => [...new Set(values)].sort();
   const option = (value: string, label: string) => ({ value, label });
 
+  // Below 1024 px the six selects stay behind one "Filtri (n)" button: they used to fill the whole first screen
+  // before a single operator was visible (03 §2.6).
+  const activeFilters = FILTER_KEYS.filter((k) => filters[k] !== ALL).length;
+  const showSelects = desktop || filtersOpen;
   const filterBar = (
     <div className="flex flex-wrap gap-2" data-testid="roster-filters">
       <Input
@@ -98,58 +107,78 @@ export function RosterTab({
         placeholder={t('search')}
         aria-label={t('search')}
         leading={<Search className="size-4" />}
-        className="h-10 w-full text-base sm:w-56 lg:text-sm"
+        className="h-11 w-full text-base sm:w-56 lg:h-10 lg:text-sm"
       />
-      <Select
-        label={t('filter.facility')}
-        value={filters.facility}
-        onValueChange={set('facility')}
-        options={[option(ALL, t('all.facility')), ...facilities.map((f) => option(f.id, f.name))]}
-      />
-      <Select
-        label={t('filter.family')}
-        value={filters.family}
-        onValueChange={set('family')}
-        options={[
-          option(ALL, t('all.family')),
-          ...unique(all.map((p) => p.family)).map((c) => option(c, name('family', c))),
-        ]}
-      />
-      <Select
-        label={t('filter.role')}
-        value={filters.role}
-        onValueChange={set('role')}
-        options={[
-          option(ALL, t('all.role')),
-          ...unique(all.map((p) => p.roleCode)).map((c) => option(c, name('role', c))),
-        ]}
-      />
-      <Select
-        label={t('filter.status')}
-        value={filters.status}
-        onValueChange={set('status')}
-        options={[
-          option(ALL, t('all.status')),
-          ...unique(all.map((p) => p.status)).map((c) => option(c, ts(c as PersonnelDto['status']))),
-        ]}
-      />
-      <Select
-        label={t('filter.band')}
-        value={filters.band}
-        onValueChange={set('band')}
-        options={[option(ALL, t('all.band')), ...FATIGUE_BANDS.map((b) => option(b, name('fatigueBand', b)))]}
-      />
-      <Select
-        label={t('filter.qualification')}
-        value={filters.qualification}
-        onValueChange={set('qualification')}
-        options={[
-          option(ALL, t('all.qualification')),
-          ...unique(all.flatMap((p) => p.qualifications.map((q) => q.code))).map((c) =>
-            option(c, name('qualification', c)),
-          ),
-        ]}
-      />
+      {desktop ? null : (
+        <Button
+          variant="secondary"
+          className="h-11"
+          aria-expanded={filtersOpen}
+          aria-controls={selectsId}
+          onClick={() => setFiltersOpen((o) => !o)}
+          data-testid="roster-filters-toggle"
+        >
+          <SlidersHorizontal className="size-4" aria-hidden />
+          {t('filters', { count: activeFilters })}
+        </Button>
+      )}
+      {showSelects ? (
+        <div id={selectsId} className="flex w-full flex-wrap gap-2 lg:contents">
+          <Select
+            label={t('filter.facility')}
+            value={filters.facility}
+            onValueChange={set('facility')}
+            options={[option(ALL, t('all.facility')), ...facilities.map((f) => option(f.id, f.name))]}
+          />
+          <Select
+            label={t('filter.family')}
+            value={filters.family}
+            onValueChange={set('family')}
+            options={[
+              option(ALL, t('all.family')),
+              ...unique(all.map((p) => p.family)).map((c) => option(c, name('family', c))),
+            ]}
+          />
+          <Select
+            label={t('filter.role')}
+            value={filters.role}
+            onValueChange={set('role')}
+            options={[
+              option(ALL, t('all.role')),
+              ...unique(all.map((p) => p.roleCode)).map((c) => option(c, name('role', c))),
+            ]}
+          />
+          <Select
+            label={t('filter.status')}
+            value={filters.status}
+            onValueChange={set('status')}
+            options={[
+              option(ALL, t('all.status')),
+              ...unique(all.map((p) => p.status)).map((c) => option(c, ts(c as PersonnelDto['status']))),
+            ]}
+          />
+          <Select
+            label={t('filter.band')}
+            value={filters.band}
+            onValueChange={set('band')}
+            options={[
+              option(ALL, t('all.band')),
+              ...FATIGUE_BANDS.map((b) => option(b, name('fatigueBand', b))),
+            ]}
+          />
+          <Select
+            label={t('filter.qualification')}
+            value={filters.qualification}
+            onValueChange={set('qualification')}
+            options={[
+              option(ALL, t('all.qualification')),
+              ...unique(all.flatMap((p) => p.qualifications.map((q) => q.code))).map((c) =>
+                option(c, name('qualification', c)),
+              ),
+            ]}
+          />
+        </div>
+      ) : null}
     </div>
   );
 
@@ -251,7 +280,13 @@ export function RosterTab({
       description={idleCopy?.text ?? t('emptyHint')}
       action={
         idleCopy ? (
-          <Button asChild variant="secondary" size="sm" data-testid="idle-suggestion-action">
+          <Button
+            asChild
+            variant="secondary"
+            size="sm"
+            className="h-11 lg:h-8"
+            data-testid="idle-suggestion-action"
+          >
             <Link href={idleCopy.href}>{idleCopy.label}</Link>
           </Button>
         ) : undefined

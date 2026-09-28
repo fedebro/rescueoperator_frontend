@@ -10,6 +10,7 @@ import {
 import { CANDIDATE_SITES, PESCARA, type MockCandidateSite } from '../data/pescara';
 import { lockReason } from '../catalog-dto';
 import { MockError, capacitiesFor, iso, text, type MockCareer, type MockEngine } from '../engine';
+import type { QaHelpers } from '../qa';
 import { domainState } from './index';
 
 /**
@@ -75,6 +76,7 @@ export function siteDto(engine: MockEngine, career: MockCareer, site: MockCandid
     expansionPotential: site.expansionPotential,
     profile: site.profile,
     owned,
+    nautical: site.nautical ?? null,
     options: site.compatibleFacilityTypes.flatMap((code) => {
       const type = typeOf(code);
       if (!type) return [];
@@ -95,14 +97,22 @@ export function siteDto(engine: MockEngine, career: MockCareer, site: MockCandid
   };
 }
 
-/** GET /sites?bbox=w,s,e,n[&family=] */
+/** `GET /sites?kind=`: every site (default), only the family sites, or only the nautical ones (Base nautica, D-23). */
+export type SiteKind = 'ALL' | 'STANDARD' | 'NAUTICAL';
+
+/**
+ * GET /sites?bbox=w,s,e,n[&family=][&kind=ALL|STANDARD|NAUTICAL] — like the backend, nautical sites are listed whatever
+ * `family` unless `kind` says otherwise: `STANDARD` = the family sites only, `NAUTICAL` = the nautical sites only.
+ */
 export function listSites(
   engine: MockEngine,
   career: MockCareer,
   bbox: [number, number, number, number] | null,
   family?: string | null,
+  kind: SiteKind = 'ALL',
 ): SiteDto[] {
   const sites = CANDIDATE_SITES.filter((s) => {
+    if (kind !== 'ALL' && (kind === 'NAUTICAL') !== !!s.nautical) return false;
     if (bbox) {
       const [w, south, e, n] = bbox;
       const [lng, lat] = s.position;
@@ -112,7 +122,13 @@ export function listSites(
   })
     .map((s) => siteDto(engine, career, s))
     // `family` matches the family of the facility types on offer, so SHARED sites are reachable with family=SHARED.
-    .filter((s) => !family || s.family === family || s.options.some((o) => o.family === family));
+    .filter(
+      (s) =>
+        !family ||
+        (kind !== 'STANDARD' && !!s.nautical) ||
+        s.family === family ||
+        s.options.some((o) => o.family === family),
+    );
   engine.save();
   return sites;
 }
@@ -137,6 +153,14 @@ export function acquireFacility(
   const site = typeof body.siteId === 'string' ? siteById(engine, body.siteId) : undefined;
   const type = typeof body.facilityTypeCode === 'string' ? typeOf(body.facilityTypeCode) : undefined;
   if (!site) throw new MockError(404, 'NOT_FOUND', 'Unknown site');
+  // D-23: a Base nautica stands only on a nautical site (its berth is on the water).
+  if (type?.domains.includes('WATER') && !site.nautical)
+    throw new MockError(
+      409,
+      'NAUTICAL_SITE_REQUIRED',
+      'A Base nautica can only be built on a nautical site (harbour, seafront or lake)',
+      { reason: 'NAUTICAL_SITE_REQUIRED', siteKind: 'STANDARD' },
+    );
   if (!type || !site.compatibleFacilityTypes.includes(type.code))
     throw new MockError(422, 'VALIDATION_ERROR', 'Facility type not compatible with this site', {
       compatibleFacilityTypes: site.compatibleFacilityTypes,
@@ -164,12 +188,17 @@ export function acquireFacility(
     name: custom || site.name,
     position: site.position,
     status: 'UNDER_CONSTRUCTION',
-    capacities: capacitiesFor(type.baseCapacity, site.capacityPoints),
+    // A Base nautica keeps boats only: the site's garage size does not apply to it.
+    capacities: capacitiesFor(
+      type.baseCapacity,
+      type.domains.includes('GROUND') ? site.capacityPoints : undefined,
+    ),
     upgrades: [],
     address: site.address,
     headquarters: false,
     operationalAt: iso(engine.now() + engine.dur(type.setupSeconds)),
     promotion: null,
+    nautical: site.nautical ?? null,
   };
   career.facilities.push(facility);
   career.facilityAddress[facility.id] = site.address;
@@ -267,13 +296,9 @@ export function transferVehicle(
   if (!type) throw new MockError(404, 'NOT_FOUND', 'Unknown vehicle type');
   if (target.id === vehicle.facilityId)
     throw new MockError(422, 'VALIDATION_ERROR', 'The vehicle is already based there');
-  if (target.status !== 'OPERATIONAL' || !type.compatibleFacilityTypes.includes(target.typeCode))
-    throw new MockError(422, 'VALIDATION_ERROR', 'Facility not compatible with this vehicle type', {
-      compatibleFacilityTypes: type.compatibleFacilityTypes,
-    });
-  const room = target.capacities.find((c) => c.domain === type.domain);
-  if (!room || room.total - room.used < type.capacityPoints)
-    throw new MockError(422, 'CAPACITY_EXCEEDED', 'No room in this facility', { domain: type.domain });
+  // Same gate as the shop (backend `assertBoatBase` + compatibility + room): a boat moves only to a Base nautica — the
+  // (free) move of a boat still kept at a fire station included (D-68).
+  engine.assertCanHost(type, target);
   const fromId = vehicle.facilityId;
   const shift = (f: FacilityDto, delta: number): FacilityDto => ({
     ...f,
@@ -296,7 +321,7 @@ export function transferVehicle(
   const seconds = engine.travelSeconds(distanceMeters, vehicle.typeCode);
   const moved = engine.patchVehicle(career, vehicleId, {
     facilityId: target.id,
-    position: target.position,
+    position: engine.homePositionOf(target, vehicle.typeCode),
     status: 'IN_DELIVERY',
     busyUntil: iso(engine.now() + engine.dur(seconds)),
   })!;
@@ -307,10 +332,69 @@ export function transferVehicle(
   return { vehicle: moved, facilities };
 }
 
+/** Boats kept at a facility that is not a Base nautica (grandfathered berths of a fire station, D-68 / studio 05 §2.4). */
+export function grandfatheredBoats(engine: MockEngine, career: MockCareer): VehicleDto[] {
+  return career.vehicles.filter((v) => {
+    const at = career.facilities.find((f) => f.id === v.facilityId);
+    return (
+      VEHICLE_TYPES.find((t) => t.code === v.typeCode)?.domain === 'WATER' &&
+      at !== undefined &&
+      !engine.isNauticalFacility(at) &&
+      v.status !== 'OUT_OF_SERVICE'
+    );
+  });
+}
+
+/**
+ * The backend's `offerBoatTransfer`: when the FIRST Base nautica becomes operational and boats are still kept at a fire
+ * station, a notification says they can move there for free (the transfer itself is the normal command).
+ */
+function offerBoatTransfer(engine: MockEngine, career: MockCareer, facility: FacilityDto): void {
+  if (!engine.isNauticalFacility(facility)) return;
+  const others = career.facilities.filter(
+    (f) => f.id !== facility.id && engine.isNauticalFacility(f) && f.status === 'OPERATIONAL',
+  );
+  if (others.length > 0) return;
+  const legacy = grandfatheredBoats(engine, career);
+  if (legacy.length === 0) return;
+  engine.notify(career, {
+    category: 'OPERATIONS',
+    priority: 'INFO',
+    title: text('notification.NAUTICAL_BASE_READY.title'),
+    body: text('notification.NAUTICAL_BASE_READY.body', { facility: facility.name, count: legacy.length }),
+    action: { kind: 'OPEN_VEHICLE', targetId: legacy[0]!.id },
+  });
+}
+
 export function installFacilities(engine: MockEngine): void {
   engine.hooks.facilityDetail.push((career, facility) => ({
     promotionOffer: promotionOffer(engine, career, facility),
   }));
+
+  /* ───────────── QA helpers (window.__rcMock.qa) ───────────── */
+  const helpers = {
+    /**
+     * Buys a Base nautica on a nautical site (default: the harbour of Pescara) through the normal acquisition — credits,
+     * level gate — and finishes its construction at once (same executor: the "move your boats" notification included).
+     * Returns the facility id.
+     */
+    buildNauticalBase: (siteKey = 'nautical-marina'): string => {
+      const career = engine.qa.career();
+      const site = CANDIDATE_SITES.find((s) => s.key === siteKey && s.nautical);
+      if (!site) throw new MockError(404, 'NOT_FOUND', 'Unknown nautical site');
+      const detail = acquireFacility(engine, career, {
+        siteId: siteId(engine, site),
+        facilityTypeCode: 'NAUTICAL_BASE',
+      });
+      const ready = engine.findAction(career, ['FACILITY_READY'], detail.id);
+      if (ready) engine.completeNow(career, ready);
+      engine.save();
+      return detail.id;
+    },
+  };
+  const attach = () => Object.assign(engine.qa, helpers as unknown as Partial<QaHelpers>);
+  if (engine.qa) attach();
+  else queueMicrotask(attach);
 
   engine.registerExecutor('FACILITY_READY', (career, action) => {
     const facility = career.facilities.find((f) => f.id === action.ref);
@@ -323,6 +407,7 @@ export function installFacilities(engine: MockEngine): void {
       title: text('notifications.facilityReady', { facility: next.name }),
       action: { kind: 'OPEN_FACILITY', targetId: next.id },
     });
+    offerBoatTransfer(engine, career, next);
   });
 
   engine.registerExecutor('PROMOTION_DONE', (career, action) => {

@@ -177,7 +177,9 @@
       "BROKE_DOWN": "Broke down on duty",
       "RECOVERY_STARTED": "Tow truck recovery ({cost} credits)",
       "RECOVERY_STARTED_FREE": "Tow truck recovery (free)",
-      "RECOVERED": "Towed back to the facility"
+      "RECOVERED": "Towed back to the facility",
+      "REFUELED": "Refuelled at base ({km} km)",
+      "REFUELED_ON_THE_WAY": "Refuelled at a fuel station on the way home ({km} km)"
     }
   },
   "notifications": {

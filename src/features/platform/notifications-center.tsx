@@ -39,6 +39,9 @@ import { EmptyState, Skeleton } from '@/components/ui/misc';
 import { Switch } from '@/components/ui/switch';
 import { SectionHelpButton, SectionPrimer } from '@/features/coaching/section-primer';
 import { useCareerId, useSnapshot } from '@/features/game/hooks';
+import { incidentScene } from '@/features/water/water';
+import { majorApi } from '@/features/major/api';
+import { isMajorNotification } from '@/features/major/major';
 import {
   CATEGORIES,
   filterNotifications,
@@ -92,13 +95,39 @@ export function useNotificationAction(): (n: Notification) => boolean {
         target.kind === 'incident'
           ? snapshot?.incidents.find((i) => i.id === target.id)
           : snapshot?.vehicles.find((v) => v.id === target.id);
+      // A major's notification points at its main scene: open the major's coordination view instead (D-24) — and, once the
+      // scene is closed, the summary of the major it belonged to.
+      if (target.kind === 'incident' && isMajorNotification(n)) {
+        const ref = entity && 'templateCode' in entity ? entity.major : null;
+        if (ref) {
+          router.push('/game');
+          useUiStore.getState().select({ kind: 'major', id: ref.id }, { focus: ref.center });
+          return true;
+        }
+        void qc
+          .fetchQuery({
+            queryKey: [...qk.majorList(careerId), 20],
+            queryFn: () => majorApi.list(careerId, 20),
+            staleTime: 10_000,
+          })
+          .then((list) => {
+            const major = list.find((m) => m.mainIncidentId === target.id);
+            if (!major) return router.push('/game/incidents');
+            router.push('/game');
+            useUiStore.getState().select({ kind: 'major', id: major.id }, { focus: major.center });
+          })
+          .catch(() => router.push('/game/incidents'));
+        return true;
+      }
       if (!entity) {
         // The incident is already closed / the vehicle was sold: fall back to the list of that area.
         router.push(target.kind === 'incident' ? '/game/incidents' : '/game/fleet');
         return true;
       }
       router.push('/game');
-      useUiStore.getState().select({ kind: target.kind, id: target.id }, { focus: entity.position });
+      // A water incident is focused on its scene on the water (D-68), where its marker is.
+      const focus = 'templateCode' in entity ? incidentScene(entity) : entity.position;
+      useUiStore.getState().select({ kind: target.kind, id: target.id }, { focus });
       return true;
     },
     [router, qc, careerId],
@@ -168,7 +197,7 @@ function PriorityBadge({ priority }: { priority: Priority }) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-[11px] leading-4 font-semibold',
+        'inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-xs leading-4 font-semibold',
         className,
       )}
     >
@@ -192,6 +221,8 @@ function NotificationRow({
   const format = useFormatter();
   const CategoryIcon = CATEGORY_ICON[n.category];
   const unread = n.readAt === null;
+  // Major incidents (D-24) stay traced in the centre, in their own colour.
+  const major = isMajorNotification(n);
   const hasAction = resolveAction(n.action).type !== 'none';
   const title = tx(n.title);
   const body = sameText(n.title, n.body) ? '' : tx(n.body);
@@ -206,24 +237,37 @@ function NotificationRow({
         data-unread={unread}
         data-category={n.category}
         data-priority={n.priority}
+        data-major={major || undefined}
         className={cn(
           'hover:bg-surface-2 relative flex min-h-16 w-full items-start gap-3 px-4 py-3 text-left',
           unread && 'bg-surface-2/60',
         )}
       >
-        <span aria-hidden className={cn('absolute inset-y-0 left-0 w-1', PRIORITY[n.priority].bar)} />
         <span
           aria-hidden
-          className="bg-surface-3 text-muted mt-0.5 grid size-9 shrink-0 place-items-center rounded-md"
+          className={cn('absolute inset-y-0 left-0 w-1', major ? 'bg-major' : PRIORITY[n.priority].bar)}
+        />
+        <span
+          aria-hidden
+          className={cn(
+            'mt-0.5 grid size-9 shrink-0 place-items-center rounded-md',
+            major ? 'bg-major/15 text-major' : 'bg-surface-3 text-muted',
+          )}
         >
-          <CategoryIcon className="size-4.5" />
+          {major ? <Siren className="size-4.5" /> : <CategoryIcon className="size-4.5" />}
         </span>
         <span className="flex min-w-0 flex-1 flex-col gap-1">
           <span className="flex flex-wrap items-center gap-1.5">
             <PriorityBadge priority={n.priority} />
-            <span className="text-muted text-[11px] font-semibold">{t(`category.${n.category}`)}</span>
+            {major ? (
+              <span className="text-major text-xs leading-4 font-bold tracking-wide uppercase">
+                {t('major')}
+              </span>
+            ) : (
+              <span className="text-muted text-xs font-semibold">{t(`category.${n.category}`)}</span>
+            )}
             {unread ? (
-              <span className="text-skyline inline-flex items-center gap-1 text-[11px] font-bold">
+              <span className="text-skyline inline-flex items-center gap-1 text-xs font-bold">
                 <span aria-hidden className="bg-skyline size-1.5 rounded-full" />
                 {t('unread')}
               </span>
@@ -231,7 +275,7 @@ function NotificationRow({
           </span>
           <span className={cn('text-sm', unread ? 'text-fg font-semibold' : 'text-muted')}>{title}</span>
           {body ? <span className="text-muted text-xs">{body}</span> : null}
-          <span className="text-muted text-[11px]">
+          <span className="text-muted text-xs">
             <time dateTime={n.createdAt}>{format.relativeTime(created, now)}</time>
             {hasAction ? <span> · {t(`action.${n.action.kind}`)}</span> : null}
           </span>
@@ -321,8 +365,12 @@ function NotificationsPanel({ onNavigate }: { onNavigate: () => void }) {
     <div className="flex h-full min-h-0 flex-col" data-testid="notifications-panel">
       <div className="border-border flex shrink-0 flex-col gap-2 border-b px-4 py-3">
         <SectionPrimer content={notificationsContent} />
-        <div className="flex items-center justify-between gap-3">
-          <label htmlFor={unreadSwitchId} className="flex min-h-11 items-center gap-2 text-sm lg:min-h-0">
+        {/* Wraps on a narrow phone (the read-all button goes under, to the right) instead of squeezing the label. */}
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+          <label
+            htmlFor={unreadSwitchId}
+            className="flex min-h-11 items-center gap-2 text-sm whitespace-nowrap lg:min-h-0"
+          >
             <Switch
               id={unreadSwitchId}
               checked={filter.unreadOnly}
@@ -339,7 +387,7 @@ function NotificationsPanel({ onNavigate }: { onNavigate: () => void }) {
           <Button
             variant="outline"
             size="sm"
-            className="h-11 lg:h-8"
+            className="ml-auto h-11 lg:h-8"
             disabled={unread === 0}
             loading={readAll.isPending}
             onClick={() => {
@@ -436,7 +484,7 @@ export function NotificationsButton() {
           <span
             aria-hidden
             data-testid="notifications-badge"
-            className="tabular bg-brand absolute top-1 right-1 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[10px] font-bold text-white"
+            className="tabular bg-brand absolute top-1 right-1 grid h-4.5 min-w-4.5 place-items-center rounded-full px-1 text-xs leading-none font-bold text-white"
           >
             {unread > 99 ? '99+' : unread}
           </span>

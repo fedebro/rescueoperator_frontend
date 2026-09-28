@@ -95,7 +95,8 @@
     "detail": {
       "upgradesAfterConstruction": "Upgrades can be built once the facility is operational.",
       "capsHint": "Maximum levels depend on the facility type ({type}): promote it to raise them.",
-      "notOperational": "Available once the facility is operational"
+      "notOperational": "Available once the facility is operational",
+      "showOnMap": "Show on the map"
     }
   },
   "notifications": {

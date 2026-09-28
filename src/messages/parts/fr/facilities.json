@@ -95,7 +95,8 @@
     "detail": {
       "upgradesAfterConstruction": "Les agrandissements pourront être construits une fois la base opérationnelle.",
       "capsHint": "Les niveaux maximum dépendent du type de base ({type}) : promouvez-la pour les relever.",
-      "notOperational": "Disponible une fois la base opérationnelle"
+      "notOperational": "Disponible une fois la base opérationnelle",
+      "showOnMap": "Afficher sur la carte"
     }
   },
   "notifications": {

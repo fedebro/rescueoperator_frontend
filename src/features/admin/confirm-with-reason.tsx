@@ -69,7 +69,7 @@ export function ConfirmWithReason({
         <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
           {targetId ? (
             <p className="text-sm">
-              <span className="text-subtle mr-2 text-[11px] font-semibold tracking-wide uppercase">
+              <span className="text-subtle mr-2 text-xs font-semibold tracking-wide uppercase">
                 {t('target')}
               </span>
               <code className="tabular bg-surface-2 rounded-sm px-1.5 py-0.5 text-xs break-all select-all">

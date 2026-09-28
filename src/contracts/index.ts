@@ -5,3 +5,4 @@ export * from './core-loop';
 export * from './integration';
 export * from './depth';
 export * from './business';
+export * from './major';

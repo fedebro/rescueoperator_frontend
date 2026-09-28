@@ -1,0 +1,130 @@
+{
+  "nautical": {
+    "section": "Emergencia en el agua",
+    "body": {
+      "SEA": "En el mar",
+      "LAKE": "En el lago",
+      "RIVER": "En el río",
+      "UNKNOWN": "En el agua"
+    },
+    "focusScene": "Punto en el agua",
+    "focusMeeting": "Punto de encuentro",
+    "roles": "Las embarcaciones van al punto en el agua; los medios terrestres se detienen en el punto de encuentro en la carretera, donde la embarcación lleva a los rescatados.",
+    "coastGuard": {
+      "title": "Hace falta una embarcación — intervienen los guardacostas",
+      "titleCovered": "Tus embarcaciones no bastan — intervienen los guardacostas",
+      "titleNoCoastGuard": "Hace falta una embarcación",
+      "covers": "{provider} se encarga del rescate en el agua ({list}).",
+      "shore": "Envía tus medios terrestres al punto de encuentro.",
+      "reward": "Recompensa reducida al {percent} %.",
+      "noCoastGuard": "En ríos y lagos los guardacostas no intervienen: necesitas una embarcación propia, que llega en remolque.",
+      "buyBase": "Comprar una base náutica",
+      "buyBoat": "Comprar una embarcación"
+    },
+    "requirements": {
+      "water": "En el agua",
+      "waterHint": "embarcaciones y medios aéreos, en el punto de la emergencia",
+      "shore": "En tierra",
+      "shoreHint": "medios terrestres, en el punto de encuentro",
+      "coastGuard": "Guardacostas"
+    },
+    "dispatch": {
+      "toScene": "En el agua",
+      "toMeetingPoint": "Al punto de encuentro",
+      "route": {
+        "DIRECT": "sale de su amarre",
+        "TRAILER": "en remolque, botadura en {place}",
+        "BANK": "en remolque, botadura desde la orilla"
+      },
+      "launchPoint": "un punto de botadura",
+      "legs": "{road} por carretera, {water} por agua",
+      "landAtWater": "No aporta nada necesario en el punto de encuentro: el rescate en el agua requiere una embarcación",
+      "boatOnLand": "Una embarcación no llega a una emergencia en tierra"
+    },
+    "shop": {
+      "title": "Dónde se guardan las embarcaciones",
+      "body": "Las embarcaciones se guardan solo en una base náutica, en el puerto, en el paseo marítimo o en un lago. En la misma agua salen directamente del amarre; los ríos y otros lagos se alcanzan en remolque.",
+      "none": "Aún no tienes una base náutica.",
+      "fromLevel": "desde el nivel {level}",
+      "bases": "Tus bases náuticas",
+      "building": "En construcción",
+      "berths": "{free, plural, =0 {Amarres completos} one {# amarre libre de {total}} other {# amarres libres de {total}}}",
+      "legacyMove": "{count, plural, one {Una embarcación sigue en un parque de bomberos: trasládala gratis a la base náutica.} other {# embarcaciones siguen en un parque de bomberos: trasládalas gratis a la base náutica.}}",
+      "legacyKeep": "{count, plural, one {Una embarcación sigue en un parque de bomberos: sigue operativa, y con una base náutica la trasladas gratis.} other {# embarcaciones siguen en un parque de bomberos: siguen operativas, y con una base náutica las trasladas gratis.}}",
+      "buyBase": "Comprar una base náutica",
+      "buyAnotherBase": "Otra base náutica",
+      "showSites": "Sitios náuticos en el mapa",
+      "noFacility": "Necesitas una base náutica: las embarcaciones no se guardan en los parques de bomberos.",
+      "noBerth": "Amarres completos: amplía el pantalán de tu base náutica.",
+      "pier": "Ampliar el pantalán"
+    },
+    "site": {
+      "badge": "Sitio náutico",
+      "badgeNamed": "Sitio náutico · {name}",
+      "filter": "Náuticos",
+      "listHint": "Puertos, paseos marítimos y lagos: el único lugar para abrir una base náutica y guardar embarcaciones.",
+      "candidate": "Sitio náutico disponible",
+      "mapTitle": "Sitios náuticos",
+      "mapHint": "{count, plural, =0 {Ningún sitio náutico cerca} one {# sitio náutico: tócalo para la base náutica} other {# sitios náuticos: toca uno para la base náutica}}",
+      "conditionsTitle": "Base náutica: condiciones",
+      "price": "Coste",
+      "level": "Desde el nivel {level}",
+      "berths": "{count, plural, one {# amarre} other {# amarres}}, hasta {max} con el pantalán",
+      "hosts": "Acoge las embarcaciones de bomberos, emergencias sanitarias y policía",
+      "water": "Amarre en: {name}",
+      "berthOnWater": "Amarre en el agua: las embarcaciones salen de aquí"
+    },
+    "facility": {
+      "title": "Base náutica",
+      "water": "Base náutica en: {name}",
+      "berths": "Amarres ocupados: {used} de {total}",
+      "howItWorks": "En la misma agua las embarcaciones salen directamente del amarre; los ríos y otros lagos se alcanzan en remolque hasta un punto de botadura. El pantalán añade amarres.",
+      "buyBoat": "Comprar una embarcación"
+    },
+    "transfer": {
+      "offer": "Trasladar gratis a la base náutica",
+      "hint": "Esta embarcación sigue en un parque de bomberos: trasládala gratis a {facility}.",
+      "noBerth": "Embarcación aún en un parque de bomberos: libera un amarre o amplía el pantalán para trasladarla gratis a la base náutica.",
+      "noBase": "Embarcación aún en un parque de bomberos: sigue operativa. Con una base náutica la trasladas gratis.",
+      "buyBase": "Comprar una base náutica",
+      "onlyAvailable": "Se traslada cuando está disponible en su sede.",
+      "done": "{callSign} se traslada a {facility}",
+      "boatOnly": "Las embarcaciones solo se guardan en una base náutica"
+    },
+    "fleet": {
+      "movable": "Trasladable gratis",
+      "legacy": "En el parque"
+    },
+    "errors": {
+      "NEEDS_NAUTICAL_BASE": "Las embarcaciones solo se guardan en una base náutica: compra una en un sitio náutico.",
+      "NAUTICAL_SITE_REQUIRED": "Una base náutica solo se abre en un sitio náutico: puerto, paseo marítimo o lago.",
+      "NO_ROOM_WATER": "Amarres completos en esta base náutica ({used} de {total}): amplía el pantalán.",
+      "NO_ROOM": "No queda sitio en esta sede ({used} de {total}): {upgrade}.",
+      "INCOMPATIBLE_FACILITY": "Esta sede no puede acoger este vehículo.",
+      "FACILITY_NOT_OPERATIONAL": "La sede aún está en construcción: podrás usarla en cuanto esté operativa."
+    },
+    "upgrade": {
+      "GARAGE": "amplía las cocheras",
+      "HELIPAD": "construye la helisuperficie"
+    },
+    "fix": {
+      "title": "No se ha podido completar",
+      "buyBase": "Comprar una base náutica",
+      "showNauticalSites": "Ver los sitios náuticos",
+      "pier": "Ampliar el pantalán",
+      "garage": "Ampliar las cocheras",
+      "helipad": "Construir la helisuperficie",
+      "newFacility": "Adquirir una sede",
+      "facility": "Abrir la sede"
+    }
+  },
+  "game": {
+    "dispatch": {
+      "chain": {
+        "reason": {
+          "BOAT_NEEDS_BASE": "Primero debe volver a su base náutica"
+        }
+      }
+    }
+  }
+}

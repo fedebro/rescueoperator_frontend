@@ -1,0 +1,107 @@
+{
+  "maxi": {
+    "alert": {
+      "severity": "Schweregrad des Hauptereignisses",
+      "boosted": "Schwerer als sonst auf deiner Stufe",
+      "sized": "Auf deine Flotte zugeschnitten: etwa {count} Fahrzeuge",
+      "linked": "{count, plural, one {# verknüpfter Einsatz bereits gemeldet} other {# verknüpfte Einsätze bereits gemeldet}}",
+      "reward": "Geschätzter Bonus",
+      "hint": "Schicke sofort Kräfte zum Hauptereignis: bleibt es unversorgt, weitet sich die Lage aus.",
+      "open": "Einsatz koordinieren",
+      "dismiss": "Schließen"
+    },
+    "view": {
+      "phase": "Phase der Großschadenslage",
+      "mainProgress": "Hauptereignis",
+      "expiresIn": "Niemand vor Ort: verloren in",
+      "endsIn": "Voraussichtliches Ende in",
+      "growth": "{level}-mal von {max} ausgeweitet",
+      "growthNext": "Bleibt das Hauptereignis unversorgt, weitet es sich aus in",
+      "otherNeeds": "Weiterer Bedarf",
+      "external": "Externe Unterstützung",
+      "byReinforcements": "Durch Verstärkung gedeckt",
+      "coverage": "{percent} % gedeckt",
+      "groupAria": "{family}: {onScene} % vor Ort, {enRoute} % unterwegs",
+      "needsCovered": "{covered} von {total} Bedarfen gedeckt",
+      "enRouteShare": "+{percent} % unterwegs",
+      "withReinforcements": "Mit Verstärkung",
+      "severity": "Schweregrad",
+      "sectorOpen": "{title} öffnen",
+      "sectorVehicles": "{count, plural, =0 {Kein Fahrzeug} one {# Fahrzeug} other {# Fahrzeuge}}",
+      "reinforcements": "Externe Verstärkung",
+      "quoteCover": "Sie decken",
+      "quoteCost": "Bonus",
+      "quoteEta": "Vor Ort in",
+      "priority": "Bevorzugte Unterstützung",
+      "columnShare": "{percent} % des Bedarfs",
+      "reinforcedTotal": "Durch Verstärkung gedeckt: {percent} % der Großschadenslage",
+      "summary": "Bilanz",
+      "reward": "Bonus der Großschadenslage",
+      "xp": "+{xp} XP",
+      "quality": "Qualität {percent} %",
+      "rewardHint": "Kommt zur Belohnung jedes Einsatzes hinzu: Je mehr deine eigene Flotte übernimmt, desto mehr verdienst du.",
+      "fleet": "Zugeschnitten auf {operational} einsatzbereite Fahrzeuge · Ziel {target}",
+      "loadError": "Die Großschadenslage konnte nicht geladen werden.",
+      "close": "Schließen",
+      "centerOnMap": "Auf der Karte zentrieren",
+      "boosted": "Über deiner Stufe",
+      "elapsed": "Läuft seit",
+      "needs": "Bedarf nach Dienst",
+      "needsHint": "Alle offenen Einsätze",
+      "needsNone": "Kein offener Bedarf",
+      "committed": "{count, plural, =0 {Kein Fahrzeug im Einsatz} one {# Fahrzeug im Einsatz} other {# Fahrzeuge im Einsatz}}",
+      "sectors": "Abschnitte · {count}"
+    },
+    "reinforcements": {
+      "requested": "Verstärkung angefordert",
+      "requestedBody": "Die Kolonne deckt {percent} % des Bedarfs."
+    },
+    "queue": {
+      "openAria": "Koordination der Großschadenslage öffnen: {title}",
+      "sectors": "{count, plural, one {# Abschnitt} other {# Abschnitte}}",
+      "pending": "{count, plural, one {# wartet} other {# warten}}",
+      "coordinate": "Koordinieren"
+    },
+    "member": {
+      "badge": "Groß",
+      "open": "Koordinieren"
+    },
+    "strip": {
+      "aria": "Laufende Großschadenslage öffnen: {title}",
+      "pending": "{count, plural, one {# Abschnitt wartet} other {# Abschnitte warten}}",
+      "open": "Koordinieren"
+    },
+    "toast": {
+      "linked": "Neuer Einsatz zur Großschadenslage",
+      "coordinate": "Koordinieren",
+      "phase": "Großschadenslage: Phase {phase}",
+      "endedBody": "Bonus von {credits} Credits",
+      "summary": "Bilanz"
+    },
+    "trophies": {
+      "title": "Großschadenslagen",
+      "subtitle": "Eine Medaille für jede Art bewältigter Großschadenslage: Gold ohne Verstärkung und ohne Ausweitung.",
+      "total": "{count, plural, =0 {Keine bewältigt} one {# bewältigt} other {# bewältigt}}",
+      "none": "Noch nicht",
+      "handled": "{handled} von {attempts} bewältigt",
+      "best": "beste {percent} %",
+      "locked": "ab Stufe {level}",
+      "history": "Letzte Großschadenslagen"
+    },
+    "dispatch": {
+      "majorCap": "Großschadenslage: bis zu {count} Fahrzeuge pro Alarmierung ({selected} ausgewählt)",
+      "capReached": "Höchstens {count} Fahrzeuge pro Alarmierung: schicke diese, dann füge die anderen hinzu"
+    }
+  },
+  "ledger": {
+    "MAJOR_INCIDENT": "Bonus Großschadenslage"
+  },
+  "notificationCenter": {
+    "major": "Großschadenslage"
+  },
+  "game": {
+    "queue": {
+      "majorMembers": "Einsätze der Großschadenslage"
+    }
+  }
+}

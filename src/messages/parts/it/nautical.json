@@ -1,0 +1,130 @@
+{
+  "nautical": {
+    "section": "Emergenza in acqua",
+    "body": {
+      "SEA": "In mare",
+      "LAKE": "Sul lago",
+      "RIVER": "Sul fiume",
+      "UNKNOWN": "In acqua"
+    },
+    "focusScene": "Punto in acqua",
+    "focusMeeting": "Punto di raccolta",
+    "roles": "Le barche vanno sul punto in acqua; i mezzi di terra si fermano al punto di raccolta sulla strada, dove la barca porta i recuperati.",
+    "coastGuard": {
+      "title": "Serve un mezzo acquatico — interviene la Guardia Costiera",
+      "titleCovered": "Le tue barche non bastano — interviene la Guardia Costiera",
+      "titleNoCoastGuard": "Serve un mezzo acquatico",
+      "covers": "{provider} si occupa del soccorso in acqua ({list}).",
+      "shore": "Invia i tuoi mezzi di terra al punto di raccolta.",
+      "reward": "Ricompensa ridotta al {percent}%.",
+      "noCoastGuard": "Su fiumi e laghi la Guardia Costiera non interviene: serve una tua barca, che ci arriva su carrello.",
+      "buyBase": "Acquista una Base nautica",
+      "buyBoat": "Acquista un mezzo acquatico"
+    },
+    "requirements": {
+      "water": "In acqua",
+      "waterHint": "barche e mezzi aerei, sul punto dell’emergenza",
+      "shore": "A terra",
+      "shoreHint": "mezzi di terra, al punto di raccolta",
+      "coastGuard": "Guardia Costiera"
+    },
+    "dispatch": {
+      "toScene": "In acqua",
+      "toMeetingPoint": "Al punto di raccolta",
+      "route": {
+        "DIRECT": "parte dall’ormeggio",
+        "TRAILER": "su carrello, varo a {place}",
+        "BANK": "su carrello, varo dalla riva"
+      },
+      "launchPoint": "un punto di varo",
+      "legs": "{road} su strada, {water} in acqua",
+      "landAtWater": "Al punto di raccolta non porta nulla che serva: il soccorso in acqua richiede una barca",
+      "boatOnLand": "Una barca non raggiunge un’emergenza a terra"
+    },
+    "shop": {
+      "title": "Dove stanno le barche",
+      "body": "Le barche si tengono solo in una Base nautica, al porto, sul lungomare o sul lago. Sulla stessa acqua partono subito dall’ormeggio; fiumi e altri laghi li raggiungono su carrello.",
+      "none": "Non hai ancora una Base nautica.",
+      "fromLevel": "dal livello {level}",
+      "bases": "Le tue Basi nautiche",
+      "building": "In costruzione",
+      "berths": "{free, plural, =0 {Ormeggi pieni} one {# ormeggio libero su {total}} other {# ormeggi liberi su {total}}}",
+      "legacyMove": "{count, plural, one {Una barca è ancora in caserma: spostala gratis nella Base nautica.} other {# barche sono ancora in caserma: spostale gratis nella Base nautica.}}",
+      "legacyKeep": "{count, plural, one {Una barca è ancora in caserma: resta operativa, e con una Base nautica la sposti gratis.} other {# barche sono ancora in caserma: restano operative, e con una Base nautica le sposti gratis.}}",
+      "buyBase": "Acquista una Base nautica",
+      "buyAnotherBase": "Un’altra Base nautica",
+      "showSites": "Siti nautici sulla mappa",
+      "noFacility": "Serve una Base nautica: le barche non stanno nelle caserme.",
+      "noBerth": "Ormeggi pieni: amplia il Pontile della tua Base nautica.",
+      "pier": "Amplia il Pontile"
+    },
+    "site": {
+      "badge": "Sito nautico",
+      "badgeNamed": "Sito nautico · {name}",
+      "filter": "Nautici",
+      "listHint": "Porti, lungomare e laghi: l’unico posto dove aprire una Base nautica e tenere le barche.",
+      "candidate": "Sito nautico disponibile",
+      "mapTitle": "Siti nautici",
+      "mapHint": "{count, plural, =0 {Nessun sito nautico in zona} one {# sito nautico: toccalo per la Base nautica} other {# siti nautici: toccane uno per la Base nautica}}",
+      "conditionsTitle": "Base nautica: condizioni",
+      "price": "Costo",
+      "level": "Dal livello {level}",
+      "berths": "{count, plural, one {# posto barca} other {# posti barca}}, fino a {max} con il Pontile",
+      "hosts": "Ospita le barche di Vigili del Fuoco, 118 e Polizia",
+      "water": "Ormeggio su: {name}",
+      "berthOnWater": "Ormeggio in acqua: le barche partono da qui"
+    },
+    "facility": {
+      "title": "Base nautica",
+      "water": "Base nautica su: {name}",
+      "berths": "Ormeggi occupati: {used} su {total}",
+      "howItWorks": "Sulla stessa acqua le barche partono subito dall’ormeggio; fiumi e altri laghi li raggiungono su carrello fino a un punto di varo. Il Pontile aggiunge ormeggi.",
+      "buyBoat": "Acquista un mezzo acquatico"
+    },
+    "transfer": {
+      "offer": "Trasferisci gratis alla Base nautica",
+      "hint": "Questa barca è ancora in caserma: spostala gratis in {facility}.",
+      "noBerth": "Barca ancora in caserma: libera un ormeggio o amplia il Pontile per spostarla gratis nella Base nautica.",
+      "noBase": "Barca ancora in caserma: resta operativa. Con una Base nautica la sposti gratis.",
+      "buyBase": "Acquista una Base nautica",
+      "onlyAvailable": "Si trasferisce quando è disponibile in sede.",
+      "done": "{callSign} va in {facility}",
+      "boatOnly": "Le barche stanno solo in una Base nautica"
+    },
+    "fleet": {
+      "movable": "Trasferibile gratis",
+      "legacy": "In caserma"
+    },
+    "errors": {
+      "NEEDS_NAUTICAL_BASE": "Le barche si tengono solo in una Base nautica: acquistane una su un sito nautico.",
+      "NAUTICAL_SITE_REQUIRED": "Una Base nautica si apre solo su un sito nautico: porto, lungomare o lago.",
+      "NO_ROOM_WATER": "Ormeggi pieni in questa Base nautica ({used} su {total}): amplia il Pontile.",
+      "NO_ROOM": "Nessun posto libero in questa sede ({used} su {total}): {upgrade}.",
+      "INCOMPATIBLE_FACILITY": "Questa sede non può ospitare questo mezzo.",
+      "FACILITY_NOT_OPERATIONAL": "La sede è ancora in costruzione: potrai usarla appena sarà operativa."
+    },
+    "upgrade": {
+      "GARAGE": "amplia l’autorimessa",
+      "HELIPAD": "costruisci l’elisuperficie"
+    },
+    "fix": {
+      "title": "Operazione non riuscita",
+      "buyBase": "Acquista una Base nautica",
+      "showNauticalSites": "Mostra i siti nautici",
+      "pier": "Amplia il Pontile",
+      "garage": "Amplia l’autorimessa",
+      "helipad": "Costruisci l’elisuperficie",
+      "newFacility": "Acquisisci una sede",
+      "facility": "Apri la sede"
+    }
+  },
+  "game": {
+    "dispatch": {
+      "chain": {
+        "reason": {
+          "BOAT_NEEDS_BASE": "Deve prima rientrare alla Base nautica"
+        }
+      }
+    }
+  }
+}

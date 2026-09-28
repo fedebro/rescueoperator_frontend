@@ -30,7 +30,7 @@ import { useUiStore } from '@/stores/ui';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { SectionPrimer } from '@/features/coaching/section-primer';
+import { SectionHelpButton, SectionPrimer } from '@/features/coaching/section-primer';
 import { useWorld } from './use-world';
 import { useWorldUi } from './world-ui';
 import { Popover } from './popover';
@@ -100,7 +100,7 @@ export function WorldWidget() {
           data-weather={world.weather.code}
           data-traffic={world.trafficLevel}
           data-phase={world.dayPhase}
-          className="text-fg hover:bg-surface-3 relative grid size-10 shrink-0 place-items-center rounded-md"
+          className="text-fg hover:bg-surface-3 relative grid size-11 shrink-0 place-items-center rounded-md"
         >
           <WeatherIcon className="size-5" aria-hidden />
           {world.closures.length > 0 || world.trafficLevel === 'SEVERE' ? (
@@ -169,7 +169,7 @@ function Row({ icon, title, children }: { icon: React.ReactNode; title: string; 
         {icon}
       </span>
       <div className="min-w-0 flex-1">
-        <h3 className="text-subtle text-[11px] font-bold tracking-[0.08em] uppercase">{title}</h3>
+        <h3 className="text-subtle text-xs font-bold tracking-[0.08em] uppercase">{title}</h3>
         {children}
       </div>
     </section>
@@ -189,6 +189,8 @@ export function WorldDetails({
   const t = useTranslations('world.widget');
   const tw = useTranslations('game.world');
   const twc = useTranslations('coaching.sections.world');
+  const tco = useTranslations('coaching');
+  const tc = useTranslations('common');
   const locale = useLocale();
   const name = useCatalogName();
   const router = useRouter();
@@ -274,11 +276,20 @@ export function WorldDetails({
           {world.closures.length > 0 ? <Badge tone="warning">{t('closuresEffect')}</Badge> : null}
         </div>
         {world.closures.length > 0 ? (
-          <Button variant="link" size="sm" className="mt-1 h-8" onClick={showClosures}>
+          <Button variant="link" size="sm" className="mt-1 h-11 lg:h-8" onClick={showClosures}>
             {t('showClosures')}
           </Button>
         ) : null}
       </Row>
+      {/* The primer of this panel, on demand (it only shows once by itself). */}
+      <div className="border-border -mb-1 flex justify-end border-t pt-1">
+        <SectionHelpButton
+          content={worldContent}
+          label={tco('help.buttonLabel')}
+          closeLabel={tc('close')}
+          withLabel
+        />
+      </div>
     </div>
   );
 }

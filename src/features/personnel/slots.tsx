@@ -138,7 +138,7 @@ export function DispatchCrewPreview({ option }: { option: DispatchOptionRow }) {
               <Gauge className="size-3" aria-hidden />
               {t('efficiency', { pct: Math.round(crew.efficiency * 100) })}
             </Badge>
-            <FatigueBandLabel band={crew.maxFatigueBand} className="text-[11px]" />
+            <FatigueBandLabel band={crew.maxFatigueBand} className="text-xs" />
           </>
         ) : null}
         {crew.missingQualifications.map((code) => (

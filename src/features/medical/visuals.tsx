@@ -80,7 +80,7 @@ export function MedicalChip({
     <span
       {...props}
       className={cn(
-        'inline-flex h-6 max-w-full shrink-0 items-center gap-1 rounded-full border px-2 text-[11px] font-semibold',
+        'inline-flex h-6 max-w-full shrink-0 items-center gap-1 rounded-full border px-2 text-xs font-semibold',
         visual.className,
         className,
       )}

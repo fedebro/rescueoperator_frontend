@@ -3,7 +3,7 @@ import * as React from 'react';
 import maplibregl, { type Map as MlMap } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { buildMapStyle } from './style';
+import { OSM_ATTRIBUTION, buildMapStyle } from './style';
 import { installImageGenerator } from './images';
 import { cn } from '@/lib/utils';
 import { useLatest } from '@/hooks/use-latest';
@@ -68,9 +68,16 @@ export function BaseMap({
     } // WebGL unavailable (very old webviews)
     map.touchZoomRotate.disableRotation();
     map.keyboard.disableRotation();
-    // OpenStreetMap attribution is always visible, never collapsed behind an (i) button.
-    map.addControl(new maplibregl.AttributionControl({ compact: false }), 'bottom-right');
-    if (interactive) map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+    // OpenStreetMap attribution is always visible, never collapsed behind an (i) button — and present from the first
+    // frame, not only once basemap tiles have loaded (D-83: the data is OSM's whether or not the tiles arrive).
+    map.addControl(
+      new maplibregl.AttributionControl({ compact: false, customAttribution: OSM_ATTRIBUTION }),
+      'bottom-right',
+    );
+    // Zoom buttons only for a mouse: on touch screens everyone pinches, and the 29 px buttons were tap traps (03 §2.7).
+    const touchOnly = window.matchMedia('(pointer: coarse)').matches;
+    if (interactive && !touchOnly)
+      map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
     installImageGenerator(map);
     (window as unknown as { __rcMap?: MlMap }).__rcMap = map;
 

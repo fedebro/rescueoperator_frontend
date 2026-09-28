@@ -76,7 +76,7 @@ export function InviteLanding({ code }: { code: string }) {
             </Button>
           )}
         </div>
-        <p className="text-subtle pb-4 text-center text-[11px]">{tc('disclaimer')}</p>
+        <p className="text-subtle pb-4 text-center text-xs">{tc('disclaimer')}</p>
       </div>
     </main>
   );

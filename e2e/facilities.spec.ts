@@ -19,7 +19,7 @@ test('acquire a facility from a candidate site, upgrade it and transfer a vehicl
 
   let siteId = '';
   await test.step('facilities page: nearby candidate sites, real vs generated, locked options', async () => {
-    await goTo(page, 'Sedi', true);
+    await goTo(page, 'Sedi');
     await expect(page.getByTestId('facility-detail')).toBeVisible();
     await expect(page.getByTestId('capacity-bar')).toHaveCount(6);
     await expect(page.getByTestId('promotion-card')).toHaveAttribute('data-state', 'LOCKED');
@@ -70,7 +70,9 @@ test('acquire a facility from a candidate site, upgrade it and transfer a vehicl
     const facility = page.getByTestId('facility-inspector');
     await expect(facility).toHaveAttribute('data-facility-status', 'UNDER_CONSTRUCTION');
     await expect(facility.getByTestId('construction-banner').getByTestId('countdown')).toBeVisible();
-    await expect(page.getByTestId('new-facility-mode')).toBeVisible();
+    // The mode switched itself off; entering it again is a Sedi-page action (no button on the map any more).
+    await expect(page.getByTestId('new-facility-banner')).toBeHidden();
+    await expect(page.getByTestId('new-facility-mode')).toHaveCount(0);
     await expect(page.getByTestId('credits')).not.toHaveText(before ?? '');
   });
 
@@ -108,7 +110,7 @@ test('acquire a facility from a candidate site, upgrade it and transfer a vehicl
     await expect(page.getByTestId('transfer-vehicle').first()).toBeDisabled();
     await qa(page, 'fastForward', 300);
     await expect(page.getByTestId('transfer-vehicle').first()).toBeEnabled();
-    await goTo(page, 'Sedi', true);
+    await goTo(page, 'Sedi');
     await page
       .getByRole('button', { name: new RegExp(facilityName) })
       .first()

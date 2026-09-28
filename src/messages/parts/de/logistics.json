@@ -177,7 +177,9 @@
       "BROKE_DOWN": "Panne im Einsatz",
       "RECOVERY_STARTED": "Bergung per Abschleppwagen ({cost} Credits)",
       "RECOVERY_STARTED_FREE": "Bergung per Abschleppwagen (kostenlos)",
-      "RECOVERED": "Zum Standort abgeschleppt"
+      "RECOVERED": "Zum Standort abgeschleppt",
+      "REFUELED": "An der Wache vollgetankt ({km} km)",
+      "REFUELED_ON_THE_WAY": "Auf dem Rückweg an einer Tankstelle vollgetankt ({km} km)"
     }
   },
   "notifications": {

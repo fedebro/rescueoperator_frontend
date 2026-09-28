@@ -5,6 +5,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import type { SyncSnapshot } from '@/contracts';
 import { qk } from '@/lib/api/query-keys';
 import { CAREER_ID, INCIDENT_ID, incident, snapshot } from '@/test/fixtures';
+import { MAJOR_ID, mainScene } from '@/test/major-fixtures';
 import { renderWithIntl } from '@/test/render';
 import { setAnalyticsSink } from '@/lib/analytics';
 import { useUiStore } from '@/stores/ui';
@@ -130,6 +131,38 @@ describe('NotificationsButton', () => {
     });
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     setAnalyticsSink(() => undefined);
+  });
+
+  it('a major incident’s notification stands apart and opens the major’s coordination view', async () => {
+    api.notifications.mockReset().mockResolvedValue([
+      n({
+        id: 'ntf_major',
+        category: 'OPERATIONS',
+        priority: 'CRITICAL',
+        title: { key: 'major.notification.STARTED.title', params: { fallback: 'Maxi-emergenza in corso' } },
+        body: { key: 'major.notification.STARTED.body', params: { fallback: 'Coordina i soccorsi' } },
+        action: { kind: 'OPEN_INCIDENT', targetId: INCIDENT_ID },
+      }),
+    ]);
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    client.setQueryData<SyncSnapshot>(
+      qk.sync(CAREER_ID),
+      snapshot({ unreadNotifications: 1, incidents: [mainScene()] }),
+    );
+    renderWithIntl(
+      <QueryClientProvider client={client}>
+        <CareerProvider value={CAREER_ID}>
+          <NotificationsButton />
+        </CareerProvider>
+      </QueryClientProvider>,
+    );
+    fireEvent.click(screen.getByTestId('notifications-button'));
+    const [item] = await screen.findAllByTestId('notification-item');
+    expect(item).toHaveAttribute('data-major', 'true');
+    expect(within(item!).getByText('Maxi-emergenza')).toBeInTheDocument();
+    fireEvent.click(item!);
+    await waitFor(() => expect(useUiStore.getState().selection).toEqual({ kind: 'major', id: MAJOR_ID }));
+    expect(push).toHaveBeenCalledWith('/game');
   });
 
   it('read-all clears the badge optimistically and rolls back when the server refuses', async () => {

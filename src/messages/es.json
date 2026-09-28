@@ -64,8 +64,13 @@
     "HOSPITAL_NOT_COMPATIBLE": "El hospital elegido no puede atender a este paciente.",
     "INVALID_STATE_TRANSITION": "Operación no permitida en este momento.",
     "FEATURE_DISABLED": "Esta función todavía no está activa.",
-    "VEHICLE_DOMAIN_MISMATCH": "Este medio no puede llegar a este tipo de lugar: tierra y agua necesitan medios distintos.",
-    "AIR_SUPPORT_NOT_NEEDED": "Esta emergencia no requiere un medio aéreo."
+    "VEHICLE_DOMAIN_MISMATCH": "Este medio no puede trabajar aquí: en el agua hacen falta embarcaciones, y en una emergencia en el agua los medios terrestres solo trabajan en el punto de encuentro.",
+    "AIR_SUPPORT_NOT_NEEDED": "Esta emergencia no requiere un medio aéreo.",
+    "NEEDS_NAUTICAL_BASE": "Las embarcaciones solo se compran para una base náutica o se trasladan a ella.",
+    "NAUTICAL_SITE_REQUIRED": "Una base náutica solo se abre en un sitio náutico: puerto, paseo marítimo o lago.",
+    "ENDURANCE_INSUFFICIENT": "La autonomía de vuelo no alcanza para ir y volver con la reserva: elige otro medio.",
+    "CANCEL_WINDOW_EXPIRED": "Demasiado tarde para deshacer el envío: ahora solo puedes retirar los vehículos.",
+    "DISPATCH_NOT_CANCELLABLE": "Este envío ya no se puede deshacer: un vehículo ya ha salido. Retíralo desde su ficha."
   },
   "errorBoundary": {
     "title": "Se ha producido un error",
@@ -242,7 +247,7 @@
       "more": "Más",
       "personnel": "Plantilla",
       "logistics": "Logística",
-      "credits": "Tienda de Créditos",
+      "credits": "Recargar Créditos",
       "network": "Tu red"
     },
     "topbar": {
@@ -293,19 +298,30 @@
       "label": "Mapa operativo"
     },
     "sheet": {
-      "handle": "Panel: arrastra o pulsa para cambiar la altura"
+      "handle": "Panel: arrastra o pulsa para cambiar la altura",
+      "collapse": "Reducir"
     },
     "inspector": {
       "label": "Detalle de la selección",
       "centerOnMap": "Centrar en el mapa",
-      "close": "Cerrar el detalle"
+      "close": "Cerrar el detalle",
+      "closed": {
+        "resolved": "Emergencia resuelta",
+        "expired": "Emergencia caducada",
+        "failed": "Emergencia fallida",
+        "cancelled": "Emergencia cancelada",
+        "closed": "Emergencia cerrada"
+      },
+      "backToList": "Volver a la lista"
     },
     "queue": {
       "title": "Emergencias",
       "pending": "{count, plural, one {# en espera} other {# en espera}}",
       "emptyTitle": "Todo tranquilo",
       "emptyOnDuty": "No hay emergencias activas. El próximo aviso llegará en breve.",
-      "emptyOffDuty": "Estás fuera de servicio: no llegarán nuevas emergencias."
+      "emptyOffDuty": "Estás fuera de servicio: no llegarán nuevas emergencias.",
+      "summary": "{count, plural, =0 {Ninguna emergencia} one {# emergencia} other {# emergencias}}",
+      "allIncidents": "Todas las emergencias"
     },
     "incident": {
       "severity": "Gravedad",
@@ -339,7 +355,12 @@
         "REQUIRED": "Necesario",
         "RECOMMENDED": "Recomendado",
         "OPTIONAL": "Opcional"
-      }
+      },
+      "forecast": "Cobertura prevista",
+      "missing": "falta: {list}",
+      "covered": "necesidades cubiertas",
+      "showDetails": "Mostrar el detalle de las necesidades",
+      "hideDetails": "Ocultar el detalle de las necesidades"
     },
     "dispatch": {
       "requirements": "Qué hace falta",
@@ -393,7 +414,9 @@
           "INVENTORY_NEEDS_RESTOCK": "Debe reabastecerse primero",
           "CREW_INSUFFICIENT": "Tripulación insuficiente",
           "CREW_UNQUALIFIED": "La tripulación no tiene la cualificación requerida",
-          "CREW_EXHAUSTED": "Tripulación demasiado fatigada"
+          "CREW_EXHAUSTED": "Tripulación demasiado fatigada",
+          "VEHICLE_RESTOCKING": "Reabasteciéndose en la base",
+          "FUEL_RESERVE": "Debe repostar primero"
         }
       }
     },
@@ -595,7 +618,7 @@
       },
       "DISPATCH": {
         "title": "Cada segundo cuenta",
-        "body": "Las barras muestran qué hace falta en el lugar. La central ya te propone los mejores vehículos: con un toque salen al instante."
+        "body": "La central ya te propone los mejores vehículos para lo que hace falta en el lugar: con un toque en el botón de abajo salen al instante."
       },
       "WATCH_ARRIVAL": {
         "title": "Tus vehículos están en camino",
@@ -609,6 +632,20 @@
         "title": "Un solo vehículo no cubre toda una ciudad",
         "body": "Usa la recompensa para un segundo vehículo de tu flota: a partir de ahora las emergencias no esperan, y más vehículos listos significan más vidas atendidas a la vez."
       }
+    },
+    "quickDispatch": {
+      "send": "Enviar",
+      "sendAria": "Enviar los vehículos recomendados: {title}",
+      "sent": "{count, plural, one {# vehículo enviado} other {# vehículos enviados}}",
+      "partial": "cobertura parcial",
+      "undo": "Deshacer",
+      "undone": "Envío anulado: vehículos retirados",
+      "undoFailed": "No se ha podido anular el envío",
+      "noRecommendation": "Ningún vehículo recomendado disponible",
+      "open": "Abrir",
+      "cancelled": "Envío anulado",
+      "recalledInstead": "Demasiado tarde para anular gratis: vehículos retirados",
+      "recall": "Retirar"
     }
   },
   "settings": {
@@ -1038,7 +1075,8 @@
     "SUPPLIES": "Existencias",
     "SPEEDUP": "Aceleración",
     "EXTERNAL_SUPPORT": "Apoyo externo",
-    "LEVEL_UP": "Premio por el nivel {level}"
+    "LEVEL_UP": "Premio por el nivel {level}",
+    "FUEL": "Combustible en gasolinera"
   },
   "outcome": {
     "note": {
@@ -1061,7 +1099,9 @@
     "incident_resolving": "Trabajo en el lugar terminado: quedan tareas de cierre",
     "incident_cancelled": "Emergencia anulada",
     "ung_arrived": "Apoyo externo en el lugar",
-    "ung_done": "Apoyo externo: trabajo completado"
+    "ung_done": "Apoyo externo: trabajo completado",
+    "vehicle_resupply_before_departure": "{callSign} se reabastece antes de salir",
+    "vehicle_refuel_stop": "{callSign} para en una gasolinera a repostar"
   },
   "away": {
     "event": {

@@ -62,7 +62,7 @@
       "REFUNDED": "Rimborsato"
     },
     "shop": {
-      "title": "Crediti",
+      "title": "Ricarica Crediti",
       "subtitle": "Sostieni il gioco e dai una spinta alla tua centrale. Facoltativo, sempre.",
       "balance": "Saldo attuale",
       "purchasedBalance": "di cui acquistati: {credits} (usati per ultimi)",

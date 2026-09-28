@@ -9,7 +9,9 @@
     },
     "external": {
       "familyTitle": "{family} — durch externe Unterstützung abgedeckt",
-      "notice": "{count, plural, one {{families} gehört noch nicht zu deinen Diensten: Dieser Teil wird von externer Unterstützung übernommen und zählt nicht für deine Bewertung.} other {{families} gehören noch nicht zu deinen Diensten: Dieser Teil wird von externer Unterstützung übernommen und zählt nicht für deine Bewertung.}} Schicke nur Fahrzeuge der Dienste, die du führst."
+      "notice": "{count, plural, one {{families} gehört noch nicht zu deinen Diensten: Dieser Teil wird von externer Unterstützung übernommen und zählt nicht für deine Bewertung.} other {{families} gehören noch nicht zu deinen Diensten: Dieser Teil wird von externer Unterstützung übernommen und zählt nicht für deine Bewertung.}} Schicke nur Fahrzeuge der Dienste, die du führst.",
+      "chip": "{families}: externe Unterstützung",
+      "chipInfo": "Warum? Erklärung anzeigen"
     },
     "attribution": {
       "title": "Wer übernimmt was",
@@ -54,7 +56,7 @@
       "domainFilter": "Nach Bereich filtern",
       "airNote": "Fliegt geradlinig mit {speed} km/h, unabhängig von Straßen und Verkehr. Benötigt einen Standort mit Landeplatz (Bereich Luft).",
       "trailerNote": "Fährt auf einem Anhänger über die Straße zum Einsatzort: etwas langsamer beim Ausrücken.",
-      "trailerNoteWater": "Boot auf Straßenanhänger: Es fährt bis zum Wasser und belegt einen Liegeplatz (Bereich Wasser).",
+      "trailerNoteWater": "Boot auf einem Straßenanhänger: Es steht in einer Wasserrettungsstation und legt vom Liegeplatz ab; Flüsse und andere Seen erreicht es per Anhänger (Bereich Wasser).",
       "reason": {
         "familyLocked": "Dienst gesperrt: wird auf Stufe {level} freigeschaltet",
         "noFacility": "Kein passender einsatzbereiter Standort. Benötigt: {types}",

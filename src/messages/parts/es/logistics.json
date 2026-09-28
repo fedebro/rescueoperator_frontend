@@ -177,7 +177,9 @@
       "BROKE_DOWN": "Avería en servicio",
       "RECOVERY_STARTED": "Recuperación con grúa ({cost} créditos)",
       "RECOVERY_STARTED_FREE": "Recuperación con grúa (gratuita)",
-      "RECOVERED": "Remolcado de vuelta a la sede"
+      "RECOVERED": "Remolcado de vuelta a la sede",
+      "REFUELED": "Depósito lleno en la base ({km} km)",
+      "REFUELED_ON_THE_WAY": "Repostaje en una gasolinera de regreso ({km} km)"
     }
   },
   "notifications": {

@@ -64,8 +64,13 @@
     "HOSPITAL_NOT_COMPATIBLE": "The chosen hospital can’t admit this patient.",
     "INVALID_STATE_TRANSITION": "This action isn’t allowed right now.",
     "FEATURE_DISABLED": "This feature isn’t active yet.",
-    "VEHICLE_DOMAIN_MISMATCH": "This vehicle cannot reach this kind of location: land and water need different vehicles.",
-    "AIR_SUPPORT_NOT_NEEDED": "This emergency does not call for an aircraft."
+    "VEHICLE_DOMAIN_MISMATCH": "This vehicle cannot work here: the water needs boats, and at an emergency on the water land units only work at the meeting point.",
+    "AIR_SUPPORT_NOT_NEEDED": "This emergency does not call for an aircraft.",
+    "NEEDS_NAUTICAL_BASE": "Boats can only be bought for, or moved to, a marine base.",
+    "NAUTICAL_SITE_REQUIRED": "A marine base can only open on a nautical site: a harbour, the seafront or a lake.",
+    "ENDURANCE_INSUFFICIENT": "Not enough flight endurance to get there and back with the reserve: pick another vehicle.",
+    "CANCEL_WINDOW_EXPIRED": "Too late to undo this dispatch: you can only recall the vehicles now.",
+    "DISPATCH_NOT_CANCELLABLE": "This dispatch can no longer be undone: a vehicle has already left. Recall it from its panel."
   },
   "errorBoundary": {
     "title": "An error occurred",
@@ -75,9 +80,9 @@
   },
   "offline": {
     "title": "Control room temporarily unreachable",
-    "body": "We can't reach the server right now. Your career is safe: your data lives there, not on this device. Check your connection and try again.",
+    "body": "We can’t reach the server right now. Your career is safe: your data lives there, not on this device. Check your connection and try again.",
     "retry": "Retry now",
-    "autoRetry": "We're already retrying automatically in the background."
+    "autoRetry": "We’re already retrying automatically in the background."
   },
   "notFound": {
     "title": "Page not found",
@@ -242,7 +247,7 @@
       "more": "More",
       "personnel": "Personnel",
       "logistics": "Logistics",
-      "credits": "Credit shop",
+      "credits": "Buy Credits",
       "network": "Your network"
     },
     "topbar": {
@@ -293,19 +298,30 @@
       "label": "Operations map"
     },
     "sheet": {
-      "handle": "Panel: drag or press to change height"
+      "handle": "Panel: drag or press to change height",
+      "collapse": "Collapse"
     },
     "inspector": {
       "label": "Selection details",
       "centerOnMap": "Centre on map",
-      "close": "Close details"
+      "close": "Close details",
+      "closed": {
+        "resolved": "Emergency resolved",
+        "expired": "Emergency expired",
+        "failed": "Emergency failed",
+        "cancelled": "Emergency cancelled",
+        "closed": "Emergency closed"
+      },
+      "backToList": "Back to the list"
     },
     "queue": {
       "title": "Emergencies",
       "pending": "{count, plural, one {# waiting} other {# waiting}}",
       "emptyTitle": "All quiet",
       "emptyOnDuty": "No active emergencies. The next call will come in shortly.",
-      "emptyOffDuty": "You’re off duty: no new emergencies will come in."
+      "emptyOffDuty": "You’re off duty: no new emergencies will come in.",
+      "summary": "{count, plural, =0 {No emergencies} one {# emergency} other {# emergencies}}",
+      "allIncidents": "All emergencies"
     },
     "incident": {
       "severity": "Severity",
@@ -339,7 +355,12 @@
         "REQUIRED": "Required",
         "RECOMMENDED": "Recommended",
         "OPTIONAL": "Optional"
-      }
+      },
+      "forecast": "Expected coverage",
+      "missing": "missing: {list}",
+      "covered": "requirements covered",
+      "showDetails": "Show the requirement details",
+      "hideDetails": "Hide the requirement details"
     },
     "dispatch": {
       "requirements": "What’s needed",
@@ -386,14 +407,16 @@
         "queueCancelled": "Queued assignment cancelled",
         "availableIn": "Free in {time}",
         "reason": {
-          "VEHICLE_NOT_RETURNING": "Still busy: redirectable once it's returning",
+          "VEHICLE_NOT_RETURNING": "Still busy: redirectable once it’s returning",
           "VEHICLE_INOPERABLE": "Out of service: needs a repair",
           "MAINTENANCE_DUE": "Maintenance due: must return to base first",
-          "GROUNDED_BY_CONDITIONS": "Can't depart in these conditions",
+          "GROUNDED_BY_CONDITIONS": "Can’t depart in these conditions",
           "INVENTORY_NEEDS_RESTOCK": "Needs to restock first",
           "CREW_INSUFFICIENT": "Not enough crew",
           "CREW_UNQUALIFIED": "Crew lacks the required qualification",
-          "CREW_EXHAUSTED": "Crew too fatigued"
+          "CREW_EXHAUSTED": "Crew too fatigued",
+          "VEHICLE_RESTOCKING": "Resupplying at base",
+          "FUEL_RESERVE": "Must refuel first"
         }
       }
     },
@@ -522,7 +545,7 @@
         "FAILURE": "Failed"
       },
       "subtitle": "End-of-mission report",
-      "firstMission": "Your first mission, completed. From here on, it's all on you.",
+      "firstMission": "Your first mission, completed. From here on, it’s all on you.",
       "stars": "{stars} out of 3 stars",
       "gross": "Gross reward",
       "net": "Net credited",
@@ -587,28 +610,42 @@
       "start": "Answer the call",
       "WELCOME": {
         "title": "The emergency line is ringing",
-        "body": "A call is coming in right now. Over the next few minutes you'll run your first mission start to finish: from the call to the vehicles' return. Ready, Director?"
+        "body": "A call is coming in right now. Over the next few minutes you’ll run your first mission start to finish: from the call to the vehicles’ return. Ready, Director?"
       },
       "SELECT_INCIDENT": {
-        "title": "There's a call waiting",
-        "body": "It's at the top of the emergency queue. Open it to see what's happening and who might be involved."
+        "title": "There’s a call waiting",
+        "body": "It’s at the top of the emergency queue. Open it to see what’s happening and who might be involved."
       },
       "DISPATCH": {
         "title": "Every second counts",
-        "body": "The bars show what's needed on scene. The control room already suggests the best vehicles: one tap and they're on their way."
+        "body": "The control room already suggests the best vehicles for what’s needed on scene: one tap on the button at the bottom and they’re on their way."
       },
       "WATCH_ARRIVAL": {
         "title": "Your vehicles are on the road",
-        "body": "Follow them on the map in real time. On arrival the operation starts on its own, based on how well the units on scene cover what's needed."
+        "body": "Follow them on the map in real time. On arrival the operation starts on its own, based on how well the units on scene cover what’s needed."
       },
       "OUTCOME": {
         "title": "First mission complete!",
         "body": "Check the report: reward, experience, and what you got right."
       },
       "BUY_VEHICLE": {
-        "title": "One vehicle can't cover a whole city",
-        "body": "Spend the reward on a second vehicle for your fleet: from here on, emergencies won't wait — more vehicles ready means more lives handled at once."
+        "title": "One vehicle can’t cover a whole city",
+        "body": "Spend the reward on a second vehicle for your fleet: from here on, emergencies won’t wait — more vehicles ready means more lives handled at once."
       }
+    },
+    "quickDispatch": {
+      "send": "Send",
+      "sendAria": "Send the recommended vehicles: {title}",
+      "sent": "{count, plural, one {# vehicle dispatched} other {# vehicles dispatched}}",
+      "partial": "partial coverage",
+      "undo": "Undo",
+      "undone": "Dispatch undone: vehicles recalled",
+      "undoFailed": "The dispatch could not be undone",
+      "noRecommendation": "No recommended vehicle available",
+      "open": "Open",
+      "cancelled": "Dispatch cancelled",
+      "recalledInstead": "Too late for a free undo: vehicles recalled",
+      "recall": "Recall"
     }
   },
   "settings": {
@@ -1038,7 +1075,8 @@
     "SUPPLIES": "Supplies",
     "SPEEDUP": "Speed-up",
     "EXTERNAL_SUPPORT": "External support",
-    "LEVEL_UP": "Level {level} reward"
+    "LEVEL_UP": "Level {level} reward",
+    "FUEL": "Fuel at a filling station"
   },
   "outcome": {
     "note": {
@@ -1061,7 +1099,9 @@
     "incident_resolving": "On-scene work complete: wrapping up",
     "incident_cancelled": "Incident cancelled",
     "ung_arrived": "External support on scene",
-    "ung_done": "External support: work completed"
+    "ung_done": "External support: work completed",
+    "vehicle_resupply_before_departure": "{callSign} resupplies before leaving",
+    "vehicle_refuel_stop": "{callSign} stops at a fuel station to refuel"
   },
   "away": {
     "event": {

@@ -14,8 +14,35 @@ export const TutorialAdvanceBody = z.object({ step: TutorialStep });
 export const DutyBody = z.object({ onDuty: z.boolean() });
 
 /** POST /careers/:id/incidents/:incidentId/dispatch → the updated incident and vehicles. */
-export const DispatchResultDto = z.object({ dispatchId: publicId(IdPrefix.dispatch), incident: IncidentDto, vehicles: z.array(VehicleDto) });
+export const DispatchResultDto = z.object({
+  dispatchId: publicId(IdPrefix.dispatch), incident: IncidentDto, vehicles: z.array(VehicleDto),
+  /**
+   * Additive: until when `★POST /dispatches/:dispatchId/cancel` undoes this dispatch for free — config
+   * `dispatch.cancelGraceSeconds` (default 6 s) after the dispatch, or sooner when a vehicle leaves its origin sooner (an
+   * aircraft at the end of its taxi). `null` = no free undo at all (a patrol car leaves at once, a queued auto-dispatch, the tutorial).
+   */
+  cancellableUntil: IsoDateTime.nullable().optional(),
+});
 export type DispatchResultDto = z.infer<typeof DispatchResultDto>;
+
+/**
+ * ★POST /careers/:id/dispatches/:dispatchId/cancel (Idempotency-Key, no body) — the free undo of a dispatch (the 5-second
+ * "Annulla" of the quick dispatch). Allowed within `cancellableUntil` and only while EVERY vehicle of the dispatch is still
+ * at its origin (PREPARING, or an aircraft still on its pad / taxiing): each vehicle is AVAILABLE again exactly as before
+ * (crew released without fatigue, the reload before departure put back on the shelf, fuel as it was), the incident gets
+ * back its previous state WITHOUT a new expiry window, the timeline gets a neutral `timeline.vehicle_dispatch_cancelled`
+ * line (no "recalled"), nothing is charged. Replaying it on a cancelled dispatch answers the same result.
+ * 409 `CANCEL_WINDOW_EXPIRED` (too late: recall the vehicles instead) · 409 `DISPATCH_NOT_CANCELLABLE` with
+ * `details.reason`: `VEHICLE_DEPARTED` (+ `details.vehicles`), `NOT_A_PLAYER_DISPATCH` (a chained redirect or a queued
+ * auto-dispatch), `TUTORIAL`, `DISPATCH_CLOSED` · 404 unknown dispatch.
+ */
+export const CancelDispatchResult = z.object({
+  dispatchId: publicId(IdPrefix.dispatch),
+  status: z.literal('CANCELLED'),
+  incident: IncidentDto,
+  vehicles: z.array(VehicleDto),
+});
+export type CancelDispatchResult = z.infer<typeof CancelDispatchResult>;
 
 /**
  * GET /careers/:id/sync?since=<seq> → the missed realtime events, or (`resyncRequired`) a full snapshot when the gap

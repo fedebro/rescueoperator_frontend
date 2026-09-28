@@ -14,6 +14,7 @@ import {
   FEATURES,
   INCIDENT_TEMPLATES,
   PATIENT_PROFILES,
+  VEHICLE_TYPES,
   bandFor,
 } from '../data/catalog';
 import { MockError, capacitiesFor, iso, text, type MockCareer, type MockEngine } from '../engine';
@@ -279,6 +280,34 @@ function hasWorsened(p: MockPatient, at: number): boolean {
 }
 
 const TREAT_SECONDS: Record<string, number> = { WHITE: 20, GREEN: 25, BLUE: 35, ORANGE: 45, RED: 55 };
+
+/**
+ * Mass-casualty care (major incidents, `depth.medical` defaults of the backend): a FIELD POST (posto medico avanzato,
+ * EMS_PMA — medical capability, MASS_CASUALTY ≥ `minMassCasualty`, transports nobody) treats faster on scene and releases
+ * the lighter triage codes there instead of sending them to hospital. The multi-patient vehicle (EMS_MAXI, tag
+ * MULTI_PATIENT, `patientCapacity` 4) carries several patients of the same incident to one hospital in one trip.
+ */
+export const FIELD_POST = {
+  minMassCasualty: 50,
+  treatmentSlots: 4,
+  speedBonus: 0.25,
+  releaseTriage: ['GREEN', 'WHITE', 'BLUE'],
+} as const;
+const TRIAGE_RANK: Record<string, number> = { RED: 0, ORANGE: 1, BLUE: 2, GREEN: 3, WHITE: 4 };
+/** Patients a vehicle carries at once (`patientCapacity`; 0 / NO_TRANSPORT = none, a normal ambulance = 1). */
+export const patientCapacityOf = (typeCode: string): number => {
+  const type = VEHICLE_TYPES.find((t) => t.code === typeCode);
+  if (!type || type.tags.includes('NO_TRANSPORT')) return 0;
+  return Math.max(1, type.patientCapacity);
+};
+export const isFieldPost = (vehicle: Pick<VehicleDto, 'capabilities'>): boolean => {
+  const value = (code: string) => vehicle.capabilities.find((c) => c.code === code)?.value ?? 0;
+  return (
+    (value('MEDICAL_BASIC') > 0 || value('MEDICAL_ADVANCED') > 0) &&
+    value('MASS_CASUALTY') >= FIELD_POST.minMassCasualty &&
+    value('PATIENT_TRANSPORT') <= 0
+  );
+};
 const ASSESS_SECONDS = 8;
 const PACKAGING_SECONDS = 6;
 const EXTERNAL_ARRIVAL_SECONDS = 40;
@@ -464,9 +493,13 @@ export function installMedical(engine: MockEngine): void {
       .treatment.filter((n) => n.level === 'REQUIRED')
       .every((n) => sum(n.capability) >= n.threshold);
 
-  /** One patient per ambulance: on-scene vehicles with PATIENT_TRANSPORT (never already carrying someone). */
+  /** On-scene vehicles that can carry patients (PATIENT_TRANSPORT, a patient capacity, never a NO_TRANSPORT field post). */
   const freeTransportVehicles = (career: MockCareer, incidentId: string): VehicleDto[] =>
-    onSceneVehicles(career, incidentId).filter((v) => hasCap(v, [TRANSPORT_CAP]));
+    onSceneVehicles(career, incidentId).filter(
+      (v) => hasCap(v, [TRANSPORT_CAP]) && patientCapacityOf(v.typeCode) > 0,
+    );
+  const fieldPostOnScene = (career: MockCareer, incidentId: string): boolean =>
+    onSceneVehicles(career, incidentId).some(isFieldPost);
 
   /** Anti-stall (D-31): if nobody of the player's fleet takes care of a patient, an external ambulance eventually does. */
   const ensureFallback = (career: MockCareer, incidentId: string, at: number) => {
@@ -512,7 +545,7 @@ export function installMedical(engine: MockEngine): void {
   const startTransport = (
     career: MockCareer,
     patientId: string,
-    body: { hospitalId: string; vehicleId?: string },
+    body: { hospitalId: string; vehicleId?: string; withPatientIds?: string[] },
     at: number,
     auto = false,
   ) => {
@@ -542,6 +575,13 @@ export function installMedical(engine: MockEngine): void {
       throw new MockError(409, 'VEHICLE_NOT_AVAILABLE', 'No on-scene vehicle can transport the patient', {
         vehicleIds: body.vehicleId ? [body.vehicleId] : [],
       });
+    const others = coPassengers(
+      career,
+      p,
+      hospital,
+      patientCapacityOf(vehicle.typeCode),
+      body.withPatientIds,
+    );
     const { path, distanceMeters } = engine.route(
       incident.position,
       hospital.position,
@@ -549,6 +589,111 @@ export function installMedical(engine: MockEngine): void {
       vehicle.typeCode,
     );
     const arriveAt = at + engine.dur(engine.travelSeconds(distanceMeters, vehicle.typeCode, career, path));
+    for (const passenger of [p, ...others]) board(career, passenger, vehicle, hospital, arriveAt, at);
+    const moving = engine.patchVehicle(career, vehicle.id, {
+      status: 'TRANSPORTING',
+      position: incident.position,
+      busyUntil: iso(arriveAt),
+      movement: { path, departAt: iso(at), arriveAt: iso(arriveAt), distanceMeters, purpose: 'TO_HOSPITAL' },
+    })!;
+    engine.log(
+      career,
+      incident.id,
+      'patient.transport_started',
+      others.length > 0
+        ? text('timeline.patient_transport_multi', {
+            callSign: vehicle.callSign,
+            hospital: hospital.name,
+            count: others.length + 1,
+          })
+        : text(auto ? 'timeline.patient_transport_auto' : 'timeline.patient_transport', {
+            callSign: vehicle.callSign,
+            hospital: hospital.name,
+          }),
+      at,
+      vehicle.id,
+    );
+    const next = engine.recompute(career, incident.id, at) ?? incident;
+    for (const other of others) emitPatient(career, other);
+    emitPatient(career, p, { vehicle: moving, incident: next });
+    refreshScene(career, incident.id, at);
+    afterPatientMoved(career, incident.id, at);
+    return {
+      patient: p.dto,
+      vehicle: moving,
+      incident: career.incidents.find((i) => i.id === incident.id),
+      boarded: others.map((o) => o.dto),
+    };
+  };
+
+  /**
+   * Who else rides a multi-patient vehicle (the backend's `coPassengers`): the listed ids (same incident, transportable, this
+   * hospital can take them, within the capacity) or — list omitted — the other patients waiting for transport that this
+   * hospital can take, worst triage first. A normal ambulance with a non-empty list: 409 SINGLE_PATIENT_VEHICLE.
+   */
+  const coPassengers = (
+    career: MockCareer,
+    primary: MockPatient,
+    hospital: MockHospital,
+    capacity: number,
+    requested: string[] | undefined,
+  ): MockPatient[] => {
+    const wanted = [...new Set(requested ?? [])];
+    if (capacity <= 1) {
+      if (wanted.length > 0)
+        throw new MockError(409, 'CONFLICT', 'This vehicle carries one patient at a time', {
+          reason: 'SINGLE_PATIENT_VEHICLE',
+        });
+      return [];
+    }
+    const fits = (x: MockPatient) => hospital.capabilities.includes(profileOf(x).hospital.required);
+    const sameIncident = patientsOf(career, primary.dto.incidentId).filter((x) => x !== primary);
+    if (requested !== undefined) {
+      if (wanted.length > capacity - 1)
+        throw new MockError(400, 'VALIDATION_ERROR', `This vehicle carries ${capacity} patients at most`, {
+          capacity,
+        });
+      return wanted.map((id) => {
+        const other = sameIncident.find((x) => x.dto.id === id);
+        if (!other) throw new MockError(404, 'NOT_FOUND', 'Patient not found');
+        if (
+          !['ASSESSED', 'TREATING', 'AWAITING_TRANSPORT'].includes(other.dto.status) ||
+          !other.dto.transportRequired
+        )
+          throw new MockError(409, 'CONFLICT', 'This patient cannot be moved right now', {
+            reason: 'PATIENT_NOT_TRANSPORTABLE',
+          });
+        if (!fits(other))
+          throw new MockError(
+            409,
+            'HOSPITAL_NOT_COMPATIBLE',
+            'This hospital cannot treat one of the patients',
+            {
+              patientId: id,
+            },
+          );
+        return other;
+      });
+    }
+    return sameIncident
+      .filter((x) => x.dto.status === 'AWAITING_TRANSPORT' && x.dto.transportRequired && fits(x))
+      .sort(
+        (a, b) =>
+          (TRIAGE_RANK[profileOf(a).triage] ?? 9) - (TRIAGE_RANK[profileOf(b).triage] ?? 9) ||
+          a.dto.label.localeCompare(b.dto.label),
+      )
+      .slice(0, capacity - 1);
+  };
+
+  /** One patient aboard: in transport with the vehicle, towards the hospital, arriving with it. */
+  const board = (
+    career: MockCareer,
+    p: MockPatient,
+    vehicle: VehicleDto,
+    hospital: MockHospital,
+    arriveAt: number,
+    at: number,
+  ) => {
     const profile = profileOf(p);
     const escorted =
       capsOf([vehicle])(profile.transport.escortCapability ?? 'MEDICAL_BASIC') >=
@@ -565,39 +710,21 @@ export function installMedical(engine: MockEngine): void {
     );
     engine.cancelActions(
       career,
-      (a) => a.ref === p.dto.id && (a.type === 'PATIENT_AUTO_TRANSPORT' || a.type === 'PATIENT_FALLBACK'),
+      (a) =>
+        a.ref === p.dto.id &&
+        (a.type === 'PATIENT_AUTO_TRANSPORT' || a.type === 'PATIENT_FALLBACK' || a.type === 'PATIENT_STEP'),
     );
+    p.stabilized = p.stabilized || p.dto.status === 'AWAITING_TRANSPORT';
     p.dto = {
       ...p.dto,
       status: 'IN_TRANSPORT',
+      transportRequired: true,
       assignedVehicleId: vehicle.id,
       hospitalId: hospital.id,
       busyUntil: iso(arriveAt),
     };
     publish(p, true);
-    const moving = engine.patchVehicle(career, vehicle.id, {
-      status: 'TRANSPORTING',
-      position: incident.position,
-      busyUntil: iso(arriveAt),
-      movement: { path, departAt: iso(at), arriveAt: iso(arriveAt), distanceMeters, purpose: 'TO_HOSPITAL' },
-    })!;
     scheduleAt(career, 'PATIENT_ARRIVE_HOSPITAL', arriveAt, p.dto.id);
-    engine.log(
-      career,
-      incident.id,
-      'patient.transport_started',
-      text(auto ? 'timeline.patient_transport_auto' : 'timeline.patient_transport', {
-        callSign: vehicle.callSign,
-        hospital: hospital.name,
-      }),
-      at,
-      vehicle.id,
-    );
-    const next = engine.recompute(career, incident.id, at) ?? incident;
-    emitPatient(career, p, { vehicle: moving, incident: next });
-    refreshScene(career, incident.id, at);
-    afterPatientMoved(career, incident.id, at);
-    return { patient: p.dto, vehicle: moving, incident: career.incidents.find((i) => i.id === incident.id) };
   };
 
   const externalTakeover = (career: MockCareer, p: MockPatient, at: number) => {
@@ -743,7 +870,9 @@ export function installMedical(engine: MockEngine): void {
         const advanced = profile.treatment.some(
           (n) => n.capability === 'MEDICAL_ADVANCED' && sum(n.capability) >= n.threshold,
         );
-        const endsAt = at + engine.dur((TREAT_SECONDS[profile.triage] ?? 35) * (advanced ? 0.8 : 1));
+        // A field post on the scene (EMS_PMA) treats faster (`speedBonus`, mass-casualty care).
+        const post = fieldPostOnScene(career, incidentId) ? 1 + FIELD_POST.speedBonus : 1;
+        const endsAt = at + engine.dur(((TREAT_SECONDS[profile.triage] ?? 35) * (advanced ? 0.8 : 1)) / post);
         p.dto = { ...p.dto, status: 'TREATING', busyUntil: iso(endsAt) };
         scheduleAt(career, 'PATIENT_STEP', endsAt, p.dto.id);
       }
@@ -759,7 +888,15 @@ export function installMedical(engine: MockEngine): void {
         p.dto = { ...p.dto, status: 'AWAITING_TRANSPORT', transportRequired: true, busyUntil: null };
       }
     } else if (p.dto.status === 'STABILIZED') {
-      if (p.dto.transportRequired) p.dto = { ...p.dto, status: 'AWAITING_TRANSPORT', busyUntil: null };
+      // A field post on scene treats the lighter triage codes definitively: released there, no hospital leg.
+      const releasedByPost =
+        p.dto.transportRequired === true &&
+        (FIELD_POST.releaseTriage as readonly string[]).includes(profileOf(p).triage) &&
+        fieldPostOnScene(career, incidentId);
+      if (releasedByPost) {
+        finish(career, p, 'RELEASED_ON_SCENE', at);
+        engine.log(career, incidentId, 'patient.updated', text('timeline.patient_released_field_post'), at);
+      } else if (p.dto.transportRequired) p.dto = { ...p.dto, status: 'AWAITING_TRANSPORT', busyUntil: null };
       else {
         finish(career, p, 'RELEASED_ON_SCENE', at);
         engine.log(career, incidentId, 'patient.updated', text('timeline.patient_released'), at);
@@ -842,8 +979,15 @@ export function installMedical(engine: MockEngine): void {
     const carrier = career.vehicles.find((v) => v.id === p.dto.assignedVehicleId);
     admit(career, hospital, at);
     finish(career, p, 'ADMITTED', at);
+    // A multi-patient vehicle leaves the hospital after the LAST handoff of the patients it carried.
+    const stillAboard = medicalState(career).patients.some(
+      (x) =>
+        x !== p &&
+        x.dto.assignedVehicleId === carrier?.id &&
+        (x.dto.status === 'IN_TRANSPORT' || x.dto.status === 'HANDOFF'),
+    );
     const vehicle =
-      carrier && carrier.status === 'AT_HOSPITAL'
+      carrier && carrier.status === 'AT_HOSPITAL' && !stillAboard
         ? engine.sendHome(career, carrier, at, hospital.position)
         : null;
     const incident = career.incidents.find((i) => i.id === p.dto.incidentId);
@@ -969,8 +1113,8 @@ export interface MedicalApi {
   transport: (
     career: MockCareer,
     id: string,
-    body: { hospitalId: string; vehicleId?: string },
-  ) => { patient: PatientDto; vehicle: VehicleDto; incident?: IncidentDto };
+    body: { hospitalId: string; vehicleId?: string; withPatientIds?: string[] },
+  ) => { patient: PatientDto; vehicle: VehicleDto; incident?: IncidentDto; boarded: PatientDto[] };
   hospitals: (career: MockCareer) => HospitalDto[];
 }
 const medicalApis = new WeakMap<MockEngine, MedicalApi>();

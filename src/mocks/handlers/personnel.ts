@@ -34,6 +34,11 @@ export const personnelHandlers: DomainHandlers = ({
       url(`${C}/personnel/hire`),
       command((_ctx, body, career) => domain().quickHire(career, body), 201),
     ),
+    // Literal segment before `:personnelId` (MSW matches in order), like the backend's route registry.
+    http.get(
+      url(`${C}/personnel/vehicle-crew-gaps`),
+      route((ctx) => ok(domain().vehicleCrewGaps(careerOf(ctx)))),
+    ),
     http.get(
       url(`${C}/personnel/:personnelId`),
       route((ctx) => ok(domain().detail(careerOf(ctx), id(ctx.params.personnelId)))),
