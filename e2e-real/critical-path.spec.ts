@@ -46,7 +46,8 @@ test('critical path: sign-up → career → first mission → reward → purchas
   await test.step('the server generated the scripted first mission', async () => {
     await expect(page.getByTestId('map')).toHaveAttribute('data-ready', 'true');
     await expect(page.getByTestId('tutorial')).toHaveAttribute('data-step', 'WELCOME');
-    await expect(page.getByTestId('active-incidents')).toContainText('1');
+    // The incident count lives in the queue (the sheet's summary row on phones), not in the top bar any more.
+    await expect(page.getByTestId('incident-card')).toHaveCount(1);
     // Catalog texts come from GET /public/i18n/catalog/:locale — a missing bundle would leave a humanised key here.
     await expect(page.getByTestId('incident-card').first()).not.toContainText(/incident\.[A-Z_]+/);
     await page.getByTestId('tutorial-start').click();

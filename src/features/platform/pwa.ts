@@ -93,12 +93,23 @@ let reloadedForUpdate = false;
  * they have. Game state is server-authoritative (the reload itself is already covered by the core-loop e2e test),
  * so a full reload the instant a new worker takes control is safe, not just convenient.
  */
-export function watchForUpdates(registration: ServiceWorkerRegistration): () => void {
+export function watchForUpdates(
+  registration: ServiceWorkerRegistration,
+  reload: () => void = () => window.location.reload(),
+): () => void {
   if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return () => undefined;
+  // The very first install claims a page nothing controlled yet: no old code is running, so there is nothing to
+  // refresh — and reloading there hit every first-time visitor a few seconds after landing, wiping the e-mail they
+  // were typing or cancelling the "send me the code" request. Only a real update (a controller replaced) reloads.
+  let controlled = !!navigator.serviceWorker.controller;
   const onControllerChange = () => {
+    if (!controlled) {
+      controlled = true;
+      return;
+    }
     if (reloadedForUpdate) return; // a broken deploy must not reload-loop the player forever
     reloadedForUpdate = true;
-    window.location.reload();
+    reload();
   };
   navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
   // The browser only checks for a new sw.js on its own around normal navigations, which a long-lived game tab

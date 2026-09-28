@@ -78,3 +78,41 @@ describe('public/sw.js', () => {
     expect(source).toContain('caches.match(OFFLINE_URL)');
   });
 });
+
+describe('watchForUpdates', () => {
+  const fakeRegistration = () =>
+    ({ update: vi.fn().mockResolvedValue(undefined) }) as unknown as ServiceWorkerRegistration;
+  const installWorkerContainer = (controlled: boolean) => {
+    const container = Object.assign(new EventTarget(), { controller: controlled ? {} : null });
+    Object.defineProperty(navigator, 'serviceWorker', { value: container, configurable: true });
+    return container;
+  };
+  afterEach(() => {
+    Reflect.deleteProperty(navigator, 'serviceWorker');
+  });
+
+  it('never reloads when the first install claims an uncontrolled page (a first-time visitor keeps what they typed)', async () => {
+    vi.resetModules();
+    const { watchForUpdates } = await import('./pwa');
+    const container = installWorkerContainer(false);
+    const reload = vi.fn();
+    const stop = watchForUpdates(fakeRegistration(), reload);
+    container.dispatchEvent(new Event('controllerchange')); // the first claim
+    expect(reload).not.toHaveBeenCalled();
+    container.dispatchEvent(new Event('controllerchange')); // a real update later in the same session
+    expect(reload).toHaveBeenCalledTimes(1);
+    stop();
+  });
+
+  it('reloads once when a page already controlled gets a new worker, never in a loop', async () => {
+    vi.resetModules();
+    const { watchForUpdates } = await import('./pwa');
+    const container = installWorkerContainer(true);
+    const reload = vi.fn();
+    const stop = watchForUpdates(fakeRegistration(), reload);
+    container.dispatchEvent(new Event('controllerchange'));
+    container.dispatchEvent(new Event('controllerchange'));
+    expect(reload).toHaveBeenCalledTimes(1);
+    stop();
+  });
+});

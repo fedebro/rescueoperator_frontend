@@ -44,7 +44,7 @@ test('medical: EMS site → ambulance → crew → patient assessed → hospital
   });
 
   await test.step('acquire an EMS site from the real candidate sites', async () => {
-    await goTo(page, 'Sedi', true);
+    await goTo(page, 'Sedi');
     await expect(page).toHaveURL(/\/game\/facilities$/);
     const section = page.getByTestId('new-facility-section');
     await expect(section).toBeVisible({ timeout: 60_000 });
@@ -82,7 +82,11 @@ test('medical: EMS site → ambulance → crew → patient assessed → hospital
     await goTo(page, 'Flotta');
     await page.getByText('MSB 1', { exact: true }).first().click();
     await speedUp(page);
-    await expect(page.getByTestId('available-vehicles')).toContainText(/[2-9]/, { timeout: 120_000 });
+    // The fleet page's summary replaced the top-bar counter of available vehicles (opening a vehicle shows it on the map).
+    await goTo(page, 'Flotta');
+    await expect(page.getByText(/\d+ mezz[oi] · ([2-9]|\d{2,}) disponibili/)).toBeVisible({
+      timeout: 120_000,
+    });
   });
 
   await test.step('hire the EMS crew and speed up the onboarding', async () => {
@@ -116,7 +120,12 @@ test('medical: EMS site → ambulance → crew → patient assessed → hospital
     const card = page.locator(`[data-testid="incident-card"][data-incident-id="${incidentId}"]`);
     await expect(card).toBeVisible({ timeout: 60_000 });
     await card.click();
-    await expect(page.getByTestId('incident-patients')).toBeVisible();
+    const patients = page.getByTestId('incident-patients');
+    await expect(patients).toBeVisible();
+    // Collapsed by default, with the count and the triage state in its header (study 03 §2.4): open it to follow the
+    // patient cards through assessment and transport.
+    if ((await patients.getAttribute('data-expanded')) === 'false')
+      await patients.getByTestId('patients-toggle').click();
     await page.getByTestId('send-recommended').click();
     await expect(page.getByTestId('assigned-vehicle').first()).toBeVisible();
   });
