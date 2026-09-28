@@ -35,6 +35,28 @@ export function useInstallMode(): InstallMode {
   });
 }
 
+/** Safari's three taps to add the game to the Home Screen (also used by the push sheet on iPhone / iPad). */
+export function IosInstallSteps({ children }: { children?: React.ReactNode }) {
+  const t = useTranslations('platform.pwa');
+  return (
+    <ol className="flex flex-col gap-3 text-sm" data-testid="ios-install-steps">
+      <li className="flex items-start gap-3">
+        <Share className="text-skyline mt-0.5 size-5 shrink-0" aria-hidden />
+        <span>{t('iosStep1')}</span>
+      </li>
+      <li className="flex items-start gap-3">
+        <PlusSquare className="text-skyline mt-0.5 size-5 shrink-0" aria-hidden />
+        <span>{t('iosStep2')}</span>
+      </li>
+      <li className="flex items-start gap-3">
+        <CheckCircle2 className="text-skyline mt-0.5 size-5 shrink-0" aria-hidden />
+        <span>{t('iosStep3')}</span>
+      </li>
+      {children}
+    </ol>
+  );
+}
+
 /** iOS has no programmatic prompt: explain the two taps. */
 export function IosInstallDialog({
   open,
@@ -48,20 +70,7 @@ export function IosInstallDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent title={t('iosTitle')} description={t('iosIntro')} closeLabel={tc('close')}>
-        <ol className="flex flex-col gap-3 text-sm" data-testid="ios-install-steps">
-          <li className="flex items-start gap-3">
-            <Share className="text-skyline mt-0.5 size-5 shrink-0" aria-hidden />
-            <span>{t('iosStep1')}</span>
-          </li>
-          <li className="flex items-start gap-3">
-            <PlusSquare className="text-skyline mt-0.5 size-5 shrink-0" aria-hidden />
-            <span>{t('iosStep2')}</span>
-          </li>
-          <li className="flex items-start gap-3">
-            <CheckCircle2 className="text-skyline mt-0.5 size-5 shrink-0" aria-hidden />
-            <span>{t('iosStep3')}</span>
-          </li>
-        </ol>
+        <IosInstallSteps />
         <DialogFooter>
           <Button variant="secondary" onClick={() => onOpenChange(false)}>
             {tc('close')}

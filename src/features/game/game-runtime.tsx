@@ -22,6 +22,8 @@ import { BrandSplash } from '@/components/brand/splash';
 import { Button } from '@/components/ui/button';
 import { CoreAnalyticsTracker } from '@/features/platform/core-analytics';
 import { InstallHint } from '@/features/platform/install-app';
+import { PushRuntime } from '@/features/push/push-prompt';
+import { DeepLinkFocus } from '@/features/push/deep-link-focus';
 import {
   isSevereIncidentNotification,
   resolveAction,
@@ -400,6 +402,9 @@ export function GameRuntime({ careerId, children }: { careerId: string; children
     <CareerProvider value={careerId}>
       {children}
       <InstallHint tutorialCompleted={snapshot.data.career.tutorial.completed} />
+      {/* Web push (D-97…D-99): the once-per-release permission sheet, silent re-subscription, notification deep links. */}
+      <PushRuntime tutorialCompleted={snapshot.data.career.tutorial.completed} />
+      <DeepLinkFocus />
     </CareerProvider>
   );
 }

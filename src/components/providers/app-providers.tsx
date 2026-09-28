@@ -12,6 +12,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useSettingsStore } from '@/stores/settings';
 import { BrandSplash } from '@/components/brand/splash';
 import { PlatformBootstrap } from '@/features/platform/platform-bootstrap';
+import { ServiceWorkerNavigation } from '@/features/push/sw-navigation';
 
 function makeQueryClient(): QueryClient {
   return new QueryClient({
@@ -104,6 +105,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
       <TooltipProvider delayDuration={250}>
         <MotionPreference />
         <PlatformBootstrap />
+        <ServiceWorkerNavigation />
         <MockGate>
           <CatalogTextsProvider>
             <AuthBootstrap>{children}</AuthBootstrap>

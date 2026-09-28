@@ -75,6 +75,8 @@ export interface BootOptions {
   email?: string;
   /** Mock time compression for this test (default: the server default, ×12). */
   speed?: number;
+  /** Keep the push-permission sheet of this release (default: already shown — see `dismissPushPrompt`). */
+  pushPrompt?: boolean;
 }
 
 /** Creates a ready-to-play career in the mock backend and lands on /game. Returns the director name. */
@@ -101,6 +103,7 @@ export async function bootCareer(page: Page, projectName: string, opts: BootOpti
     },
   );
   await dismissInstallHint(page);
+  if (!opts.pushPrompt) await dismissPushPrompt(page);
   await page.goto('/game');
   await expect(page.getByTestId('topbar')).toBeVisible();
   return directorName;
@@ -126,6 +129,35 @@ export async function dismissInstallHint(page: Page): Promise<void> {
       JSON.stringify({
         ...saved,
         state: { ...saved.state, installHintDismissed: true },
+        version: saved.version ?? 1,
+      }),
+    );
+  });
+}
+
+/**
+ * The push-permission sheet (D-98) opens a few seconds into a game session, once per release, on every device without
+ * notifications — headless Chromium reports the permission as "denied" (the "blocked" card), the iPhone project gets the
+ * Home Screen variant. A modal landing at a random moment breaks unrelated specs, so booted careers start with it already
+ * shown for THIS build: the same per-device memory the sheet writes (`rc-push` → `promptedRelease`), keyed by the
+ * build's `<meta name="rc-release">`. e2e/push.spec.ts covers the sheet itself. Takes effect on the next load.
+ */
+export async function dismissPushPrompt(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const release = document.querySelector('meta[name="rc-release"]')?.getAttribute('content');
+    if (!release) throw new Error('<meta name="rc-release"> is missing: is this a build of the game?');
+    const key = 'rc-push';
+    let saved: { state?: Record<string, unknown>; version?: number } = {};
+    try {
+      saved = JSON.parse(localStorage.getItem(key) ?? '{}') as typeof saved;
+    } catch {
+      saved = {};
+    }
+    localStorage.setItem(
+      key,
+      JSON.stringify({
+        ...saved,
+        state: { ...saved.state, promptedRelease: release },
         version: saved.version ?? 1,
       }),
     );

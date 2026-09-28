@@ -27,6 +27,8 @@ export const IdPrefix = {
   /* major incidents (D-24/D-69) */
   majorIncident: 'mjr',
   majorReinforcement: 'rnf',
+  /* web push (D-97…D-99) */
+  pushSubscription: 'psb',
 } as const;
 
 export const IsoDateTime = z.string().datetime({ offset: true });

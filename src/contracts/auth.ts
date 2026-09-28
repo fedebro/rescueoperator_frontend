@@ -67,6 +67,11 @@ export const AuthResult = z.object({
 export type AuthResult = z.infer<typeof AuthResult>;
 
 /** POST /auth/refresh (cookie) → AuthResult · POST /auth/logout → 204 · GET /me → UserDto */
+/**
+ * POST /auth/logout — optional body (additive, web push D-97…D-99): `pushEndpoint` = this device's push subscription endpoint,
+ * deleted together with the session (scoped to the session's user; works even with an expired access token). No body = as before.
+ */
+export const LogoutBody = z.object({ pushEndpoint: z.string().min(1).max(2048).optional() });
 export const UpdateMeBody = z.object({
   directorName: DirectorName.optional(),
   locale: SupportedLocale.optional(),

@@ -1,0 +1,119 @@
+{
+  "push": {
+    "prompt": {
+      "title": "No te pierdas ninguna emergencia",
+      "intro": "Activa las notificaciones: te avisamos cuando el juego está en segundo plano o cerrado.",
+      "benefitIncidents": "Nuevas llamadas y emergencias a punto de caducar sin unidades",
+      "benefitClosed": "Intervenciones terminadas, con el resultado y los Créditos ganados",
+      "benefitMajor": "Grandes emergencias, pacientes en peligro y vehículos averiados",
+      "benefitControl": "Elige qué recibes y tus horas de silencio, en Ajustes",
+      "enable": "Activar notificaciones",
+      "later": "Ahora no",
+      "note": "El navegador te pedirá permiso: elige «Permitir». Nunca una notificación mientras juegas."
+    },
+    "denied": {
+      "title": "Notificaciones bloqueadas",
+      "intro": "El navegador bloquea las notificaciones de Rescue Control: no podemos avisarte de las nuevas emergencias.",
+      "howTo": "Para reactivarlas:",
+      "browser": "toca el icono a la izquierda de la dirección (el candado o la configuración del sitio) → Notificaciones → Permitir, y recarga la página.",
+      "macSafari": "abre Safari → Ajustes → Sitios web → Notificaciones, elige «Permitir» para Rescue Control y recarga la página.",
+      "androidApp": "mantén pulsado el icono de Rescue Control → Información de la aplicación → Notificaciones, actívalas y vuelve a abrir el juego.",
+      "iosApp": "abre Ajustes → Notificaciones → Rescue Control y activa «Permitir notificaciones».",
+      "ok": "Entendido"
+    },
+    "ios": {
+      "title": "Notificaciones en iPhone y iPad",
+      "intro": "En iPhone y iPad, las notificaciones solo llegan desde Rescue Control añadido a la pantalla de inicio.",
+      "after": "Abre el juego desde su icono en la pantalla de inicio: allí podrás activar las notificaciones.",
+      "ok": "Entendido"
+    },
+    "result": {
+      "enabled": "Notificaciones activadas en este dispositivo",
+      "enabledBody": "Te avisamos cuando el juego no está en primer plano.",
+      "blocked": "Notificaciones bloqueadas",
+      "blockedBody": "Puedes permitirlas cuando quieras desde la configuración del sitio en tu navegador.",
+      "failed": "No se han podido activar las notificaciones. Vuelve a intentarlo desde Ajustes.",
+      "unavailable": "Las notificaciones no están disponibles en este dispositivo.",
+      "disabled": "Notificaciones desactivadas en este dispositivo"
+    },
+    "settings": {
+      "title": "Notificaciones push",
+      "device": "En este dispositivo",
+      "deviceHint": "Avisos cuando el juego está en segundo plano o cerrado, nunca mientras juegas.",
+      "status": {
+        "loading": "Comprobando…",
+        "on": "Activadas",
+        "off": "Desactivadas",
+        "denied": "Bloqueadas",
+        "unsupported": "No compatibles",
+        "unavailable": "No disponibles",
+        "inApp": "No disponibles aquí",
+        "iosInstall": "Solo en la app"
+      },
+      "hint": {
+        "unavailable": "Las notificaciones push no están disponibles en este momento.",
+        "unsupported": "Este navegador no admite notificaciones push: prueba con Chrome, Edge, Firefox o Safari.",
+        "inApp": "Estás en el navegador de otra app: abre el juego en tu navegador para recibir notificaciones.",
+        "iosInstall": "En iPhone y iPad, las notificaciones solo funcionan con Rescue Control añadido a la pantalla de inicio.",
+        "denied": "Las has bloqueado en el navegador para este sitio."
+      },
+      "installHow": "Cómo añadirlo a la pantalla de inicio",
+      "categories": "Qué recibir",
+      "categoriesHint": "Se aplica a todos tus dispositivos.",
+      "quiet": "Horas de silencio",
+      "quietHint": "Ninguna notificación en esta franja horaria.",
+      "quietFrom": "Desde",
+      "quietTo": "Hasta",
+      "quietTimeZone": "Horas en la zona horaria de este dispositivo: {zone}",
+      "quietSame": "El inicio y el fin deben ser distintos.",
+      "quietZoneInvalid": "No se reconoce la zona horaria de este dispositivo: las horas de silencio no se han guardado.",
+      "test": "Enviar una notificación de prueba",
+      "testSent": "Notificación de prueba enviada",
+      "testSentBody": "{count, plural, one {Llegará en unos segundos.} other {Llegará a tus # dispositivos en unos segundos.}}",
+      "testNone": "Ningún dispositivo suscrito: activa primero las notificaciones."
+    },
+    "categories": {
+      "INCIDENT_NEW": {
+        "label": "Nuevas emergencias",
+        "hint": "Una notificación que se actualiza con las llamadas en espera."
+      },
+      "INCIDENT_EXPIRING": {
+        "label": "Emergencias a punto de caducar",
+        "hint": "Todavía sin unidades y con poco tiempo."
+      },
+      "INCIDENT_CLOSED": {
+        "label": "Emergencias terminadas",
+        "hint": "Resultado y Créditos de cada intervención."
+      },
+      "MAJOR": {
+        "label": "Grandes emergencias",
+        "hint": "Inicio, crecimiento y final."
+      },
+      "PATIENT": {
+        "label": "Pacientes",
+        "hint": "Pacientes que empeoran o que no se han salvado."
+      },
+      "FLEET": {
+        "label": "Flota",
+        "hint": "Vehículos averiados, entregados o en reserva de combustible."
+      },
+      "MANAGEMENT": {
+        "label": "Gestión",
+        "hint": "Obras, cursos y suministros."
+      },
+      "PROGRESSION": {
+        "label": "Progresión",
+        "hint": "Nuevos niveles, logros y desbloqueos."
+      },
+      "ECONOMY": {
+        "label": "Economía",
+        "hint": "Subvenciones, compras y bonos por invitación."
+      }
+    },
+    "deepLink": {
+      "incidentClosed": "Esta emergencia ya ha terminado.",
+      "vehicleGone": "Este vehículo ya no está en tu flota.",
+      "facilityGone": "Esta base ya no está disponible."
+    }
+  }
+}

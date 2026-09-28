@@ -17,6 +17,7 @@ import {
   IncidentOutcomeDto,
   LedgerEntryDto,
   LocationSummary,
+  type LogoutBody,
   OtpRequestResult,
   ResupplyVehicleResult,
   SessionDto,
@@ -42,7 +43,8 @@ export const authApi = {
     confirmAge?: boolean;
     marketingConsent?: boolean;
   }) => api.post('/auth/otp/verify', body, { schema: AuthResult, auth: false }),
-  logout: () => api.post<void>('/auth/logout'),
+  /** `pushEndpoint`: this device's push subscription, dropped server-side together with the session (D-98). */
+  logout: (body?: z.infer<typeof LogoutBody>) => api.post<void>('/auth/logout', body),
   me: () => api.get('/me', { schema: UserDto }),
   updateMe: (body: { directorName?: string; locale?: SupportedLocale; marketingConsent?: boolean }) =>
     api.patch('/me', body, { schema: UserDto }),

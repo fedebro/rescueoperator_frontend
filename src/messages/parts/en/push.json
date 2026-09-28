@@ -1,0 +1,119 @@
+{
+  "push": {
+    "prompt": {
+      "title": "Never miss an emergency",
+      "intro": "Turn on notifications: we’ll alert you when the game is in the background or closed.",
+      "benefitIncidents": "New calls, and emergencies about to expire with no units",
+      "benefitClosed": "Completed missions, with the outcome and the Credits earned",
+      "benefitMajor": "Major incidents, patients in danger and broken-down vehicles",
+      "benefitControl": "Choose what you receive and your quiet hours, in Settings",
+      "enable": "Turn on notifications",
+      "later": "Not now",
+      "note": "Your browser will ask for permission: choose “Allow”. Never a notification while you’re playing."
+    },
+    "denied": {
+      "title": "Notifications blocked",
+      "intro": "Your browser blocks Rescue Control’s notifications, so we can’t alert you about new emergencies.",
+      "howTo": "To turn them back on:",
+      "browser": "tap the icon to the left of the address (the padlock or site settings) → Notifications → Allow, then reload the page.",
+      "macSafari": "open Safari → Settings → Websites → Notifications, choose “Allow” for Rescue Control and reload the page.",
+      "androidApp": "press and hold the Rescue Control icon → App info → Notifications, turn them on and reopen the game.",
+      "iosApp": "open Settings → Notifications → Rescue Control and turn on “Allow Notifications”.",
+      "ok": "Got it"
+    },
+    "ios": {
+      "title": "Notifications on iPhone and iPad",
+      "intro": "On iPhone and iPad, notifications only come from Rescue Control added to the Home Screen.",
+      "after": "Open the game from its Home Screen icon: you can turn on notifications there.",
+      "ok": "Got it"
+    },
+    "result": {
+      "enabled": "Notifications on for this device",
+      "enabledBody": "We’ll alert you when the game isn’t in front.",
+      "blocked": "Notifications blocked",
+      "blockedBody": "You can allow them any time from the site settings of your browser.",
+      "failed": "Couldn’t turn on notifications. Try again from Settings.",
+      "unavailable": "Notifications aren’t available on this device.",
+      "disabled": "Notifications off for this device"
+    },
+    "settings": {
+      "title": "Push notifications",
+      "device": "On this device",
+      "deviceHint": "Alerts when the game is in the background or closed, never while you’re playing.",
+      "status": {
+        "loading": "Checking…",
+        "on": "On",
+        "off": "Off",
+        "denied": "Blocked",
+        "unsupported": "Not supported",
+        "unavailable": "Unavailable",
+        "inApp": "Not available here",
+        "iosInstall": "App only"
+      },
+      "hint": {
+        "unavailable": "Push notifications aren’t available right now.",
+        "unsupported": "This browser doesn’t support push notifications: try Chrome, Edge, Firefox or Safari.",
+        "inApp": "You’re in another app’s browser: open the game in your own browser to get notifications.",
+        "iosInstall": "On iPhone and iPad, notifications only work with Rescue Control added to the Home Screen.",
+        "denied": "You blocked them in the browser for this site."
+      },
+      "installHow": "How to add it to the Home Screen",
+      "categories": "What to receive",
+      "categoriesHint": "Applies to all your devices.",
+      "quiet": "Quiet hours",
+      "quietHint": "No notifications during these hours.",
+      "quietFrom": "From",
+      "quietTo": "To",
+      "quietTimeZone": "Times in this device’s time zone: {zone}",
+      "quietSame": "Start and end must be different.",
+      "quietZoneInvalid": "This device’s time zone isn’t recognised: the quiet hours were not saved.",
+      "test": "Send a test notification",
+      "testSent": "Test notification sent",
+      "testSentBody": "{count, plural, one {It will arrive in a few seconds.} other {It will arrive on your # devices in a few seconds.}}",
+      "testNone": "No device subscribed: turn on notifications first."
+    },
+    "categories": {
+      "INCIDENT_NEW": {
+        "label": "New emergencies",
+        "hint": "One notification that updates with the waiting calls."
+      },
+      "INCIDENT_EXPIRING": {
+        "label": "Expiring emergencies",
+        "hint": "Still without units and running out of time."
+      },
+      "INCIDENT_CLOSED": {
+        "label": "Completed emergencies",
+        "hint": "Outcome and Credits of every mission."
+      },
+      "MAJOR": {
+        "label": "Major incidents",
+        "hint": "Start, escalation and end."
+      },
+      "PATIENT": {
+        "label": "Patients",
+        "hint": "Patients getting worse or not saved."
+      },
+      "FLEET": {
+        "label": "Fleet",
+        "hint": "Vehicles broken down, delivered or low on fuel."
+      },
+      "MANAGEMENT": {
+        "label": "Management",
+        "hint": "Construction, courses and supplies."
+      },
+      "PROGRESSION": {
+        "label": "Progression",
+        "hint": "New levels, milestones and unlocks."
+      },
+      "ECONOMY": {
+        "label": "Economy",
+        "hint": "Grants, purchases and invite bonuses."
+      }
+    },
+    "deepLink": {
+      "incidentClosed": "This emergency is already over.",
+      "vehicleGone": "This vehicle is no longer in your fleet.",
+      "facilityGone": "This station is no longer available."
+    }
+  }
+}

@@ -1,6 +1,7 @@
 import { networkInterfaces } from 'node:os';
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
+import { resolveReleaseId } from './src/features/push/release-id';
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
@@ -16,8 +17,17 @@ const lanOrigins = Object.values(networkInterfaces())
   .filter((i): i is NonNullable<typeof i> => !!i && i.family === 'IPv4' && !i.internal)
   .map((i) => i.address);
 
+/**
+ * Release id (D-98): every build is a new release, and each release asks — once — every device that has not enabled
+ * push notifications yet. Nothing to set at deploy time: the build timestamp (`20260928T170211Z`) is the default;
+ * `RELEASE_ID` pins it (a CI tag, a rebuild of the same release). Written back into `process.env` so that every process
+ * of the same build (Next spawns workers that re-read this file) inlines one and the same value.
+ */
+const releaseId = (process.env.RELEASE_ID = resolveReleaseId(process.env));
+
 const nextConfig: NextConfig = {
   allowedDevOrigins: lanOrigins,
+  env: { NEXT_PUBLIC_RELEASE_ID: releaseId },
   // Standalone build: the Docker image ships only the server bundle it actually needs.
   output: 'standalone',
   /**

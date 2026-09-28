@@ -21,6 +21,7 @@ export const MESSAGE_PARTS = [
   'autonomy',
   'nautical',
   'maxi',
+  'push',
 ] as const;
 
 export type MessageTree = { [key: string]: MessageTree | string };

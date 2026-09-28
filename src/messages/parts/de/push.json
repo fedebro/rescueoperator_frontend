@@ -1,0 +1,119 @@
+{
+  "push": {
+    "prompt": {
+      "title": "Verpasse keinen Einsatz",
+      "intro": "Schalte Benachrichtigungen ein: Wir melden uns, wenn das Spiel im Hintergrund läuft oder geschlossen ist.",
+      "benefitIncidents": "Neue Notrufe und Einsätze, die ohne Fahrzeuge bald ablaufen",
+      "benefitClosed": "Abgeschlossene Einsätze mit Ergebnis und verdienten Credits",
+      "benefitMajor": "Großschadenslagen, Patienten in Gefahr und Fahrzeuge mit Defekt",
+      "benefitControl": "In den Optionen wählst du, was du bekommst, und deine Ruhezeiten",
+      "enable": "Benachrichtigungen einschalten",
+      "later": "Nicht jetzt",
+      "note": "Dein Browser fragt nach der Erlaubnis: Wähle „Zulassen“. Nie eine Benachrichtigung, während du spielst."
+    },
+    "denied": {
+      "title": "Benachrichtigungen blockiert",
+      "intro": "Dein Browser blockiert die Benachrichtigungen von Rescue Control: So können wir dich nicht über neue Einsätze informieren.",
+      "howTo": "So schaltest du sie wieder ein:",
+      "browser": "Tippe auf das Symbol links neben der Adresse (Schloss oder Website-Einstellungen) → Benachrichtigungen → Zulassen und lade die Seite neu.",
+      "macSafari": "Öffne Safari → Einstellungen → Websites → Mitteilungen, wähle „Erlauben“ für Rescue Control und lade die Seite neu.",
+      "androidApp": "Halte das Symbol von Rescue Control gedrückt → App-Info → Benachrichtigungen, schalte sie ein und öffne das Spiel erneut.",
+      "iosApp": "Öffne Einstellungen → Mitteilungen → Rescue Control und aktiviere „Mitteilungen erlauben“.",
+      "ok": "Verstanden"
+    },
+    "ios": {
+      "title": "Benachrichtigungen auf iPhone und iPad",
+      "intro": "Auf iPhone und iPad kommen Benachrichtigungen nur von Rescue Control auf dem Home-Bildschirm.",
+      "after": "Öffne das Spiel über sein Symbol auf dem Home-Bildschirm: Dort kannst du die Benachrichtigungen einschalten.",
+      "ok": "Verstanden"
+    },
+    "result": {
+      "enabled": "Benachrichtigungen auf diesem Gerät aktiv",
+      "enabledBody": "Wir melden uns, wenn das Spiel nicht im Vordergrund ist.",
+      "blocked": "Benachrichtigungen blockiert",
+      "blockedBody": "Du kannst sie jederzeit in den Website-Einstellungen deines Browsers erlauben.",
+      "failed": "Die Benachrichtigungen konnten nicht eingeschaltet werden. Versuche es in den Optionen erneut.",
+      "unavailable": "Benachrichtigungen sind auf diesem Gerät nicht verfügbar.",
+      "disabled": "Benachrichtigungen auf diesem Gerät ausgeschaltet"
+    },
+    "settings": {
+      "title": "Push-Benachrichtigungen",
+      "device": "Auf diesem Gerät",
+      "deviceHint": "Meldungen, wenn das Spiel im Hintergrund läuft oder geschlossen ist – nie, während du spielst.",
+      "status": {
+        "loading": "Prüfe…",
+        "on": "Aktiv",
+        "off": "Aus",
+        "denied": "Blockiert",
+        "unsupported": "Nicht unterstützt",
+        "unavailable": "Nicht verfügbar",
+        "inApp": "Hier nicht verfügbar",
+        "iosInstall": "Nur in der App"
+      },
+      "hint": {
+        "unavailable": "Push-Benachrichtigungen sind gerade nicht verfügbar.",
+        "unsupported": "Dieser Browser unterstützt keine Push-Benachrichtigungen: Versuche es mit Chrome, Edge, Firefox oder Safari.",
+        "inApp": "Du bist im Browser einer anderen App: Öffne das Spiel in deinem Browser, um Benachrichtigungen zu erhalten.",
+        "iosInstall": "Auf iPhone und iPad funktionieren Benachrichtigungen nur mit Rescue Control auf dem Home-Bildschirm.",
+        "denied": "Du hast sie im Browser für diese Website blockiert."
+      },
+      "installHow": "So kommt es auf den Home-Bildschirm",
+      "categories": "Was du bekommst",
+      "categoriesHint": "Gilt für alle deine Geräte.",
+      "quiet": "Ruhezeiten",
+      "quietHint": "In diesem Zeitraum keine Benachrichtigungen.",
+      "quietFrom": "Von",
+      "quietTo": "Bis",
+      "quietTimeZone": "Uhrzeiten in der Zeitzone dieses Geräts: {zone}",
+      "quietSame": "Beginn und Ende müssen sich unterscheiden.",
+      "quietZoneInvalid": "Die Zeitzone dieses Geräts wird nicht erkannt: Die Ruhezeiten wurden nicht gespeichert.",
+      "test": "Testbenachrichtigung senden",
+      "testSent": "Testbenachrichtigung gesendet",
+      "testSentBody": "{count, plural, one {Sie kommt in wenigen Sekunden an.} other {Sie kommt in wenigen Sekunden auf deinen # Geräten an.}}",
+      "testNone": "Kein Gerät angemeldet: Schalte zuerst die Benachrichtigungen ein."
+    },
+    "categories": {
+      "INCIDENT_NEW": {
+        "label": "Neue Einsätze",
+        "hint": "Eine Benachrichtigung, die sich mit den wartenden Notrufen aktualisiert."
+      },
+      "INCIDENT_EXPIRING": {
+        "label": "Ablaufende Einsätze",
+        "hint": "Noch ohne Fahrzeuge und mit wenig verbleibender Zeit."
+      },
+      "INCIDENT_CLOSED": {
+        "label": "Abgeschlossene Einsätze",
+        "hint": "Ergebnis und Credits jedes Einsatzes."
+      },
+      "MAJOR": {
+        "label": "Großschadenslagen",
+        "hint": "Beginn, Ausweitung und Ende."
+      },
+      "PATIENT": {
+        "label": "Patienten",
+        "hint": "Patienten, deren Zustand sich verschlechtert oder die nicht gerettet wurden."
+      },
+      "FLEET": {
+        "label": "Fuhrpark",
+        "hint": "Fahrzeuge mit Defekt, geliefert oder auf Kraftstoffreserve."
+      },
+      "MANAGEMENT": {
+        "label": "Verwaltung",
+        "hint": "Bauarbeiten, Lehrgänge und Vorräte."
+      },
+      "PROGRESSION": {
+        "label": "Fortschritt",
+        "hint": "Neue Level, Meilensteine und Freischaltungen."
+      },
+      "ECONOMY": {
+        "label": "Finanzen",
+        "hint": "Zuschüsse, Käufe und Einladungsboni."
+      }
+    },
+    "deepLink": {
+      "incidentClosed": "Dieser Einsatz ist bereits abgeschlossen.",
+      "vehicleGone": "Dieses Fahrzeug gehört nicht mehr zu deinem Fuhrpark.",
+      "facilityGone": "Diese Wache ist nicht mehr verfügbar."
+    }
+  }
+}

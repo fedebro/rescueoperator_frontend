@@ -32,6 +32,8 @@ import { MORE_ITEMS } from './nav';
 import { useVisibleNav } from './use-nav';
 import { DutyToggle } from './duty-toggle';
 import { PrivacyAndAppSettings, SoundSettings } from '@/features/platform/settings-sections';
+import { PushSettings } from '@/features/push/push-settings';
+import { currentPushEndpoint, forgetPushOnDevice } from '@/features/push/controller';
 import { track } from '@/lib/analytics';
 import { SectionHelpButton, SectionPrimer } from '@/features/coaching/section-primer';
 import { LedgerDescription } from '@/features/autonomy/ledger';
@@ -295,13 +297,21 @@ export function SettingsScreen() {
   const [confirmDelete, setConfirmDelete] = React.useState(false);
 
   const signOut = () => {
+    // This device stops receiving the pushes of the account it leaves (the server was told by the logout call).
+    void forgetPushOnDevice();
     setAccessToken(null);
     setSessionHint(false);
     clearAuth();
     qc.clear();
     router.replace('/auth');
   };
-  const logout = useMutation({ mutationFn: authApi.logout, onSettled: signOut });
+  const logout = useMutation({
+    mutationFn: async () => {
+      const pushEndpoint = await currentPushEndpoint();
+      await authApi.logout(pushEndpoint ? { pushEndpoint } : undefined);
+    },
+    onSettled: signOut,
+  });
   const revoke = useMutation({
     mutationFn: authApi.revokeSession,
     onSuccess: () => qc.invalidateQueries({ queryKey: qk.sessions }),
@@ -360,6 +370,7 @@ export function SettingsScreen() {
         />
       </Card>
       <SoundSettings />
+      <PushSettings />
       <PrivacyAndAppSettings />
       <Card>
         <SectionTitle>{t('duty')}</SectionTitle>

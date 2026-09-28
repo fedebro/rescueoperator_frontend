@@ -100,6 +100,18 @@ export interface AnalyticsEventProps {
   pwa_install_accepted: Record<string, never>;
   pwa_install_dismissed: { source: 'hint' | 'settings' | 'native' };
   pwa_installed: Record<string, never>;
+  /* ── web push (D-97…D-99) ── */
+  push_prompt_shown: { kind: 'ask' | 'denied' | 'ios-install' };
+  push_prompt_dismissed: { kind: 'ask' | 'denied' | 'ios-install' };
+  push_enable_result: {
+    result: 'enabled' | 'denied' | 'dismissed' | 'unavailable' | 'failed';
+    source: 'prompt' | 'settings';
+    platform?: 'BROWSER' | 'PWA';
+  };
+  push_disabled: { source: 'settings' };
+  push_synced: { platform: 'BROWSER' | 'PWA' };
+  push_test_sent: { count: number };
+  deep_link_opened: { kind: Code; success: boolean };
 }
 export type AnalyticsEventName = keyof AnalyticsEventProps;
 
@@ -170,6 +182,13 @@ export const ANALYTICS_EVENT_NAMES = [
   'pwa_install_accepted',
   'pwa_install_dismissed',
   'pwa_installed',
+  'push_prompt_shown',
+  'push_prompt_dismissed',
+  'push_enable_result',
+  'push_disabled',
+  'push_synced',
+  'push_test_sent',
+  'deep_link_opened',
 ] as const satisfies readonly AnalyticsEventName[];
 
 /* ───────────────────────────── PII guard ───────────────────────────── */

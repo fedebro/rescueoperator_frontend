@@ -10,6 +10,7 @@ import { installMajor } from './major';
 import { installWorld } from './world';
 import { installMonetization } from './monetization';
 import { installPlatform } from './platform';
+import { installPush } from './push';
 import { installAdmin } from './admin';
 import { installQa } from '../qa';
 
@@ -38,6 +39,7 @@ export function installDomains(engine: MockEngine): void {
   installWorld(engine);
   installMonetization(engine);
   installPlatform(engine);
+  installPush(engine);
   installAdmin(engine);
 }
 

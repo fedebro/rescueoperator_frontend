@@ -162,6 +162,31 @@ const stacked = () => {
   <path transform="translate(${300 - tag.width / 2} 372)" d="${tag.d}" fill="${SILVER_2}"/>${familyStrip(150, 400, 300, 44)}</svg>`;
 };
 
+/**
+ * Notification badge (web push, D-97): Android draws it in the status bar from its ALPHA channel only, at 24 dp —
+ * so a bold white silhouette on transparent: the emblem's radio tower and waves over the icon's slanted bar.
+ */
+const badgeMark = () => {
+  const white = '#FFFFFF';
+  // Waves around the tower top (48, 24): two arcs each side, like the emblem's, thick enough for 24 dp.
+  const wave = (r: number) => {
+    const dx = (r * 0.78).toFixed(2),
+      dy = (r * 0.62).toFixed(2);
+    return `M${48 - Number(dx)} ${24 - Number(dy)} A${r} ${r} 0 0 0 ${48 - Number(dx)} ${24 + Number(dy)} M${48 + Number(dx)} ${24 - Number(dy)} A${r} ${r} 0 0 1 ${48 + Number(dx)} ${24 + Number(dy)}`;
+  };
+  // Lattice tower: apex (48, 30), feet (37, 78) and (59, 78), two cross bars and one X brace (more would clog at 24 dp).
+  const tower =
+    'M48 30 L37 78 M48 30 L59 78 M39.75 66 H56.25 M42.5 54 H53.5 M37 78 L56.25 66 M59 78 L39.75 66';
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96">
+  <g fill="none" stroke="${white}" stroke-linecap="round" stroke-linejoin="round">
+    <path d="${wave(12)} ${wave(21)}" stroke-width="5.5"/>
+    <path d="${tower}" stroke-width="4.5"/>
+  </g>
+  <circle cx="48" cy="24" r="6" fill="${white}"/>
+  <path d="M22 84 H80 L76 92 H18 Z" fill="${white}"/>
+</svg>`;
+};
+
 const og = () => {
   const inner = stacked()
     .replace(/^<svg[^>]*>/, '')
@@ -185,6 +210,10 @@ async function main() {
   write('icons/app/icon-192.png', await iconPng(192));
   write('icons/app/icon-512.png', await iconPng(512));
   write('icons/app/icon-maskable-512.png', await iconPng(512, false));
+  write(
+    'icons/app/badge-96.png',
+    await sharp(Buffer.from(badgeMark()), { density: 300 }).resize(96, 96).png().toBuffer(),
+  );
   write('apple-touch-icon.png', await iconPng(180, false));
   write('favicon-32.png', await iconPng(32));
   write('og-image.png', await sharp(Buffer.from(og()), { density: 144 }).resize(1200, 630).png().toBuffer());

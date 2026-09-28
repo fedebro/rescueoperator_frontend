@@ -3,6 +3,7 @@ import { Exo_2, Inter, JetBrains_Mono } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { AppProviders } from '@/components/providers/app-providers';
+import { RELEASE_ID, RELEASE_META_NAME } from '@/features/push/release';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin', 'latin-ext'], variable: '--font-inter', display: 'swap' });
@@ -43,6 +44,8 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: { card: 'summary_large_image', images: ['/og-image.png'] },
     robots: { index: false, follow: false },
+    // Which build this page comes from (the push-permission sheet is asked once per release, D-98).
+    other: { [RELEASE_META_NAME]: RELEASE_ID },
   };
 }
 

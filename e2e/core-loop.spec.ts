@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { describePageError, isBenignBrowserNoise } from './helpers';
+import { describePageError, dismissPushPrompt, isBenignBrowserNoise } from './helpers';
 
 /**
  * The whole core loop against the in-browser mock backend, in both layouts (projects: desktop, mobile):
@@ -48,6 +48,8 @@ test('core loop: from sign-up to a second vehicle, surviving a reload', async ({
   await test.step('sign up with e-mail + OTP', async () => {
     await page.goto('/');
     await expect(page).toHaveURL(/\/auth$/);
+    // The push-permission sheet after the tutorial is push.spec's business: this journey starts with it seen.
+    await dismissPushPrompt(page);
     await page.getByLabel('Email').fill('not-an-email');
     await page.getByRole('button', { name: 'Inviami il codice' }).click();
     await expect(page.getByText('Inserisci un indirizzo email valido.')).toBeVisible();

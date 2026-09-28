@@ -16,6 +16,8 @@ import { monetizationHandlers } from './handlers/monetization';
 import { platformHandlers } from './handlers/platform';
 import { adminHandlers } from './handlers/admin';
 import { majorHandlers } from './handlers/major';
+import { pushHandlers } from './handlers/push';
+import { dropPushEndpoint } from './domains/push';
 
 /** One file per feature area; each owns its routes (see contracts/ROUTES.md) and its domain module in src/mocks/domains. */
 const DOMAIN_HANDLERS: DomainHandlers[] = [
@@ -29,6 +31,7 @@ const DOMAIN_HANDLERS: DomainHandlers[] = [
   platformHandlers,
   adminHandlers,
   majorHandlers,
+  pushHandlers,
 ];
 
 /** MSW request handlers implementing the v1 REST contract on top of the in-browser engine. */
@@ -56,7 +59,10 @@ export function createHandlers(engine: MockEngine, baseUrl: string): HttpHandler
     ),
     http.post(
       url('/auth/logout'),
-      route(() => {
+      route((_ctx, body) => {
+        // `LogoutBody.pushEndpoint`: this device's push subscription leaves with the session (D-98).
+        if (typeof body.pushEndpoint === 'string' && body.pushEndpoint)
+          dropPushEndpoint(engine, body.pushEndpoint);
         engine.logout();
         return new HttpResponse(null, { status: 204 });
       }),

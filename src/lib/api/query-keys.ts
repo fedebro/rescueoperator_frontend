@@ -19,6 +19,9 @@ export const qk = {
   progression: (id: string) => ['career', id, 'progression'] as const,
   unlocks: (id: string) => ['career', id, 'progression', 'unlocks'] as const,
   notifications: (id: string) => ['career', id, 'notifications'] as const,
+  /* web push (D-97…D-99): the server's switch + categories, and the career's categories / quiet hours */
+  pushConfig: ['push', 'config'] as const,
+  pushPreferences: (id: string) => ['career', id, 'push', 'preferences'] as const,
   milestones: (id: string) => ['career', id, 'progression', 'milestones'] as const,
   /* depth domains — everything of a domain lives under its root key so one realtime event invalidates it all */
   personnelRoot: (id: string) => ['career', id, 'personnel'] as const,

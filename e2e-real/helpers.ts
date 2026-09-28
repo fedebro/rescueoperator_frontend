@@ -158,10 +158,38 @@ export const uniqueAccount = (prefix: string): Account => {
   return { email: `e2e.${prefix}.${id}@rescue-control.test`, directorName: `QA ${short} ${id.slice(-5)}` };
 };
 
+/**
+ * The push-permission sheet (D-98) opens a few seconds into a game session once per release on devices without
+ * notifications; a modal at a random moment would swallow the next click of an unrelated spec. Journeys start with it
+ * already shown for this build — the per-device memory the sheet writes itself (`rc-push` → `promptedRelease`, keyed by
+ * the page's `<meta name="rc-release">`). e2e-real/push.spec.ts covers the service worker; e2e/push.spec.ts the sheet.
+ */
+export async function skipPushPrompt(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const release = document.querySelector('meta[name="rc-release"]')?.getAttribute('content');
+    if (!release) throw new Error('<meta name="rc-release"> is missing: is this a build of the game?');
+    let saved: { state?: Record<string, unknown>; version?: number } = {};
+    try {
+      saved = JSON.parse(localStorage.getItem('rc-push') ?? '{}') as typeof saved;
+    } catch {
+      saved = {};
+    }
+    localStorage.setItem(
+      'rc-push',
+      JSON.stringify({
+        ...saved,
+        state: { ...saved.state, promptedRelease: release },
+        version: saved.version ?? 1,
+      }),
+    );
+  });
+}
+
 /** Real sign-up: e-mail → OTP from Mailpit → director name + consents. Lands on /onboarding. */
 export async function signUp(page: Page, account: Account): Promise<void> {
   const requestedAt = Date.now() - 1000;
   await page.goto('/auth');
+  await skipPushPrompt(page);
   await page.getByLabel('Email').fill(account.email);
   await page.getByLabel('Email').press('Enter');
   await expect(page.getByRole('heading', { name: 'Controlla la posta' })).toBeVisible();
