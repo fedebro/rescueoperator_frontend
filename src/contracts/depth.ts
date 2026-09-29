@@ -93,6 +93,31 @@ export const CrewPreview = z.object({
 
 /* ───────────── medical ───────────── */
 
+/**
+ * Additive (water patients, migration 029 — analisi/note-agenti/water-patients.md): where the patient is.
+ * - `WATER`: still in the water at the scene of a water incident. Only the units ON the water reach them — boats and winch
+ *   helicopters — which assess them and give the care their own medical capabilities allow, then bring them ashore to the
+ *   meeting point. Land units at the meeting point can do nothing for them yet: no assessment, no treatment, no transport
+ *   (`POST /patients/:id/transport` → 409 `CONFLICT` `details.reason = PATIENT_IN_WATER`).
+ * - `ASHORE`: every other patient — land incidents from the start, water incidents once brought ashore (from then on the
+ *   care and the hospital transport work as on land, starting from the meeting point).
+ */
+export const PatientLocation = z.enum(['WATER', 'ASHORE']);
+export type PatientLocation = z.infer<typeof PatientLocation>;
+
+/** Additive: how a patient of a water incident gets (or got) ashore. Null on land incidents. */
+export const PatientRecoveryDto = z.object({
+  /** Who is bringing (or brought) them ashore: one of the player's units, or the Coast Guard (external support); null = nobody yet. */
+  by: z.enum(['VEHICLE', 'COAST_GUARD']).nullable(),
+  /** The boat / helicopter carrying them to the meeting point (or that did); null for the Coast Guard and while nobody is. */
+  vehicleId: publicId(IdPrefix.vehicle).nullable(),
+  /** When they will be ashore (the trip under way, or the Coast Guard's landing); null while waiting and once ashore. */
+  etaAt: IsoDateTime.nullable(),
+  /** When they were brought ashore; null while still in the water. */
+  recoveredAt: IsoDateTime.nullable(),
+});
+export type PatientRecoveryDto = z.infer<typeof PatientRecoveryDto>;
+
 export const PatientDto = z.object({
   id: publicId(IdPrefix.patient),
   incidentId: publicId(IdPrefix.incident),
@@ -106,6 +131,11 @@ export const PatientDto = z.object({
   assignedVehicleId: publicId(IdPrefix.vehicle).nullable(),
   hospitalId: publicId(IdPrefix.hospital).nullable(),
   busyUntil: IsoDateTime.nullable(),
+  /* ── additive (water patients, migration 029) ── */
+  /** Where the patient is (see `PatientLocation`). Absent from older servers: read as `ASHORE`. */
+  location: PatientLocation.optional(),
+  /** Water incidents only: the recovery (who brings them ashore, when). Null on land incidents. */
+  recovery: PatientRecoveryDto.nullable().optional(),
 });
 export type PatientDto = z.infer<typeof PatientDto>;
 

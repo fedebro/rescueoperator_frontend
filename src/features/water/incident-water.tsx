@@ -9,9 +9,12 @@ import { formatDistance } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { useUiStore } from '@/stores/ui';
 import { useI18nText } from '@/i18n/use-i18n-text';
+import { useServerNow } from '@/hooks/use-server-now';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Countdown } from '@/components/ui/countdown';
 import { useCatalog, useSnapshot, useVehicleTypeLookup } from '@/features/game/hooks';
+import { isInWater, usePatients } from '@/features/medical/hooks';
 import {
   BOAT_SHOP_HREF,
   NAUTICAL_SITES_HREF,
@@ -19,6 +22,7 @@ import {
   isWaterIncident,
   meetingPointOf,
   nauticalBases,
+  pendingCoastGuardLanding,
   waterKindOf,
 } from './water';
 
@@ -72,8 +76,9 @@ function useBoatCount(): number {
  * The water part of an incident, at the top of its dispatch tab (D-68, studio 05 §2.7):
  *  - who does what: the scene on the water (boats, aircraft) and the meeting point on the shore (land units), each one
  *    tap away on the map;
- *  - the Coast Guard when it covers the water part — what it covers, the reduced reward — and, when the player has no
- *    boat, "Serve un mezzo acquatico — interviene la Guardia Costiera" with a direct link to buy a Base nautica;
+ *  - the Coast Guard when it covers the water part — what it covers, when it brings the people in the water ashore (water
+ *    patients), the reduced reward — and, when the player has no boat, "Serve un mezzo acquatico — interviene la Guardia
+ *    Costiera" with a direct link to buy a Base nautica;
  *  - without the Coast Guard (rivers, lakes) and without a boat: the incident needs one, same link.
  */
 export function IncidentWaterNotice({ incident }: { incident: IncidentDto }) {
@@ -83,6 +88,14 @@ export function IncidentWaterNotice({ incident }: { incident: IncidentDto }) {
   const { facilities } = useSnapshot();
   const focusOn = useUiStore((s) => s.focusOn);
   const boats = useBoatCount();
+  // The Coast Guard landing still to come: its instant in the past is done; nobody waiting for it, nothing to announce.
+  const patients = usePatients(incident).data;
+  const now = useServerNow(1000, !!incident.waterSupport?.recoveryAt);
+  const coastGuardAt = pendingCoastGuardLanding(
+    incident,
+    patients ? patients.some((p) => isInWater(p) && p.recovery?.by === 'COAST_GUARD') : null,
+    now,
+  );
   const meeting = meetingPointOf(incident);
   if (!isWaterIncident(incident) || !meeting) return null;
   const hasBase = nauticalBases(facilities).length > 0;
@@ -156,6 +169,13 @@ export function IncidentWaterNotice({ incident }: { incident: IncidentDto }) {
                 })}{' '}
                 {t('coastGuard.shore')}
               </p>
+              {coastGuardAt ? (
+                <p className="text-muted text-xs" data-testid="coast-guard-recovery">
+                  {t.rich('coastGuard.recovery', {
+                    countdown: () => <Countdown to={coastGuardAt} className="text-fg font-semibold" />,
+                  })}
+                </p>
+              ) : null}
               <p className="text-warning text-xs font-semibold" data-testid="coast-guard-reward">
                 {t('coastGuard.reward', { percent: Math.round(support.rewardShare * 100) })}
               </p>

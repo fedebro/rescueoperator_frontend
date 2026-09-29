@@ -3,6 +3,7 @@
     "patients": {
       "title": "Pazienti",
       "count": "{count, plural, one {# paziente} other {# pazienti}}",
+      "inWater": "{count, plural, one {# in acqua} other {# in acqua}}",
       "label": "Paziente {n}",
       "loadError": "Impossibile caricare i pazienti.",
       "triageUnknown": "Triage in corso",
@@ -107,6 +108,27 @@
       "boardingTitle": "Imbarca anche (fino a {count} pazienti)",
       "boardingNone": "Nessun altro paziente in attesa: può portarne fino a {count} per viaggio.",
       "boardingHint": "{count, plural, one {# paziente a bordo} other {# pazienti a bordo}} su {capacity}"
+    },
+    "water": {
+      "waiting": "In acqua — in attesa del recupero",
+      "waitingHint": "Serve un mezzo acquatico: una barca (o un elicottero con verricello) lo raggiunge, gli presta il primo soccorso e lo porta al punto di raccolta. I mezzi di terra intervengono solo dopo.",
+      "aboard": "In acqua — <vehicle>{callSign}</vehicle> lo sta portando a riva",
+      "aboardUnknown": "In acqua — un mezzo acquatico lo sta portando a riva",
+      "coastGuard": "In acqua — la Guardia Costiera lo porta a riva",
+      "ashoreIn": "A riva tra",
+      "ashoreSoon": "pochi istanti",
+      "needsTitle": "Primo soccorso in acqua",
+      "unmetHint": "In acqua riceve solo il primo soccorso dei mezzi acquatici: le cure complete arrivano a riva, al punto di raccolta.",
+      "transportAfterRecovery": "Il trasporto in ospedale parte dal punto di raccolta, appena il paziente è a riva.",
+      "ashore": "A riva al punto di raccolta",
+      "ashoreBy": "portato da {callSign}",
+      "ashoreByCoastGuard": "portato dalla Guardia Costiera",
+      "sectionTitle": "Pazienti in acqua",
+      "sectionUnit": "Li valuta e li porta a riva un mezzo acquatico: i mezzi di terra al punto di raccolta intervengono dopo.",
+      "sectionNoUnit": "Nessun mezzo acquatico sul posto o in arrivo: invia una barca.",
+      "sectionCoastGuard": "La Guardia Costiera li porta a riva tra <countdown></countdown>",
+      "noBoat": "Nessuna barca disponibile in questo momento.",
+      "boatSent": "{callSign} va a recuperare chi è in acqua"
     }
   },
   "status": {
@@ -138,7 +160,9 @@
     "patient_external": "Paziente affidato a un’ambulanza esterna, diretta a {hospital}",
     "patient_admitted": "Paziente affidato a {hospital}",
     "patient_released_field_post": "Paziente trattato e dimesso dal posto medico avanzato",
-    "patient_transport_multi": "{callSign} trasporta {count} pazienti a {hospital}"
+    "patient_transport_multi": "{callSign} trasporta {count} pazienti a {hospital}",
+    "patients_recovered": "{count, plural, one {{labels} portato a riva da {callSign}} other {{labels} portati a riva da {callSign}}}",
+    "patients_recovered_coast_guard": "La Guardia Costiera ha portato a riva {labels}"
   },
   "notifications": {
     "patientAwaitingTransport": "Paziente in attesa di trasporto in {address}"

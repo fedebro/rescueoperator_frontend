@@ -32,7 +32,14 @@ import { Select } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/misc';
 import { CoachMark } from '@/features/coaching/coach-mark';
 import { useCareerId, usePatchSnapshot, useSnapshot, useVehicleTypeLookup } from '@/features/game/hooks';
-import { TRANSPORT_CAPABILITY, hasCapability, useHospitalChoice, useHospitals, usePatients } from './hooks';
+import {
+  TRANSPORT_CAPABILITY,
+  canBeTransported,
+  hasCapability,
+  useHospitalChoice,
+  useHospitals,
+  usePatients,
+} from './hooks';
 import { LOAD_VISUALS, MedicalChip } from './visuals';
 import {
   BoardingPicker,
@@ -147,13 +154,28 @@ function OptionsRadioGroup({
   );
 }
 
-/** Quick dispatch of a transport-capable vehicle: the core dispatch panel is hidden once the incident is RESOLVING. */
+/**
+ * Quick dispatch of a transport-capable vehicle (or, with `filter`, of any vehicle it accepts — the boats that bring the
+ * people in the water ashore): the core dispatch panel is hidden once the incident is RESOLVING.
+ */
 export function SendVehicleList({
   incident,
-  capabilities,
+  capabilities = [],
+  filter,
+  emptyLabel,
+  sentLabel,
+  testId = 'send-transport-vehicle',
 }: {
   incident: IncidentDto;
-  capabilities: readonly string[];
+  /** The player's vehicles with one of these capabilities… */
+  capabilities?: readonly string[];
+  /** …or those this predicate accepts. */
+  filter?: (vehicle: VehicleDto) => boolean;
+  /** Shown when none is available (default: no ambulance). */
+  emptyLabel?: string;
+  /** The toast once sent (default: sent for the transport). */
+  sentLabel?: (callSign: string) => string;
+  testId?: string;
 }) {
   const t = useTranslations('medical.transport');
   const tc = useTranslations('common');
@@ -169,7 +191,11 @@ export function SendVehicleList({
     mutationFn: (vehicleId: string) => gameApi.dispatch(careerId, incident.id, [vehicleId]),
     onSuccess: (_result, vehicleId) => {
       const callSign = vehicles.find((v) => v.id === vehicleId)?.callSign ?? '';
-      toast({ tone: 'success', title: t('sent', { callSign }), durationMs: 3000 });
+      toast({
+        tone: 'success',
+        title: sentLabel ? sentLabel(callSign) : t('sent', { callSign }),
+        durationMs: 3000,
+      });
       track('dispatch_sent', { incidentId: incident.id, vehicles: 1 });
       void qc.invalidateQueries({ queryKey: qk.dispatchOptions(careerId, incident.id) });
     },
@@ -179,14 +205,15 @@ export function SendVehicleList({
     },
   });
   if (options.isLoading) return <Skeleton className="h-10" />;
+  const accepts = filter ?? ((vehicle: VehicleDto) => hasCapability(vehicle, capabilities));
   const candidates = (options.data?.options ?? [])
     .filter((o) => o.dispatchable)
     .flatMap((o) => {
       const vehicle = vehicles.find((v) => v.id === o.vehicleId);
-      return vehicle && hasCapability(vehicle, capabilities) ? [{ option: o, vehicle }] : [];
+      return vehicle && accepts(vehicle) ? [{ option: o, vehicle }] : [];
     })
     .slice(0, 3);
-  if (candidates.length === 0) return <p className="text-muted text-xs">{t('noAmbulance')}</p>;
+  if (candidates.length === 0) return <p className="text-muted text-xs">{emptyLabel ?? t('noAmbulance')}</p>;
   return (
     <ul className="flex flex-col gap-1.5">
       {candidates.map(({ option, vehicle }) => (
@@ -197,7 +224,7 @@ export function SendVehicleList({
             loading={send.isPending && send.variables === vehicle.id}
             disabled={send.isPending}
             onClick={() => send.mutate(vehicle.id)}
-            data-testid="send-transport-vehicle"
+            data-testid={testId}
           >
             <span className="inline-flex min-w-0 items-center gap-2">
               <Send className="size-4 shrink-0" aria-hidden />
@@ -260,8 +287,9 @@ export function TransportPanel({ patient, incident }: { patient: PatientDto; inc
   const multi = !!carrier && isMultiPatient(typeOf(carrier.typeCode)?.tags);
   const [boarding, setBoarding] = React.useState<string[] | null>(null);
   const preselected = coPassengerCandidates(patient, patients, MULTI_PATIENT_CAPACITY).preselected;
+  // Only people waiting at the meeting point can ride (water patients: nobody from the water).
   const withPatientIds = (boarding ?? preselected).filter((id) =>
-    patients.some((p) => p.id === id && p.status === 'AWAITING_TRANSPORT'),
+    patients.some((p) => p.id === id && canBeTransported(p)),
   );
 
   const transport = useMutation({

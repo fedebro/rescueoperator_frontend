@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { NextIntlClientProvider } from 'next-intl';
 import type { FacilityDto, IncidentDto, MovementDto, SiteDto, VehicleDto } from '@/contracts';
 import { ApiClientError } from '@/lib/api/errors';
-import { facilitiesApi } from '@/lib/api/depth';
+import { facilitiesApi, medicalApi } from '@/lib/api/depth';
 import { qk } from '@/lib/api/query-keys';
 import { movementPoint, remainingPieces } from '@/lib/geo';
 import { CAREER_ID, incident as incidentFixture, snapshot, vehicle as vehicleFixture } from '@/test/fixtures';
@@ -35,7 +35,10 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/game',
   useSearchParams: () => new URLSearchParams(),
 }));
-vi.mock('@/lib/api/depth', () => ({ facilitiesApi: { transferVehicle: vi.fn() } }));
+vi.mock('@/lib/api/depth', () => ({
+  facilitiesApi: { transferVehicle: vi.fn() },
+  medicalApi: { patients: vi.fn() },
+}));
 
 const SCENE: [number, number] = [14.2228, 42.4757];
 const MEETING: [number, number] = [14.2166, 42.4703];
@@ -361,6 +364,47 @@ describe('incident panel: Coast Guard, sides, destinations', () => {
     expect(screen.getByTestId('coast-guard-covers')).toHaveTextContent('Soccorso acquatico');
     expect(screen.getByTestId('coast-guard-reward')).toHaveTextContent('Ricompensa ridotta al 60%');
     expect(screen.getByTestId('water-buy-base')).toHaveAttribute('href', NAUTICAL_SITES_HREF);
+  });
+
+  it('says when the Coast Guard brings the people in the water ashore — nothing once that instant is past or nobody waits', async () => {
+    const at = new Date(Date.now() + 150_000).toISOString();
+    const support = { ...waterIncident().waterSupport!, recoveryAt: at };
+    const { unmount } = renderGame(
+      <IncidentWaterNotice incident={waterIncident({ waterSupport: support })} />,
+    );
+    expect(screen.getByTestId('coast-guard-recovery')).toHaveTextContent(
+      /^Porta a riva le persone in acqua tra 2:(29|30)\.$/,
+    );
+    unmount();
+    const past = { ...support, recoveryAt: new Date(Date.now() - 5_000).toISOString() };
+    const { unmount: unmountPast } = renderGame(
+      <IncidentWaterNotice incident={waterIncident({ waterSupport: past })} />,
+    );
+    expect(screen.queryByTestId('coast-guard-recovery')).not.toBeInTheDocument();
+    unmountPast();
+    // the patients known and all of them already ashore: nothing left for the Coast Guard to land
+    vi.mocked(medicalApi.patients).mockResolvedValue([
+      {
+        id: 'pat_01J8Z000000000000000000001',
+        incidentId: waterIncident().id,
+        label: 'Paziente 1',
+        profileCode: null,
+        triage: null,
+        status: 'UNASSESSED',
+        stability: null,
+        needs: [],
+        transportRequired: null,
+        assignedVehicleId: null,
+        hospitalId: null,
+        busyUntil: null,
+        location: 'ASHORE',
+        recovery: { by: 'VEHICLE', vehicleId: boat().id, etaAt: null, recoveredAt: past.recoveryAt },
+      },
+    ]);
+    renderGame(<IncidentWaterNotice incident={waterIncident({ waterSupport: support, patientCount: 1 })} />);
+    await waitFor(() => expect(medicalApi.patients).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByTestId('coast-guard-recovery')).not.toBeInTheDocument());
+    expect(screen.getByTestId('coast-guard-covers')).toBeInTheDocument();
   });
 
   it('asks for a boat on a river (no Coast Guard there), and for a boat — not a base — once a base exists', () => {

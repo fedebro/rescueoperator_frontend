@@ -16,6 +16,7 @@
       "titleNoCoastGuard": "A boat is needed",
       "covers": "{provider} handles the rescue on the water ({list}).",
       "shore": "Send your land units to the meeting point.",
+      "recovery": "It brings the people in the water ashore in <countdown></countdown>.",
       "reward": "Reward reduced to {percent}%.",
       "noCoastGuard": "The Coast Guard does not work on rivers and lakes: you need a boat of your own, which gets there on its trailer.",
       "buyBase": "Buy a marine base",

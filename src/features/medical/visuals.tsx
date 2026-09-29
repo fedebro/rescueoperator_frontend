@@ -9,6 +9,7 @@ import {
   HandHeart,
   Hospital,
   Hourglass,
+  LifeBuoy,
   Minus,
   OctagonAlert,
   ShieldCheck,
@@ -60,6 +61,9 @@ export const PATIENT_STATUS_VISUALS: Record<PatientStatus, Visual> = {
   RELEASED_ON_SCENE: { icon: UserCheck, className: TONE.success },
   DECEASED: { icon: HandHeart, className: TONE.neutral },
 };
+
+/** Water patients: somebody still in the water (a lifebuoy — never a cross). */
+export const WATER_VISUAL: Visual = { icon: LifeBuoy, className: TONE.info };
 
 export const LOAD_VISUALS: Record<HospitalLoadCode, Visual> = {
   NORMAL: { icon: CircleCheck, className: TONE.success },

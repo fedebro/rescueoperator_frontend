@@ -3,6 +3,7 @@
     "patients": {
       "title": "Patients",
       "count": "{count, plural, one {# patient} other {# patients}}",
+      "inWater": "{count, plural, one {# dans l’eau} other {# dans l’eau}}",
       "label": "Patient {n}",
       "loadError": "Impossible de charger les patients.",
       "triageUnknown": "Triage en cours",
@@ -107,6 +108,27 @@
       "boardingTitle": "Embarquer aussi (jusqu’à {count} patients)",
       "boardingNone": "Aucun autre patient en attente : il peut en transporter jusqu’à {count} par trajet.",
       "boardingHint": "{count, plural, one {# patient à bord} other {# patients à bord}} sur {capacity}"
+    },
+    "water": {
+      "waiting": "Dans l’eau — en attente de récupération",
+      "waitingHint": "Il faut un moyen nautique : un bateau (ou un hélicoptère avec treuil) rejoint le patient, lui porte les premiers secours et l’amène au point de rassemblement. Les moyens terrestres n’interviennent qu’ensuite.",
+      "aboard": "Dans l’eau — <vehicle>{callSign}</vehicle> le ramène à terre",
+      "aboardUnknown": "Dans l’eau — un moyen nautique le ramène à terre",
+      "coastGuard": "Dans l’eau — les garde-côtes le ramènent à terre",
+      "ashoreIn": "À terre d’ici",
+      "ashoreSoon": "quelques instants",
+      "needsTitle": "Premiers secours dans l’eau",
+      "unmetHint": "Dans l’eau, le patient ne reçoit que les premiers secours des moyens nautiques : les soins complets commencent à terre, au point de rassemblement.",
+      "transportAfterRecovery": "Le transport vers l’hôpital part du point de rassemblement, dès que le patient est à terre.",
+      "ashore": "À terre au point de rassemblement",
+      "ashoreBy": "ramené par {callSign}",
+      "ashoreByCoastGuard": "ramené par les garde-côtes",
+      "sectionTitle": "Patients dans l’eau",
+      "sectionUnit": "Un moyen nautique les évalue et les ramène à terre : les moyens terrestres au point de rassemblement interviennent ensuite.",
+      "sectionNoUnit": "Aucun moyen nautique sur place ni en route : envoyez un bateau.",
+      "sectionCoastGuard": "Les garde-côtes les ramènent à terre d’ici <countdown></countdown>",
+      "noBoat": "Aucun bateau disponible pour le moment.",
+      "boatSent": "{callSign} part récupérer les personnes dans l’eau"
     }
   },
   "status": {
@@ -138,7 +160,9 @@
     "patient_external": "Patient confié à une ambulance externe, en direction de {hospital}",
     "patient_admitted": "Patient confié à {hospital}",
     "patient_released_field_post": "Patient soigné et libéré par le poste médical avancé",
-    "patient_transport_multi": "{callSign} transporte {count} patients à {hospital}"
+    "patient_transport_multi": "{callSign} transporte {count} patients à {hospital}",
+    "patients_recovered": "{count, plural, one {{labels} ramené à terre par {callSign}} other {{labels} ramenés à terre par {callSign}}}",
+    "patients_recovered_coast_guard": "Les garde-côtes ont ramené {labels} à terre"
   },
   "notifications": {
     "patientAwaitingTransport": "Patient en attente de transport à {address}"

@@ -34,7 +34,10 @@ import { domainState } from './index';
  *   covers it and a REQUIRED shore-side need of an owned family is left for the player (weight × 0.5);
  * - boats: same water as their Base nautica → straight from the berth (`DIRECT`); another water → trailer to the nearest launch
  *   point within 2.5 km of the scene (`TRAILER`) or launched from the bank at the meeting point (`BANK`); back home they land the
- *   rescued at the meeting point's shore first. Their legs carry segments (ROAD / LAUNCH / WATER / RECOVERY).
+ *   rescued at the meeting point's shore first. Their legs carry segments (ROAD / LAUNCH / WATER / RECOVERY);
+ * - water patients (analisi/note-agenti/water-patients.md): the people of a water incident start in the water; only the water
+ *   units (boats, winch helicopters) reach them and bring them ashore, trip after trip — the medical domain runs the trips with
+ *   the helpers below (`isWaterUnit`, `recoveryCapacity`, `recoveryHopSeconds`, `landingOf`, `coastGuardRecoverySeconds`).
  */
 export const WATER_KNOBS = {
   coastGuard: { waterBodies: ['SEA'] as WaterBodyType[], rewardShare: 0.6, spawnWeight: 0.5 },
@@ -186,6 +189,8 @@ export function decorateWaterIncident(
             .filter((r) => r.externalSource === 'COAST_GUARD')
             .map((r) => r.capability),
           rewardShare: share,
+          // When it lands the people still in the water: set by the medical domain when the incident has patients.
+          recoveryAt: null,
         }
       : null,
     estimatedReward: {
@@ -424,6 +429,66 @@ function planBoatHome(
     seconds: engine.travelSeconds(road.distanceMeters, vehicle.typeCode, career, road.path),
   });
   return toLeg(layOut(pieces));
+}
+
+/* ───────────── water patients: who reaches the people in the water, how long a trip ashore lasts ───────────── */
+
+/**
+ * The backend's `depth.water.recovery` / `coastGuard.recoverySeconds` defaults (analisi/note-agenti/water-patients.md): people
+ * brought ashore per trip by vehicle type (other boats `defaultCapacity`, winch helicopters `aircraftCapacity`), the pickup at
+ * the scene of every trip and the Coast Guard landing window after the call. Server seconds, before the demo speed-up (the
+ * backend draws the Coast Guard instant in REAL seconds from the incident seed; the mock draws it from the incident id and
+ * compresses it like every other timer, so it stays a few mock-minutes).
+ */
+export const RECOVERY_KNOBS = {
+  pickupSeconds: 30,
+  capacity: {
+    EMS_JETSKI: 1,
+    EMS_WATER_AMBULANCE: 2,
+    FIRE_BOAT: 4,
+    POL_PATROL_BOAT: 6,
+    FIRE_FIREBOAT: 8,
+  } as Record<string, number>,
+  defaultCapacity: 2,
+  aircraftCapacity: 1,
+  coastGuardSeconds: [150, 240] as [number, number],
+};
+
+/** Reaches the people in the water: a boat, or a helicopter able to do a water rescue (winch, or WATER_RESCUE). */
+export function isWaterUnit(vehicle: Pick<VehicleDto, 'typeCode'>): boolean {
+  const type = typeOf(vehicle.typeCode);
+  if (!type) return false;
+  if (type.domain === 'WATER') return true;
+  return type.domain === 'AIR' && (type.tags.includes('WINCH') || (type.caps.WATER_RESCUE ?? 0) > 0);
+}
+
+/** People a water unit brings ashore in one trip. */
+export function recoveryCapacity(typeCode: string): number {
+  if (typeOf(typeCode)?.domain === 'AIR') return RECOVERY_KNOBS.aircraftCapacity;
+  return RECOVERY_KNOBS.capacity[typeCode] ?? RECOVERY_KNOBS.defaultCapacity;
+}
+
+/** Server seconds a water unit takes from `from` to `to`: a boat at its water speed, a helicopter at its air speed. */
+export function recoveryHopSeconds(engine: MockEngine, typeCode: string, from: LngLat, to: LngLat): number {
+  const type = typeOf(typeCode);
+  if (type?.domain === 'AIR') {
+    const meters = haversineMeters(from, to);
+    return meters < 1 ? 0 : engine.travelSeconds(meters, typeCode);
+  }
+  return waterPiece(from, to, type?.waterSpeedKmh ?? WATER_KNOBS.defaultWaterSpeedKmh).seconds;
+}
+
+/** Where the rescued are landed: the water's edge by the meeting point (kept after the incident closes). */
+export function landingOf(career: MockCareer, incident: Pick<IncidentDto, 'id' | 'position'>): LngLat {
+  return stateOf(career).incidents[incident.id]?.landing ?? incident.position;
+}
+
+/** When the Coast Guard lands the people still in the water: server seconds after the call, always the same for an incident. */
+export function coastGuardRecoverySeconds(incidentId: string): number {
+  const [min, max] = RECOVERY_KNOBS.coastGuardSeconds;
+  let seed = 7;
+  for (const ch of incidentId) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
+  return min + (seed % (max - min + 1));
 }
 
 /** A land unit has a job at the meeting point: it brings a shore-side need asked at REQUIRED/RECOMMENDED, not external. */

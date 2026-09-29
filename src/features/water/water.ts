@@ -26,6 +26,39 @@ export const meetingPointOf = (
 export const waterKindOf = (incident: Pick<IncidentDto, 'domain' | 'waterBody'>): WaterBodyKind | null =>
   isWaterIncident(incident) ? (incident.waterBody?.type ?? null) : null;
 
+/**
+ * A vehicle type that reaches the people in the water (water patients, analisi/note-agenti/water-patients.md): a boat, or a
+ * helicopter able to do a water rescue — a winch, or WATER_RESCUE among the catalog type's (or the vehicle's) capabilities.
+ */
+export function isWaterUnitType(
+  type:
+    | { domain?: string; tags?: readonly string[]; capabilities?: readonly { code: string; value: number }[] }
+    | undefined,
+  capabilities: readonly { code: string; value: number }[] = [],
+): boolean {
+  if (!type) return false;
+  if (type.domain === 'WATER') return true;
+  if (type.domain !== 'AIR') return false;
+  return (
+    !!type.tags?.includes('WINCH') ||
+    [...(type.capabilities ?? []), ...capabilities].some((c) => c.code === 'WATER_RESCUE' && c.value > 0)
+  );
+}
+
+/**
+ * When the Coast Guard still has to land the people in the water (`waterSupport.recoveryAt`), else null: an instant in the
+ * past is done, and nobody waiting for it (the patients known) means there is nothing left for it to do.
+ */
+export function pendingCoastGuardLanding(
+  incident: Pick<IncidentDto, 'waterSupport'>,
+  waitingForCoastGuard: boolean | null,
+  now: number,
+): string | null {
+  const at = incident.waterSupport?.recoveryAt ?? null;
+  if (!at || Date.parse(at) <= now || waitingForCoastGuard === false) return null;
+  return at;
+}
+
 /** The facility type that keeps boats. */
 export const NAUTICAL_BASE = 'NAUTICAL_BASE';
 export const PIER_UPGRADE = 'PIER';

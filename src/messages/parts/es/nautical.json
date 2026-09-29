@@ -16,6 +16,7 @@
       "titleNoCoastGuard": "Hace falta una embarcación",
       "covers": "{provider} se encarga del rescate en el agua ({list}).",
       "shore": "Envía tus medios terrestres al punto de encuentro.",
+      "recovery": "Lleva a tierra a las personas en el agua en <countdown></countdown>.",
       "reward": "Recompensa reducida al {percent} %.",
       "noCoastGuard": "En ríos y lagos los guardacostas no intervienen: necesitas una embarcación propia, que llega en remolque.",
       "buyBase": "Comprar una base náutica",

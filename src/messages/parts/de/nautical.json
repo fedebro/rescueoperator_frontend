@@ -16,6 +16,7 @@
       "titleNoCoastGuard": "Ein Boot wird gebraucht",
       "covers": "{provider} übernimmt die Rettung auf dem Wasser ({list}).",
       "shore": "Schicke deine Landfahrzeuge zum Sammelpunkt.",
+      "recovery": "Sie bringt die Personen im Wasser in <countdown></countdown> an Land.",
       "reward": "Belohnung auf {percent} % reduziert.",
       "noCoastGuard": "Auf Flüssen und Seen greift die Küstenwache nicht ein: Du brauchst ein eigenes Boot, das per Anhänger hinkommt.",
       "buyBase": "Wasserrettungsstation kaufen",

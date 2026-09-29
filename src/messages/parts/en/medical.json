@@ -3,6 +3,7 @@
     "patients": {
       "title": "Patients",
       "count": "{count, plural, one {# patient} other {# patients}}",
+      "inWater": "{count, plural, one {# in the water} other {# in the water}}",
       "label": "Patient {n}",
       "loadError": "Patients could not be loaded.",
       "triageUnknown": "Triage in progress",
@@ -107,6 +108,27 @@
       "boardingTitle": "Board as well (up to {count} patients)",
       "boardingNone": "No other patient waiting: it can carry up to {count} per trip.",
       "boardingHint": "{count, plural, one {# patient aboard} other {# patients aboard}} of {capacity}"
+    },
+    "water": {
+      "waiting": "In the water — waiting to be recovered",
+      "waitingHint": "A water unit is needed: a boat (or a helicopter with a winch) reaches the patient, gives first aid and brings them to the meeting point. Land units can only step in after that.",
+      "aboard": "In the water — <vehicle>{callSign}</vehicle> is bringing them ashore",
+      "aboardUnknown": "In the water — a water unit is bringing them ashore",
+      "coastGuard": "In the water — the Coast Guard is bringing them ashore",
+      "ashoreIn": "Ashore in",
+      "ashoreSoon": "a few moments",
+      "needsTitle": "First aid in the water",
+      "unmetHint": "In the water the patient only gets the first aid of the water units: full care starts ashore, at the meeting point.",
+      "transportAfterRecovery": "The hospital transport leaves from the meeting point, as soon as the patient is ashore.",
+      "ashore": "Ashore at the meeting point",
+      "ashoreBy": "brought by {callSign}",
+      "ashoreByCoastGuard": "brought by the Coast Guard",
+      "sectionTitle": "Patients in the water",
+      "sectionUnit": "A water unit assesses them and brings them ashore: the land units at the meeting point step in afterwards.",
+      "sectionNoUnit": "No water unit on scene or on its way: send a boat.",
+      "sectionCoastGuard": "The Coast Guard brings them ashore in <countdown></countdown>",
+      "noBoat": "No boat available right now.",
+      "boatSent": "{callSign} is heading out to recover the people in the water"
     }
   },
   "status": {
@@ -138,7 +160,9 @@
     "patient_external": "Patient entrusted to an external ambulance heading to {hospital}",
     "patient_admitted": "Patient handed over to {hospital}",
     "patient_released_field_post": "Patient treated and released by the advanced medical post",
-    "patient_transport_multi": "{callSign} takes {count} patients to {hospital}"
+    "patient_transport_multi": "{callSign} takes {count} patients to {hospital}",
+    "patients_recovered": "{count, plural, one {{labels} brought ashore by {callSign}} other {{labels} brought ashore by {callSign}}}",
+    "patients_recovered_coast_guard": "The Coast Guard brought {labels} ashore"
   },
   "notifications": {
     "patientAwaitingTransport": "Patient awaiting transport at {address}"

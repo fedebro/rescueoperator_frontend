@@ -1,15 +1,54 @@
 'use client';
+import * as React from 'react';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import type { IncidentDto, PatientDto, VehicleDto } from '@/contracts';
 import { medicalApi } from '@/lib/api/depth';
 import { qk } from '@/lib/api/query-keys';
-import { useCareerId, useCatalog, useSnapshot } from '@/features/game/hooks';
+import { useCareerId, useCatalog, useSnapshot, useVehicleTypeLookup } from '@/features/game/hooks';
+import { isWaterUnitType } from '@/features/water/water';
 
 export const TRANSPORT_CAPABILITY = 'PATIENT_TRANSPORT';
 export const MEDICAL_CAPABILITIES = ['MEDICAL_BASIC', 'MEDICAL_ADVANCED'];
 
 export const hasCapability = (vehicle: VehicleDto, codes: readonly string[]): boolean =>
   vehicle.capabilities.some((c) => codes.includes(c.code) && c.value > 0);
+
+/** Statuses of a patient who has left the scene (on the way to, or at, the hospital) or whose care is over. */
+const OFF_SCENE: ReadonlySet<PatientDto['status']> = new Set([
+  'IN_TRANSPORT',
+  'HANDOFF',
+  'ADMITTED',
+  'RELEASED_ON_SCENE',
+  'DECEASED',
+]);
+
+/** Still at the scene — in the water or at the meeting point: not on the way to hospital, care not over. */
+export const isAtScene = (patient: Pick<PatientDto, 'status'>): boolean => !OFF_SCENE.has(patient.status);
+
+/**
+ * Still in the water at the scene of a water incident (water patients, analisi/note-agenti/water-patients.md): only the units
+ * on the water reach them — no assessment, care or transport from the meeting point until they are ashore. An absent
+ * `location` (an older server) means ashore.
+ */
+export const isInWater = (patient: Pick<PatientDto, 'location' | 'status'>): boolean =>
+  patient.location === 'WATER' && isAtScene(patient);
+
+/** Brought ashore to the meeting point (by a boat, a helicopter or the Coast Guard) and still cared for there. */
+export const isJustAshore = (patient: Pick<PatientDto, 'location' | 'status' | 'recovery'>): boolean =>
+  !isInWater(patient) && isAtScene(patient) && !!patient.recovery?.recoveredAt;
+
+/** Waiting for the hospital transport AND at the meeting point: the only patients a transport can be started for. */
+export const canBeTransported = (patient: Pick<PatientDto, 'location' | 'status'>): boolean =>
+  patient.status === 'AWAITING_TRANSPORT' && !isInWater(patient);
+
+/** A vehicle that reaches the people in the water: a boat, or a helicopter able to do a water rescue (catalog type). */
+export function useIsWaterUnit(): (vehicle: VehicleDto) => boolean {
+  const typeOf = useVehicleTypeLookup();
+  return React.useCallback(
+    (vehicle) => isWaterUnitType(typeOf(vehicle.typeCode), vehicle.capabilities),
+    [typeOf],
+  );
+}
 
 /**
  * What is on scene decides assessment, needs and stability rates, but a recalled vehicle produces no `patient.updated`:

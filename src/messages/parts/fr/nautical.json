@@ -16,6 +16,7 @@
       "titleNoCoastGuard": "Il faut un bateau",
       "covers": "{provider} se charge du secours sur l’eau ({list}).",
       "shore": "Envoyez vos moyens terrestres au point de rassemblement.",
+      "recovery": "Ils ramènent à terre les personnes dans l’eau d’ici <countdown></countdown>.",
       "reward": "Récompense réduite à {percent} %.",
       "noCoastGuard": "Sur les rivières et les lacs, les garde-côtes n’interviennent pas : il vous faut votre propre bateau, qui s’y rend sur remorque.",
       "buyBase": "Acheter une base nautique",

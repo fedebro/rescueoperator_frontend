@@ -15,7 +15,7 @@ import { InspectorHeaderButton, SHEET_HEADER } from '@/features/game/inspector-p
 import { EmptyState, SectionTitle, Skeleton } from '@/components/ui/misc';
 import { useSnapshot } from '@/features/game/hooks';
 import { incidentScene } from '@/features/water/water';
-import { useActivePatients, useHospitals } from './hooks';
+import { isInWater, useActivePatients, useHospitals } from './hooks';
 import { LOAD_VISUALS, MedicalChip, PATIENT_STATUS_VISUALS } from './visuals';
 
 type HospitalData = z.infer<typeof HospitalDto>;
@@ -72,8 +72,9 @@ export function HospitalsMapOverlay({ map }: { map: MlMap }) {
   const focusOn = useUiStore((s) => s.focusOn);
   const { vehicles } = useSnapshot();
   const patients = useActivePatients();
+  // Somebody still in the water awaits no hospital yet (water patients): the transport starts once ashore.
   const transporting =
-    patients.some((p) => TRANSPORT_STATUSES.has(p.status)) ||
+    patients.some((p) => TRANSPORT_STATUSES.has(p.status) && !isInWater(p)) ||
     vehicles.some((v) => v.status === 'TRANSPORTING' || v.status === 'AT_HOSPITAL');
   const selectedId = selection?.kind === 'hospital' ? selection.id : null;
   const on = layerOn || transporting || selectedId !== null;

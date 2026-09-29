@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { useCatalogName } from '@/i18n/use-i18n-text';
 import { Checkbox } from '@/components/ui/switch';
 import { useSnapshot, useVehicleTypeLookup } from '@/features/game/hooks';
+import { canBeTransported } from './hooks';
 import { MedicalChip, TRIAGE_VISUALS } from './visuals';
 
 /**
@@ -26,8 +27,9 @@ export const isFieldPostType = (tags: readonly string[] | undefined): boolean =>
 const TRIAGE_RANK: Record<string, number> = { RED: 0, ORANGE: 1, BLUE: 2, GREEN: 3, WHITE: 4 };
 
 /**
- * Who else can ride with a patient: the other patients of the incident waiting for transport, worst triage first — and the
- * default pick (what the server boards when the list is omitted): the first `capacity − 1` of them.
+ * Who else can ride with a patient: the other patients of the incident waiting for transport at the meeting point (never
+ * somebody still in the water), worst triage first — and the default pick (what the server boards when the list is omitted):
+ * the first `capacity − 1` of them.
  */
 export function coPassengerCandidates(
   patient: Pick<PatientDto, 'id'>,
@@ -35,7 +37,7 @@ export function coPassengerCandidates(
   capacity: number,
 ): { candidates: PatientDto[]; preselected: string[] } {
   const candidates = patients
-    .filter((p) => p.id !== patient.id && p.status === 'AWAITING_TRANSPORT')
+    .filter((p) => p.id !== patient.id && canBeTransported(p))
     .sort(
       (a, b) =>
         (TRIAGE_RANK[a.triage ?? ''] ?? 9) - (TRIAGE_RANK[b.triage ?? ''] ?? 9) ||

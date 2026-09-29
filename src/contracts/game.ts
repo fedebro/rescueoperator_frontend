@@ -349,8 +349,12 @@ export const IncidentDto = z.object({
    * External support on the water (D-68): the career has no boat able to do the water part, so the Coast Guard covers the
    * listed capabilities (their requirements are `external`, `externalSource: 'COAST_GUARD'`). The land part at the meeting
    * point stays the player's; the reward is multiplied by `rewardShare`; never an automatic failure. Null otherwise.
+   * `recoveryAt` (additive, water patients — analisi/note-agenti/water-patients.md): when the Coast Guard lands at the meeting
+   * point the people still in the water (null/absent when the incident has no patient to recover; an instant in the past = done).
    */
-  waterSupport: z.object({ provider: z.literal('COAST_GUARD'), name: I18nText, capabilities: z.array(z.string()), rewardShare: z.number() }).nullable().optional(),
+  waterSupport: z.object({
+    provider: z.literal('COAST_GUARD'), name: I18nText, capabilities: z.array(z.string()), rewardShare: z.number(), recoveryAt: IsoDateTime.nullable().optional(),
+  }).nullable().optional(),
   /* ── additive (major incidents, D-24/D-69) ── */
   /** Set when the incident belongs to a major incident (main scene or linked incident); null/absent otherwise. */
   major: MajorIncidentRefDto.nullable().optional(),

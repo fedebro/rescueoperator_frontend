@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { HospitalDto, HospitalOption, PatientDto, type RealtimeEnvelope } from '@/contracts';
+import { HospitalDto, HospitalOption, IncidentDto, PatientDto, type RealtimeEnvelope } from '@/contracts';
 import { TransportPatientResult } from '@/contracts';
-import { MockEngine, MockError, memoryStorage, type MockCareer } from '../engine';
+import { MockEngine, MockError, iso, memoryStorage, sceneOf, type MockCareer } from '../engine';
+import { PATIENT_PROFILES } from '../data/catalog';
 import { installDomains } from './index';
 import {
   HOSPITALS,
+  byRecoveryPriority,
   loadLevel,
   medicalOf,
   medicalState,
@@ -14,6 +16,15 @@ import {
   stabilityAt,
   type MockPatient,
 } from './medical';
+import {
+  RECOVERY_KNOBS,
+  coastGuardRecoverySeconds,
+  isWaterUnit,
+  landingOf,
+  recoveryCapacity,
+  recoveryHopSeconds,
+  waterQa,
+} from './water';
 
 async function world(speed = 1, level = 6) {
   let now = Date.parse('2026-03-01T09:00:00.000Z');
@@ -411,5 +422,487 @@ describe('mass-casualty care (major incidents §1)', () => {
         expect.objectContaining({ code: 'VEHICLE_NOT_AVAILABLE' }),
       );
     }
+  });
+});
+
+describe('water patients (analisi/note-agenti/water-patients.md)', () => {
+  /** A level-18 career off duty (no random calls), rich enough for a Base nautica; no automatic hospital or external step. */
+  async function waterWorld(speed = 1) {
+    const w = await world(speed, 18);
+    w.engine.setDuty(w.career, false);
+    w.engine.credit(w.career, 500_000, 'ADMIN_ADJUSTMENT', true);
+    const raw = w.engine.qa as unknown as {
+      buildNauticalBase: () => string;
+      recoverNow: (incidentId?: string) => void;
+      medicalConfig: (c: Record<string, unknown>) => void;
+    };
+    raw.medicalConfig({ autoTransportSeconds: 3600, externalSeconds: 3600 });
+    const water = waterQa(w.engine);
+    let baseId: string | null = null;
+    /** A crewed boat of that type at the Base nautica (bought on first use). */
+    const boat = (typeCode = 'FIRE_BOAT') => {
+      baseId ??= raw.buildNauticalBase();
+      const id = water.addBoat(typeCode, baseId);
+      w.engine.qa.staffAll();
+      return id;
+    };
+    const incident = (id: string) => w.career.incidents.find((i) => i.id === id)!;
+    const vehicle = (id: string) => w.career.vehicles.find((v) => v.id === id)!;
+    const patients = (incidentId: string) =>
+      medicalState(w.career).patients.filter((p) => p.dto.incidentId === incidentId);
+    const onScene = (vehicleId: string) => until(w, () => vehicle(vehicleId).status === 'ON_SCENE');
+    const arrivedAt = (vehicleId: string, incidentId: string) =>
+      [...w.career.legs].reverse().find((l) => l.vehicleId === vehicleId && l.incidentId === incidentId)!
+        .arrivedAt!;
+    /** Fixes the (hidden) profile of each patient, in label order (the last code for the rest). */
+    const profiles = (incidentId: string, codes: string[]) =>
+      patients(incidentId).forEach((p, i) => {
+        p.profileCode = codes[i] ?? codes.at(-1)!;
+      });
+    const refusal = (fn: () => unknown): { code: string; details?: unknown } => {
+      try {
+        fn();
+      } catch (e) {
+        return e instanceof MockError ? { code: e.code, details: e.details } : { code: 'THROWN' };
+      }
+      return { code: 'OK' };
+    };
+    return { ...w, raw, water, boat, incident, vehicle, patients, onScene, arrivedAt, profiles, refusal };
+  }
+  const recoveredLines = (w: World, incidentId: string, key: string) =>
+    (w.career.timelines[incidentId] ?? []).filter((e) => e.text.key === key);
+
+  it('knows the water units, how many people each brings per trip and who is picked up first', () => {
+    const unit = (typeCode: string) => isWaterUnit({ typeCode });
+    for (const code of ['FIRE_BOAT', 'EMS_JETSKI', 'EMS_WATER_AMBULANCE', 'POL_PATROL_BOAT', 'FIRE_FIREBOAT'])
+      expect(unit(code), code).toBe(true);
+    // winch helicopters reach the water too; the other aircraft and the land units do not
+    for (const code of ['EMS_HELI', 'FIRE_HELI', 'ALP_HELI']) expect(unit(code), code).toBe(true);
+    for (const code of ['EMS_MSB', 'FIRE_APS', 'POL_HELI', 'AIB_HELI', 'AIB_PLANE'])
+      expect(unit(code), code).toBe(false);
+    expect(
+      ['EMS_JETSKI', 'EMS_WATER_AMBULANCE', 'FIRE_BOAT', 'POL_PATROL_BOAT', 'FIRE_FIREBOAT', 'EMS_HELI'].map(
+        recoveryCapacity,
+      ),
+    ).toEqual([1, 2, 4, 6, 8, 1]);
+    expect(recoveryCapacity('SOME_OTHER_BOAT')).toBe(RECOVERY_KNOBS.defaultCapacity);
+    const patient = (label: string, profileCode: string) =>
+      ({ dto: { label }, profileCode }) as unknown as MockPatient;
+    const order = [
+      patient('Paziente 10', 'PP_MINOR_MEDICAL'),
+      patient('Paziente 3', 'PP_HYPOTHERMIA'),
+      patient('Paziente 2', 'PP_NEAR_DROWNING'),
+      patient('Paziente 1', 'PP_UNCONSCIOUS'),
+      patient('Paziente 4', 'PP_NEAR_DROWNING'),
+    ]
+      .sort(byRecoveryPriority)
+      .map((p) => p.dto.label);
+    // the worst true triage first (RED, ORANGE, BLUE…), then the label order
+    expect(order).toEqual(['Paziente 2', 'Paziente 4', 'Paziente 1', 'Paziente 3', 'Paziente 10']);
+  });
+
+  it('puts the patients of a water incident in the water, those of a land incident ashore as before', async () => {
+    const w = await waterWorld();
+    w.boat(); // a boat able to do the water part: no Coast Guard
+    const id = w.water.spawnWater('MED_SWIMMER_DISTRESS', { severity: 3 });
+    expect(w.incident(id).waterSupport).toBeNull();
+    const list = w.medical.patients(w.career, id);
+    expect(list.length).toBeGreaterThan(0);
+    for (const p of list)
+      expect(p).toMatchObject({
+        status: 'UNASSESSED',
+        location: 'WATER',
+        recovery: { by: null, vehicleId: null, etaAt: null, recoveredAt: null },
+      });
+    expect(z.array(PatientDto).safeParse(list).success).toBe(true);
+    const land = w.engine.spawnIncident(w.career, 'MED_FALL', false, { severity: 4 }).id;
+    expect(w.medical.patients(w.career, land)[0]).toMatchObject({ location: 'ASHORE', recovery: null });
+  });
+
+  it('the Coast Guard lands everybody still in the water at one instant, always the same for an incident', async () => {
+    const w = await waterWorld();
+    // no boat: the Coast Guard covers the water part
+    const id = w.water.spawnWater('MED_SWIMMER_DISTRESS', { severity: 3 });
+    const inc = w.incident(id);
+    const seconds = coastGuardRecoverySeconds(id);
+    expect(seconds).toBeGreaterThanOrEqual(RECOVERY_KNOBS.coastGuardSeconds[0]);
+    expect(seconds).toBeLessThanOrEqual(RECOVERY_KNOBS.coastGuardSeconds[1]);
+    expect(coastGuardRecoverySeconds(id)).toBe(seconds);
+    const recoveryAt = iso(Date.parse(inc.createdAt) + seconds * 1000);
+    expect(inc.waterSupport).toMatchObject({ provider: 'COAST_GUARD', recoveryAt });
+    expect(IncidentDto.safeParse(inc).success).toBe(true);
+    const list = w.patients(id);
+    for (const p of list)
+      expect(p.dto.recovery).toEqual({
+        by: 'COAST_GUARD',
+        vehicleId: null,
+        etaAt: recoveryAt,
+        recoveredAt: null,
+      });
+
+    until(w, () => list.every((p) => p.dto.location === 'ASHORE'));
+    for (const p of list)
+      expect(p.dto.recovery).toEqual({
+        by: 'COAST_GUARD',
+        vehicleId: null,
+        etaAt: null,
+        recoveredAt: recoveryAt,
+      });
+    const [line, ...more] = recoveredLines(w, id, 'timeline.patients_recovered_coast_guard');
+    expect(more).toEqual([]);
+    expect(line).toMatchObject({
+      at: recoveryAt,
+      text: { params: { labels: list.map((p) => p.dto.label).join(', '), count: list.length } },
+    });
+    expect(
+      w.events.some(
+        (e) =>
+          e.type === 'patient.updated' &&
+          e.payload.recovered === true &&
+          (e.payload.patient as PatientDto).id === list[0]!.dto.id,
+      ),
+    ).toBe(true);
+    // the instant stays on the incident once it is past (= done)
+    expect(w.incident(id).waterSupport!.recoveryAt).toBe(recoveryAt);
+  });
+
+  it('the ambulance at the meeting point does nothing for a patient in the water, then takes over once ashore', async () => {
+    const w = await waterWorld();
+    // a late Coast Guard, and an external ambulance that would step in after 5 s if nobody were bringing them ashore
+    w.raw.medicalConfig({ coastGuardSeconds: 900, externalSeconds: 5 });
+    const id = w.water.spawnWater('MED_SWIMMER_DISTRESS', { severity: 3 });
+    const { vehicleId: ambulance } = w.qa.giveAmbulance();
+    w.engine.dispatch(w.career, id, [ambulance]);
+    w.onScene(ambulance);
+    w.advance(120_000);
+    const list = w.patients(id);
+    for (const p of list) {
+      expect(p.dto).toMatchObject({ status: 'UNASSESSED', location: 'WATER', needs: [], stability: null });
+      expect(p.external).toBe(false);
+      const decay = PATIENT_PROFILES.find((x) => x.code === p.profileCode)!.stability.decayPerMinuteUntreated;
+      expect(p.stability.ratePerSecond).toBeCloseTo(-decay / 60, 9);
+    }
+    const first = list[0]!;
+    // whatever its status, nobody leaves for hospital from the water
+    w.qa.stabilize(first.dto.id);
+    expect(first.dto).toMatchObject({ status: 'AWAITING_TRANSPORT', location: 'WATER' });
+    expect(
+      w.refusal(() => w.medical.transport(w.career, first.dto.id, { hospitalId: HOSPITALS[0]!.id })),
+    ).toEqual({ code: 'CONFLICT', details: { reason: 'PATIENT_IN_WATER' } });
+    expect(w.career.actions.some((a) => a.type === 'PATIENT_AUTO_TRANSPORT')).toBe(false);
+
+    until(w, () => first.dto.location === 'ASHORE');
+    expect(first.dto.recovery!.by).toBe('COAST_GUARD');
+    // ashore: the ambulance assesses the others at once, the hospital timer runs, the transport leaves the meeting point
+    for (const p of list.slice(1)) expect(p.dto.status).not.toBe('UNASSESSED');
+    expect(w.career.actions.some((a) => a.type === 'PATIENT_AUTO_TRANSPORT' && a.ref === first.dto.id)).toBe(
+      true,
+    );
+    const recommended = w.medical.hospitalOptions(w.career, first.dto.id).find((o) => o.recommended)!;
+    const result = w.medical.transport(w.career, first.dto.id, { hospitalId: recommended.hospitalId });
+    expect(result.vehicle).toMatchObject({ id: ambulance, status: 'TRANSPORTING' });
+    expect(result.vehicle.movement!.path[0]).toEqual(w.incident(id).position);
+  });
+
+  it('only the water units count in the water: the boat assesses and treats with its own capabilities, then lands the patient', async () => {
+    const w = await waterWorld();
+    const boatId = w.boat('FIRE_BOAT');
+    const { vehicleId: ambulance } = w.qa.giveAmbulance();
+    w.raw.medicalConfig({ alwaysTransport: true });
+    const id = w.water.spawnWater('MED_SWIMMER_DISTRESS', { severity: 3 });
+    w.profiles(id, ['PP_NEAR_DROWNING']);
+    w.engine.dispatch(w.career, id, [ambulance]);
+    w.onScene(ambulance);
+    w.advance(30_000);
+    const first = w.patients(id)[0]!;
+    expect(first.dto).toMatchObject({ status: 'UNASSESSED', location: 'WATER' });
+
+    // a long pickup: time to watch the care in the water
+    w.raw.medicalConfig({ waterPickupSeconds: 600 });
+    w.engine.dispatch(w.career, id, [boatId]);
+    w.onScene(boatId);
+    const inc = w.incident(id);
+    const landsAt =
+      w.arrivedAt(boatId, id) +
+      (600 + recoveryHopSeconds(w.engine, 'FIRE_BOAT', sceneOf(inc), landingOf(w.career, inc))) * 1000;
+    expect(first.dto).toMatchObject({
+      status: 'ASSESSED',
+      location: 'WATER',
+      recovery: { by: 'VEHICLE', vehicleId: boatId, etaAt: iso(landsAt), recoveredAt: null },
+    });
+    // what the BOAT brings (MEDICAL_BASIC 45 < 60): the ambulance's 70 at the meeting point does not count
+    expect(first.dto.needs).toEqual([
+      { capability: 'MEDICAL_BASIC', met: false },
+      { capability: 'MEDICAL_ADVANCED', met: false },
+    ]);
+    // load and go, still in the water: no hospital timer, no "awaiting transport" notification, no transport
+    until(w, () => first.dto.status === 'AWAITING_TRANSPORT');
+    expect(first.dto.location).toBe('WATER');
+    expect(w.career.actions.some((a) => a.type === 'PATIENT_AUTO_TRANSPORT')).toBe(false);
+    const awaiting = () =>
+      w.career.notifications.filter((n) => n.title.key === 'notifications.patientAwaitingTransport');
+    expect(awaiting()).toEqual([]);
+    const hospitalId = w.medical
+      .hospitalOptions(w.career, first.dto.id)
+      .find((o) => o.recommended)!.hospitalId;
+    expect(w.refusal(() => w.medical.transport(w.career, first.dto.id, { hospitalId }))).toMatchObject({
+      code: 'CONFLICT',
+      details: { reason: 'PATIENT_IN_WATER' },
+    });
+
+    // the landing, at the planned instant: one timeline line, the event, every unit on scene counts from now on
+    until(w, () => first.dto.location === 'ASHORE');
+    expect(first.dto.recovery).toEqual({
+      by: 'VEHICLE',
+      vehicleId: boatId,
+      etaAt: null,
+      recoveredAt: iso(landsAt),
+    });
+    const [line] = recoveredLines(w, id, 'timeline.patients_recovered');
+    expect(line).toMatchObject({
+      at: iso(landsAt),
+      vehicleId: boatId,
+      text: {
+        params: {
+          labels: w
+            .patients(id)
+            .map((p) => p.dto.label)
+            .join(', '),
+          count: w.patients(id).length,
+          callSign: w.vehicle(boatId).callSign,
+        },
+      },
+    });
+    expect(
+      w.events.some(
+        (e) =>
+          e.type === 'patient.updated' &&
+          e.payload.recovered === true &&
+          (e.payload.patient as PatientDto).id === first.dto.id,
+      ),
+    ).toBe(true);
+    expect(first.dto.needs.find((n) => n.capability === 'MEDICAL_BASIC')!.met).toBe(true);
+    expect(awaiting().length).toBeGreaterThan(0);
+    expect(w.career.actions.some((a) => a.type === 'PATIENT_AUTO_TRANSPORT' && a.ref === first.dto.id)).toBe(
+      true,
+    );
+    // the hospital transport leaves the meeting point
+    const result = w.medical.transport(w.career, first.dto.id, { hospitalId });
+    expect(TransportPatientResult.safeParse(result).success).toBe(true);
+    expect(result.vehicle).toMatchObject({ id: ambulance, status: 'TRANSPORTING' });
+    expect(result.vehicle.movement!.path[0]).toEqual(inc.position);
+  });
+
+  it('a water ambulance treats a near-drowning patient in the water', async () => {
+    const w = await waterWorld();
+    const unit = w.boat('EMS_WATER_AMBULANCE');
+    w.raw.medicalConfig({ waterPickupSeconds: 900, alwaysTransport: true });
+    const id = w.water.spawnWater('MED_SWIMMER_DISTRESS', { severity: 3 });
+    w.profiles(id, ['PP_NEAR_DROWNING']);
+    w.engine.dispatch(w.career, id, [unit]);
+    w.onScene(unit);
+    const p = w.patients(id)[0]!;
+    until(w, () => p.dto.status === 'TREATING');
+    expect(p.dto.location).toBe('WATER');
+    expect(p.dto.needs.every((n) => n.met)).toBe(true);
+    expect(p.dto.stability!.ratePerSecond).toBeGreaterThan(0);
+    until(w, () => p.dto.status === 'AWAITING_TRANSPORT');
+    expect(p.dto.location).toBe('WATER');
+    expect(p.stabilized).toBe(true);
+  });
+
+  it('treated to the end in the water with no hospital needed: released there at once — the trip lands nobody for them', async () => {
+    const w = await waterWorld();
+    const unit = w.boat('EMS_WATER_AMBULANCE'); // 2 people per trip
+    w.raw.medicalConfig({ waterPickupSeconds: 900 });
+    const id = w.water.spawnWater('MULTI_CAPSIZED_BOAT', { severity: 7, body: 'SEA' });
+    const list = w.patients(id);
+    expect(list.length).toBeGreaterThanOrEqual(3);
+    // all minor: the first two need no hospital, the others do
+    w.profiles(id, ['PP_MINOR_MEDICAL']);
+    list.forEach((p, i) => (p.transportDrawn = i >= 2));
+    w.engine.dispatch(w.career, id, [unit]);
+    w.onScene(unit);
+    const [first, second, third] = list;
+    const firstTrip = first!.dto.recovery!.etaAt!;
+    expect(second!.dto.recovery).toMatchObject({ by: 'VEHICLE', vehicleId: unit, etaAt: firstTrip });
+    expect(third!.dto.recovery!.by).toBeNull();
+    // treated aboard, no hospital needed: released at once, still in the water
+    until(w, () => first!.dto.status === 'RELEASED_ON_SCENE' && second!.dto.status === 'RELEASED_ON_SCENE');
+    for (const p of [first!, second!]) expect(p.dto.location).toBe('WATER');
+    expect(first!.outcome).toBe('RELEASED_ON_SCENE');
+    // the others wait in the water, awaiting the hospital
+    until(w, () => third!.dto.status === 'AWAITING_TRANSPORT');
+    expect(third!.dto.location).toBe('WATER');
+    // the trip ends at its instant with nobody to land; the unit sails back for the next ones
+    until(w, () => third!.dto.recovery?.by === 'VEHICLE');
+    const inc = w.incident(id);
+    const out = recoveryHopSeconds(w.engine, 'EMS_WATER_AMBULANCE', sceneOf(inc), landingOf(w.career, inc));
+    const back = recoveryHopSeconds(w.engine, 'EMS_WATER_AMBULANCE', landingOf(w.career, inc), sceneOf(inc));
+    expect(third!.dto.recovery!.etaAt).toBe(iso(Date.parse(firstTrip) + (back + 900 + out) * 1000));
+    expect(recoveredLines(w, id, 'timeline.patients_recovered')).toEqual([]);
+    for (const p of [first!, second!]) expect(p.dto.location).toBe('WATER');
+  });
+
+  it('a jet ski brings one person per trip, the worst first; its next trip first goes back to the scene', async () => {
+    const w = await waterWorld();
+    const jet = w.boat('EMS_JETSKI');
+    const id = w.water.spawnWater('MULTI_CAPSIZED_BOAT', { severity: 5, body: 'SEA' });
+    expect(w.incident(id).waterSupport).toBeNull();
+    const list = w.patients(id);
+    expect(list.length).toBeGreaterThanOrEqual(2);
+    // Paziente 1 hypothermia (BLUE), Paziente 2 near drowning (RED), the others minor (WHITE)
+    w.profiles(id, ['PP_HYPOTHERMIA', 'PP_NEAR_DROWNING', 'PP_MINOR_MEDICAL']);
+    w.engine.dispatch(w.career, id, [jet]);
+    w.onScene(jet);
+    const inc = w.incident(id);
+    const out = recoveryHopSeconds(w.engine, 'EMS_JETSKI', sceneOf(inc), landingOf(w.career, inc));
+    const back = recoveryHopSeconds(w.engine, 'EMS_JETSKI', landingOf(w.career, inc), sceneOf(inc));
+    expect(out).toBeGreaterThanOrEqual(5);
+    const firstLanding = w.arrivedAt(jet, id) + (RECOVERY_KNOBS.pickupSeconds + out) * 1000;
+    const aboard = () =>
+      list
+        .filter((p) => p.dto.location === 'WATER' && p.dto.recovery?.by === 'VEHICLE')
+        .map((p) => p.dto.label);
+    expect(aboard()).toEqual(['Paziente 2']);
+    expect(list[1]!.dto.recovery!.etaAt).toBe(iso(firstLanding));
+    expect(list.filter((p) => p.dto.recovery?.by === null)).toHaveLength(list.length - 1);
+
+    until(w, () => list[1]!.dto.location === 'ASHORE');
+    expect(list[1]!.dto.recovery).toEqual({
+      by: 'VEHICLE',
+      vehicleId: jet,
+      etaAt: null,
+      recoveredAt: iso(firstLanding),
+    });
+    // at once the next one (the BLUE before the WHITE ones), sailing back to the scene first
+    expect(aboard()).toEqual(['Paziente 1']);
+    expect(list[0]!.dto.recovery!.etaAt).toBe(
+      iso(firstLanding + (back + RECOVERY_KNOBS.pickupSeconds + out) * 1000),
+    );
+    // trip after trip until nobody is left in the water: one line per trip
+    until(w, () => list.every((p) => p.dto.location === 'ASHORE'));
+    expect(recoveredLines(w, id, 'timeline.patients_recovered')).toHaveLength(list.length);
+  });
+
+  it('no trip that would land after the Coast Guard; a trip that lands before takes the people', async () => {
+    const w = await waterWorld();
+    // the calls come in before the career has a boat: the Coast Guard covers both
+    w.raw.medicalConfig({ coastGuardSeconds: 5000 });
+    const late = w.water.spawnWater('MED_SWIMMER_DISTRESS', { severity: 3 });
+    w.raw.medicalConfig({ coastGuardSeconds: 700 });
+    const soon = w.water.spawnWater('MED_SWIMMER_DISTRESS', { severity: 3 });
+    const [a, b] = [w.boat('FIRE_BOAT'), w.boat('FIRE_BOAT')];
+    w.raw.medicalConfig({ waterPickupSeconds: 1000 });
+    w.engine.dispatch(w.career, soon, [a]);
+    w.engine.dispatch(w.career, late, [b]);
+    w.onScene(a);
+    w.onScene(b);
+    // soon: the trip would land after the Coast Guard, the boat only gives its care in the water
+    for (const p of w.patients(soon))
+      expect(p.dto).toMatchObject({ location: 'WATER', recovery: { by: 'COAST_GUARD' } });
+    expect(w.patients(soon)[0]!.dto.status).not.toBe('UNASSESSED');
+    // late: the boat lands them long before the Coast Guard would
+    for (const p of w.patients(late)) expect(p.dto.recovery).toMatchObject({ by: 'VEHICLE', vehicleId: b });
+    const coastGuardAt = Date.parse(w.incident(late).waterSupport!.recoveryAt!);
+    expect(Date.parse(w.patients(late)[0]!.dto.recovery!.etaAt!)).toBeLessThan(coastGuardAt);
+    expect(
+      w.career.actions.some(
+        (a) => a.type === 'PATIENT_COAST_GUARD' && w.patients(late).some((p) => p.dto.id === a.ref),
+      ),
+    ).toBe(false);
+    until(
+      w,
+      () => [...w.patients(soon), ...w.patients(late)].every((p) => p.dto.location === 'ASHORE'),
+      3_600_000,
+    );
+    for (const p of w.patients(soon)) expect(p.dto.recovery!.by).toBe('COAST_GUARD');
+    for (const p of w.patients(late)) expect(p.dto.recovery!.by).toBe('VEHICLE');
+  });
+
+  it('when the work ends the water units stay while somebody is in the water; a boat with no care to give then goes home', async () => {
+    const w = await waterWorld();
+    const patrol = w.boat('POL_PATROL_BOAT');
+    const { vehicleId: ambulance } = w.qa.giveAmbulance();
+    w.raw.medicalConfig({ waterPickupSeconds: 3000 });
+    const id = w.water.spawnWater('MED_SWIMMER_DISTRESS', { severity: 3 });
+    w.engine.dispatch(w.career, id, [patrol, ambulance]);
+    w.onScene(patrol);
+    const list = w.patients(id);
+    // no medical crew aboard: it brings them ashore without assessing them
+    for (const p of list)
+      expect(p.dto).toMatchObject({ status: 'UNASSESSED', recovery: { by: 'VEHICLE', vehicleId: patrol } });
+    until(w, () => w.incident(id).status === 'RESOLVING');
+    expect(w.vehicle(patrol).status).toBe('ON_SCENE');
+    expect(w.vehicle(ambulance).status).toBe('ON_SCENE');
+    w.raw.recoverNow(id);
+    expect(list.every((p) => p.dto.location === 'ASHORE')).toBe(true);
+    expect(w.vehicle(patrol).status).toBe('RETURNING');
+    expect(w.vehicle(ambulance).status).toBe('ON_SCENE');
+    // the ambulance at the meeting point assesses them now
+    expect(list.every((p) => p.dto.status !== 'UNASSESSED')).toBe(true);
+  });
+
+  it('a unit recalled during a trip still lands the people aboard at the planned instant', async () => {
+    const w = await waterWorld();
+    const boatId = w.boat('FIRE_BOAT');
+    const id = w.water.spawnWater('MED_SWIMMER_DISTRESS', { severity: 3 });
+    w.engine.dispatch(w.career, id, [boatId]);
+    w.onScene(boatId);
+    const p = w.patients(id)[0]!;
+    const etaAt = p.dto.recovery!.etaAt!;
+    w.engine.recall(w.career, boatId);
+    expect(w.vehicle(boatId).status).toBe('RETURNING');
+    until(w, () => p.dto.location === 'ASHORE');
+    expect(p.dto.recovery).toEqual({ by: 'VEHICLE', vehicleId: boatId, etaAt: null, recoveredAt: etaAt });
+  });
+
+  it('a multi-patient ambulance boards only the people already ashore', async () => {
+    const w = await waterWorld();
+    const { vehicleId: maxi } = w.qa.giveAmbulance('EMS_MAXI');
+    const jet = w.boat('EMS_JETSKI');
+    w.raw.medicalConfig({ waterPickupSeconds: 5000 });
+    const id = w.water.spawnWater('MULTI_CAPSIZED_BOAT', { severity: 5, body: 'SEA' });
+    w.engine.dispatch(w.career, id, [maxi, jet]);
+    w.onScene(maxi);
+    w.onScene(jet);
+    const list = w.patients(id);
+    w.raw.recoverNow(id); // the jet ski's first trip: one person ashore, the next one aboard
+    const [ashore] = list.filter((p) => p.dto.location === 'ASHORE');
+    const wet = list.filter((p) => p.dto.location === 'WATER');
+    expect(ashore).toBeDefined();
+    expect(wet.length).toBeGreaterThan(0);
+    // its trip over, the jet ski went back at once for the next one
+    expect(wet.filter((p) => p.dto.recovery?.by === 'VEHICLE')).toHaveLength(1);
+    for (const p of list) w.qa.stabilize(p.dto.id);
+    const hospitalId = w.medical
+      .hospitalOptions(w.career, ashore!.dto.id)
+      .find((o) => o.recommended)!.hospitalId;
+    expect(
+      w.refusal(() =>
+        w.medical.transport(w.career, ashore!.dto.id, {
+          hospitalId,
+          vehicleId: maxi,
+          withPatientIds: [wet[0]!.dto.id],
+        }),
+      ),
+    ).toEqual({ code: 'CONFLICT', details: { reason: 'PATIENT_IN_WATER' } });
+    const result = w.medical.transport(w.career, ashore!.dto.id, { hospitalId, vehicleId: maxi });
+    expect(result.boarded).toEqual([]);
+  });
+
+  it('nobody reaches the water: the external rescuers take the patient in the end (never a stall)', async () => {
+    const w = await waterWorld(12);
+    w.raw.medicalConfig({ autoTransportSeconds: 5, externalSeconds: 5 });
+    // no Coast Guard on a river
+    const id = w.water.spawnWater('MULTI_PERSON_IN_WATER', { body: 'RIVER' });
+    expect(w.incident(id).waterSupport).toBeNull();
+    const { vehicleId } = w.qa.giveAmbulance();
+    w.engine.dispatch(w.career, id, [vehicleId]);
+    const p = w.patients(id)[0]!;
+    until(w, () => p.external);
+    expect(p.dto).toMatchObject({ status: 'IN_TRANSPORT', assignedVehicleId: null });
+    until(w, () => !w.career.incidents.some((i) => i.id === id));
+    expect(w.career.stats.resolved + w.career.stats.failed).toBe(1);
   });
 });

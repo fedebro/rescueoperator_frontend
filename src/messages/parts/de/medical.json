@@ -3,6 +3,7 @@
     "patients": {
       "title": "Patienten",
       "count": "{count, plural, one {# Patient} other {# Patienten}}",
+      "inWater": "{count, plural, one {# im Wasser} other {# im Wasser}}",
       "label": "Patient {n}",
       "loadError": "Die Patienten konnten nicht geladen werden.",
       "triageUnknown": "Sichtung läuft",
@@ -107,6 +108,27 @@
       "boardingTitle": "Ebenfalls einladen (bis zu {count} Patienten)",
       "boardingNone": "Kein weiterer Patient wartet: Er kann bis zu {count} pro Fahrt mitnehmen.",
       "boardingHint": "{count, plural, one {# Patient an Bord} other {# Patienten an Bord}} von {capacity}"
+    },
+    "water": {
+      "waiting": "Im Wasser — wartet auf Rettung",
+      "waitingHint": "Ein Wasserfahrzeug wird gebraucht: Ein Boot (oder ein Hubschrauber mit Rettungswinde) erreicht die Person, leistet Erste Hilfe und bringt sie zum Sammelpunkt. Die Landfahrzeuge greifen erst danach ein.",
+      "aboard": "Im Wasser — <vehicle>{callSign}</vehicle> bringt die Person an Land",
+      "aboardUnknown": "Im Wasser — ein Wasserfahrzeug bringt die Person an Land",
+      "coastGuard": "Im Wasser — die Küstenwache bringt die Person an Land",
+      "ashoreIn": "An Land in",
+      "ashoreSoon": "wenigen Augenblicken",
+      "needsTitle": "Erste Hilfe im Wasser",
+      "unmetHint": "Im Wasser gibt es nur die Erste Hilfe der Wasserfahrzeuge: Die volle Versorgung beginnt an Land, am Sammelpunkt.",
+      "transportAfterRecovery": "Der Transport ins Krankenhaus beginnt am Sammelpunkt, sobald die Person an Land ist.",
+      "ashore": "An Land am Sammelpunkt",
+      "ashoreBy": "gebracht von {callSign}",
+      "ashoreByCoastGuard": "gebracht von der Küstenwache",
+      "sectionTitle": "Patienten im Wasser",
+      "sectionUnit": "Ein Wasserfahrzeug sichtet sie und bringt sie an Land: Die Landfahrzeuge am Sammelpunkt greifen danach ein.",
+      "sectionNoUnit": "Kein Wasserfahrzeug vor Ort oder auf Anfahrt: Schicke ein Boot.",
+      "sectionCoastGuard": "Die Küstenwache bringt sie in <countdown></countdown> an Land",
+      "noBoat": "Im Moment ist kein Boot verfügbar.",
+      "boatSent": "{callSign} rückt aus, um die Personen im Wasser zu retten"
     }
   },
   "status": {
@@ -138,7 +160,9 @@
     "patient_external": "Patient einem externen Rettungswagen übergeben, Ziel {hospital}",
     "patient_admitted": "Patient an {hospital} übergeben",
     "patient_released_field_post": "Patient vom Behandlungsplatz versorgt und entlassen",
-    "patient_transport_multi": "{callSign} bringt {count} Patienten nach {hospital}"
+    "patient_transport_multi": "{callSign} bringt {count} Patienten nach {hospital}",
+    "patients_recovered": "{count, plural, one {{labels} von {callSign} an Land gebracht} other {{labels} von {callSign} an Land gebracht}}",
+    "patients_recovered_coast_guard": "Die Küstenwache hat {labels} an Land gebracht"
   },
   "notifications": {
     "patientAwaitingTransport": "Patient wartet auf Transport in {address}"

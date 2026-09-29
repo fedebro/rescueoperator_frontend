@@ -16,6 +16,7 @@
       "titleNoCoastGuard": "Serve un mezzo acquatico",
       "covers": "{provider} si occupa del soccorso in acqua ({list}).",
       "shore": "Invia i tuoi mezzi di terra al punto di raccolta.",
+      "recovery": "Porta a riva le persone in acqua tra <countdown></countdown>.",
       "reward": "Ricompensa ridotta al {percent}%.",
       "noCoastGuard": "Su fiumi e laghi la Guardia Costiera non interviene: serve una tua barca, che ci arriva su carrello.",
       "buyBase": "Acquista una Base nautica",
