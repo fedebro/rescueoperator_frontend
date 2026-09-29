@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { env } from '@/lib/env';
 import { gameApi } from '@/lib/api/endpoints';
+import { invalidateFresh } from '@/lib/api/invalidate';
 import { qk } from '@/lib/api/query-keys';
 import { formatAmount, formatClock } from '@/lib/format';
 import { RealtimeController } from '@/lib/realtime/controller';
@@ -82,7 +83,7 @@ export function GameRuntime({ careerId, children }: { careerId: string; children
       qc.setQueryData(key, major);
       qc.setQueryData(qk.majorCurrent(careerId), major.status === 'ACTIVE' ? major : null);
       if (started) {
-        void qc.invalidateQueries({ queryKey: qk.majorList(careerId) });
+        void invalidateFresh(qc, qk.majorList(careerId));
         if (!acknowledgedMajors(careerId).has(major.id)) useMajorStore.getState().showAlert(major.id);
         return;
       }
@@ -95,8 +96,8 @@ export function GameRuntime({ careerId, children }: { careerId: string; children
         });
       if (major.status === 'ENDED' && previous?.status !== 'ENDED') {
         if (useMajorStore.getState().alertId === major.id) useMajorStore.getState().dismissAlert();
-        void qc.invalidateQueries({ queryKey: qk.majorList(careerId) });
-        void qc.invalidateQueries({ queryKey: qk.majorTrophies(careerId) });
+        void invalidateFresh(qc, qk.majorList(careerId));
+        void invalidateFresh(qc, qk.majorTrophies(careerId));
         cue(major.outcome === 'FAILURE' ? 'failure' : 'success');
         const medal = major.reward.medal ? tx({ key: `major.medal.${major.reward.medal}.title` }) : null;
         const credits =
@@ -328,7 +329,7 @@ export function GameRuntime({ careerId, children }: { careerId: string; children
           facility: [[...qk.career(careerId), 'facility']],
           config: [qk.catalog(careerId)],
         }[effect.scope];
-        for (const queryKey of keys) void qc.invalidateQueries({ queryKey });
+        for (const queryKey of keys) void invalidateFresh(qc, queryKey);
         break;
       }
       default:
