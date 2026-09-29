@@ -221,6 +221,8 @@ export function BottomSheet({
   const hapticRef = React.useRef(false);
   const settledSnapRef = React.useRef<SheetSnap | null>(null);
   const scrollMemory = React.useRef(new Map<string, number>());
+  /** True while a remembered scroll position is being re-applied: the clamped values seen meanwhile are not remembered. */
+  const restoringScroll = React.useRef(false);
 
   // Two-snap screens have no half: whoever asks for it gets peek (e.g. selecting on a phone held in landscape).
   React.useEffect(() => {
@@ -395,6 +397,7 @@ export function BottomSheet({
     if (!viewport) return;
     const onScroll = (e: Event) => {
       const target = e.target as HTMLElement;
+      if (restoringScroll.current) return;
       if (target instanceof HTMLElement && target.matches('[data-sheet-scroll]'))
         scrollMemory.current.set(live.current.scrollKey, target.scrollTop);
     };
@@ -403,7 +406,27 @@ export function BottomSheet({
   }, [live]);
   React.useLayoutEffect(() => {
     const s = engine.scroller();
-    if (s) s.scrollTop = scrollMemory.current.get(scrollKey) ?? 0;
+    const target = scrollMemory.current.get(scrollKey) ?? 0;
+    if (!s) return;
+    s.scrollTop = target;
+    if (target === 0 || s.scrollTop >= target - 1) return;
+    // The list may not be laid out yet (WebKit then clamps the position to 0): apply it again on the next frames,
+    // for a short while, without remembering the clamped values meanwhile.
+    restoringScroll.current = true;
+    const until = performance.now() + 1500;
+    let frame = requestAnimationFrame(function retry() {
+      const el = engine.scroller();
+      if (el) el.scrollTop = target;
+      if (!el || el.scrollTop >= target - 1 || performance.now() > until) {
+        restoringScroll.current = false;
+        return;
+      }
+      frame = requestAnimationFrame(retry);
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      restoringScroll.current = false;
+    };
   }, [scrollKey, engine]);
 
   /* ───────────── gestures ───────────── */
