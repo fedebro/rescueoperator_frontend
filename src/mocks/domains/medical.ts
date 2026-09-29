@@ -224,7 +224,11 @@ export const inWater = (p: MockPatient): boolean => p.dto.location === 'WATER' &
 const aboard = (p: MockPatient): boolean => inWater(p) && p.dto.recovery?.by === 'VEHICLE';
 /** In the water, waiting for somebody to bring them ashore (one of the player's units, or the Coast Guard at its time). */
 const waitingInWater = (p: MockPatient): boolean => inWater(p) && p.dto.recovery?.by !== 'VEHICLE';
-/** Deceased is disabled (D-31, economy.medical.deceasedEnabled=false): stability never reaches zero. */
+/**
+ * The mock keeps every patient alive, a simplification that keeps the e2e runs deterministic: on the server an untreated RED
+ * patient can die on scene (D-100: `economy.medical.deceasedEnabled` and the `patient_deceased` flag). Here stability never
+ * reaches zero.
+ */
 const STABILITY_FLOOR = 3;
 const clampStability = (v: number) => Math.min(100, Math.max(STABILITY_FLOOR, v));
 
