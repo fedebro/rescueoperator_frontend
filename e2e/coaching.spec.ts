@@ -152,7 +152,12 @@ test('medical inside an incident: patients primer and hospital-transport coach m
   // A silent world: only this call, so the only report and the only toasts are its own.
   await qa(page, 'quiet');
   await page.addLocatorHandler(page.getByTestId('outcome-modal'), async () => {
-    await page.getByTestId('outcome-continue').click();
+    // Bounded: the Escape below may close the report while this handler is on its way to "Continua" — an unbounded click
+    // would then wait for a button that is gone and hang every later step.
+    await page
+      .getByTestId('outcome-continue')
+      .click({ timeout: 5_000 })
+      .catch(() => undefined);
   });
   await qa(page, 'giveAmbulance');
   await qa(page, 'staffAll');
@@ -193,10 +198,13 @@ test('medical inside an incident: patients primer and hospital-transport coach m
     await expect(mark).toBeVisible();
     await expect(mark).toHaveAttribute('data-coach-id', 'hospitalTransport');
     // Escape dismisses it from the keyboard, same as the close button. (Pressed through the transport panel, a locator
-    // action: the mission report, which may open at this very moment, is set aside first — a bare key press would
-    // close that dialog instead.)
-    await panel.press('Escape');
-    await expect(mark).toBeHidden();
+    // action: the mission report, if it is open, is set aside first — a bare key press would close that dialog instead.
+    // The report can still open between that check and the key: then the key closed the report, and the next press —
+    // the report set aside by then — closes the coach mark.)
+    await expect(async () => {
+      await panel.press('Escape');
+      await expect(mark).toBeHidden({ timeout: 2_000 });
+    }).toPass({ timeout: 30_000 });
     // The confirm button underneath was never covered: it is still clickable right after.
     await panel.getByTestId('confirm-recommended-hospital').click();
     await expect(

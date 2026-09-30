@@ -143,6 +143,9 @@ export async function dismissInstallHint(page: Page): Promise<void> {
  * build's `<meta name="rc-release">`. e2e/push.spec.ts covers the sheet itself. Takes effect on the next load.
  */
 export async function dismissPushPrompt(page: Page): Promise<void> {
+  // Right after a career is created the page may still be moving on (/auth → /game): wait for a document of the game, or the
+  // read below lands between the two documents and finds no release.
+  await page.waitForFunction(() => document.querySelector('meta[name="rc-release"]') !== null);
   await page.evaluate(() => {
     const release = document.querySelector('meta[name="rc-release"]')?.getAttribute('content');
     if (!release) throw new Error('<meta name="rc-release"> is missing: is this a build of the game?');
