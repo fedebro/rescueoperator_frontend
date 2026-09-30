@@ -41,6 +41,19 @@ export const isJustAshore = (patient: Pick<PatientDto, 'location' | 'status' | '
 export const canBeTransported = (patient: Pick<PatientDto, 'location' | 'status'>): boolean =>
   patient.status === 'AWAITING_TRANSPORT' && !isInWater(patient);
 
+/**
+ * "Load and go" (D-101): assessed at the meeting point, in need of a hospital, and the units on scene cannot give the care it
+ * needs (a need not covered: the server does not even start the treatment). Instead of waiting for a suitable unit, the player
+ * may take the patient to hospital as it is — on scene an untreated RED patient can die (D-100), in the ambulance it cannot.
+ */
+export const canLoadAndGo = (
+  patient: Pick<PatientDto, 'location' | 'status' | 'transportRequired' | 'needs'>,
+): boolean =>
+  patient.status === 'ASSESSED' &&
+  patient.transportRequired === true &&
+  !isInWater(patient) &&
+  patient.needs.some((need) => !need.met);
+
 /** A vehicle that reaches the people in the water: a boat, or a helicopter able to do a water rescue (catalog type). */
 export function useIsWaterUnit(): (vehicle: VehicleDto) => boolean {
   const typeOf = useVehicleTypeLookup();

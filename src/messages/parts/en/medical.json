@@ -38,7 +38,7 @@
       "title": "On-scene treatment",
       "met": "{capability}: covered",
       "unmet": "{capability}: not covered",
-      "unmetHint": "The vehicles on scene cannot stabilise this patient here: send a suitable vehicle or transport the patient as soon as possible."
+      "unmetHint": "The vehicles on scene cannot stabilise this patient here: send a suitable vehicle or take the patient to hospital now."
     },
     "phase": {
       "assessing": "Assessment",
@@ -68,6 +68,9 @@
       "helipad": "Helipad",
       "lockedChoice": "Choosing the hospital yourself unlocks at level {level}. For now the recommended hospital is proposed.",
       "autoHint": "If you do not choose, the recommended hospital is confirmed automatically after a short wait.",
+      "loadAndGo": "Take to hospital now",
+      "loadAndGoTitle": "Load and go",
+      "loadAndGoHint": "This patient cannot be stabilised here: in the ambulance the condition worsens more slowly, and the hospital gives the care it needs.",
       "noVehicle": "No vehicle with patient transport on scene",
       "noVehicleHint": "The patient is waiting on scene. Send an ambulance: if none arrives, an external ambulance will step in.",
       "vehicleEnRoute": "{callSign} is on its way for the transport.",

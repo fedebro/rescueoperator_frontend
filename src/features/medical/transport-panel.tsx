@@ -242,9 +242,18 @@ export function SendVehicleList({
 
 /**
  * Hospital choice for a patient awaiting transport. The recommended option is always one tap away (with its reasons);
- * the manual choice — feature `HOSPITAL_CHOICE` — opens inline on desktop and as a sheet on phones.
+ * the manual choice — feature `HOSPITAL_CHOICE` — opens inline on desktop and as a sheet on phones. `loadAndGo`: the same
+ * choice for a patient nobody here can stabilise, taken to hospital as it is (D-101) — nothing leaves by itself then.
  */
-export function TransportPanel({ patient, incident }: { patient: PatientDto; incident: IncidentDto }) {
+export function TransportPanel({
+  patient,
+  incident,
+  loadAndGo = false,
+}: {
+  patient: PatientDto;
+  incident: IncidentDto;
+  loadAndGo?: boolean;
+}) {
   const t = useTranslations('medical.transport');
   const tc = useTranslations('common');
   const tht = useTranslations('coaching.marks.hospitalTransport');
@@ -390,6 +399,7 @@ export function TransportPanel({ patient, incident }: { patient: PatientDto; inc
     <div
       className="border-border bg-surface-2 flex flex-col gap-3 rounded-md border p-3"
       data-testid="transport-panel"
+      data-mode={loadAndGo ? 'load-and-go' : 'awaiting'}
     >
       <CoachMark
         id="hospitalTransport"
@@ -400,7 +410,10 @@ export function TransportPanel({ patient, incident }: { patient: PatientDto; inc
         title={tht('title')}
         body={tht('body')}
       />
-      <h4 className="text-subtle text-xs font-bold tracking-[0.08em] uppercase">{t('title')}</h4>
+      <h4 className="text-subtle text-xs font-bold tracking-[0.08em] uppercase">
+        {loadAndGo ? t('loadAndGoTitle') : t('title')}
+      </h4>
+      {loadAndGo ? <p className="text-muted text-xs leading-relaxed">{t('loadAndGoHint')}</p> : null}
       <OptionSummary option={recommended} hospital={hospitals.find((h) => h.id === recommended.hospitalId)} />
       <div className="flex flex-col gap-1">
         <span className="text-subtle text-xs font-semibold tracking-wide uppercase">{t('vehicle')}</span>
@@ -495,7 +508,7 @@ export function TransportPanel({ patient, incident }: { patient: PatientDto; inc
           </DialogContent>
         </Dialog>
       ) : null}
-      <p className="text-subtle text-xs">{t('autoHint')}</p>
+      {loadAndGo ? null : <p className="text-subtle text-xs">{t('autoHint')}</p>}
     </div>
   );
 }

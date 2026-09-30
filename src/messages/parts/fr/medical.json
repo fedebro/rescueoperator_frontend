@@ -38,7 +38,7 @@
       "title": "Soins sur place",
       "met": "{capability} : couvert",
       "unmet": "{capability} : non couvert",
-      "unmetHint": "Les véhicules présents ne permettent pas de stabiliser le patient sur place : envoyez un véhicule adapté ou transportez-le dès que possible."
+      "unmetHint": "Les véhicules présents ne permettent pas de stabiliser le patient sur place : envoyez un véhicule adapté ou transportez-le tout de suite à l’hôpital."
     },
     "phase": {
       "assessing": "Évaluation",
@@ -68,6 +68,9 @@
       "helipad": "Hélisurface",
       "lockedChoice": "Le choix manuel de l’hôpital se débloque au niveau {level}. Pour l’instant, l’hôpital conseillé est proposé.",
       "autoHint": "Sans choix de votre part, l’hôpital conseillé est confirmé automatiquement après une courte attente.",
+      "loadAndGo": "Transporter tout de suite à l’hôpital",
+      "loadAndGoTitle": "Évacuation immédiate",
+      "loadAndGoHint": "Impossible de le stabiliser ici : dans l’ambulance, son état se dégrade plus lentement et l’hôpital lui donne les soins nécessaires.",
       "noVehicle": "Aucun véhicule de transport de patients sur place",
       "noVehicleHint": "Le patient attend sur place. Envoyez une ambulance : si personne n’arrive, une ambulance externe interviendra.",
       "vehicleEnRoute": "{callSign} arrive pour le transport.",

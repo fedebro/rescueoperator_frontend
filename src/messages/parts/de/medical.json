@@ -38,7 +38,7 @@
       "title": "Versorgung vor Ort",
       "met": "{capability}: abgedeckt",
       "unmet": "{capability}: nicht abgedeckt",
-      "unmetHint": "Mit den Fahrzeugen vor Ort lässt sich der Patient hier nicht stabilisieren: Schicke ein geeignetes Fahrzeug oder transportiere ihn so bald wie möglich."
+      "unmetHint": "Mit den Fahrzeugen vor Ort lässt sich der Patient hier nicht stabilisieren: Schicke ein geeignetes Fahrzeug oder bring ihn sofort ins Krankenhaus."
     },
     "phase": {
       "assessing": "Sichtung",
@@ -68,6 +68,9 @@
       "helipad": "Hubschrauberlandeplatz",
       "lockedChoice": "Die manuelle Krankenhauswahl wird mit Stufe {level} freigeschaltet. Bis dahin wird das empfohlene Krankenhaus vorgeschlagen.",
       "autoHint": "Ohne deine Wahl wird das empfohlene Krankenhaus nach kurzer Wartezeit automatisch bestätigt.",
+      "loadAndGo": "Sofort ins Krankenhaus bringen",
+      "loadAndGoTitle": "Sofortiger Transport",
+      "loadAndGoHint": "Hier nicht zu stabilisieren: Im Rettungswagen verschlechtert sich der Zustand langsamer, und im Krankenhaus bekommt er die nötige Versorgung.",
       "noVehicle": "Kein Fahrzeug mit Patiententransport vor Ort",
       "noVehicleHint": "Der Patient wartet vor Ort. Schicke einen Rettungswagen: Kommt keiner, übernimmt ein externer Rettungswagen.",
       "vehicleEnRoute": "{callSign} ist für den Transport auf Anfahrt.",

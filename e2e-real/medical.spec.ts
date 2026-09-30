@@ -107,9 +107,9 @@ test('medical: EMS site → ambulance → crew → patient assessed → hospital
 
   let incidentId = '';
   await test.step('a medical call is generated and dispatched', async () => {
-    // A fall, not a cardiac arrest: the ambulance the spec buys is an MSB (basic life support). A RED/critical
-    // patient cannot be stabilised by it, never becomes transportable, and the incident is finished by the external
-    // units instead — correct behaviour, but not a hand-over the player performs.
+    // A fall, not a cardiac arrest: the ambulance the spec buys is an MSB (basic life support). Should the fall still be
+    // a RED patient, the MSB cannot stabilise them: the hand-over below then takes them to hospital as they are ("load
+    // and go", D-101) — waiting would let them die on scene (D-100).
     const out = cli('incident:create', careerId, 'MED_FALL', '3');
     incidentId = /(inc_[0-9A-Z]{26})/.exec(out)?.[1] ?? '';
     expect(incidentId).toMatch(/^inc_/);
@@ -139,6 +139,9 @@ test('medical: EMS site → ambulance → crew → patient assessed → hospital
 
   await test.step('hand-over to a hospital of the imported geodata', async () => {
     const patient = page.getByTestId('patient-card').first();
+    // Nobody here can treat them (a need not covered): "Trasporta subito in ospedale" opens the hospital choice now.
+    const loadAndGo = patient.getByTestId('load-and-go');
+    if (await loadAndGo.isVisible().catch(() => false)) await loadAndGo.click();
     const panel = page.getByTestId('transport-panel');
     // The panel offers the recommended hospital with its reasons. It is deliberately transient: if the player does
     // not choose, the server confirms the recommendation by itself after a short grace period, so the test takes it

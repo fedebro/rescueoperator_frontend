@@ -38,7 +38,7 @@
       "title": "Tratamiento en el lugar",
       "met": "{capability}: cubierto",
       "unmet": "{capability}: sin cubrir",
-      "unmetHint": "Con los vehículos presentes no se puede estabilizar al paciente aquí: envía un vehículo adecuado o trasládalo cuanto antes."
+      "unmetHint": "Con los vehículos presentes no se puede estabilizar al paciente aquí: envía un vehículo adecuado o trasládalo ya al hospital."
     },
     "phase": {
       "assessing": "Valoración",
@@ -68,6 +68,9 @@
       "helipad": "Helisuperficie",
       "lockedChoice": "La elección manual del hospital se desbloquea en el nivel {level}. Por ahora se propone el hospital recomendado.",
       "autoHint": "Si no eliges, el hospital recomendado se confirma automáticamente tras una breve espera.",
+      "loadAndGo": "Trasladar ya al hospital",
+      "loadAndGoTitle": "Traslado inmediato",
+      "loadAndGoHint": "Aquí no se puede estabilizar: en la ambulancia empeora más despacio y en el hospital recibe la atención que necesita.",
       "noVehicle": "Ningún vehículo con traslado de pacientes en el lugar",
       "noVehicleHint": "El paciente espera en el lugar. Envía una ambulancia: si no llega ninguna, intervendrá una ambulancia externa.",
       "vehicleEnRoute": "{callSign} está en camino para el traslado.",

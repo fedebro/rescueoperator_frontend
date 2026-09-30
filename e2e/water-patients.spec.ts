@@ -110,6 +110,9 @@ test('a patient in the water: the ambulance waits at the meeting point, a boat b
   });
   // The career owns a boat able to do the water part: no Coast Guard.
   const incidentId = await qa<string>(page, 'spawnWater', 'MED_SWIMMER_DISTRESS', { severity: 3 });
+  // A hypothermia: the boat's first aid (MEDICAL_BASIC 45) covers what it needs, so it is treated in the water. (A patient the
+  // boat cannot treat stays assessed until ashore, where "take to hospital now" is the player's: load-and-go.spec.ts.)
+  await qa(page, 'setProfiles', incidentId, ['PP_HYPOTHERMIA']);
   const patients = page.getByTestId('incident-patients');
   const card = page.getByTestId('patient-card').first();
 
@@ -165,7 +168,7 @@ test('a patient in the water: the ambulance waits at the meeting point, a boat b
     // The boat's crew assessed them: what it can do in the water.
     await expect(card).not.toHaveAttribute('data-patient-status', 'UNASSESSED');
     await expect(card.getByTestId('patient-needs')).toContainText('Primo soccorso in acqua');
-    // Treated (or loaded and going) in the water: waiting for the hospital, which only starts from the meeting point.
+    // Treated in the water: waiting for the hospital, which only starts from the meeting point.
     await expect(card).toHaveAttribute('data-patient-status', 'AWAITING_TRANSPORT', { timeout: 20_000 });
     await expect(card).toHaveAttribute('data-patient-location', 'WATER');
     await expect(card.getByTestId('patient-transport-after-recovery')).toContainText(

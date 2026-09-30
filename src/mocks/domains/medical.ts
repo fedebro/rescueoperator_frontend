@@ -485,6 +485,8 @@ export function installMedical(engine: MockEngine): void {
       const sum = water ? sums.water : sums.ashore;
       const medicalOnScene = MEDICAL_CAPS.some((c) => sum(c) > 0);
       const profile = profileOf(p);
+      // Like the server: a treatment only starts (and only goes on) while the units here meet every REQUIRED need.
+      const requiredMet = requiredNeedsMet(p, sum);
       let changed = boarded.has(p.dto.id);
       if (p.dto.status === 'UNASSESSED' && medicalOnScene) {
         p.dto = {
@@ -498,13 +500,19 @@ export function installMedical(engine: MockEngine): void {
         engine.log(career, incidentId, 'patient.updated', text('timeline.patient_assessed'), at);
         changed = true;
       }
-      if (p.dto.status === 'TREATING' && !medicalOnScene) {
-        // The crew left: treatment is interrupted, the patient waits for the next medical vehicle.
+      if (p.dto.status === 'TREATING' && (!medicalOnScene || !requiredMet)) {
+        // The crew left (or what is left cannot give the care it needs): treatment is interrupted, the patient waits for a
+        // suitable unit — or leaves for hospital as it is ("load and go", D-101).
         engine.cancelActions(career, (a) => a.type === 'PATIENT_STEP' && a.ref === p.dto.id);
         p.dto = { ...p.dto, status: 'ASSESSED', busyUntil: null };
         changed = true;
       }
-      if (p.dto.status === 'ASSESSED' && medicalOnScene && !pending(career, 'PATIENT_STEP', p.dto.id)) {
+      if (
+        p.dto.status === 'ASSESSED' &&
+        medicalOnScene &&
+        requiredMet &&
+        !pending(career, 'PATIENT_STEP', p.dto.id)
+      ) {
         p.dto = { ...p.dto, busyUntil: iso(at + engine.dur(ASSESS_SECONDS)) };
         scheduleAt(career, 'PATIENT_STEP', at + engine.dur(ASSESS_SECONDS), p.dto.id);
         changed = true;
@@ -519,7 +527,6 @@ export function installMedical(engine: MockEngine): void {
         p.dto = { ...p.dto, needs };
         changed = true;
       }
-      const requiredMet = requiredNeedsMet(p, sum);
       const s = profile.stability;
       const rate = !medicalOnScene
         ? ratePerRealSecond(s.decayPerMinuteUntreated)
@@ -751,8 +758,17 @@ export function installMedical(engine: MockEngine): void {
       throw new MockError(409, 'CONFLICT', 'The patient is still in the water', {
         reason: 'PATIENT_IN_WATER',
       });
-    if (p.dto.status !== 'AWAITING_TRANSPORT')
-      throw new MockError(409, 'INVALID_STATE_TRANSITION', 'Patient is not awaiting transport');
+    // "Load and go" (D-101): like the server, straight from the scene too — assessed or being treated, before any
+    // stabilisation — for a patient who needs a hospital.
+    if (!(['ASSESSED', 'TREATING', 'AWAITING_TRANSPORT'] as PatientDto['status'][]).includes(p.dto.status))
+      throw new MockError(409, 'CONFLICT', 'This patient cannot be moved right now', {
+        status: p.dto.status,
+        reason: 'PATIENT_NOT_TRANSPORTABLE',
+      });
+    if (p.dto.transportRequired !== true)
+      throw new MockError(409, 'CONFLICT', 'This patient does not need a hospital', {
+        reason: 'TRANSPORT_NOT_REQUIRED',
+      });
     const incident = career.incidents.find((i) => i.id === p.dto.incidentId);
     const hospital = HOSPITALS.find((h) => h.id === body.hospitalId);
     if (!incident || !hospital) throw new MockError(404, 'NOT_FOUND', 'Hospital not found');
@@ -1101,7 +1117,9 @@ export function installMedical(engine: MockEngine): void {
     // A field post works at the meeting point: nothing for somebody still in the water.
     const fieldPost = !water && fieldPostOnScene(career, incidentId);
     if (p.dto.status === 'ASSESSED') {
-      if (!medicalOnScene) {
+      if (!medicalOnScene || !requiredNeedsMet(p, sum)) {
+        // Nobody here can give the care it needs: no treatment (the server starts none either). A suitable unit starts it
+        // on arrival; meanwhile the player may take the patient to hospital as it is ("load and go", D-101).
         p.dto = { ...p.dto, busyUntil: null };
       } else {
         const profile = profileOf(p);
@@ -1122,8 +1140,8 @@ export function installMedical(engine: MockEngine): void {
         scheduleAt(career, 'PATIENT_STEP', endsAt, p.dto.id);
         engine.log(career, incidentId, 'patient.updated', text('timeline.patient_stabilized'), at);
       } else {
-        // Load and go: what is on scene cannot stabilise this patient, the hospital can.
-        p.dto = { ...p.dto, status: 'AWAITING_TRANSPORT', transportRequired: true, busyUntil: null };
+        // What it needed left meanwhile: back to waiting for a suitable unit (or "load and go", D-101).
+        p.dto = { ...p.dto, status: 'ASSESSED', busyUntil: null };
       }
     } else if (p.dto.status === 'STABILIZED') {
       // A field post on scene treats the lighter triage codes definitively: released there, no hospital leg.
@@ -1164,11 +1182,18 @@ export function installMedical(engine: MockEngine): void {
     const helpers = career.vehicles.filter(
       (v) => v.incidentId === p.dto.incidentId && ['PREPARING', 'EN_ROUTE', 'ON_SCENE'].includes(v.status),
     );
-    const wanted = p.dto.status === 'AWAITING_TRANSPORT' ? [TRANSPORT_CAP] : MEDICAL_CAPS;
+    const carries = (v: VehicleDto) => hasCap(v, [TRANSPORT_CAP]) && patientCapacityOf(v.typeCode) > 0;
     // In the water: somebody is bringing them ashore (a unit's trip, the Coast Guard) or a water unit is there / on its way.
+    // Ashore: a medical unit to assess them; then units (there or on their way) that give the care they need or — when they
+    // need a hospital — can carry them there ("load and go", D-101); waiting for the hospital, a unit that can carry them.
     const cared = inWater(p)
       ? p.dto.recovery?.by === 'VEHICLE' || p.dto.recovery?.by === 'COAST_GUARD' || helpers.some(isWaterUnit)
-      : helpers.some((v) => hasCap(v, wanted));
+      : p.dto.status === 'UNASSESSED'
+        ? helpers.some((v) => hasCap(v, MEDICAL_CAPS))
+        : p.dto.status === 'AWAITING_TRANSPORT'
+          ? helpers.some((v) => hasCap(v, [TRANSPORT_CAP]))
+          : requiredNeedsMet(p, capsOf(helpers)) ||
+            (p.dto.transportRequired === true && helpers.some(carries));
     if (cared) {
       // The player is taking care of it: look again later.
       scheduleAt(
@@ -1370,6 +1395,20 @@ export function installMedical(engine: MockEngine): void {
         if (unit?.tripUntil) unit.tripUntil = Math.min(unit.tripUntil, now);
       }
       engine.process();
+      engine.save();
+    },
+    /**
+     * Fixes the hidden profile of the patients of an incident, in label order (the last code for the rest) — before they are
+     * assessed: what they need, and whether the units on scene can give it, becomes deterministic.
+     */
+    setProfiles: (incidentId: string, codes: string[]) => {
+      const career = current();
+      patientsOf(career, incidentId).forEach((p, i) => {
+        p.profileCode = codes[i] ?? codes.at(-1)!;
+        // A profile that always needs a hospital needs one now too (the draw was made for the previous profile).
+        if (profileOf(p).transport.probability >= 1) p.transportDrawn = true;
+      });
+      refreshScene(career, incidentId, engine.now());
       engine.save();
     },
     /** Skips assessment/treatment: the patient is immediately stabilised and awaits transport. */

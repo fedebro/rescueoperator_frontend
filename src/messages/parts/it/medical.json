@@ -38,7 +38,7 @@
       "title": "Trattamento sul posto",
       "met": "{capability}: coperto",
       "unmet": "{capability}: non coperto",
-      "unmetHint": "Con i mezzi presenti il paziente non può essere stabilizzato sul posto: invia un mezzo adatto oppure trasportalo appena possibile."
+      "unmetHint": "Con i mezzi presenti il paziente non può essere stabilizzato sul posto: invia un mezzo adatto oppure trasportalo subito in ospedale."
     },
     "phase": {
       "assessing": "Valutazione",
@@ -68,6 +68,9 @@
       "helipad": "Elisuperficie",
       "lockedChoice": "La scelta manuale dell’ospedale si sblocca al livello {level}. Per ora viene proposto l’ospedale consigliato.",
       "autoHint": "Se non scegli, l’ospedale consigliato viene confermato automaticamente dopo una breve attesa.",
+      "loadAndGo": "Trasporta subito in ospedale",
+      "loadAndGoTitle": "Trasporto immediato",
+      "loadAndGoHint": "Qui non può essere stabilizzato: in ambulanza peggiora più lentamente e in ospedale riceve le cure che gli servono.",
       "noVehicle": "Nessun mezzo con trasporto pazienti sul posto",
       "noVehicleHint": "Il paziente attende sul posto. Invia un’ambulanza: se non arriva nessuno interverrà un’ambulanza esterna.",
       "vehicleEnRoute": "{callSign} è in arrivo per il trasporto.",

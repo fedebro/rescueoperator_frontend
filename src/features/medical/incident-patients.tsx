@@ -1,7 +1,7 @@
 'use client';
 import * as React from 'react';
 import { useTranslations } from 'next-intl';
-import { Check, ChevronDown, LifeBuoy, MapPin, Stethoscope, TriangleAlert, X } from 'lucide-react';
+import { Ambulance, Check, ChevronDown, LifeBuoy, MapPin, Stethoscope, TriangleAlert, X } from 'lucide-react';
 import type { IncidentDto, PatientDto, VehicleDto } from '@/contracts';
 import { useUiStore } from '@/stores/ui';
 import { useCatalogName } from '@/i18n/use-i18n-text';
@@ -10,11 +10,13 @@ import { Countdown } from '@/components/ui/countdown';
 import { Skeleton } from '@/components/ui/misc';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { SectionHelpButton, SectionPrimer } from '@/features/coaching/section-primer';
 import { useSnapshot, useVehicleTypeLookup } from '@/features/game/hooks';
 import {
   MEDICAL_CAPABILITIES,
   canBeTransported,
+  canLoadAndGo,
   hasCapability,
   isInWater,
   isJustAshore,
@@ -120,6 +122,22 @@ function PatientAshoreLine({ patient }: { patient: PatientDto }) {
         </>
       ) : null}
     </p>
+  );
+}
+
+/**
+ * "Load and go" (D-101): nobody here can stabilise this patient — send a suitable unit, or take them to hospital now, as they
+ * are (the hospital choice opens on the tap: waiting for a unit already on its way stays a choice too).
+ */
+function LoadAndGo({ patient, incident }: { patient: PatientDto; incident: IncidentDto }) {
+  const t = useTranslations('medical.transport');
+  const [open, setOpen] = React.useState(false);
+  if (open) return <TransportPanel patient={patient} incident={incident} loadAndGo />;
+  return (
+    <Button variant="outline" className="w-full" onClick={() => setOpen(true)} data-testid="load-and-go">
+      <Ambulance className="size-4 shrink-0" aria-hidden />
+      {t('loadAndGo')}
+    </Button>
   );
 }
 
@@ -284,6 +302,7 @@ function PatientCard({
           <TransportPanel patient={patient} incident={incident} />
         )
       ) : null}
+      {canLoadAndGo(patient) ? <LoadAndGo patient={patient} incident={incident} /> : null}
     </li>
   );
 }
@@ -360,8 +379,9 @@ const TRIAGE_ORDER: Record<NonNullable<PatientDto['triage']>, number> = {
 /**
  * SLOT (owner: medical agent) — patients list + hospital choice inside the incident inspector.
  * Collapsed by default with the count and the most urgent triage in its header ("Pazienti · 1 paziente", 03 §2.4),
- * so the dispatch list stays in reach; it opens by itself when a patient waits for the hospital decision, and while somebody
- * is still in the water or was just brought ashore (water patients: "1 in acqua" in the header).
+ * so the dispatch list stays in reach; it opens by itself when a patient waits for the hospital decision — or can only be
+ * helped by going to hospital now ("load and go", D-101) — and while somebody is still in the water or was just brought ashore
+ * (water patients: "1 in acqua" in the header).
  */
 export function IncidentPatients({ incident }: { incident: IncidentDto }) {
   const t = useTranslations('medical.patients');
@@ -371,8 +391,8 @@ export function IncidentPatients({ incident }: { incident: IncidentDto }) {
   const name = useCatalogName();
   const { vehicles } = useSnapshot();
   const patients = usePatients(incident);
-  // null = automatic (open only while a transport decision is pending or somebody is in the water); a tap makes it the
-  // player's choice.
+  // null = automatic (open only while a transport decision is pending — load and go included — or somebody is in the
+  // water); a tap makes it the player's choice.
   const [open, setOpen] = React.useState<boolean | null>(null);
   const bodyId = React.useId();
   const medicalContent = {
@@ -386,9 +406,10 @@ export function IncidentPatients({ incident }: { incident: IncidentDto }) {
   const list = patients.data ?? [];
   const inWater = list.filter(isInWater).length;
   const awaitingTransport = list.some(canBeTransported);
+  const loadAndGo = list.some(canLoadAndGo);
   // Brought ashore and still cared for at the meeting point: their landing must not fold what the player is watching.
   const justAshore = list.some(isJustAshore);
-  const expanded = open ?? (awaitingTransport || inWater > 0 || justAshore);
+  const expanded = open ?? (awaitingTransport || loadAndGo || inWater > 0 || justAshore);
   const allUnassessed = list.length > 0 && list.every((p) => p.status === 'UNASSESSED');
   // Nobody assessed yet because they are all still in the water: the water note replaces "Triage in corso".
   const unassessedInWater = allUnassessed && list.every(isInWater);

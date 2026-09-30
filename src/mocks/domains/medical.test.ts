@@ -55,6 +55,7 @@ async function world(speed = 1, level = 6) {
     medicalConfig: (c: { autoTransportSeconds?: number; externalSeconds?: number }) => void;
     stabilize: (id: string) => void;
     setHospitalLoad: (id: string, load: string | null) => void;
+    setProfiles: (incidentId: string, codes: string[]) => void;
   };
   // every new ambulance gets its crew (the personnel domain blocks uncrewed dispatches)
   const qa = {
@@ -83,7 +84,7 @@ const patientOf = (career: MockCareer, incidentId: string): MockPatient =>
   medicalState(career).patients.find((p) => p.dto.incidentId === incidentId)!;
 
 describe('medical pure helpers', () => {
-  it('stability follows its anchor and never reaches zero (deceased is disabled)', () => {
+  it('stability follows its anchor and never reaches zero (the mock keeps every patient alive)', () => {
     const anchor = { value: 50, ratePerSecond: -1, anchorAt: 0 };
     expect(stabilityAt(anchor, 10_000)).toBe(40);
     expect(stabilityAt(anchor, 500_000)).toBeGreaterThan(0);
@@ -237,6 +238,59 @@ describe('medical domain', () => {
     });
     until(w, () => !w.career.incidents.some((i) => i.id === incidentId));
     expect(w.career.stats.resolved + w.career.stats.failed).toBe(1);
+  });
+
+  it('"load and go" (D-101): a patient the units here cannot stabilise is not treated, and can leave for hospital as it is', async () => {
+    const w = await world();
+    w.qa.medicalConfig({ autoTransportSeconds: 3600, externalSeconds: 3600 });
+    // EMS_MSB: MEDICAL_BASIC 70, no MEDICAL_ADVANCED — a major trauma (RED) needs MEDICAL_ADVANCED 80 as well
+    const { vehicleId } = w.qa.giveAmbulance();
+    const incidentId = spawnFall(w);
+    w.qa.setProfiles(incidentId, ['PP_MAJOR_TRAUMA']);
+    w.engine.dispatch(w.career, incidentId, [vehicleId]);
+    until(w, () => patientOf(w.career, incidentId).dto.status === 'ASSESSED');
+    const p = patientOf(w.career, incidentId);
+    expect(p.dto.transportRequired).toBe(true);
+    // like the server: no treatment starts, ever, and nothing moves by itself — only the player's choice
+    w.advance(180_000);
+    expect(p.dto).toMatchObject({ status: 'ASSESSED', busyUntil: null });
+    expect(p.dto.needs.find((n) => n.capability === 'MEDICAL_ADVANCED')!.met).toBe(false);
+    expect(p.dto.stability!.ratePerSecond).toBeLessThan(0);
+    expect(w.career.actions.some((a) => a.type === 'PATIENT_AUTO_TRANSPORT' && a.ref === p.dto.id)).toBe(
+      false,
+    );
+
+    const hospitalId = w.medical.hospitalOptions(w.career, p.dto.id).find((o) => o.recommended)!.hospitalId;
+    const result = w.medical.transport(w.career, p.dto.id, { hospitalId });
+    expect(TransportPatientResult.safeParse(result).success).toBe(true);
+    expect(result.patient.status).toBe('IN_TRANSPORT');
+    expect(result.vehicle).toMatchObject({ id: vehicleId, status: 'TRANSPORTING' });
+    // left unstabilised: the outcome can only be "admitted, worsened" or "admitted, stable" on how the trip goes
+    expect(p.stabilized).toBe(false);
+    until(w, () => p.dto.status === 'ADMITTED');
+  });
+
+  it('refuses a transport for a patient who needs no hospital, or who is already on the way', async () => {
+    const w = await world();
+    w.qa.medicalConfig({ autoTransportSeconds: 3600, externalSeconds: 3600 });
+    const { vehicleId } = w.qa.giveAmbulance();
+    const incidentId = spawnFall(w);
+    w.engine.dispatch(w.career, incidentId, [vehicleId]);
+    until(w, () => patientOf(w.career, incidentId).dto.status !== 'UNASSESSED');
+    const p = patientOf(w.career, incidentId);
+    const hospitalId = w.medical.hospitalOptions(w.career, p.dto.id).find((o) => o.recommended)!.hospitalId;
+    const refusal = () => {
+      try {
+        w.medical.transport(w.career, p.dto.id, { hospitalId });
+      } catch (e) {
+        return e instanceof MockError ? (e.details as { reason?: string } | undefined)?.reason : 'THROWN';
+      }
+      return 'OK';
+    };
+    p.dto = { ...p.dto, transportRequired: false };
+    expect(refusal()).toBe('TRANSPORT_NOT_REQUIRED');
+    p.dto = { ...p.dto, transportRequired: true, status: 'IN_TRANSPORT' };
+    expect(refusal()).toBe('PATIENT_NOT_TRANSPORTABLE');
   });
 
   it('accepts an ambulance sent to a RESOLVING incident whose patient still waits', async () => {
@@ -604,7 +658,7 @@ describe('water patients (analisi/note-agenti/water-patients.md)', () => {
     expect(result.vehicle.movement!.path[0]).toEqual(w.incident(id).position);
   });
 
-  it('only the water units count in the water: the boat assesses and treats with its own capabilities, then lands the patient', async () => {
+  it('only the water units count in the water: the boat assesses with its own capabilities, lands the patient, then load and go', async () => {
     const w = await waterWorld();
     const boatId = w.boat('FIRE_BOAT');
     const { vehicleId: ambulance } = w.qa.giveAmbulance();
@@ -635,9 +689,10 @@ describe('water patients (analisi/note-agenti/water-patients.md)', () => {
       { capability: 'MEDICAL_BASIC', met: false },
       { capability: 'MEDICAL_ADVANCED', met: false },
     ]);
-    // load and go, still in the water: no hospital timer, no "awaiting transport" notification, no transport
-    until(w, () => first.dto.status === 'AWAITING_TRANSPORT');
-    expect(first.dto.location).toBe('WATER');
+    // nothing the boat can give (like the server): no treatment in the water, no hospital timer, no "awaiting transport"
+    // notification — and no transport from the water
+    w.advance(60_000);
+    expect(first.dto).toMatchObject({ status: 'ASSESSED', location: 'WATER', busyUntil: null });
     expect(w.career.actions.some((a) => a.type === 'PATIENT_AUTO_TRANSPORT')).toBe(false);
     const awaiting = () =>
       w.career.notifications.filter((n) => n.title.key === 'notifications.patientAwaitingTransport');
@@ -681,14 +736,18 @@ describe('water patients (analisi/note-agenti/water-patients.md)', () => {
           (e.payload.patient as PatientDto).id === first.dto.id,
       ),
     ).toBe(true);
+    // ashore the ambulance counts, but it has no MEDICAL_ADVANCED: still assessed, no treatment, no hospital timer
     expect(first.dto.needs.find((n) => n.capability === 'MEDICAL_BASIC')!.met).toBe(true);
-    expect(awaiting().length).toBeGreaterThan(0);
+    expect(first.dto.needs.find((n) => n.capability === 'MEDICAL_ADVANCED')!.met).toBe(false);
+    expect(first.dto.status).toBe('ASSESSED');
     expect(w.career.actions.some((a) => a.type === 'PATIENT_AUTO_TRANSPORT' && a.ref === first.dto.id)).toBe(
-      true,
+      false,
     );
-    // the hospital transport leaves the meeting point
+    expect(awaiting()).toEqual([]);
+    // "load and go" (D-101): the player takes them to hospital as they are, from the meeting point
     const result = w.medical.transport(w.career, first.dto.id, { hospitalId });
     expect(TransportPatientResult.safeParse(result).success).toBe(true);
+    expect(result.patient.status).toBe('IN_TRANSPORT');
     expect(result.vehicle).toMatchObject({ id: ambulance, status: 'TRANSPORTING' });
     expect(result.vehicle.movement!.path[0]).toEqual(inc.position);
   });
