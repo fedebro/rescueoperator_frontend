@@ -405,28 +405,33 @@ export function BottomSheet({
     return () => viewport.removeEventListener('scroll', onScroll, true);
   }, [live]);
   React.useLayoutEffect(() => {
-    const s = engine.scroller();
     const target = scrollMemory.current.get(scrollKey) ?? 0;
-    if (!s) return;
-    s.scrollTop = target;
-    if (target === 0 || s.scrollTop >= target - 1) return;
-    // The list may not be laid out yet (WebKit then clamps the position to 0): apply it again on the next frames,
-    // for a short while, without remembering the clamped values meanwhile.
-    restoringScroll.current = true;
-    const until = performance.now() + 1500;
-    let frame = requestAnimationFrame(function retry() {
+    /** Puts the remembered position back; true once it holds. */
+    const apply = (): boolean => {
       const el = engine.scroller();
       if (el) el.scrollTop = target;
-      if (!el || el.scrollTop >= target - 1 || performance.now() > until) {
-        restoringScroll.current = false;
-        return;
-      }
-      frame = requestAnimationFrame(retry);
-    });
-    return () => {
+      return !!el && el.scrollTop >= target - 1;
+    };
+    if (target === 0 || apply()) return;
+    // The list may not be mounted or laid out yet (WebKit then clamps the position to 0, and a busy phone can take a
+    // while): apply it again on the next frames until it holds — for a few seconds at most, and never against the
+    // player, whose first touch or wheel ends it — without remembering the clamped values meanwhile.
+    restoringScroll.current = true;
+    const viewport = viewportRef.current;
+    const until = performance.now() + 4000;
+    const inputs = ['pointerdown', 'touchstart', 'wheel'] as const;
+    let frame = 0;
+    const stop = () => {
       cancelAnimationFrame(frame);
       restoringScroll.current = false;
+      for (const type of inputs) viewport?.removeEventListener(type, stop, true);
     };
+    for (const type of inputs) viewport?.addEventListener(type, stop, { capture: true, passive: true });
+    frame = requestAnimationFrame(function retry() {
+      if (apply() || performance.now() > until) return stop();
+      frame = requestAnimationFrame(retry);
+    });
+    return stop;
   }, [scrollKey, engine]);
 
   /* ───────────── gestures ───────────── */
