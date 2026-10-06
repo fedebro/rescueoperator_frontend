@@ -211,6 +211,7 @@ const catalog = {
     settings: majors.settings,
     scenarios: majors.scenarios.map((s) => ({
       code: String(s.code),
+      alliance: s.alliance ? { durationMinutes: Number((s.alliance as Obj).durationMinutes) } : null,
       primaryFamily: String(s.primaryFamily),
       mainTemplates: ((s.mainTemplates ?? []) as Obj[]).map((m) => ({
         template: String(m.template),

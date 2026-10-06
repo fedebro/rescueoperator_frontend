@@ -1,4 +1,5 @@
 import type {
+  AllianceChannelDto,
   AllianceOperationDto,
   AllianceOperationFrontDto,
   AllianceOperationJoinBlock,
@@ -9,18 +10,20 @@ import type {
   MajorIncidentDto,
   MajorPhase,
 } from '@/contracts';
+import { MAJOR_SCENARIOS } from '../data/catalog';
 import { MockError, type MockCareer, type MockEngine } from '../engine';
 import { allianceApiOf, activeMembers, careerAlliance, type MockAlliance } from './alliance';
 import { aidHooksOf, aidWorld } from './alliance-aid';
 import { allianceProgressOf } from './alliance-progress';
-import { allianceSocialOf } from './alliance-social';
+import { allianceSocialOf, type MockChannel } from './alliance-social';
 import { majorOf } from './major';
 
 /**
- * Alliance operations (study 07, 09 §5): one major incident per participant (the "front", a real major in the player's
- * world, a synthetic one for simulated allies) linked by a shared board and clock. ALERT (5 min, Partecipa / Non ora) →
- * ACTIVE (60–120 min, late join until the last phase) → ENDED with a collective outcome, or CANCELLED when fewer than two
- * joined. Started by QA / admin here (the organic trigger lives on the server).
+ * Alliance operations (study 07, 09 §5; alleanze-backend.md §Phase 3 — same rules): one major incident per participant
+ * (the "front": a real major of the alliance-scale scenario in the player's world, a synthetic one for simulated allies)
+ * linked by a shared board and clock. ALERT (5 min, Partecipa / Non ora) → ACTIVE (the scenario's duration, late join until
+ * 75 % of the clock) → ENDED with a collective outcome, or CANCELLED when fewer than two joined. Started by QA / admin here
+ * (the organic trigger lives on the server).
  */
 export const OPERATION_CFG = {
   alertSeconds: 300,
@@ -28,26 +31,24 @@ export const OPERATION_CFG = {
   minLevel: 5,
   lateJoinShare: 0.75,
   tickSeconds: 60,
-  cooldownHours: 20,
   frontShare: 0.7,
   baseFrontCredits: 300,
+  goldQuality: 0.9,
   multiplier: { GOLD: 1.3, SILVER: 1.15, BRONZE: 1, FAILED: 0.7 } as Record<AllianceOperationOutcome, number>,
-  allianceXp: { GOLD: 600, SILVER: 400, BRONZE: 300, FAILED: 200 } as Record<
+  allianceXp: { GOLD: 600, SILVER: 450, BRONZE: 300, FAILED: 200 } as Record<
     AllianceOperationOutcome,
     number
   >,
+  outcomePoints: { GOLD: 20, SILVER: 15, BRONZE: 10, FAILED: 0 } as Record<AllianceOperationOutcome, number>,
+  pointsPerIncident: 5,
   recentMinutes: 60,
 };
-/** Alliance-scale scenarios (07 §6) and the catalog major each front is built from. */
-export const OPERATION_SCENARIOS: Record<string, { front: string; durationMinutes: number; icon: string }> = {
-  AOP_VALLEY_FLOOD: { front: 'MAJ_STORM_DAMAGE', durationMinutes: 90, icon: 'waves' },
-  AOP_SEISMIC_SWARM: { front: 'MAJ_STRUCTURAL_COLLAPSE', durationMinutes: 120, icon: 'activity' },
-  AOP_WILDFIRE: { front: 'MAJ_WILDFIRE_FRONT', durationMinutes: 90, icon: 'flame' },
-  AOP_STORM_WAVE: { front: 'MAJ_STORM_DAMAGE', durationMinutes: 60, icon: 'cloud-lightning' },
-  AOP_SNOWFALL: { front: 'MAJ_WINTER_STORM', durationMinutes: 90, icon: 'snowflake' },
-};
+/** The alliance-scale scenarios of the catalog (`alliance: { durationMinutes }`, never drawn as personal majors). */
+export const operationScenarios = () => MAJOR_SCENARIOS.filter((s) => s.alliance);
+export const DEFAULT_SCENARIO = 'MAJ_ALLIANCE_VALLEY_FLOOD';
 /** The four operational phases of a front, in order (`ENDED` is terminal, not a phase of the board). */
 const PHASES: readonly MajorPhase[] = ['ALARM', 'CONTAINMENT', 'RESCUE', 'SECURING'];
+const CLOSED_SECTOR = new Set(['RESOLVED', 'FAILED', 'EXPIRED', 'CANCELLED']);
 const iso = (ms: number) => new Date(ms).toISOString();
 
 interface SyntheticFront {
@@ -90,6 +91,16 @@ export interface OperationsWorld {
 export const operationsWorld = (engine: MockEngine): OperationsWorld =>
   (engine.state.ext.allianceOperations ??= { operations: {} } satisfies OperationsWorld) as OperationsWorld;
 
+const newParticipant = (careerId: string): MockParticipant => ({
+  careerId,
+  status: 'INVITED',
+  joinedAt: null,
+  majorId: null,
+  synthetic: null,
+  usefulColumns: 0,
+  reward: { eligible: false, multiplier: null, credits: null, xp: null },
+});
+
 export function installAllianceOperations(engine: MockEngine): void {
   const alliances = allianceApiOf(engine);
   const majors = majorOf(engine);
@@ -115,6 +126,7 @@ export function installAllianceOperations(engine: MockEngine): void {
     const career = careerById(careerId);
     return career ? careerAlliance(career).simulated != null : false;
   };
+  const scenarioOf = (code: string) => operationScenarios().find((s) => s.code === code);
 
   /* ───────────── fronts ───────────── */
   const myMajor = (p: MockParticipant): MajorIncidentDto | null => {
@@ -144,22 +156,27 @@ export function installAllianceOperations(engine: MockEngine): void {
     }
     const major = myMajor(p);
     if (!major) return null;
-    const open = major.sectors.filter(
-      (x) => !['RESOLVED', 'FAILED', 'EXPIRED', 'CANCELLED'].includes(x.status),
-    );
+    const open = major.sectors.filter((x) => !CLOSED_SECTOR.has(x.status));
     const coverage = open.length ? open.reduce((s, x) => s + x.coverageRatio, 0) / open.length : 1;
     const request = Object.values(aidWorld(engine).requests).find(
       (r) => r.requesterCareerId === p.careerId && r.status === 'OPEN' && r.majorId === major.id,
     );
+    const ended = major.status === 'ENDED';
+    // A front ended SUCCESS / PARTIAL counts as whole; otherwise its main work progress (07 §5.1).
+    const progress = ended
+      ? major.outcome === 'SUCCESS' || major.outcome === 'PARTIAL'
+        ? 1
+        : major.progress
+      : major.progress;
     return {
       majorId: major.id,
       phase: major.phase,
-      progress: major.progress,
+      progress,
       coverage: Math.round(coverage * 100) / 100,
       sectors: major.sectors.length,
       sectorsClosed: major.sectors.filter((x) => x.status === 'RESOLVED').length,
       openAidRequestId: request?.id ?? null,
-      ended: major.status === 'ENDED',
+      ended,
     };
   };
   const incidentsClosedOf = (p: MockParticipant) => {
@@ -167,7 +184,9 @@ export function installAllianceOperations(engine: MockEngine): void {
     const major = myMajor(p);
     return major ? major.sectors.filter((x) => x.status === 'RESOLVED').length : 0;
   };
-  const pointsOf = (p: MockParticipant) => incidentsClosedOf(p) * 10 + p.usefulColumns * 15;
+  const pointsOf = (p: MockParticipant, outcome: AllianceOperationOutcome | null) =>
+    incidentsClosedOf(p) * OPERATION_CFG.pointsPerIncident +
+    (outcome && p.reward.eligible ? OPERATION_CFG.outcomePoints[outcome] : 0);
   const joined = (op: MockOperation) => Object.values(op.participants).filter((p) => p.status === 'JOINED');
   const overall = (op: MockOperation) => {
     const fronts = joined(op)
@@ -190,6 +209,7 @@ export function installAllianceOperations(engine: MockEngine): void {
       allEnded: fronts.length > 0 && openFronts.length === 0,
     };
   };
+  /** Opens the front of a JOINED participant; a real career gets a real major of the scenario (409 NO_FRONT when impossible). */
   const openFront = (op: MockOperation, p: MockParticipant) => {
     const career = careerById(p.careerId);
     if (!career) return;
@@ -203,12 +223,15 @@ export function installAllianceOperations(engine: MockEngine): void {
       };
       return;
     }
-    const scenario = OPERATION_SCENARIOS[op.scenarioCode]!;
-    const major = majors.start(career, {
-      scenarioCode: scenario.front,
-      targetVehicles: Math.max(4, Math.round(career.vehicles.length * OPERATION_CFG.frontShare)),
-    });
-    p.majorId = major.id;
+    try {
+      const major = majors.start(career, {
+        scenarioCode: op.scenarioCode,
+        targetVehicles: Math.max(4, Math.round(career.vehicles.length * OPERATION_CFG.frontShare)),
+      });
+      p.majorId = major.id;
+    } catch {
+      throw new MockError(409, 'CONFLICT', 'No front can open', { reason: 'NO_FRONT' });
+    }
   };
 
   /* ───────────── DTO ───────────── */
@@ -220,7 +243,7 @@ export function installAllianceOperations(engine: MockEngine): void {
     contribution: {
       incidentsClosed: incidentsClosedOf(p),
       usefulColumns: p.usefulColumns,
-      points: pointsOf(p),
+      points: pointsOf(p, op.outcome),
     },
     reward: {
       eligible: p.reward.eligible,
@@ -229,27 +252,40 @@ export function installAllianceOperations(engine: MockEngine): void {
       xp: p.reward.xp === null ? null : String(p.reward.xp),
     },
   });
-  const blockedReasonFor = (op: MockOperation, career: MockCareer): AllianceOperationJoinBlock | null => {
-    const p = op.participants[career.summary.id];
+  /** Why the caller cannot join now, in the server's order (backend §Phase 3). `null` = may join (DECLINED may join). */
+  const blockedReasonFor = (
+    op: MockOperation | undefined,
+    career: MockCareer,
+  ): AllianceOperationJoinBlock | null => {
     if (!flagOn()) return 'FEATURE_DISABLED';
+    if (!op) return 'NOT_RUNNING';
+    const p = op.participants[career.summary.id];
     if (p?.status === 'JOINED') return 'ALREADY_JOINED';
-    if (p?.status === 'DECLINED') return 'DECLINED';
-    if (op.status === 'ALERT') {
-      if (career.summary.level < OPERATION_CFG.minLevel) return 'LEVEL_TOO_LOW';
-      if (majors.current(career)) return 'PERSONAL_MAJOR_OPEN';
-      return null;
-    }
-    if (op.status !== 'ACTIVE') return 'NOT_RUNNING';
-    if (op.lateJoinUntil !== null && engine.now() > op.lateJoinUntil) return 'TOO_LATE';
     if (career.summary.level < OPERATION_CFG.minLevel) return 'LEVEL_TOO_LOW';
-    if (majors.current(career)) return 'PERSONAL_MAJOR_OPEN';
+    if (op.status === 'ACTIVE' && op.lateJoinUntil !== null && engine.now() > op.lateJoinUntil)
+      return 'TOO_LATE';
+    const personal = majors.current(career);
+    if (personal && personal.id !== p?.majorId) return 'PERSONAL_MAJOR_OPEN';
     return null;
   };
+  const channelDto = (channel: MockChannel): AllianceChannelDto => ({
+    id: channel.id,
+    kind: channel.kind,
+    name: channel.operationTitle ?? { key: 'alliance.channel.GENERAL' },
+    operationId: channel.operationId,
+    archived: channel.archived,
+    createdAt: iso(channel.createdAt),
+    lastMessageAt: null,
+    unread: 0,
+  });
   const dto = (op: MockOperation, viewer: MockCareer | null): AllianceOperationDto => {
     const o = overall(op);
     const me = viewer ? op.participants[viewer.summary.id] : undefined;
-    const blocked = viewer ? blockedReasonFor(op, viewer) : 'NOT_RUNNING';
+    const blocked = viewer
+      ? blockedReasonFor(op.status === 'ALERT' || op.status === 'ACTIVE' ? op : undefined, viewer)
+      : 'NOT_RUNNING';
     const a = alliances.alliance(op.allianceId);
+    const scenario = scenarioOf(op.scenarioCode);
     const columns = Object.values(aidWorld(engine).columns)
       .filter(
         (c) =>
@@ -267,10 +303,13 @@ export function installAllianceOperations(engine: MockEngine): void {
       id: op.id,
       allianceId: op.allianceId,
       scenarioCode: op.scenarioCode,
-      title: { key: `alliance.operation.scenario.${op.scenarioCode}.title` },
-      description: { key: `alliance.operation.scenario.${op.scenarioCode}.description` },
-      alert: { key: `alliance.operation.scenario.${op.scenarioCode}.alert`, params: { tag: a?.tag ?? '' } },
-      icon: OPERATION_SCENARIOS[op.scenarioCode]?.icon ?? 'siren',
+      title: { key: `major.scenario.${op.scenarioCode}.title` },
+      description: { key: `major.scenario.${op.scenarioCode}.description` },
+      alert: {
+        key: `major.scenario.${op.scenarioCode}.alert`,
+        params: { address: a?.name ?? '', tag: a?.tag ?? '' },
+      },
+      icon: scenario?.icon ?? 'major-generic',
       status: op.status,
       triggeredBy: op.triggeredBy,
       phase: op.status === 'ACTIVE' ? o.phase : null,
@@ -298,17 +337,19 @@ export function installAllianceOperations(engine: MockEngine): void {
   };
   const emit = (op: MockOperation) =>
     alliances.emitAlliance(op.allianceId, 'alliance.operation.updated', { operation: dto(op, null) });
-  const notifyAll = (
+  const emitChannel = (allianceId: string, channel: MockChannel) =>
+    alliances.emitAlliance(allianceId, 'alliance.channel.updated', { channel: channelDto(channel) });
+  const notifyParticipants = (
     op: MockOperation,
     code: string,
-    params: Record<string, string | number>,
+    params: (p: MockParticipant) => Record<string, string | number>,
     priority: 'CRITICAL' | 'IMPORTANT' | 'INFO',
     only?: (p: MockParticipant) => boolean,
   ) => {
     for (const p of Object.values(op.participants)) {
       if (only && !only(p)) continue;
       const career = careerById(p.careerId);
-      if (career) alliances.notify(career, code, params, `operation:${op.id}`, priority);
+      if (career) alliances.notify(career, code, params(p), `operation:${op.id}`, priority);
     }
   };
 
@@ -321,8 +362,8 @@ export function installAllianceOperations(engine: MockEngine): void {
     if (!flagOn()) throw new MockError(403, 'FEATURE_DISABLED', 'alliance_operations is off');
     if (runningOf(a.id))
       throw new MockError(409, 'CONFLICT', 'Operation running', { reason: 'OPERATION_RUNNING' });
-    const scenario = OPERATION_SCENARIOS[scenarioCode];
-    if (!scenario) throw new MockError(404, 'NOT_FOUND', 'Unknown scenario');
+    const scenario = scenarioOf(scenarioCode);
+    if (!scenario) throw new MockError(404, 'NOT_FOUND', 'Not an alliance scenario');
     const now = engine.now();
     const alertSeconds = opts.alertSeconds ?? OPERATION_CFG.alertSeconds;
     const op: MockOperation = {
@@ -331,7 +372,7 @@ export function installAllianceOperations(engine: MockEngine): void {
       scenarioCode,
       status: 'ALERT',
       triggeredBy: opts.triggeredBy ?? 'SYSTEM',
-      durationMinutes: opts.durationMinutes ?? scenario.durationMinutes,
+      durationMinutes: opts.durationMinutes ?? scenario.alliance!.durationMinutes,
       alertedAt: now,
       alertEndsAt: now + engine.dur(alertSeconds),
       startedAt: null,
@@ -339,31 +380,20 @@ export function installAllianceOperations(engine: MockEngine): void {
       endedAt: null,
       lateJoinUntil: null,
       outcome: null,
-      participants: Object.fromEntries(
-        activeMembers(a).map((m) => [
-          m.careerId,
-          {
-            careerId: m.careerId,
-            status: 'INVITED',
-            joinedAt: null,
-            majorId: null,
-            synthetic: null,
-            usefulColumns: 0,
-            reward: { eligible: false, multiplier: null, credits: null, xp: null },
-          } satisfies MockParticipant,
-        ]),
-      ),
+      participants: Object.fromEntries(activeMembers(a).map((m) => [m.careerId, newParticipant(m.careerId)])),
       channelId: null,
       reward: { allianceXp: null, trophy: false, quality: null },
     };
     world().operations[op.id] = op;
     const host = hostCareer(a);
     if (host) engine.schedule(host, 'ALLIANCE_OPERATION_ALERT_END', alertSeconds, op.id);
-    notifyAll(op, 'OPERATION_ALERT', { tag: a.tag, name: a.name, minutes: op.durationMinutes }, 'CRITICAL');
-    alliances.logAction(a.id, 'OPERATION_STARTED', null, null, {
-      operationId: op.id,
-      scenarioCode,
-    } as never);
+    notifyParticipants(
+      op,
+      'OPERATION_ALERT',
+      () => ({ tag: a.tag, name: a.name, minutes: op.durationMinutes }),
+      'CRITICAL',
+    );
+    alliances.logAction(a.id, 'OPERATION_STARTED', null, null, { operationId: op.id, scenarioCode } as never);
     emit(op);
     engine.save();
     return op;
@@ -376,49 +406,57 @@ export function installAllianceOperations(engine: MockEngine): void {
     op.startedAt = now;
     op.endsAt = now + engine.dur(op.durationMinutes * 60);
     op.lateJoinUntil = now + engine.dur(op.durationMinutes * 60 * OPERATION_CFG.lateJoinShare);
-    for (const p of joined(op)) openFront(op, p);
-    // The OPERATION channel (03 §3.1): created at ACTIVE, archived at the end.
-    const social = allianceSocialOf(engine);
-    const channel = {
+    for (const p of joined(op)) {
+      try {
+        openFront(op, p);
+      } catch {
+        /* no front possible for this participant now: he stays JOINED without a front */
+      }
+    }
+    // The OPERATION channel (03 §3.1): created at ACTIVE, archived at the end; `alliance.channel.updated {channel}`.
+    const channel: MockChannel = {
       id: engine.id('alc'),
       allianceId: a.id,
-      kind: 'OPERATION' as const,
+      kind: 'OPERATION',
       operationId: op.id,
-      operationTitle: { key: `alliance.operation.scenario.${op.scenarioCode}.title` },
+      operationTitle: { key: `major.scenario.${op.scenarioCode}.title` },
       archived: false,
       createdAt: now,
     };
-    social.channelsOf(a).push(channel);
+    allianceSocialOf(engine).channelsOf(a).push(channel);
     op.channelId = channel.id;
+    emitChannel(a.id, channel);
     const host = hostCareer(a);
     if (host) {
       engine.schedule(host, 'ALLIANCE_OPERATION_END', op.durationMinutes * 60, op.id);
       engine.schedule(host, 'ALLIANCE_OPERATION_TICK', OPERATION_CFG.tickSeconds, op.id);
     }
-    notifyAll(op, 'OPERATION_STARTED', { tag: a.tag, name: a.name, joined: joined(op).length }, 'IMPORTANT');
     emit(op);
   };
   const cancel = (op: MockOperation) => {
-    const a = alliances.alliance(op.allianceId);
     op.status = 'CANCELLED';
     op.endedAt = engine.now();
-    if (a) notifyAll(op, 'OPERATION_CANCELLED', { tag: a.tag, name: a.name }, 'INFO');
     emit(op);
   };
-  const outcomeFor = (progress: number, allEnded: boolean): AllianceOperationOutcome =>
-    progress >= 0.95 && allEnded
+  const outcomeFor = (o: ReturnType<typeof overall>): AllianceOperationOutcome =>
+    o.allEnded && (o.quality ?? 0) >= OPERATION_CFG.goldQuality
       ? 'GOLD'
-      : progress >= 0.8
+      : o.progress >= 0.8
         ? 'SILVER'
-        : progress >= 0.5
+        : o.progress >= 0.5
           ? 'BRONZE'
           : 'FAILED';
+  const bonusOf = (p: MockParticipant, front: AllianceOperationFrontDto | null) => {
+    if (p.synthetic) return OPERATION_CFG.baseFrontCredits * (front?.progress ?? 0);
+    const major = myMajor(p);
+    return Number(major?.reward.credits ?? major?.reward.estimated.min ?? OPERATION_CFG.baseFrontCredits);
+  };
   const end = (op: MockOperation) => {
     if (op.status !== 'ACTIVE') return;
     const a = alliances.alliance(op.allianceId);
     const o = overall(op);
     const now = engine.now();
-    const outcome = outcomeFor(o.progress, o.allEnded);
+    const outcome = outcomeFor(o);
     op.status = 'ENDED';
     op.endedAt = now;
     op.outcome = outcome;
@@ -430,10 +468,9 @@ export function installAllianceOperations(engine: MockEngine): void {
     const multiplier = OPERATION_CFG.multiplier[outcome];
     for (const p of joined(op)) {
       const front = frontOf(op, p);
-      const eligible = incidentsClosedOf(p) >= 1 || p.usefulColumns >= 1;
-      const credits = eligible
-        ? Math.round(OPERATION_CFG.baseFrontCredits * (front?.progress ?? 0) * multiplier)
-        : null;
+      // Paid by the operation only with a closed front and a contribution; an open front pays itself later ×1.0.
+      const eligible = !!front?.ended && (incidentsClosedOf(p) >= 1 || p.usefulColumns >= 1);
+      const credits = eligible ? Math.round(bonusOf(p, front) * multiplier) : null;
       p.reward = { eligible, multiplier, credits, xp: credits === null ? null : Math.round(credits / 3) };
       const career = careerById(p.careerId);
       if (career && credits !== null && !isSimulated(p.careerId)) {
@@ -441,13 +478,14 @@ export function installAllianceOperations(engine: MockEngine): void {
         engine.awardXp(career, Math.round(credits / 3));
       }
     }
-    if (op.channelId) {
-      const channel = a
-        ? allianceSocialOf(engine)
-            .channelsOf(a)
-            .find((c) => c.id === op.channelId)
-        : undefined;
-      if (channel) channel.archived = true;
+    if (op.channelId && a) {
+      const channel = allianceSocialOf(engine)
+        .channelsOf(a)
+        .find((c) => c.id === op.channelId);
+      if (channel) {
+        channel.archived = true;
+        emitChannel(a.id, channel);
+      }
     }
     const host = a ? hostCareer(a) : undefined;
     if (host) engine.cancelActions(host, (x) => x.type === 'ALLIANCE_OPERATION_TICK' && x.ref === op.id);
@@ -455,14 +493,25 @@ export function installAllianceOperations(engine: MockEngine): void {
       op.allianceId,
       outcome !== 'FAILED',
       OPERATION_CFG.allianceXp[outcome],
-      joined(op).map((p) => ({ careerId: p.careerId, points: pointsOf(p) })),
+      joined(op).map((p) => ({ careerId: p.careerId, points: pointsOf(p, outcome) })),
     );
     if (a) {
-      notifyAll(op, 'OPERATION_ENDED', { tag: a.tag, name: a.name, outcome }, 'IMPORTANT');
-      alliances.logAction(a.id, 'OPERATION_ENDED', null, null, {
-        operationId: op.id,
-        outcome,
-      } as never);
+      notifyParticipants(
+        op,
+        'OPERATION_ENDED',
+        (p) => ({ tag: a.tag, name: a.name, credits: p.reward.credits ?? 0, outcome }),
+        'IMPORTANT',
+        (p) => p.status === 'JOINED',
+      );
+      try {
+        allianceSocialOf(engine).systemPost(a, 'OPERATION_ENDED', {
+          name: op.scenarioCode,
+          count: Math.round(o.progress * 100),
+        });
+      } catch {
+        /* no board */
+      }
+      alliances.logAction(a.id, 'OPERATION_ENDED', null, null, { operationId: op.id, outcome } as never);
     }
     emit(op);
   };
@@ -503,23 +552,24 @@ export function installAllianceOperations(engine: MockEngine): void {
   const join = (career: MockCareer): AllianceOperationDto => {
     const m = membership(career);
     const op = runningOf(m.alliance.id);
-    if (!op) throw new MockError(409, 'CONFLICT', 'No operation running', { reason: 'NOT_RUNNING' });
     const blocked = blockedReasonFor(op, career);
     if (blocked === 'FEATURE_DISABLED')
       throw new MockError(403, 'FEATURE_DISABLED', 'alliance_operations is off');
-    if (blocked) throw new MockError(409, 'CONFLICT', 'Cannot join', { reason: blocked });
-    const p = (op.participants[career.summary.id] ??= {
-      careerId: career.summary.id,
-      status: 'INVITED',
-      joinedAt: null,
-      majorId: null,
-      synthetic: null,
-      usefulColumns: 0,
-      reward: { eligible: false, multiplier: null, credits: null, xp: null },
-    });
+    if (blocked || !op)
+      throw new MockError(409, 'CONFLICT', 'Cannot join', { reason: blocked ?? 'NOT_RUNNING' });
+    const p = (op.participants[career.summary.id] ??= newParticipant(career.summary.id));
+    const previous = p.status;
     p.status = 'JOINED';
     p.joinedAt = engine.now();
-    if (op.status === 'ACTIVE') openFront(op, p);
+    if (op.status === 'ACTIVE') {
+      try {
+        openFront(op, p);
+      } catch (e) {
+        p.status = previous;
+        p.joinedAt = null;
+        throw e;
+      }
+    }
     emit(op);
     engine.save();
     return dto(op, career);
@@ -528,8 +578,8 @@ export function installAllianceOperations(engine: MockEngine): void {
     const m = membership(career);
     const op = runningOf(m.alliance.id);
     if (!op) throw new MockError(409, 'CONFLICT', 'No operation running', { reason: 'NOT_RUNNING' });
-    const p = op.participants[career.summary.id];
-    if (!p || p.status === 'JOINED')
+    const p = (op.participants[career.summary.id] ??= newParticipant(career.summary.id));
+    if (op.status === 'ACTIVE' && p.status === 'JOINED')
       throw new MockError(409, 'CONFLICT', 'Already joined', { reason: 'ALREADY_JOINED' });
     p.status = 'DECLINED';
     emit(op);
@@ -574,6 +624,14 @@ export function installAllianceOperations(engine: MockEngine): void {
     const p = op?.participants[career.summary.id];
     return p && p.majorId === major.id ? { ...major, allianceOperationId: op!.id } : major;
   });
+  // Aid requests raised on a front carry the operation (and their columns have no daily cap).
+  aidHooksOf(engine).operationIdOf = (requesterCareerId, majorId) => {
+    if (!majorId) return null;
+    const m = alliances.membershipOf(requesterCareerId);
+    const op = m ? runningOf(m.alliance.id) : undefined;
+    const p = op?.participants[requesterCareerId];
+    return p && p.status === 'JOINED' && p.majorId === majorId ? op!.id : null;
+  };
 
   const api: AllianceOperationsApi = {
     current,
@@ -611,9 +669,9 @@ export function installAllianceOperations(engine: MockEngine): void {
     if (!op) throw new MockError(404, 'NOT_FOUND', 'No operation running');
     return op;
   };
-  /** QA: an operation alert for the current career's alliance (defaults: 5 real-time-scaled minutes of alert). */
+  /** QA: an operation alert for the current career's alliance (the admin's test start). */
   engine.qa.startOperation = ((
-    scenarioCode = 'AOP_VALLEY_FLOOD',
+    scenarioCode = DEFAULT_SCENARIO,
     opts: { alertSeconds?: number; durationMinutes?: number } = {},
   ) => {
     const { career, a } = myAlliance();

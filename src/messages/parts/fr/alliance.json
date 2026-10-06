@@ -873,25 +873,21 @@
         "title": "Opération d’alliance",
         "body": "[{tag}] {name} : {minutes} minutes. Prenez le service pour participer."
       },
-      "OPERATION_STARTED": {
-        "title": "Opération lancée",
-        "body": "[{tag}] {name} : {joined} participants, les fronts sont ouverts."
-      },
-      "OPERATION_CANCELLED": {
-        "title": "Opération annulée",
-        "body": "[{tag}] {name} : moins de deux ont accepté."
-      },
       "OPERATION_ENDED": {
         "title": "Opération terminée",
-        "body": "[{tag}] {name} : résultat {outcome}."
+        "body": "[{tag}] {name} : résultat {outcome}, votre front vaut {credits} Crédits."
       },
       "OBJECTIVE_COMPLETED": {
         "title": "Objectif atteint",
-        "body": "[{tag}] {name} : {credits, plural, =0 {points à l’alliance} other {+# Crédits pour vous}}."
+        "body": "[{tag}] : objectif {name} accompli, +{credits} Crédits pour votre contribution."
       },
       "RANKING_RESULT": {
         "title": "Classement de la semaine",
-        "body": "[{tag}] {name} : {position, plural, =0 {hors classement} other {position #}}."
+        "body": "[{tag}] {name} a terminé la semaine en position {count}."
+      },
+      "LEVEL_UP": {
+        "title": "Niveau {count}",
+        "body": "[{tag}] {name} a atteint le niveau {count} : nouvelles places et nouveaux emblèmes."
       }
     },
     "landing": {
@@ -966,7 +962,11 @@
       "system": {
         "MEMBER_JOINED": "{director} a rejoint l’alliance.",
         "MEMBER_LEFT": "{director} a quitté l’alliance.",
-        "LEVEL_UP": "L’alliance a atteint le niveau {level}."
+        "LEVEL_UP": "L’alliance a atteint le niveau {count}.",
+        "WEEKLY_OBJECTIVES": "Nouveaux objectifs de la semaine.",
+        "OBJECTIVE_COMPLETED": "Objectif atteint : {name}.",
+        "OPERATION_ENDED": "Opération d’alliance terminée : {name} ({count} %).",
+        "RANKING_RESULT": "Classement de la semaine : position {count}."
       }
     },
     "objectives": {
@@ -1080,34 +1080,7 @@
       "columnsInFlight": "Colonnes en route",
       "noColumns": "Aucune colonne en route entre les fronts.",
       "columnLine": "{helper} → {requester}",
-      "arrived": "arrivée",
-      "scenario": {
-        "AOP_VALLEY_FLOOD": {
-          "title": "Crue de fond de vallée",
-          "description": "La rivière sort de son lit sur toute la vallée : maisons, routes et passages inondés chez chaque participant.",
-          "alert": "Opération d’alliance [{tag}] : crue de fond de vallée"
-        },
-        "AOP_SEISMIC_SWARM": {
-          "title": "Essaim sismique",
-          "description": "Une série de secousses frappe la zone : effondrements, personnes coincées, routes à dégager.",
-          "alert": "Opération d’alliance [{tag}] : essaim sismique"
-        },
-        "AOP_WILDFIRE": {
-          "title": "Feu de forêt étendu",
-          "description": "Le feu court sur les collines et menace les hameaux : chaque front défend son territoire.",
-          "alert": "Opération d’alliance [{tag}] : feu de forêt étendu"
-        },
-        "AOP_STORM_WAVE": {
-          "title": "Vague de mauvais temps",
-          "description": "Vent et pluie battante sur toute la zone : arbres tombés, toits arrachés, routes coupées.",
-          "alert": "Opération d’alliance [{tag}] : vague de mauvais temps"
-        },
-        "AOP_SNOWFALL": {
-          "title": "Chute de neige exceptionnelle",
-          "description": "Une neige abondante isole les hameaux : personnes bloquées, toits menacés, routes à rouvrir.",
-          "alert": "Opération d’alliance [{tag}] : chute de neige exceptionnelle"
-        }
-      }
+      "arrived": "arrivée"
     },
     "objective": {
       "VOLUME": {

@@ -10,6 +10,7 @@ import {
   type AllianceSnapshotDto,
   MyAllianceDto,
   type SyncSnapshot,
+  AllianceChannelDto,
 } from '@/contracts';
 
 /**
@@ -52,6 +53,7 @@ export type AllianceEffect =
   /** Phase 2 payloads (full DTOs, viewer-neutral): the screens append / patch, the runtime toasts. */
   | { type: 'message.created'; message: AllianceMessageDto }
   | { type: 'message.removed'; channelId: string; messageId: string }
+  | { type: 'channel.updated'; channel: AllianceChannelDto }
   | { type: 'post.created'; post: AlliancePostDto }
   | { type: 'post.updated'; post: AlliancePostDto }
   | { type: 'post.removed'; postId: string; replyId: string | null }
@@ -239,8 +241,13 @@ export function reduceAllianceEvent(
       return typeof p.channelId === 'string' && typeof p.messageId === 'string'
         ? [{ type: 'message.removed', channelId: p.channelId, messageId: p.messageId }]
         : [{ type: 'invalidate', scope: 'chat' }];
-    case 'alliance.channel.updated':
-      return [{ type: 'invalidate', scope: 'chat' }];
+    case 'alliance.channel.updated': {
+      // Viewer-neutral (`unread: 0`): the cached count is kept; a new OPERATION channel appears, an archived one closes.
+      const channel = AllianceChannelDto.safeParse(p.channel);
+      return channel.success
+        ? [{ type: 'channel.updated', channel: channel.data }]
+        : [{ type: 'invalidate', scope: 'chat' }];
+    }
     case 'alliance.aid.updated': {
       const request = AidRequestDto.safeParse(p.request);
       return [

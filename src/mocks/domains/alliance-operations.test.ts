@@ -32,10 +32,10 @@ describe('mock alliance operations', () => {
     const w = world();
     const marta = w.ally('Marta');
     const luca = w.ally('Luca', { level: 3 });
-    const started = w.ops.start(w.allianceId, 'AOP_VALLEY_FLOOD', { alertSeconds: 300 });
+    const started = w.ops.start(w.allianceId, 'MAJ_ALLIANCE_VALLEY_FLOOD', { alertSeconds: 300 });
     expect(started).toMatchObject({ status: 'ALERT', joinedCount: 0 });
     expect(started.participants).toHaveLength(3);
-    expect(error(() => w.ops.start(w.allianceId, 'AOP_WILDFIRE', {})).details).toMatchObject({
+    expect(error(() => w.ops.start(w.allianceId, 'MAJ_ALLIANCE_WILDFIRE', {})).details).toMatchObject({
       reason: 'OPERATION_RUNNING',
     });
     expect(w.ops.current(w.career)!.me).toMatchObject({ status: 'INVITED', canJoin: true });
@@ -107,11 +107,13 @@ describe('mock alliance operations', () => {
   it('fewer than two joined at the end of the alert: cancelled without consequences; a new alert may follow', () => {
     const w = world();
     w.ally('Marta');
-    const started = w.ops.start(w.allianceId, 'AOP_STORM_WAVE', { alertSeconds: 120 });
+    const started = w.ops.start(w.allianceId, 'MAJ_ALLIANCE_STORM_WAVE', { alertSeconds: 120 });
     w.ops.join(w.career);
     w.advance(120_000 + 1000);
     expect(w.ops.current(w.career)).toMatchObject({ id: started.id, status: 'CANCELLED', joinedCount: 1 });
     expect(w.majors.current(w.career)).toBeNull();
-    expect(w.ops.start(w.allianceId, 'AOP_SNOWFALL', { alertSeconds: 60 }).status).toBe('ALERT');
+    expect(w.ops.start(w.allianceId, 'MAJ_ALLIANCE_SNOW_EMERGENCY', { alertSeconds: 60 }).status).toBe(
+      'ALERT',
+    );
   });
 });

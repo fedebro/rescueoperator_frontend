@@ -5,6 +5,7 @@ import type {
   AllianceMessageDto,
   AllianceSyncDelta,
   SyncSnapshot,
+  AllianceChannelDto,
 } from '@/contracts';
 
 /** The shape TanStack keeps for an infinite query of pages `{ data, meta }`. */
@@ -134,6 +135,16 @@ export function applyAllianceEffects(
               ),
             })),
           });
+        break;
+      }
+      case 'channel.updated': {
+        const key = qk.allianceChannels(careerId);
+        const cached = qc.getQueryData<AllianceChannelDto[]>(key);
+        if (cached) {
+          const known = cached.find((c) => c.id === effect.channel.id);
+          const next = { ...effect.channel, unread: known?.unread ?? 0 };
+          qc.setQueryData(key, known ? cached.map((c) => (c.id === next.id ? next : c)) : [...cached, next]);
+        } else void invalidateFresh(qc, qk.allianceChannels(careerId));
         break;
       }
       case 'post.created':

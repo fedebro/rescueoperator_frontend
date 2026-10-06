@@ -873,25 +873,21 @@
         "title": "Allianzeinsatz",
         "body": "[{tag}] {name}: {minutes} Minuten. Geh in den Dienst, um teilzunehmen."
       },
-      "OPERATION_STARTED": {
-        "title": "Einsatz gestartet",
-        "body": "[{tag}] {name}: {joined} Teilnehmer, die Fronten sind offen."
-      },
-      "OPERATION_CANCELLED": {
-        "title": "Einsatz abgesagt",
-        "body": "[{tag}] {name}: weniger als zwei haben angenommen."
-      },
       "OPERATION_ENDED": {
         "title": "Einsatz beendet",
-        "body": "[{tag}] {name}: Ergebnis {outcome}."
+        "body": "[{tag}] {name}: Ergebnis {outcome}, deine Front ist {credits} Credits wert."
       },
       "OBJECTIVE_COMPLETED": {
         "title": "Ziel erreicht",
-        "body": "[{tag}] {name}: {credits, plural, =0 {Punkte für die Allianz} other {+# Credits für dich}}."
+        "body": "[{tag}]: Ziel {name} geschafft, +{credits} Credits für deinen Beitrag."
       },
       "RANKING_RESULT": {
         "title": "Rangliste der Woche",
-        "body": "[{tag}] {name}: {position, plural, =0 {nicht platziert} other {Platz #}}."
+        "body": "[{tag}] {name} hat die Woche auf Platz {count} beendet."
+      },
+      "LEVEL_UP": {
+        "title": "Stufe {count}",
+        "body": "[{tag}] {name} hat Stufe {count} erreicht: neue Plätze und neue Embleme."
       }
     },
     "landing": {
@@ -966,7 +962,11 @@
       "system": {
         "MEMBER_JOINED": "{director} ist der Allianz beigetreten.",
         "MEMBER_LEFT": "{director} hat die Allianz verlassen.",
-        "LEVEL_UP": "Die Allianz hat Stufe {level} erreicht."
+        "LEVEL_UP": "Die Allianz hat Stufe {count} erreicht.",
+        "WEEKLY_OBJECTIVES": "Neue Ziele für die Woche.",
+        "OBJECTIVE_COMPLETED": "Ziel erreicht: {name}.",
+        "OPERATION_ENDED": "Allianzeinsatz beendet: {name} ({count} %).",
+        "RANKING_RESULT": "Rangliste der Woche: Platz {count}."
       }
     },
     "objectives": {
@@ -1080,34 +1080,7 @@
       "columnsInFlight": "Kolonnen unterwegs",
       "noColumns": "Keine Kolonne zwischen den Fronten unterwegs.",
       "columnLine": "{helper} → {requester}",
-      "arrived": "angekommen",
-      "scenario": {
-        "AOP_VALLEY_FLOOD": {
-          "title": "Talhochwasser",
-          "description": "Der Fluss tritt im ganzen Tal über die Ufer: Häuser, Straßen und Unterführungen überflutet, bei jedem Teilnehmer.",
-          "alert": "Allianzeinsatz [{tag}]: Talhochwasser"
-        },
-        "AOP_SEISMIC_SWARM": {
-          "title": "Erdbebenschwarm",
-          "description": "Eine Folge von Erdstößen trifft das Gebiet: Einstürze, Eingeschlossene, zu räumende Straßen.",
-          "alert": "Allianzeinsatz [{tag}]: Erdbebenschwarm"
-        },
-        "AOP_WILDFIRE": {
-          "title": "Ausgedehnter Waldbrand",
-          "description": "Das Feuer läuft über die Hügel und bedroht die Weiler: Jede Front verteidigt ihr Gebiet.",
-          "alert": "Allianzeinsatz [{tag}]: ausgedehnter Waldbrand"
-        },
-        "AOP_STORM_WAVE": {
-          "title": "Unwetterfront",
-          "description": "Wind und Starkregen über dem ganzen Gebiet: umgestürzte Bäume, abgedeckte Dächer, gesperrte Straßen.",
-          "alert": "Allianzeinsatz [{tag}]: Unwetterfront"
-        },
-        "AOP_SNOWFALL": {
-          "title": "Außergewöhnlicher Schneefall",
-          "description": "Starker Schnee schneidet die Weiler ab: festsitzende Menschen, gefährdete Dächer, zu öffnende Straßen.",
-          "alert": "Allianzeinsatz [{tag}]: außergewöhnlicher Schneefall"
-        }
-      }
+      "arrived": "angekommen"
     },
     "objective": {
       "VOLUME": {

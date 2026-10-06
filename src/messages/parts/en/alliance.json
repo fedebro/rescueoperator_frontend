@@ -873,25 +873,21 @@
         "title": "Alliance operation",
         "body": "[{tag}] {name}: {minutes} minutes. Go on duty to take part."
       },
-      "OPERATION_STARTED": {
-        "title": "Operation started",
-        "body": "[{tag}] {name}: {joined} participants, the fronts are open."
-      },
-      "OPERATION_CANCELLED": {
-        "title": "Operation cancelled",
-        "body": "[{tag}] {name}: fewer than two accepted."
-      },
       "OPERATION_ENDED": {
         "title": "Operation ended",
-        "body": "[{tag}] {name}: outcome {outcome}."
+        "body": "[{tag}] {name}: outcome {outcome}, your front is worth {credits} Credits."
       },
       "OBJECTIVE_COMPLETED": {
         "title": "Objective reached",
-        "body": "[{tag}] {name}: {credits, plural, =0 {points to the alliance} other {+# Credits for you}}."
+        "body": "[{tag}]: objective {name} completed, +{credits} Credits for your contribution."
       },
       "RANKING_RESULT": {
         "title": "This week’s ranking",
-        "body": "[{tag}] {name}: {position, plural, =0 {not ranked} other {position #}}."
+        "body": "[{tag}] {name} closed the week in position {count}."
+      },
+      "LEVEL_UP": {
+        "title": "Level {count}",
+        "body": "[{tag}] {name} reached level {count}: new seats and new emblems."
       }
     },
     "landing": {
@@ -966,7 +962,11 @@
       "system": {
         "MEMBER_JOINED": "{director} joined the alliance.",
         "MEMBER_LEFT": "{director} left the alliance.",
-        "LEVEL_UP": "The alliance reached level {level}."
+        "LEVEL_UP": "The alliance reached level {count}.",
+        "WEEKLY_OBJECTIVES": "New objectives for the week.",
+        "OBJECTIVE_COMPLETED": "Objective reached: {name}.",
+        "OPERATION_ENDED": "Alliance operation ended: {name} ({count}%).",
+        "RANKING_RESULT": "This week’s ranking: position {count}."
       }
     },
     "objectives": {
@@ -1080,34 +1080,7 @@
       "columnsInFlight": "Columns in flight",
       "noColumns": "No column in flight between the fronts.",
       "columnLine": "{helper} → {requester}",
-      "arrived": "arrived",
-      "scenario": {
-        "AOP_VALLEY_FLOOD": {
-          "title": "Valley flood",
-          "description": "The river bursts its banks along the whole valley: homes, roads and underpasses flooded in every participant’s territory.",
-          "alert": "Alliance operation [{tag}]: valley flood"
-        },
-        "AOP_SEISMIC_SWARM": {
-          "title": "Seismic swarm",
-          "description": "A sequence of tremors hits the area: collapses, trapped people, roads to clear.",
-          "alert": "Alliance operation [{tag}]: seismic swarm"
-        },
-        "AOP_WILDFIRE": {
-          "title": "Extended wildfire",
-          "description": "Fire runs over the hills and threatens the hamlets: every front defends its own territory.",
-          "alert": "Alliance operation [{tag}]: extended wildfire"
-        },
-        "AOP_STORM_WAVE": {
-          "title": "Storm wave",
-          "description": "Wind and driving rain over the whole area: fallen trees, roofs torn off, roads cut.",
-          "alert": "Alliance operation [{tag}]: storm wave"
-        },
-        "AOP_SNOWFALL": {
-          "title": "Exceptional snowfall",
-          "description": "Heavy snow cuts off the hamlets: stranded people, roofs at risk, roads to reopen.",
-          "alert": "Alliance operation [{tag}]: exceptional snowfall"
-        }
-      }
+      "arrived": "arrived"
     },
     "objective": {
       "VOLUME": {

@@ -72,12 +72,14 @@ interface AidWorld {
 /** Listeners of the aid domain (no imports in the other direction: the dependants subscribe). */
 export interface AidHooks {
   columnPaid: ((column: { helperCareerId: string; allianceId: string; columnId: string }) => void)[];
+  /** The running operation a request belongs to (its incident is a front of the requester), set by the operations domain. */
+  operationIdOf: (requesterCareerId: string, majorId: string | null) => string | null;
 }
 const hooks = new WeakMap<MockEngine, AidHooks>();
 export const aidHooksOf = (engine: MockEngine): AidHooks => {
   let h = hooks.get(engine);
   if (!h) {
-    h = { columnPaid: [] };
+    h = { columnPaid: [], operationIdOf: () => null };
     hooks.set(engine, h);
   }
   return h;
@@ -259,7 +261,10 @@ export function installAllianceAid(engine: MockEngine): void {
         secondsOnScene: c.secondsOnScene,
       },
       reward: c.reward,
-      operationId: null,
+      operationId: aidHooksOf(engine).operationIdOf(
+        c.requesterCareerId,
+        world().requests[c.requestId]?.majorId ?? null,
+      ),
       mine,
     };
   };
@@ -315,7 +320,7 @@ export function installAllianceAid(engine: MockEngine): void {
       distanceKm: r.requesterCareerId === viewer.summary.id ? null : nearestDistanceKm(viewer, target),
       mine: r.requesterCareerId === viewer.summary.id,
       viewer: { canSend: blocked === null, blockedReason: blocked },
-      operationId: null,
+      operationId: aidHooksOf(engine).operationIdOf(r.requesterCareerId, r.majorId),
     };
   };
   const neutralRequest = (r: MockAidRequest): AidRequestDto => {
@@ -495,7 +500,10 @@ export function installAllianceAid(engine: MockEngine): void {
       daily.pairs[column.requesterCareerId] = (daily.pairs[column.requesterCareerId] ?? 0) + 1;
       const travelCost = Math.round(column.distanceKm * 0.2 * column.items.length);
       const xp = Math.round(fund.xp * share * pairFactor);
-      if (daily.rewarded >= AID_CFG.rewardedPerDay) {
+      // No daily cap inside an alliance operation (07 §4): the columns between fronts are settled at the end.
+      const inOperation =
+        aidHooksOf(engine).operationIdOf(request.requesterCareerId, request.majorId) !== null;
+      if (daily.rewarded >= AID_CFG.rewardedPerDay && !inOperation) {
         column.reward = { status: 'CAPPED', credits: '0', xp: String(xp), pairFactor, travelCost: '0' };
         engine.awardXp(helper, xp);
       } else {
@@ -549,6 +557,9 @@ export function installAllianceAid(engine: MockEngine): void {
       throw new MockError(404, 'NOT_FOUND', 'Incident not found');
     if (incident.isTutorial)
       throw new MockError(409, 'CONFLICT', 'Tutorial incident', { reason: 'INCIDENT_NOT_ACTIVE' });
+    // A member of a major is asked for through the major route (one request spread over its sectors).
+    if (!majorId && incident.major)
+      throw new MockError(409, 'CONFLICT', 'Use the major request', { reason: 'USE_MAJOR_REQUEST' });
     const scope = majorId
       ? career.incidents.filter((i) => i.major?.id === majorId && !CLOSED_INCIDENT.has(i.status))
       : [incident];

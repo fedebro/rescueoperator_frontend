@@ -37,6 +37,7 @@ import {
   type SupportedLocale,
   type TextCheckResult,
   type TextFilterReason,
+  type AllianceFrame,
 } from '@/contracts';
 import { mockBus } from '../bus';
 import { xpThreshold } from '../data/catalog';
@@ -566,7 +567,7 @@ export function installAlliance(engine: MockEngine): void {
     status: a.status,
     lastActivityAt: iso(a.lastActivityAt),
     createdAt: iso(a.createdAt),
-    frame: null,
+    frame: progressProvider.frame(a.id),
     ...(viewer
       ? {
           viewer: {
@@ -599,7 +600,7 @@ export function installAlliance(engine: MockEngine): void {
       aid: career
         ? { given: careerAlliance(career).aidGiven, received: careerAlliance(career).aidReceived }
         : { given: 0, received: 0 },
-      weeklyPoints: 0,
+      weeklyPoints: progressProvider.weeklyPoints(m.careerId),
       blocked: viewerCareerId !== m.careerId && hasBlocked(engine, viewerCareerId, m.careerId),
     };
   };
@@ -609,6 +610,11 @@ export function installAlliance(engine: MockEngine): void {
     chat: 0,
   });
   let operationProvider: (career: MockCareer, a: MockAlliance) => string | null = () => null;
+  let progressProvider: AllianceProgressProvider = {
+    weeklyRank: () => null,
+    weeklyPoints: () => 0,
+    frame: () => null,
+  };
   const unreadOf = (career: MockCareer, a: MockAlliance): { board: number; chat: number } =>
     unreadProvider(career, a);
   const myAllianceDto = (a: MockAlliance, career: MockCareer): MyAllianceDto => {
@@ -662,7 +668,7 @@ export function installAlliance(engine: MockEngine): void {
       },
       unread: unreadOf(career, a),
       operationId: operationProvider(career, a),
-      weeklyRank: null,
+      weeklyRank: progressProvider.weeklyRank(a),
       generalChannelId: a.generalChannelId,
     };
   };
@@ -1714,6 +1720,9 @@ export function installAlliance(engine: MockEngine): void {
     setOperationProvider: (fn) => {
       operationProvider = fn;
     },
+    setProgressProvider: (fn) => {
+      progressProvider = fn;
+    },
     memberDto: (allianceId, careerId, viewerCareerId) => {
       const a = world().alliances[allianceId];
       const m = a && memberOf(a, careerId);
@@ -1726,6 +1735,12 @@ export function installAlliance(engine: MockEngine): void {
   installAllianceQa(engine, api);
 }
 
+/** Phase 3 (progression): the weekly rank, the members' weekly points and the frame of the week come from the progress domain. */
+export interface AllianceProgressProvider {
+  weeklyRank: (a: MockAlliance) => number | null;
+  weeklyPoints: (careerId: string) => number;
+  frame: (allianceId: string) => AllianceFrame | null;
+}
 export interface AllianceMockApi {
   home: (career: MockCareer) => AllianceHomeDto;
   search: (
@@ -1795,6 +1810,7 @@ export interface AllianceMockApi {
   ) => void;
   setUnreadProvider: (fn: (career: MockCareer, a: MockAlliance) => { board: number; chat: number }) => void;
   setOperationProvider: (fn: (career: MockCareer, a: MockAlliance) => string | null) => void;
+  setProgressProvider: (fn: AllianceProgressProvider) => void;
   memberDto: (allianceId: string, careerId: string, viewerCareerId: string) => AllianceMemberDto | null;
   presenceOf: (career: MockCareer) => AlliancePresence;
   progressOf: (a: MockAlliance) => AllianceLevelDto;

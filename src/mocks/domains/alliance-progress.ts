@@ -1,4 +1,5 @@
 import type {
+  AllianceFrame,
   AllianceObjectiveDto,
   AllianceObjectiveType,
   AllianceObjectivesDto,
@@ -9,13 +10,14 @@ import type {
   IncidentDto,
 } from '@/contracts';
 import { MockError, type MockCareer, type MockEngine } from '../engine';
-import { allianceApiOf, activeMembers, DAY, HOUR, type MockAlliance } from './alliance';
+import { allianceApiOf, activeMembers, DAY, HOUR, levelOf, type MockAlliance } from './alliance';
 import { aidHooksOf } from './alliance-aid';
+import { allianceSocialOf } from './alliance-social';
 
 /**
- * Alliance progression (study 06, backend notes §Phase 3 when they land): the XP ledger with its weekly per-member cap, the
- * three weekly objectives sized on the active members, the weekly ranking of alliances (sum of the 10 best members, at least
- * 3 scoring) and the Monday rollover. Simulated competitors are synthetic alliances (`qa.simulateRanking`).
+ * Alliance progression (study 06; alleanze-backend.md §Phase 3 — same numbers): the XP ledger with its weekly per-member
+ * cap, the three weekly objectives sized on the active members, the weekly ranking of alliances (sum of the 10 best
+ * members, at least 3 scoring) and the Monday rollover. Simulated competitors are synthetic alliances (`qa.simulateRanking`).
  */
 export const PROGRESS_CFG = {
   incidentXp: 1,
@@ -24,19 +26,25 @@ export const PROGRESS_CFG = {
   objectiveXp: {
     VOLUME: 150,
     COOPERATION: 200,
+    PRESENCE: 200,
     QUALITY: 250,
     MEDICAL: 250,
     OPERATIONS: 300,
-    PRESENCE: 150,
   } as Record<AllianceObjectiveType, number>,
-  objectiveMemberCredits: 150,
-  objectiveMemberXp: 60,
+  objectiveMemberCredits: 80,
+  objectiveMemberXp: 40,
   objectiveMinShare: 0.05,
   objectiveMinCount: 3,
   rankingBestOf: 10,
   rankingMinScoringMembers: 3,
-  rankingXp: [400, 250, 100],
+  /** Podium, then 100 for the 4th–10th. */
+  rankingXp: [400, 300, 200],
+  rankingXpRunnerUp: 100,
+  rankingXpRunnerUpUntil: 10,
   topEntries: 20,
+  /** Weekly points of a resolved incident: 10 × severity × (1 + arrival bonus); the mock assumes the unit arrived in time (+0.25). */
+  incidentPoints: (severity: number) => Math.round(10 * severity * 1.25),
+  columnPoints: 15,
 };
 /** Mock-local Europe/Rome: a fixed +2 h (the week turns on Monday 00:00 local). */
 const TZ_OFFSET = 2 * HOUR;
@@ -47,8 +55,14 @@ export const weekStartOf = (now: number): number => {
   return Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate()) - day * DAY - TZ_OFFSET;
 };
 const weekKeyOf = (now: number) => iso(weekStartOf(now)).slice(0, 10);
+/** ISO week number of the week that contains `now` (rotation of the third objective). */
+const isoWeekOf = (now: number) => {
+  const d = new Date(weekStartOf(now) + TZ_OFFSET + 3 * DAY); // Thursday of that week
+  const yearStart = Date.UTC(d.getUTCFullYear(), 0, 1);
+  return Math.ceil(((d.getTime() - yearStart) / DAY + 1) / 7);
+};
 
-export const FRAMES: readonly (string | null)[] = ['GOLD', 'SILVER', 'BRONZE'];
+export const FRAMES: readonly AllianceFrame[] = ['GOLD', 'SILVER', 'BRONZE'];
 
 interface MockObjective {
   id: string;
@@ -75,6 +89,7 @@ export interface SyntheticAlliance {
   level: number;
   score: number;
   scoringMembers: number;
+  createdAt: number;
 }
 export interface ProgressWorld {
   objectives: Record<
@@ -92,7 +107,7 @@ export interface ProgressWorld {
   presence: Record<string, Record<string, string[]>>;
   synthetic: SyntheticAlliance[];
   lastWeek: Record<string, AllianceRankingDto['lastWeek']>;
-  rolloverScheduled: string | null;
+  frames: Record<string, AllianceFrame | null>;
 }
 export const progressWorld = (engine: MockEngine): ProgressWorld =>
   (engine.state.ext.allianceProgress ??= {
@@ -103,10 +118,10 @@ export const progressWorld = (engine: MockEngine): ProgressWorld =>
     presence: {},
     synthetic: [],
     lastWeek: {},
-    rolloverScheduled: null,
+    frames: {},
   } satisfies ProgressWorld) as ProgressWorld;
 
-const ROTATION: AllianceObjectiveType[] = ['QUALITY', 'MEDICAL', 'OPERATIONS', 'PRESENCE'];
+const ROTATION: AllianceObjectiveType[] = ['QUALITY', 'MEDICAL', 'PRESENCE', 'OPERATIONS'];
 const SYNTHETIC_NAMES = [
   ['Soccorso Marsica', 'MARS'],
   ['Gran Sasso Rescue', 'GSR'],
@@ -137,6 +152,30 @@ export function installAllianceProgress(engine: MockEngine): void {
   };
   const week = (now = engine.now()) => ({ start: weekStartOf(now), end: weekStartOf(now) + 7 * DAY });
   const pointsOf = (now = engine.now()) => (world().points[weekKeyOf(now)] ??= {});
+  const systemPost = (
+    a: MockAlliance,
+    code: Parameters<ReturnType<typeof allianceSocialOf>['systemPost']>[1],
+    params: Record<string, string | number>,
+  ) => {
+    try {
+      allianceSocialOf(engine).systemPost(a, code, params);
+    } catch {
+      /* the board is not installed in this engine */
+    }
+  };
+  const notifyMembers = (
+    a: MockAlliance,
+    code: string,
+    params: Record<string, string | number>,
+    target: string,
+    only?: (careerId: string) => boolean,
+  ) => {
+    for (const m of activeMembers(a)) {
+      if (only && !only(m.careerId)) continue;
+      const career = careerById(m.careerId);
+      if (career) alliances.notify(career, code, params, target, 'INFO');
+    }
+  };
 
   /* ───────────── XP ledger ───────────── */
   const addXp = (a: MockAlliance, source: AllianceXpSource, points: number, careerId: string | null) => {
@@ -157,11 +196,17 @@ export function installAllianceProgress(engine: MockEngine): void {
       capped,
       createdAt: engine.now(),
     });
-    if (granted > 0) {
-      a.xp += granted;
-      // The level and the XP live on the alliance itself: the section re-reads (reducer: invalidate all).
-      alliances.emitAlliance(a.id, 'alliance.updated', { alliance: null });
+    if (granted <= 0) return;
+    const before = levelOf(a.xp).level;
+    a.xp += granted;
+    const after = levelOf(a.xp).level;
+    if (after > before) {
+      // Level up (06 §1.2): never down; a system post, a notification to every member.
+      systemPost(a, 'LEVEL_UP', { count: after });
+      notifyMembers(a, 'LEVEL_UP', { tag: a.tag, name: a.name, count: after }, 'overview');
     }
+    // The level and the XP live on the alliance itself: the section re-reads (reducer: invalidate all).
+    alliances.emitAlliance(a.id, 'alliance.updated', { alliance: null });
   };
   const xpDto = (e: MockXpEntry): AllianceXpEntryDto => ({
     id: e.id,
@@ -173,36 +218,43 @@ export function installAllianceProgress(engine: MockEngine): void {
   });
 
   /* ───────────── objectives ───────────── */
-  const targetFor = (type: AllianceObjectiveType, members: number): number => {
-    const n = Math.max(2, members);
+  const activeLastWeek = (a: MockAlliance, now: number): number => {
+    const last: Record<string, number> = world().points[weekKeyOf(weekStartOf(now) - DAY)] ?? {};
+    const scoring = activeMembers(a).filter((m) => (last[m.careerId] ?? 0) > 0).length;
+    return scoring > 0 ? scoring : activeMembers(a).length;
+  };
+  const targetFor = (type: AllianceObjectiveType, n: number): number => {
     switch (type) {
       case 'VOLUME':
-        return 15 * n;
-      case 'COOPERATION':
-        return 2 * n;
+        return Math.max(20, 15 * n);
       case 'QUALITY':
-        return 5 * n;
+        return Math.max(8, 4 * n);
+      case 'COOPERATION':
+        return Math.max(2, n);
       case 'MEDICAL':
-        return 4 * n;
+        return Math.max(5, Math.round(2.5 * n));
+      case 'PRESENCE':
+        return Math.max(2, Math.round(0.6 * n));
       case 'OPERATIONS':
         return 1;
-      case 'PRESENCE':
-        return Math.min(n, 6);
     }
   };
   const generate = (a: MockAlliance, now: number) => {
-    const key = weekKeyOf(now);
-    const members = activeMembers(a).length;
-    const weekNo = Math.floor(weekStartOf(now) / (7 * DAY));
-    const types: AllianceObjectiveType[] = ['VOLUME', 'COOPERATION', ROTATION[weekNo % ROTATION.length]!];
+    const n = activeLastWeek(a, now);
+    const types: AllianceObjectiveType[] = [
+      'VOLUME',
+      'COOPERATION',
+      ROTATION[isoWeekOf(now) % ROTATION.length]!,
+    ];
     return {
-      week: key,
+      week: weekKeyOf(now),
       generatedAt: now,
       lastWeek: null as { completed: number; total: number } | null,
-      list: types.map((type) => ({
+      members: n,
+      list: types.map((type): MockObjective => ({
         id: engine.id('aob'),
         type,
-        target: targetFor(type, members),
+        target: targetFor(type, n),
         progress: 0,
         completed: false,
         completedAt: null,
@@ -211,17 +263,21 @@ export function installAllianceProgress(engine: MockEngine): void {
       })),
     };
   };
+  /** The week's objectives; announced on the board only when the rollover turns the week (first use stays silent). */
+  const renew = (a: MockAlliance, now: number, announce = false) => {
+    const current = world().objectives[a.id];
+    const next = generate(a, now);
+    next.lastWeek = current
+      ? { completed: current.list.filter((o) => o.completed).length, total: current.list.length }
+      : null;
+    world().objectives[a.id] = next;
+    if (announce) systemPost(a, 'WEEKLY_OBJECTIVES', {});
+    return next;
+  };
   const objectivesOf = (a: MockAlliance) => {
     const now = engine.now();
     const current = world().objectives[a.id];
-    if (!current || current.week !== weekKeyOf(now)) {
-      const next = generate(a, now);
-      next.lastWeek = current
-        ? { completed: current.list.filter((o) => o.completed).length, total: current.list.length }
-        : null;
-      world().objectives[a.id] = next;
-    }
-    return world().objectives[a.id]!;
+    return current && current.week === weekKeyOf(now) ? current : renew(a, now);
   };
   const thresholdOf = (o: MockObjective) =>
     Math.max(
@@ -236,7 +292,7 @@ export function installAllianceProgress(engine: MockEngine): void {
       title: { key: `alliance.objective.${o.type}.title`, params: { target: o.target } },
       description: { key: `alliance.objective.${o.type}.description`, params: { target: o.target } },
       target: o.target,
-      progress: Math.min(o.progress, o.target),
+      progress: o.progress,
       completed: o.completed,
       completedAt: o.completedAt === null ? null : iso(o.completedAt),
       reward: {
@@ -247,6 +303,7 @@ export function installAllianceProgress(engine: MockEngine): void {
         minCount: PROGRESS_CFG.objectiveMinCount,
       },
       contributions: Object.entries(o.contributions)
+        .filter(([, value]) => value > 0)
         .sort((x, y) => y[1] - x[1])
         .map(([careerId, value]) => ({ careerId, directorName: nameOf(careerId), value })),
       myContribution: mine,
@@ -260,7 +317,7 @@ export function installAllianceProgress(engine: MockEngine): void {
     return {
       week: { start: iso(w.start), end: iso(w.end) },
       objectives: state.list.map((o) => objectiveDto(o, viewerId)),
-      activeMembersLastWeek: activeMembers(a).length,
+      activeMembersLastWeek: activeLastWeek(a, engine.now()),
       generatedAt: iso(state.generatedAt),
       lastWeek: state.lastWeek,
     };
@@ -271,42 +328,37 @@ export function installAllianceProgress(engine: MockEngine): void {
     o.completed = true;
     o.completedAt = engine.now();
     addXp(a, 'OBJECTIVE', PROGRESS_CFG.objectiveXp[o.type], null);
+    systemPost(a, 'OBJECTIVE_COMPLETED', { name: o.type, count: o.target });
     const threshold = thresholdOf(o);
     for (const m of activeMembers(a)) {
       const value = o.contributions[m.careerId] ?? 0;
       const career = careerById(m.careerId);
-      if (!career) continue;
-      if (value >= threshold) {
-        engine.credit(career, PROGRESS_CFG.objectiveMemberCredits, 'ALLIANCE_OBJECTIVE', true);
-        engine.awardXp(career, PROGRESS_CFG.objectiveMemberXp);
-        o.paid[m.careerId] = engine.now();
-      }
+      if (!career || value < threshold) continue;
+      engine.credit(career, PROGRESS_CFG.objectiveMemberCredits, 'ALLIANCE_OBJECTIVE', true);
+      engine.awardXp(career, PROGRESS_CFG.objectiveMemberXp);
+      o.paid[m.careerId] = engine.now();
       alliances.notify(
         career,
         'OBJECTIVE_COMPLETED',
-        { tag: a.tag, name: a.name, credits: value >= threshold ? PROGRESS_CFG.objectiveMemberCredits : 0 },
+        { tag: a.tag, name: o.type, credits: PROGRESS_CFG.objectiveMemberCredits },
         'overview',
         'INFO',
       );
     }
-    alliances.logAction(a.id, 'OBJECTIVE_COMPLETED' as never, null, null, {
-      objectiveId: o.id,
-      type: o.type,
-    } as never);
   };
   const advance = (a: MockAlliance, type: AllianceObjectiveType, careerId: string | null, value: number) => {
     const o = objectivesOf(a).list.find((x) => x.type === type);
-    if (!o || o.completed || value <= 0) return;
-    o.progress += value;
+    if (!o || value <= 0) return;
+    o.progress += value; // keeps counting past the target
     if (careerId) o.contributions[careerId] = (o.contributions[careerId] ?? 0) + value;
-    if (o.progress >= o.target) complete(a, o);
+    if (!o.completed && o.progress >= o.target) complete(a, o);
     emitObjectives(a);
   };
-  const setPresence = (a: MockAlliance, type: 'PRESENCE', value: number) => {
-    const o = objectivesOf(a).list.find((x) => x.type === type);
-    if (!o || o.completed || value <= o.progress) return;
+  const setPresence = (a: MockAlliance, value: number) => {
+    const o = objectivesOf(a).list.find((x) => x.type === 'PRESENCE');
+    if (!o || value <= o.progress) return;
     o.progress = value;
-    if (o.progress >= o.target) complete(a, o);
+    if (!o.completed && o.progress >= o.target) complete(a, o);
     emitObjectives(a);
   };
   /** PRESENCE: distinct members on duty on the same day (sampled whenever the objectives are read or something lands). */
@@ -319,7 +371,7 @@ export function installAllianceProgress(engine: MockEngine): void {
       if (career && alliances.presenceOf(career) === 'ON_DUTY') today.add(m.careerId);
     }
     bucket[dayKey] = [...today];
-    setPresence(a, 'PRESENCE', Math.max(...Object.values(bucket).map((d) => d.length), 0));
+    setPresence(a, Math.max(...Object.values(bucket).map((d) => d.length), 0));
   };
 
   /* ───────────── weekly points (ranking) ───────────── */
@@ -357,6 +409,7 @@ export function installAllianceProgress(engine: MockEngine): void {
         level: s.level,
         score: s.score,
         scoringMembers: s.scoringMembers,
+        createdAt: s.createdAt,
         top: null as { careerId: string; points: number }[] | null,
       })),
       ...allRealAlliances().map((a) => {
@@ -369,13 +422,15 @@ export function installAllianceProgress(engine: MockEngine): void {
           level: alliances.progressOf(a).level,
           score: s.score,
           scoringMembers: s.scoringMembers,
+          createdAt: a.createdAt,
           top: s.top,
         };
       }),
     ];
+    // Ties: the older alliance first (06 §3.2).
     const ranked = rows
       .filter((r) => r.scoringMembers >= PROGRESS_CFG.rankingMinScoringMembers)
-      .sort((x, y) => y.score - x.score || x.name.localeCompare(y.name));
+      .sort((x, y) => y.score - x.score || x.createdAt - y.createdAt);
     return { rows, ranked };
   };
   const entryDto = (
@@ -393,6 +448,10 @@ export function installAllianceProgress(engine: MockEngine): void {
         : null,
     isMine: r.id === mineId,
   });
+  const positionOf = (allianceId: string, now = engine.now()) => {
+    const index = table(now).ranked.findIndex((r) => r.id === allianceId);
+    return index === -1 ? null : index + 1;
+  };
   const ranking = (career: MockCareer): AllianceRankingDto => {
     const now = engine.now();
     const w = week(now);
@@ -423,66 +482,59 @@ export function installAllianceProgress(engine: MockEngine): void {
   /* ───────────── rollover (Monday 00:00) ───────────── */
   const rollover = (at: number) => {
     const { ranked } = table(at - 1);
+    // Frames are cleared for everybody first; the podium gets this week's for seven days.
+    world().frames = {};
     for (const a of allRealAlliances()) {
       const index = ranked.findIndex((r) => r.id === a.id);
+      const position = index === -1 ? 0 : index + 1;
       world().lastWeek[a.id] = {
-        position: index === -1 ? 0 : index + 1,
+        position,
         score: index === -1 ? 0 : ranked[index]!.score,
-        frame: (index >= 0 && index < 3 ? FRAMES[index] : null) as never,
+        frame: index >= 0 && index < FRAMES.length ? FRAMES[index]! : null,
         totalRanked: ranked.length,
       };
+      if (index >= 0 && index < FRAMES.length) world().frames[a.id] = FRAMES[index]!;
       if (index >= 0 && index < PROGRESS_CFG.rankingXp.length)
         addXp(a, 'RANKING', PROGRESS_CFG.rankingXp[index]!, null);
-      // A new period starts now (also when QA forces it inside the same calendar week): fresh objectives, the old ones
-      // summarised as `lastWeek`.
-      const current = world().objectives[a.id];
-      const next = generate(a, at);
-      next.lastWeek = current
-        ? { completed: current.list.filter((o) => o.completed).length, total: current.list.length }
-        : null;
-      world().objectives[a.id] = next;
-      for (const m of activeMembers(a)) {
-        const career = careerById(m.careerId);
-        if (career)
-          alliances.notify(
-            career,
-            'RANKING_RESULT',
-            { tag: a.tag, name: a.name, position: index === -1 ? 0 : index + 1 },
-            'ranking',
-            'INFO',
-          );
-      }
-      emitObjectives(a);
-      alliances.emitAlliance(a.id, 'alliance.ranking.updated', { ranking: null });
+      else if (index >= PROGRESS_CFG.rankingXp.length && index < PROGRESS_CFG.rankingXpRunnerUpUntil)
+        addXp(a, 'RANKING', PROGRESS_CFG.rankingXpRunnerUp, null);
+      if (position > 0) systemPost(a, 'RANKING_RESULT', { count: position });
+      if (position > 0 && position <= 3)
+        notifyMembers(a, 'RANKING_RESULT', { tag: a.tag, name: a.name, count: position }, 'ranking');
     }
     // The week's points start from zero (06 §3.3); the synthetic competitors move a little.
     world().points[weekKeyOf(at)] = {};
     world().presence[weekKeyOf(at)] = {};
     for (const s of world().synthetic) s.score = Math.round(s.score * (0.6 + engine.random() * 0.8));
+    // New objectives for every ACTIVE alliance (the old ones become `lastWeek`), announced on the board.
+    for (const a of allRealAlliances()) {
+      renew(a, at, true);
+      emitObjectives(a);
+      alliances.emitAlliance(a.id, 'alliance.updated', { alliance: null });
+    }
   };
-  engine.registerExecutor('ALLIANCE_WEEKLY_ROLLOVER', () => {
-    world().rolloverScheduled = null;
-    rollover(engine.now());
-  });
+  engine.registerExecutor('ALLIANCE_WEEKLY_ROLLOVER', () => rollover(engine.now()));
 
   /* ───────────── sources ───────────── */
+  // QUALITY (mock approximation of "resolved, never escalated, first unit within half the deadline"): resolved, not
+  // escalating at the end, every REQUIRED need covered when it closed.
   const resolvedQuality = (incident: IncidentDto) =>
-    incident.requirements.every((r) => r.onScene + (r.allied ?? 0) >= r.required);
+    !incident.escalating && incident.requirements.every((r) => r.onScene + (r.allied ?? 0) >= r.required);
+  // MEDICAL (mock approximation of "resolved with patients and none DECEASED"): a medical service involved.
+  const medical = (incident: IncidentDto) =>
+    incident.families.some((f) => String(f).startsWith('MED') || f === 'EMS');
   engine.hooks.incidentClosed.push((career, incident, status) => {
     const m = alliances.membershipOf(career.summary.id);
-    if (!m || incident.isTutorial) return;
+    if (!m || incident.isTutorial || status !== 'RESOLVED') return;
     const a = m.alliance;
-    if (status === 'RESOLVED') {
-      if (flagOn('alliance_objectives')) {
-        advance(a, 'VOLUME', career.summary.id, 1);
-        if (resolvedQuality(incident)) advance(a, 'QUALITY', career.summary.id, 1);
-        if (incident.families.some((f) => String(f).startsWith('MED')))
-          advance(a, 'MEDICAL', career.summary.id, 1);
-        samplePresence(a);
-      }
-      addXp(a, 'INCIDENT_RESOLVED', PROGRESS_CFG.incidentXp, career.summary.id);
-      addPoints(career.summary.id, incident.severity * 2);
-    } else if (status === 'FAILED') addPoints(career.summary.id, Math.round(incident.severity * 0.5));
+    if (flagOn('alliance_objectives')) {
+      advance(a, 'VOLUME', career.summary.id, 1);
+      if (resolvedQuality(incident)) advance(a, 'QUALITY', career.summary.id, 1);
+      if (medical(incident)) advance(a, 'MEDICAL', career.summary.id, 1);
+      samplePresence(a);
+    }
+    addXp(a, 'INCIDENT_RESOLVED', PROGRESS_CFG.incidentXp, career.summary.id);
+    addPoints(career.summary.id, PROGRESS_CFG.incidentPoints(incident.severity));
     engine.save();
   });
 
@@ -517,7 +569,7 @@ export function installAllianceProgress(engine: MockEngine): void {
       if (!a) return;
       if (flagOn('alliance_objectives')) advance(a, 'COOPERATION', helperCareerId, 1);
       addXp(a, 'AID_COLUMN', PROGRESS_CFG.columnXp, helperCareerId);
-      addPoints(helperCareerId, PROGRESS_CFG.columnXp);
+      addPoints(helperCareerId, PROGRESS_CFG.columnPoints);
     },
     recordOperation: (allianceId, succeeded, xp, participants) => {
       const a = alliances.alliance(allianceId);
@@ -532,6 +584,11 @@ export function installAllianceProgress(engine: MockEngine): void {
   };
   apis.set(engine, api);
   aidHooksOf(engine).columnPaid.push((c) => api.recordColumn(c.helperCareerId, c.allianceId));
+  alliances.setProgressProvider({
+    weeklyRank: (a) => (flagOn('alliance_ranking') ? positionOf(a.id) : null),
+    weeklyPoints: (careerId) => pointsOf()[careerId] ?? 0,
+    frame: (allianceId) => world().frames[allianceId] ?? null,
+  });
 
   /* ───────────── QA ───────────── */
   engine.qa.simulateRanking = ((count = 11) => {
@@ -543,6 +600,7 @@ export function installAllianceProgress(engine: MockEngine): void {
       level: 1 + Math.floor(engine.random() * 6),
       score: 200 + Math.floor(engine.random() * 2300),
       scoringMembers: 3 + Math.floor(engine.random() * 8),
+      createdAt: engine.now() - (i + 30) * DAY,
     }));
     engine.save();
     return w.synthetic.length;

@@ -608,12 +608,15 @@ export function installMajor(engine: MockEngine): void {
       scenario = scenarioOf(opts.scenarioCode);
       if (!scenario) throw new MockError(404, 'NOT_FOUND', 'Unknown major scenario');
     } else {
-      const pool = MAJOR_SCENARIOS.map((s) => {
-        const main = mainTemplateFor(s, level);
-        const template = main ? templateOf(main) : undefined;
-        const owned = !!template && ownFamilies(career).has(template.primaryFamily);
-        return { s, weight: owned ? scenarioWeight(s, now) : 0 };
-      }).filter((x) => x.weight > 0);
+      // Alliance-scale scenarios are fronts of an operation, never personal draws (alliances, 07 §6).
+      const pool = MAJOR_SCENARIOS.filter((s) => !s.alliance)
+        .map((s) => {
+          const main = mainTemplateFor(s, level);
+          const template = main ? templateOf(main) : undefined;
+          const owned = !!template && ownFamilies(career).has(template.primaryFamily);
+          return { s, weight: owned ? scenarioWeight(s, now) : 0 };
+        })
+        .filter((x) => x.weight > 0);
       let r = nextRandom(seed) * pool.reduce((sum, x) => sum + x.weight, 0);
       scenario = (pool.find((x) => (r -= x.weight) <= 0) ?? pool[0])?.s;
     }
@@ -1156,7 +1159,7 @@ export function installMajor(engine: MockEngine): void {
 
   const trophies: MajorDomain['trophies'] = (career) => {
     const own = majorState(career).trophies;
-    const list = MAJOR_SCENARIOS.map((s) => {
+    const list = MAJOR_SCENARIOS.filter((s) => !s.alliance).map((s) => {
       const t = own[s.code];
       return {
         scenarioCode: s.code,

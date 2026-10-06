@@ -352,10 +352,22 @@ export const participant = (
 export const operation = (patch: Partial<AllianceOperationDto> = {}): AllianceOperationDto => ({
   id: OPERATION_ID,
   allianceId: ALLIANCE_ID,
-  scenarioCode: 'AOP_VALLEY_FLOOD',
-  title: { key: 'alliance.operation.scenario.AOP_VALLEY_FLOOD.title' },
-  description: { key: 'alliance.operation.scenario.AOP_VALLEY_FLOOD.description' },
-  alert: { key: 'alliance.operation.scenario.AOP_VALLEY_FLOOD.alert', params: { tag: 'ABR' } },
+  scenarioCode: 'MAJ_ALLIANCE_VALLEY_FLOOD',
+  title: {
+    key: 'major.scenario.MAJ_ALLIANCE_VALLEY_FLOOD.title',
+    params: { fallback: 'Alluvione di fondovalle' },
+  },
+  description: {
+    key: 'major.scenario.MAJ_ALLIANCE_VALLEY_FLOOD.description',
+    params: { fallback: 'Il fiume esce dagli argini e invade il fondovalle.' },
+  },
+  alert: {
+    key: 'major.scenario.MAJ_ALLIANCE_VALLEY_FLOOD.alert',
+    params: {
+      address: 'Abruzzo Soccorso',
+      fallback: 'OPERAZIONE DI ALLEANZA — Alluvione di fondovalle, Abruzzo Soccorso',
+    },
+  },
   icon: 'waves',
   status: 'ALERT',
   triggeredBy: 'SYSTEM',

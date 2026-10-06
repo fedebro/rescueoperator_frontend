@@ -166,8 +166,6 @@ describe('mock progression — ranking and rollover', () => {
       expect(next.lastWeek!.frame).not.toBeNull();
       expect(w.alliances.alliance(w.allianceId)!.xp).toBeGreaterThan(xp);
     } else expect(next.lastWeek!.frame).toBeNull();
-    expect(w.alliances.sync(w.career, 0).events.some((e) => e.type === 'alliance.ranking.updated')).toBe(
-      true,
-    );
+    expect(w.alliances.sync(w.career, 0).events.some((e) => e.type === 'alliance.updated')).toBe(true);
   });
 });

@@ -873,25 +873,21 @@
         "title": "Operazione di alleanza",
         "body": "[{tag}] {name}: {minutes} minuti. Entra in servizio per partecipare."
       },
-      "OPERATION_STARTED": {
-        "title": "Operazione avviata",
-        "body": "[{tag}] {name}: {joined} partecipanti, i fronti sono aperti."
-      },
-      "OPERATION_CANCELLED": {
-        "title": "Operazione annullata",
-        "body": "[{tag}] {name}: hanno accettato in meno di due."
-      },
       "OPERATION_ENDED": {
         "title": "Operazione conclusa",
-        "body": "[{tag}] {name}: esito {outcome}."
+        "body": "[{tag}] {name}: esito {outcome}, il tuo fronte vale {credits} Crediti."
       },
       "OBJECTIVE_COMPLETED": {
         "title": "Obiettivo raggiunto",
-        "body": "[{tag}] {name}: {credits, plural, =0 {punti all’alleanza} other {+# Crediti per te}}."
+        "body": "[{tag}]: obiettivo {name} completato, +{credits} Crediti per il tuo contributo."
       },
       "RANKING_RESULT": {
         "title": "Classifica della settimana",
-        "body": "[{tag}] {name}: {position, plural, =0 {fuori classifica} other {posizione #}}."
+        "body": "[{tag}] {name} ha chiuso la settimana in posizione {count}."
+      },
+      "LEVEL_UP": {
+        "title": "Livello {count}",
+        "body": "[{tag}] {name} è salita al livello {count}: nuovi posti e nuovi stemmi."
       }
     },
     "landing": {
@@ -966,7 +962,11 @@
       "system": {
         "MEMBER_JOINED": "{director} è entrato nell’alleanza.",
         "MEMBER_LEFT": "{director} ha lasciato l’alleanza.",
-        "LEVEL_UP": "L’alleanza è salita al livello {level}."
+        "LEVEL_UP": "L’alleanza è salita al livello {count}.",
+        "WEEKLY_OBJECTIVES": "Nuovi obiettivi della settimana.",
+        "OBJECTIVE_COMPLETED": "Obiettivo raggiunto: {name}.",
+        "OPERATION_ENDED": "Operazione di alleanza conclusa: {name} ({count}%).",
+        "RANKING_RESULT": "Classifica della settimana: posizione {count}."
       }
     },
     "objectives": {
@@ -1080,34 +1080,7 @@
       "columnsInFlight": "Colonne in viaggio",
       "noColumns": "Nessuna colonna in viaggio tra i fronti.",
       "columnLine": "{helper} → {requester}",
-      "arrived": "arrivata",
-      "scenario": {
-        "AOP_VALLEY_FLOOD": {
-          "title": "Alluvione di fondovalle",
-          "description": "Il fiume esce dagli argini in tutta la valle: case, strade e sottopassi allagati nei territori di ogni partecipante.",
-          "alert": "Operazione di alleanza [{tag}]: alluvione di fondovalle"
-        },
-        "AOP_SEISMIC_SWARM": {
-          "title": "Sciame sismico",
-          "description": "Una sequenza di scosse colpisce la zona: crolli, persone intrappolate, strade da liberare.",
-          "alert": "Operazione di alleanza [{tag}]: sciame sismico"
-        },
-        "AOP_WILDFIRE": {
-          "title": "Incendio boschivo esteso",
-          "description": "Il fuoco corre sulle colline e minaccia le frazioni: ogni fronte difende il proprio territorio.",
-          "alert": "Operazione di alleanza [{tag}]: incendio boschivo esteso"
-        },
-        "AOP_STORM_WAVE": {
-          "title": "Ondata di maltempo",
-          "description": "Vento e pioggia battente su tutta l’area: alberi caduti, tetti scoperchiati, strade interrotte.",
-          "alert": "Operazione di alleanza [{tag}]: ondata di maltempo"
-        },
-        "AOP_SNOWFALL": {
-          "title": "Nevicata eccezionale",
-          "description": "Neve abbondante isola le frazioni: persone bloccate, tetti a rischio, strade da riaprire.",
-          "alert": "Operazione di alleanza [{tag}]: nevicata eccezionale"
-        }
-      }
+      "arrived": "arrivata"
     },
     "objective": {
       "VOLUME": {

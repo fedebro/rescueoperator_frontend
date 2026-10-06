@@ -37,7 +37,7 @@ test('alert → Partecipa → start → my front with the strip → board → ch
   const { marta } = await setupAlliance(page, info.project.name);
 
   // The alert over any page: scenario, who joined, Partecipa.
-  await qa(page, 'startOperation', 'AOP_VALLEY_FLOOD', { alertSeconds: 600 });
+  await qa(page, 'startOperation', 'MAJ_ALLIANCE_VALLEY_FLOOD', { alertSeconds: 600 });
   const alert = page.getByTestId('operation-alert');
   await expect(alert).toBeVisible();
   await expect(page.getByTestId('operation-alert-title')).toContainText(/alluvione/i);
@@ -98,7 +98,7 @@ test('Non ora: no enlistment; fewer than two joined at the end of the alert → 
   page,
 }, info) => {
   await setupAlliance(page, info.project.name);
-  await qa(page, 'startOperation', 'AOP_STORM_WAVE', { alertSeconds: 600 });
+  await qa(page, 'startOperation', 'MAJ_ALLIANCE_STORM_WAVE', { alertSeconds: 600 });
   await expect(page.getByTestId('operation-alert')).toBeVisible();
   await page.getByTestId('operation-alert-decline').click();
   await expect(page.getByTestId('toast').filter({ hasText: 'non ora' })).toBeVisible();

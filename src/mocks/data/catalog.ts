@@ -377,6 +377,8 @@ export interface MajorScenario {
   growth: { template: string; weight: number }[];
   areaRadiusMeters: number;
   icon: string;
+  /** Alliance-scale scenario (operations, 07 §6): never drawn as a personal major. */
+  alliance: { durationMinutes: number } | null;
 }
 /** Water body kinds of the geodata (sea, lake / reservoir, river / canal). */
 export type WaterBodyType = 'SEA' | 'LAKE' | 'RIVER';
