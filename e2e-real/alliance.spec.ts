@@ -260,7 +260,8 @@ test('two players: found, invite code, promote, board, chat, mute, report, allie
     await skipPushPrompt(pageB);
     await expect(pageB.getByTestId('alliance-invite-landing')).toContainText(allianceName);
     await pageB.getByTestId('alliance-invite-cta').click();
-    await expect(pageB).toHaveURL(/\/game\/alliance\?invite=/, { timeout: 60_000 });
+    // The invite is a one-shot instruction: the section keeps it and cleans the URL at once.
+    await expect(pageB).toHaveURL(/\/game\/alliance/, { timeout: 60_000 });
     await expect(pageB.getByTestId('invite-card')).toBeVisible({ timeout: 60_000 });
     await pageB.getByTestId('invite-card-join').click();
     await expect(pageB.getByTestId('alliance-section')).toBeVisible({ timeout: 60_000 });
