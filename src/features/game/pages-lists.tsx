@@ -30,6 +30,7 @@ import { DataTable, type Column } from '@/components/ui/data-table';
 import { Card, EmptyState, SectionTitle, Skeleton } from '@/components/ui/misc';
 import { SeverityBadge } from '@/components/ui/severity-badge';
 import { StatusChip } from '@/components/ui/status-chip';
+import { AlliedSupportLine } from '@/features/alliance/aid-incident';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SpeedupButton } from '@/features/monetization/speedup-button';
 import { FacilityPersonnelSection } from '@/features/personnel/slots';
@@ -261,7 +262,12 @@ export function FleetScreen() {
       id: 'status',
       header: t('col.status'),
       width: '170px',
-      cell: (v) => <StatusChip status={v.status} label={ts(v.status)} />,
+      cell: (v) => (
+        <span className="flex flex-col gap-0.5">
+          <StatusChip status={v.status} label={ts(v.status)} />
+          <AlliedSupportLine vehicle={v} />
+        </span>
+      ),
       sortValue: (v) => v.status,
     },
     {
@@ -429,6 +435,7 @@ export function FleetScreen() {
                 </span>
                 <span className="flex flex-col items-end gap-1">
                   <StatusChip status={v.status} label={ts(v.status)} />
+                  <AlliedSupportLine vehicle={v} className="justify-end text-right" />
                   {v.movement ? (
                     <Countdown to={v.movement.arriveAt} doneLabel="…" className="text-muted text-xs" />
                   ) : v.busyUntil ? (

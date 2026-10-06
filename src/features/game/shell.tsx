@@ -12,8 +12,8 @@ import { useIsDesktop } from '@/hooks/use-media-query';
 import { Logo } from '@/components/brand/logo';
 import { CreditAmount } from '@/components/ui/credit-amount';
 import { Tooltip } from '@/components/ui/tooltip';
-import { ADMIN_ICON, BOTTOM_ITEMS, MORE_ITEMS, SIDEBAR_ITEMS, isActive } from './nav';
-import { useVisibleNav } from './use-nav';
+import { ADMIN_ICON, BOTTOM_ITEMS, MORE_ITEMS, SIDEBAR_ITEMS, isActive, type NavBadge } from './nav';
+import { useMoreBadge, useNavBadges, useVisibleNav } from './use-nav';
 import { useSnapshot } from './hooks';
 import { DutyToggle } from './duty-toggle';
 import { WorldWidget } from '@/features/world/world-widget';
@@ -137,10 +137,46 @@ export function TopBar() {
   );
 }
 
+/** The count bubble on a navigation icon. Visual only: the link's description (sr-only) carries the words. */
+function NavBadgeBubble({ count, testId }: { count: number; testId: string }) {
+  return (
+    <span
+      className="tabular bg-brand absolute -top-1.5 -right-2.5 grid h-4 min-w-4 place-items-center rounded-full px-1 text-xs leading-none font-bold text-white"
+      aria-hidden
+      data-testid={testId}
+    >
+      {count > 99 ? '99+' : count}
+    </span>
+  );
+}
+
+const BADGE_TEST_ID: Record<NavBadge | 'more', string> = {
+  pendingIncidents: 'nav-pending-badge',
+  alliance: 'nav-badge-alliance',
+  more: 'nav-badge-more',
+};
+
+/** The words of a badge (its `aria-describedby` text): what the number counts. */
+function useBadgeText(): (kind: NavBadge | 'more', count: number) => string {
+  const ta = useTranslations('platform.a11y');
+  return React.useCallback(
+    (kind, count) =>
+      kind === 'pendingIncidents'
+        ? ta('pendingIncidents', { count })
+        : kind === 'alliance'
+          ? ta('allianceUnread', { count })
+          : ta('moreUnread', { count }),
+    [ta],
+  );
+}
+
 export function Sidebar() {
   const pathname = usePathname();
   const t = useTranslations('game.nav');
   const items = useVisibleNav(SIDEBAR_ITEMS);
+  const badges = useNavBadges();
+  const badgeText = useBadgeText();
+  const describedBy = React.useId();
   return (
     <nav
       aria-label={t('label')}
@@ -148,24 +184,40 @@ export function Sidebar() {
     >
       {items.map((item) => {
         const active = isActive(pathname, item.href);
+        const count = item.badge ? badges[item.badge] : 0;
+        const badgeId = `${describedBy}-${item.labelKey}`;
         return (
-          <Tooltip key={item.href} content={t(item.labelKey)} side="right">
-            <Link
-              href={item.href}
-              aria-label={t(item.labelKey)}
-              aria-current={active ? 'page' : undefined}
-              data-tutorial={item.tutorialId}
-              className={cn(
-                'text-muted hover:bg-surface-3 hover:text-fg relative grid size-11 place-items-center rounded-md transition-colors',
-                active && 'bg-surface-3 text-fg',
-              )}
-            >
-              {active ? (
-                <span aria-hidden className="bg-brand absolute top-2 bottom-2 -left-2 w-1 rounded-r" />
-              ) : null}
-              <item.icon className="size-5" aria-hidden />
-            </Link>
-          </Tooltip>
+          <React.Fragment key={item.href}>
+            <Tooltip content={t(item.labelKey)} side="right">
+              <Link
+                href={item.href}
+                aria-label={t(item.labelKey)}
+                aria-current={active ? 'page' : undefined}
+                aria-describedby={count > 0 ? badgeId : undefined}
+                data-tutorial={item.tutorialId}
+                data-nav={item.labelKey}
+                className={cn(
+                  'text-muted hover:bg-surface-3 hover:text-fg relative grid size-11 place-items-center rounded-md transition-colors',
+                  active && 'bg-surface-3 text-fg',
+                )}
+              >
+                {active ? (
+                  <span aria-hidden className="bg-brand absolute top-2 bottom-2 -left-2 w-1 rounded-r" />
+                ) : null}
+                <span className="relative">
+                  <item.icon className="size-5" aria-hidden />
+                  {count > 0 && item.badge ? (
+                    <NavBadgeBubble count={count} testId={BADGE_TEST_ID[item.badge]} />
+                  ) : null}
+                </span>
+              </Link>
+            </Tooltip>
+            {count > 0 && item.badge ? (
+              <span id={badgeId} className="sr-only">
+                {badgeText(item.badge, count)}
+              </span>
+            ) : null}
+          </React.Fragment>
         );
       })}
     </nav>
@@ -175,9 +227,10 @@ export function Sidebar() {
 export function BottomNav() {
   const pathname = usePathname();
   const t = useTranslations('game.nav');
-  const ta = useTranslations('platform.a11y');
-  const pending = useSnapshot().incidents.filter((i) => i.status === 'PENDING_RESPONSE').length;
-  const badgeId = React.useId();
+  const badges = useNavBadges();
+  const moreBadge = useMoreBadge();
+  const badgeText = useBadgeText();
+  const describedBy = React.useId();
   return (
     <nav
       aria-label={t('label')}
@@ -189,15 +242,19 @@ export function BottomNav() {
           const active =
             isActive(pathname, item.href) ||
             (item.href === '/game/more' && MORE_ITEMS.some((m) => pathname.startsWith(m.href)));
-          // The waiting-incidents badge sits on "Mappa": that is where the list (the sheet) is.
-          const badge = item.href === '/game' && pending > 0;
+          // The waiting-incidents badge sits on "Mappa": that is where the list (the sheet) is. "Altro" sums the badges
+          // of the entries it hides (the alliance's unread): the counter is seen without opening the page (D-123).
+          const kind: NavBadge | 'more' | null =
+            item.href === '/game/more' ? 'more' : item.badge ? item.badge : null;
+          const count = kind === 'more' ? moreBadge : kind ? badges[kind] : 0;
+          const badgeId = `${describedBy}-${item.labelKey}`;
           return (
             <li key={item.href}>
               <Link
                 href={item.href}
                 aria-current={active ? 'page' : undefined}
-                // The waiting count is a description, not part of the name: the link stays "Mappa".
-                aria-describedby={badge ? badgeId : undefined}
+                // The count is a description, not part of the name: the link stays "Mappa" / "Altro".
+                aria-describedby={count > 0 ? badgeId : undefined}
                 data-tutorial={item.tutorialId}
                 data-nav={item.labelKey}
                 className={cn(
@@ -208,21 +265,13 @@ export function BottomNav() {
                 {active ? <span aria-hidden className="bg-brand absolute top-0 h-0.5 w-8 rounded-b" /> : null}
                 <span className="relative">
                   <item.icon className="size-5" aria-hidden />
-                  {badge ? (
-                    <span
-                      className="tabular bg-brand absolute -top-1.5 -right-2.5 grid h-4 min-w-4 place-items-center rounded-full px-1 text-xs leading-none font-bold text-white"
-                      aria-hidden
-                      data-testid="nav-pending-badge"
-                    >
-                      {pending}
-                    </span>
-                  ) : null}
+                  {count > 0 && kind ? <NavBadgeBubble count={count} testId={BADGE_TEST_ID[kind]} /> : null}
                 </span>
                 {t(item.labelKey)}
               </Link>
-              {badge ? (
+              {count > 0 && kind ? (
                 <span id={badgeId} className="sr-only">
-                  {ta('pendingIncidents', { count: pending })}
+                  {badgeText(kind, count)}
                 </span>
               ) : null}
             </li>

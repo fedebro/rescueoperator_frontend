@@ -1,4 +1,5 @@
 'use client';
+import { AidMapCard } from '@/features/alliance/aid-map-card';
 import * as React from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
@@ -118,6 +119,7 @@ export function OperationsScreen() {
   if (layout === 'desktop') {
     return (
       <div className="absolute inset-0 flex" data-ops-layout="desktop">
+        <AidMapCard />
         <aside
           className="border-border bg-surface-1 flex w-[320px] shrink-0 flex-col border-r"
           aria-label={t('queue.title')}
@@ -145,6 +147,7 @@ export function OperationsScreen() {
   if (layout === 'tablet') {
     return (
       <div className="absolute inset-0 flex" data-ops-layout="tablet">
+        <AidMapCard />
         <aside
           className="border-border bg-surface-1 flex w-[340px] shrink-0 flex-col border-r"
           aria-label={selection ? t('inspector.label') : t('queue.title')}
@@ -169,6 +172,7 @@ export function OperationsScreen() {
   return (
     <div ref={rootRef} className="absolute inset-0" data-ops-layout="phone">
       <MapSlot className="absolute inset-0" />
+      <AidMapCard />
       <BottomSheet
         snap={snap}
         onSnapChange={setSnap}

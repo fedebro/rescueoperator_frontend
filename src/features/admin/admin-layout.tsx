@@ -12,6 +12,7 @@ import {
   ChevronRight,
   CreditCard,
   Flag,
+  Gavel,
   Gauge,
   Globe2,
   History,
@@ -21,8 +22,11 @@ import {
   Search,
   Settings2,
   ShieldAlert,
+  ShieldBan,
   ShieldX,
   Siren,
+  TextSearch,
+  Handshake,
   UserPlus,
   Users,
   type LucideIcon,
@@ -53,6 +57,10 @@ const ITEMS = [
   { href: '/admin/flags', key: 'flags', icon: Flag },
   { href: '/admin/world', key: 'world', icon: MapIcon },
   { href: '/admin/geodata', key: 'geodata', icon: Globe2 },
+  { href: '/admin/moderation', key: 'moderation', icon: Gavel },
+  { href: '/admin/sanctions', key: 'sanctions', icon: ShieldBan },
+  { href: '/admin/text-filter', key: 'textFilter', icon: TextSearch },
+  { href: '/admin/alliances', key: 'alliances', icon: Handshake },
   { href: '/admin/referrals', key: 'referrals', icon: UserPlus },
   { href: '/admin/purchases', key: 'purchases', icon: CreditCard },
   { href: '/admin/audit', key: 'audit', icon: History },
@@ -68,6 +76,8 @@ export function searchTarget(raw: string): string | null {
   if (value.startsWith('usr_')) return `/admin/users/${value}`;
   if (value.startsWith('car_')) return `/admin/careers/${value}`;
   if (value.startsWith('inc_')) return `/admin/incidents/${value}`;
+  if (value.startsWith('rep_')) return `/admin/moderation/${value}`;
+  if (value.startsWith('all_')) return `/admin/alliances/${value}`;
   return null;
 }
 

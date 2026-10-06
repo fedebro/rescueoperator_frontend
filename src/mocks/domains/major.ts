@@ -193,6 +193,8 @@ export interface MajorDomain {
     career: MockCareer,
     opts?: { scenarioCode?: string; severity?: number; targetVehicles?: number },
   ): MajorIncidentDto;
+  /** Additive views of the major (alliances: allied columns, the aid request). Applied last in `toDto`. */
+  viewHooks: ((career: MockCareer, major: MajorIncidentDto) => MajorIncidentDto)[];
 }
 const domains = new WeakMap<MockEngine, MajorDomain>();
 export function majorOf(engine: MockEngine): MajorDomain {
@@ -367,6 +369,7 @@ export function installMajor(engine: MockEngine): void {
     };
   };
 
+  const viewHooks: MajorDomain['viewHooks'] = [];
   const toDto = (career: MockCareer, major: MockMajor): MajorIncidentDto => {
     const reinforced = reinforcedIndex(major);
     const members = major.members
@@ -398,7 +401,7 @@ export function installMajor(engine: MockEngine): void {
       major.reinforcedShare,
       CFG,
     );
-    return {
+    const dto: MajorIncidentDto = {
       id: major.id,
       scenarioCode: major.scenarioCode,
       title: scenarioText(major.scenarioCode, 'title'),
@@ -466,6 +469,7 @@ export function installMajor(engine: MockEngine): void {
       startedAt: iso(major.startedAt),
       endedAt: major.endedAt === null ? null : iso(major.endedAt),
     };
+    return viewHooks.reduce((d, hook) => hook(career, d), dto);
   };
   /** Every change of a major: `career.updated` carrying `{ major }` (no `career` key), like the backend. */
   const announce = (career: MockCareer, major: MockMajor) =>
@@ -1175,6 +1179,7 @@ export function installMajor(engine: MockEngine): void {
   };
 
   const domain: MajorDomain = {
+    viewHooks,
     current: (career) => {
       const major = active(career);
       return major ? toDto(career, major) : null;

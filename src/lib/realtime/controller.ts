@@ -17,6 +17,10 @@ export interface ControllerOptions {
   fetchDelta?: (since: number) => Promise<SyncDelta>;
   onEffect: (effect: Effect) => void;
   onConnection: (state: ConnectionState) => void;
+  /** The alliance stream shares the socket (brief §2): its raw envelopes go to the alliance controller. */
+  onAllianceEvent?: (raw: unknown) => void;
+  /** Every (re)connection after the first, besides the career resync (the alliance controller resyncs too). */
+  onReconnected?: () => void;
   pollIntervalMs?: number;
   retryDelayMs?: number;
 }
@@ -47,7 +51,11 @@ export class RealtimeController {
     this.transport = this.opts.connect({
       onEvent: (raw) => this.handle(raw),
       onStatus: (status) => this.handleStatus(status),
-      onReconnect: () => void this.resync(),
+      onReconnect: () => {
+        void this.resync();
+        this.opts.onReconnected?.();
+      },
+      onAllianceEvent: this.opts.onAllianceEvent,
     });
     if (typeof window !== 'undefined') {
       window.addEventListener('online', this.onOnline);

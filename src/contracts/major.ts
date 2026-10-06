@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { Amount, I18nText, IdPrefix, IsoDateTime, LngLat, ServiceFamily, publicId } from './common';
 import { IncidentStatus, MajorMemberRole, MajorPhase, RequirementLevel, WeatherCode } from './game';
+import { IncidentAlliedColumnDto } from './alliance-aid';
 
 /**
  * Major incidents ("maxi-emergenze") — D-24 [U] / D-69 [C], analisi/studio-2026-09-27/06, analisi/note-agenti/major-incidents.md.
@@ -38,6 +39,8 @@ export const MajorCapabilityDto = z.object({
   reinforced: z.number().int(),
   /** True when nothing of it is left to the career (locked/unowned family, or fully reinforced). */
   external: z.boolean(),
+  /** Additive (alliances, D-102): capability brought by allied columns on scene — revocable, so never folded into `reinforced`. */
+  allied: z.number().int().optional(),
 });
 export type MajorCapabilityDto = z.infer<typeof MajorCapabilityDto>;
 
@@ -166,6 +169,13 @@ export const MajorIncidentDto = z.object({
   }),
   startedAt: IsoDateTime,
   endedAt: IsoDateTime.nullable(),
+  /* ── additive (alliances, D-102/D-106 — analisi/note-agenti/alleanze-backend.md) ── */
+  /** Set when this major is a FRONT of an alliance operation (`GET /careers/:id/alliance/operation` for the shared board). */
+  allianceOperationId: publicId(IdPrefix.allianceOperation).nullable().optional(),
+  /** The one aid request of this major (05 §7: one per major, columns spread over the sectors); null/absent when none. */
+  aidRequestId: publicId(IdPrefix.aidRequest).nullable().optional(),
+  /** Allied columns towards this major, shown next to the system reinforcements ("con aiuti niente medaglia d'oro"). */
+  alliedColumns: z.array(IncidentAlliedColumnDto).optional(),
 });
 export type MajorIncidentDto = z.infer<typeof MajorIncidentDto>;
 

@@ -9,7 +9,11 @@ import { invalidateFresh } from '@/lib/api/invalidate';
 import { qk } from '@/lib/api/query-keys';
 import { formatAmount, formatClock } from '@/lib/format';
 import { RealtimeController } from '@/lib/realtime/controller';
+import { AllianceRealtimeController } from '@/lib/realtime/alliance-controller';
+import type { AllianceEffect } from '@/lib/realtime/alliance-reconcile';
 import { connectMockBus, connectSocket } from '@/lib/realtime/transport';
+import { allianceApi } from '@/lib/api/alliance';
+import { allianceOf } from '@/features/alliance/snapshot';
 import type { Effect } from '@/lib/realtime/reconcile';
 import { NotificationDto, type MajorIncidentDto } from '@/contracts';
 import { track } from '@/lib/analytics';
@@ -274,6 +278,8 @@ export function GameRuntime({ careerId, children }: { careerId: string; children
         if (isSevereIncidentNotification(n)) break;
         // INFO notifications stay silent: they land in the centre and on the badge only.
         if (n.priority !== 'INFO') cue(notificationCue(n.priority));
+        // Alliance news (a join request, an invite, a role, a removal…) concerns the section: re-read it (D-102…D-123).
+        if (n.category === 'ALLIANCE') void invalidateFresh(qc, qk.allianceRoot(careerId));
         // A major's growth and its reinforcements on scene (the end has its own summary toast, see `major.updated`).
         if (isMajorNotification(n) && !n.title.key.includes('.ENDED_') && n.priority !== 'CRITICAL') {
           toast({
@@ -325,6 +331,7 @@ export function GameRuntime({ careerId, children }: { careerId: string; children
           world: [qk.worldRoot(careerId), qk.stipend(careerId)],
           monetization: [qk.monetizationRoot(careerId)],
           major: [qk.majorRoot(careerId)],
+          alliance: [qk.allianceRoot(careerId)],
           notifications: [qk.notifications(careerId)],
           facility: [[...qk.career(careerId), 'facility']],
           config: [qk.catalog(careerId)],
@@ -337,8 +344,49 @@ export function GameRuntime({ careerId, children }: { careerId: string; children
     }
   });
 
+  // My allied column settled or came back (05 §6): one toast per column and outcome; never one per chat message (03 §4.1).
+  const tal = useTranslations('alliance.aid');
+  const seenColumns = React.useRef(new Set<string>());
+  const allianceEffectRef = useLatest((effect: AllianceEffect) => {
+    if (effect.type !== 'column.updated' || !effect.column.mine) return;
+    const c = effect.column;
+    const key = `${c.id}:${c.status}:${c.reward.status}`;
+    if (seenColumns.current.has(key)) return;
+    seenColumns.current.add(key);
+    if (c.status === 'ABORTED') toast({ tone: 'info', title: tal('toast.aborted'), durationMs: 5000 });
+    else if (c.status === 'ON_SCENE')
+      toast({
+        tone: 'info',
+        title: tal('toast.onScene', { name: c.requester.directorName ?? '' }),
+        durationMs: 4000,
+      });
+    else if (c.reward.status === 'PAID')
+      toast({
+        tone: 'success',
+        title: tal('toast.paid', { credits: formatAmount(c.reward.credits ?? '0', locale) }),
+        durationMs: 8000,
+      });
+    else if (c.reward.status === 'CAPPED')
+      toast({ tone: 'info', title: tal('toast.capped'), durationMs: 6000 });
+    else if (c.reward.status === 'UNDER_REVIEW')
+      toast({ tone: 'warning', title: tal('toast.review'), durationMs: 6000 });
+    else if (
+      c.reward.status === 'NONE' &&
+      (c.status === 'RETURNING' || c.status === 'RETURNED' || c.status === 'RECALLED')
+    )
+      toast({ tone: 'info', title: tal('toast.none'), durationMs: 5000 });
+  });
+  const allianceControllerRef = React.useRef<AllianceRealtimeController | null>(null);
   React.useEffect(() => {
     if (!loaded) return;
+    // The alliance stream (D-102…D-123): same socket, event `alliance`, its own sequence and replay.
+    const alliance = new AllianceRealtimeController({
+      careerId,
+      queryClient: qc,
+      fetchDelta: (since) => allianceApi.sync(careerId, since),
+      onEffect: (effect) => allianceEffectRef.current(effect),
+    });
+    allianceControllerRef.current = alliance;
     const controller = new RealtimeController({
       careerId,
       queryClient: qc,
@@ -347,23 +395,40 @@ export function GameRuntime({ careerId, children }: { careerId: string; children
       fetchDelta: (since) => gameApi.syncSince(careerId, since),
       onEffect: (e) => effectRef.current(e),
       onConnection: setConnection,
+      onAllianceEvent: (raw) => alliance.handle(raw),
+      onReconnected: () => void alliance.resync(),
     });
     controller.start();
+    alliance.start();
+    const resyncAll = () => {
+      void controller.resync();
+      void alliance.resync();
+    };
     // Coming back to a backgrounded tab (mobile webviews suspend timers and sockets): resync immediately.
     const onVisible = () => {
-      if (document.visibilityState === 'visible') void controller.resync();
+      if (document.visibilityState === 'visible') resyncAll();
     };
     document.addEventListener('visibilitychange', onVisible);
     // Presence heartbeat: the server only generates incidents for players who are actually there (D-11).
     const heartbeat = setInterval(() => {
-      if (document.visibilityState === 'visible') void controller.resync();
+      if (document.visibilityState === 'visible') resyncAll();
     }, 60_000);
     return () => {
       controller.stop();
+      alliance.stop();
+      allianceControllerRef.current = null;
       document.removeEventListener('visibilitychange', onVisible);
       clearInterval(heartbeat);
     };
-  }, [careerId, qc, loaded, setConnection, effectRef]);
+  }, [careerId, qc, loaded, setConnection, effectRef, allianceEffectRef]);
+  // Joined or left an alliance: the stream's sequence belongs to the new alliance (or to none).
+  const allianceId = snapshot.data ? (allianceOf(snapshot.data)?.id ?? null) : null;
+  const previousAllianceId = React.useRef<string | null | undefined>(undefined);
+  React.useEffect(() => {
+    if (previousAllianceId.current !== undefined && previousAllianceId.current !== allianceId)
+      allianceControllerRef.current?.reset();
+    previousAllianceId.current = allianceId;
+  }, [allianceId]);
 
   // Product analytics of the core loop: derived from snapshot transitions and the selection (see CoreAnalyticsTracker).
   const data = snapshot.data;

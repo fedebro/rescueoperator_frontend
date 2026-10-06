@@ -12,6 +12,10 @@ import { installMonetization } from './monetization';
 import { installPlatform } from './platform';
 import { installPush } from './push';
 import { installAdmin } from './admin';
+import { installCommunity } from './community';
+import { installAlliance } from './alliance';
+import { installAllianceSocial } from './alliance-social';
+import { installAllianceAid } from './alliance-aid';
 import { installQa } from '../qa';
 
 const installed = new WeakSet<MockEngine>();
@@ -41,6 +45,11 @@ export function installDomains(engine: MockEngine): void {
   installPlatform(engine);
   installPush(engine);
   installAdmin(engine);
+  // Alliances (D-102…D-123): blocks / rules / account first (the alliance module reads them), then the alliance itself.
+  installCommunity(engine);
+  installAlliance(engine);
+  installAllianceSocial(engine);
+  installAllianceAid(engine);
 }
 
 /** Typed accessor for a domain's per-career state (created on first use — old saves stay loadable). */

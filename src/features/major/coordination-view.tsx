@@ -36,6 +36,7 @@ import { incidentScene } from '@/features/water/water';
 import { useSnapshot } from '@/features/game/hooks';
 import { InspectorHeaderButton, SHEET_HEADER } from '@/features/game/inspector-parts';
 import { useMajor, useRequestReinforcements } from './hooks';
+import { AidMajorSection } from '@/features/alliance/aid-incident';
 import {
   OPERATIONAL_PHASES,
   assignedVehicles,
@@ -805,6 +806,8 @@ export function MajorInspector({ majorId }: { majorId: string }) {
           </ul>
         </section>
         {active ? <ReinforcementsSection major={major} /> : null}
+        {/* Alliances (D-102, 05 §7): allied columns next to the system's reinforcements. */}
+        <AidMajorSection major={major} />
         {active ? <RewardSection major={major} /> : null}
       </div>
     </div>

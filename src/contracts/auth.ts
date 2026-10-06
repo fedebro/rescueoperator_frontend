@@ -43,6 +43,11 @@ export const OtpVerifyBody = z.object({
   acceptTerms: z.boolean().optional(),
   confirmAge: z.boolean().optional(),
   marketingConsent: z.boolean().optional(),
+  /**
+   * Account lifecycle (account.ts): an account waiting for deletion answers 403 `ACCOUNT_DELETING`; sending the same code again
+   * with `cancelDeletion: true` cancels the deletion and signs in. Ignored for every other account.
+   */
+  cancelDeletion: z.boolean().optional(),
 });
 
 export const PlatformRole = z.enum(['USER', 'SUPPORT', 'GAME_ADMIN', 'SUPER_ADMIN']);
@@ -55,6 +60,8 @@ export const UserDto = z.object({
   roles: z.array(PlatformRole),
   createdAt: IsoDateTime,
   activeCareerId: publicId(IdPrefix.career).nullable(),
+  /** Director-name rules (moderation.ts): when the name may change again; null = now. Additive, absent from older servers. */
+  directorNameNextChangeAt: IsoDateTime.nullable().optional(),
 });
 export type UserDto = z.infer<typeof UserDto>;
 

@@ -70,6 +70,7 @@ const QA_ACTION: Record<Notification['category'], Notification['action']['kind']
   ECONOMY: 'OPEN_SHOP',
   PROGRESSION: 'OPEN_PROGRESSION',
   SYSTEM: 'NONE',
+  ALLIANCE: 'OPEN_ALLIANCE',
 };
 
 /** Simulation of the `platform` area: notifications read state, analytics ingestion, QA helpers. */

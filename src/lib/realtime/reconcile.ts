@@ -1,4 +1,5 @@
 import {
+  AllianceSnapshotDto,
   CareerSummary,
   FacilityDto,
   IncidentDto,
@@ -73,7 +74,8 @@ export type Effect =
         | 'maintenance'
         | 'world'
         | 'monetization'
-        | 'major';
+        | 'major'
+        | 'alliance';
     };
 
 const Payload = z
@@ -105,6 +107,11 @@ const Payload = z
      * its own below: a view newer than this client never blocks the rest of the event.
      */
     major: z.unknown().optional(),
+    /**
+     * Alliances (D-102…D-123): `career.updated` may carry `{ alliance }` — the additive snapshot field (membership, role,
+     * unread counters) — when the career joins, leaves or its counters change. Parsed on its own below.
+     */
+    alliance: z.unknown().optional(),
     featureFlags: z.record(z.boolean()).optional(),
     configVersion: z.string().optional(),
   })
@@ -190,6 +197,16 @@ export function applyEvent(snapshot: SyncSnapshot, envelope: RealtimeEnvelope): 
     if (m.status === 'ENDED')
       effects.push({ type: 'invalidate', scope: 'economy' }, { type: 'invalidate', scope: 'progression' });
   } else if (major) effects.push({ type: 'invalidate', scope: 'major' });
+  if (p.alliance !== undefined) {
+    const alliance = AllianceSnapshotDto.nullable().safeParse(p.alliance);
+    if (alliance.success) {
+      const before = snapshot.alliance ?? null;
+      next = { ...next, alliance: alliance.data };
+      // Joined, left, or another alliance: the whole section is re-read; counters alone only move the badge.
+      if ((before?.id ?? null) !== (alliance.data?.id ?? null) || before?.role !== alliance.data?.role)
+        effects.push({ type: 'invalidate', scope: 'alliance' });
+    } else effects.push({ type: 'invalidate', scope: 'alliance' });
+  }
   if (p.outcome) {
     if (!next.pendingOutcomes.some((o) => o.incidentId === p.outcome!.incidentId)) {
       next = { ...next, pendingOutcomes: [...next.pendingOutcomes, p.outcome] };

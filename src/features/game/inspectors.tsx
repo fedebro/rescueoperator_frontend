@@ -58,6 +58,7 @@ import { useCareerId, useSnapshot, useVehicleTypeLookup } from './hooks';
 import { InspectorHeaderButton, SHEET_HEADER } from './inspector-parts';
 import { DispatchPanel, RequirementBars } from './dispatch-panel';
 import { IncidentExternalSupport } from '@/features/families/external-support';
+import { AidIncidentSection, AlliedSupportLine, SharedBadge } from '@/features/alliance/aid-incident';
 import { IncidentFamilies } from '@/features/families/family-chips';
 import { RequirementAttribution } from '@/features/families/requirement-attribution';
 import { ConstructionBanner } from '@/features/facilities/facility-extras';
@@ -211,6 +212,7 @@ export function IncidentInspector({ incident }: { incident: IncidentDto }) {
           <>
             <WaterBodyBadge incident={incident} />
             {incident.major ? <MajorMemberBadge majorRef={incident.major} /> : null}
+            <SharedBadge incident={incident} />
             <SeverityBadge
               severity={incident.severity}
               label={t('severity')}
@@ -304,6 +306,8 @@ export function IncidentInspector({ incident }: { incident: IncidentDto }) {
                   </div>
                 </div>
               ) : null}
+              {/* Alliances (D-102): ask the alliance for help with a real gap; the allied units coming. */}
+              <AidIncidentSection incident={incident} />
               <IncidentExternalSupport incident={incident} />
               {/* Water incidents: scene vs meeting point, the Coast Guard, the Base nautica to buy (D-68). */}
               <IncidentWaterNotice incident={incident} />
@@ -488,6 +492,7 @@ export function VehicleInspector({ vehicle }: { vehicle: VehicleDto }) {
               status={vehicle.status}
               label={patrolling ? t('patrol.onPatrol') : ts(vehicle.status)}
             />
+            <AlliedSupportLine vehicle={vehicle} />
             <Badge>{type ? tx(type.name) : vehicle.typeCode}</Badge>
             {vehicle.movement ? (
               <Eta

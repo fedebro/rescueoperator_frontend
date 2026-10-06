@@ -135,8 +135,14 @@ export function facilityFeatures(
         name: f.name,
         // The type code selects the pictogram of the facility TYPE (tier/helipad/air base…): see map/images.ts.
         image: `fac:${f.family}:${f.typeCode}`,
-        parked: vehicles.filter((v) => v.facilityId === f.id && v.movement === null && v.incidentId === null)
-          .length,
+        // A vehicle lent to an ally (ALLIED_SUPPORT, D-102) has left the facility: not parked, not drawn.
+        parked: vehicles.filter(
+          (v) =>
+            v.facilityId === f.id &&
+            v.movement === null &&
+            v.incidentId === null &&
+            v.status !== 'ALLIED_SUPPORT',
+        ).length,
       },
     })),
   };

@@ -14,6 +14,9 @@
  */
 import { z } from 'zod';
 import {
+  AdminAllianceDetail,
+  type AdminAllianceReadOnlyBody,
+  AdminAllianceRow,
   AdminAuditRow,
   AdminCareerDetail,
   AdminCareerRow,
@@ -29,15 +32,25 @@ import {
   AdminGeodataRelease,
   AdminIncidentDetail,
   AdminIncidentRow,
+  type AdminModerationDecisionBody,
+  AdminModerationSummary,
   AdminPersonnelRow,
   AdminProgressionDto,
   AdminPurchaseRow,
   AdminQueueStats,
   AdminReferralRow,
+  AdminReportDetail,
+  AdminReportRow,
+  type AdminSanctionBody,
+  AdminSanctionRow,
   AdminScheduledActionDetail,
   AdminScheduledActionRow,
   type AdminSpawnIncidentBody,
   AdminSupportNote,
+  type AdminTextFilterTermBody,
+  type AdminTextFilterTermPatch,
+  AdminTextFilterTermRow,
+  type AdminTextFilterTestBody,
   AdminUserDetail,
   AdminUserRow,
   AdminWeatherOverride,
@@ -48,6 +61,7 @@ import {
   MajorIncidentDto,
   NotificationDto,
   type PlatformRole,
+  TextCheckResult,
   VehicleDto,
 } from '@/contracts';
 import { api } from './client';
@@ -81,6 +95,20 @@ export type AdminGeodataRelease = z.infer<typeof AdminGeodataRelease>;
 export type AdminReferralRow = z.infer<typeof AdminReferralRow>;
 export type AdminPurchaseRow = z.infer<typeof AdminPurchaseRow>;
 export type AdminSpawnIncidentRequest = z.infer<typeof AdminSpawnIncidentBody>;
+/* moderation & alliances (study 2026-10-06): these contracts export their types next to the schemas, so they are re-exported as is */
+export type {
+  AdminAllianceDetail,
+  AdminAllianceRow,
+  AdminModerationSummary,
+  AdminReportDetail,
+  AdminReportRow,
+  AdminSanctionRow,
+  AdminTextFilterTermRow,
+  TextCheckResult,
+} from '@/contracts';
+export type AdminModerationDecisionRequest = AdminModerationDecisionBody;
+export type AdminSanctionRequest = AdminSanctionBody;
+export type AdminTextFilterTermRequest = AdminTextFilterTermBody;
 export type AdminRole = Exclude<z.infer<typeof PlatformRole>, 'USER'>;
 
 /* ───────────── permission matrix (mirrors the server-side ADMIN_PERMISSIONS) ───────────── */
@@ -107,6 +135,16 @@ export const ADMIN_PERMISSIONS = {
   'world.edit': 'GAME_ADMIN',
   'referrals.review': 'GAME_ADMIN',
   'geodata.publish': 'SUPER_ADMIN',
+  // moderation (study 2026-10-06 §04): support runs the queue, a game admin takes the heavy decisions and edits the filter
+  'moderation.read': 'SUPPORT',
+  'moderation.decide': 'SUPPORT',
+  'moderation.decideSevere': 'GAME_ADMIN',
+  'moderation.sanction': 'SUPPORT',
+  'moderation.textFilter': 'GAME_ADMIN',
+  'alliances.read': 'SUPPORT',
+  'alliances.close': 'GAME_ADMIN',
+  'alliances.readOnly': 'GAME_ADMIN',
+  'alliances.operation': 'GAME_ADMIN',
 } as const satisfies Record<string, AdminRole>;
 export type AdminAction = keyof typeof ADMIN_PERMISSIONS;
 /** A credit adjustment whose absolute value exceeds this needs SUPER_ADMIN (server-enforced). */
@@ -325,4 +363,56 @@ export const adminApi = {
       query: { ...query, cursor: cursor ?? undefined, limit: 50 },
       schema: list(AdminAuditRow),
     }),
+
+  /* ───────────── moderation (study 2026-10-06 §04; HIGH severity first, cursor paginated) ───────────── */
+  moderationSummary: () => api.get('/admin/moderation/summary', { schema: AdminModerationSummary }),
+  moderationReports: (
+    query: { status?: string; severity?: string; targetKind?: string; userId?: string },
+    cursor?: string | null,
+  ) =>
+    api.getPage('/admin/moderation/reports', {
+      query: { ...query, cursor: cursor ?? undefined, limit: 50 },
+      schema: list(AdminReportRow),
+    }),
+  /** Every read of a case is audited on the server (the staff sees conversations only from a report). */
+  moderationReport: (caseId: string) =>
+    api.get(`/admin/moderation/reports/${id(caseId)}`, { schema: AdminReportDetail }),
+  decideReport: (caseId: string, body: AdminModerationDecisionRequest) =>
+    api.command(`/admin/moderation/reports/${id(caseId)}/decide`, body, { schema: AdminReportDetail }),
+  sanctions: (query: { userId?: string; kind?: string; active?: boolean }, cursor?: string | null) =>
+    api.getPage('/admin/sanctions', {
+      query: { ...query, active: query.active ? 'true' : undefined, cursor: cursor ?? undefined, limit: 50 },
+      schema: list(AdminSanctionRow),
+    }),
+  issueSanction: (userId: string, body: AdminSanctionRequest) =>
+    api.command(`/admin/users/${id(userId)}/sanctions`, body, { schema: AdminSanctionRow }),
+  revokeSanction: (sanctionId: string, reason: string) =>
+    api.delete(`/admin/sanctions/${id(sanctionId)}`, { query: { reason } }),
+  textFilterTerms: (query: { locale?: string; tier?: string; q?: string }) =>
+    api.get('/admin/moderation/text-filter', { query, schema: list(AdminTextFilterTermRow) }),
+  createTextFilterTerm: (body: AdminTextFilterTermRequest) =>
+    api.command('/admin/moderation/text-filter', body, { schema: AdminTextFilterTermRow }),
+  patchTextFilterTerm: (termId: string, body: AdminTextFilterTermPatch) =>
+    api.patch(`/admin/moderation/text-filter/${id(termId)}`, body, { schema: AdminTextFilterTermRow }),
+  deleteTextFilterTerm: (termId: string, reason: string) =>
+    api.delete(`/admin/moderation/text-filter/${id(termId)}`, { query: { reason } }),
+  testTextFilter: (body: AdminTextFilterTestBody) =>
+    api.post('/admin/moderation/text-filter/test', body, { schema: TextCheckResult }),
+
+  /* ───────────── alliances (backend agent's admin routes, contracts/alliances.ts) ───────────── */
+  alliances: (query: { q?: string; status?: string }) =>
+    api.get('/admin/alliances', { query: { ...query, limit: 100 }, schema: list(AdminAllianceRow) }),
+  alliance: (allianceId: string) =>
+    api.get(`/admin/alliances/${id(allianceId)}`, { schema: AdminAllianceDetail }),
+  closeAlliance: (allianceId: string, reason: string) =>
+    api.command(`/admin/alliances/${id(allianceId)}/close`, { reason }, { schema: AdminAllianceRow }),
+  setAllianceReadOnly: (allianceId: string, body: AdminAllianceReadOnlyBody) =>
+    api.command(`/admin/alliances/${id(allianceId)}/read-only`, body, { schema: AdminAllianceRow }),
+  /** QA: starts an alliance operation now (phase 3 of the backend; the response shape is the operation DTO, parsed loosely here). */
+  startAllianceOperation: (allianceId: string, reason: string) =>
+    api.command(
+      `/admin/alliances/${id(allianceId)}/operation`,
+      { reason },
+      { schema: z.record(z.unknown()) },
+    ),
 };

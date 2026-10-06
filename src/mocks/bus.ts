@@ -1,9 +1,11 @@
-import type { RealtimeEnvelope } from '@/contracts';
+import type { AllianceRealtimeEnvelope, RealtimeEnvelope } from '@/contracts';
 
 /** In-page replacement for the Socket.IO channel when the mock backend is active. */
 type Listener = (envelope: RealtimeEnvelope) => void;
+type AllianceListener = (envelope: AllianceRealtimeEnvelope) => void;
 type PresenceListener = (visible: boolean) => void;
 const listeners = new Set<Listener>();
+const allianceListeners = new Set<AllianceListener>();
 const presenceListeners = new Set<PresenceListener>();
 
 export const mockBus = {
@@ -17,6 +19,17 @@ export const mockBus = {
   subscribe(listener: Listener): () => void {
     listeners.add(listener);
     return () => listeners.delete(listener);
+  },
+  /** The alliance stream (event name `alliance`, brief §2): the same socket, a second event. */
+  emitAlliance(envelope: AllianceRealtimeEnvelope): void {
+    const copy = JSON.parse(JSON.stringify(envelope)) as AllianceRealtimeEnvelope;
+    setTimeout(() => {
+      for (const l of allianceListeners) l(copy);
+    }, 0);
+  },
+  subscribeAlliance(listener: AllianceListener): () => void {
+    allianceListeners.add(listener);
+    return () => allianceListeners.delete(listener);
   },
   /** Client → "server": the socket's `presence { visible }` (D-97). */
   presence(visible: boolean): void {

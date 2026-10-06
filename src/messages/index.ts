@@ -22,6 +22,7 @@ export const MESSAGE_PARTS = [
   'nautical',
   'maxi',
   'push',
+  'alliance',
 ] as const;
 
 export type MessageTree = { [key: string]: MessageTree | string };

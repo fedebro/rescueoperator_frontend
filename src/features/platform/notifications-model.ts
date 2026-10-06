@@ -12,6 +12,7 @@ export const CATEGORIES: readonly Category[] = [
   'FACILITIES',
   'ECONOMY',
   'PROGRESSION',
+  'ALLIANCE',
   'SYSTEM',
 ];
 
@@ -104,6 +105,12 @@ export function resolveAction(action: Notification['action']): ActionTarget {
       return { type: 'navigate', href: '/game/shop' };
     case 'OPEN_PROGRESSION':
       return { type: 'navigate', href: '/game/progression' };
+    // Alliances (D-102…D-123): `targetId` = a tab or `post:…` / `aid:…` / `operation:…` (the section opens the right place).
+    case 'OPEN_ALLIANCE':
+      return {
+        type: 'navigate',
+        href: id ? `/game/alliance?focus=${encodeURIComponent(id)}` : '/game/alliance',
+      };
     default:
       return { type: 'none' };
   }

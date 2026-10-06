@@ -1,6 +1,12 @@
 import { io, type Socket } from 'socket.io-client';
 import type { z } from 'zod';
-import { SOCKET_EVENT, SOCKET_NAMESPACE, SOCKET_PRESENCE_EVENT, type PresenceEventBody } from '@/contracts';
+import {
+  ALLIANCE_SOCKET_EVENT,
+  SOCKET_EVENT,
+  SOCKET_NAMESPACE,
+  SOCKET_PRESENCE_EVENT,
+  type PresenceEventBody,
+} from '@/contracts';
 import { env } from '@/lib/env';
 import { getAccessToken, refreshSession } from '@/lib/api/client';
 
@@ -13,6 +19,8 @@ export interface TransportHandlers {
   onStatus: (status: TransportStatus) => void;
   /** Called on every (re)connection after the first: the caller refetches the snapshot. */
   onReconnect: () => void;
+  /** The alliance stream (brief §2): the same socket, event name `alliance`, its own sequence per alliance. */
+  onAllianceEvent?: (raw: unknown) => void;
 }
 
 /** Is the game on screen? A hidden tab, a minimised window or an app in the background is not (Page Visibility API). */
@@ -66,6 +74,7 @@ export function connectSocket(careerId: string, handlers: TransportHandlers): Re
     connectedOnce = true;
   });
   socket.on(SOCKET_EVENT, (raw: unknown) => handlers.onEvent(raw));
+  socket.on(ALLIANCE_SOCKET_EVENT, (raw: unknown) => handlers.onAllianceEvent?.(raw));
   socket.on('disconnect', () => handlers.onStatus('reconnecting'));
   socket.on('connect_error', (err: Error) => {
     failures += 1;
@@ -85,12 +94,14 @@ export function connectSocket(careerId: string, handlers: TransportHandlers): Re
 /** Mock transport: the in-page simulation publishes envelopes on a bus (and hears the client's presence on it). */
 export function connectMockBus(handlers: TransportHandlers): RealtimeTransport {
   let unsubscribe: (() => void) | null = null;
+  let unsubscribeAlliance: (() => void) | null = null;
   let presence: ReturnType<typeof reportPresence> | null = null;
   let closed = false;
   handlers.onStatus('connecting');
   void import('@/mocks/bus').then(({ mockBus }) => {
     if (closed) return;
     unsubscribe = mockBus.subscribe(handlers.onEvent);
+    if (handlers.onAllianceEvent) unsubscribeAlliance = mockBus.subscribeAlliance(handlers.onAllianceEvent);
     presence = reportPresence((body) => mockBus.presence(body.visible));
     presence.announce();
     handlers.onStatus('online');
@@ -99,6 +110,7 @@ export function connectMockBus(handlers: TransportHandlers): RealtimeTransport {
     close: () => {
       closed = true;
       unsubscribe?.();
+      unsubscribeAlliance?.();
       presence?.stop();
     },
   };

@@ -33,7 +33,8 @@ export default defineConfig({
     {
       name: 'iphone',
       use: { ...devices['iPhone 14'] },
-      testMatch: /(mobile-ux|core-loop|in-app-browsers)\.spec\.ts$/,
+      // Alliances (D-123): the section lives under "Altro" and its chat screen handles the keyboard — phone-specific too.
+      testMatch: /(mobile-ux|core-loop|in-app-browsers|alliance[a-z-]*)\.spec\.ts$/,
     },
   ],
   webServer: {

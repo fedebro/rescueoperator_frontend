@@ -96,12 +96,19 @@ export const ReferralDto = z.object({
 export const PublicInviteDto = z.object({ directorName: z.string(), valid: z.boolean() });
 
 /* ───────────── notifications ───────────── */
-export const NotificationCategory = z.enum(['OPERATIONS', 'FLEET', 'PERSONNEL', 'FACILITIES', 'ECONOMY', 'PROGRESSION', 'SYSTEM']);
+/** `ALLIANCE` (additive, D-102…D-123): aid requests, operations, mentions, pinned announcements, join requests, membership changes. */
+export const NotificationCategory = z.enum(['OPERATIONS', 'FLEET', 'PERSONNEL', 'FACILITIES', 'ECONOMY', 'PROGRESSION', 'SYSTEM', 'ALLIANCE']);
 export const NotificationPriority = z.enum(['CRITICAL', 'IMPORTANT', 'INFO']);
+/**
+ * `OPEN_ALLIANCE` (additive): `targetId` = a tab (`overview|board|chat|members|aid|ranking`) or `post:<alp_…>` · `aid:<aid_…>` ·
+ * `operation:<aop_…>` (`AllianceNotificationTarget`, alliances.ts) → `/game/alliance?focus=<targetId>`.
+ */
+export const NotificationActionKind = z.enum(['OPEN_INCIDENT', 'OPEN_VEHICLE', 'OPEN_FACILITY', 'OPEN_PERSONNEL', 'OPEN_SHOP', 'OPEN_PROGRESSION', 'OPEN_ALLIANCE', 'NONE']);
+export type NotificationActionKind = z.infer<typeof NotificationActionKind>;
 export const NotificationDto = z.object({
   id: publicId(IdPrefix.notification), category: NotificationCategory, priority: NotificationPriority,
   title: I18nText, body: I18nText, createdAt: IsoDateTime, readAt: IsoDateTime.nullable(),
-  action: z.object({ kind: z.enum(['OPEN_INCIDENT', 'OPEN_VEHICLE', 'OPEN_FACILITY', 'OPEN_PERSONNEL', 'OPEN_SHOP', 'OPEN_PROGRESSION', 'NONE']), targetId: z.string().nullable() }),
+  action: z.object({ kind: NotificationActionKind, targetId: z.string().nullable() }),
 });
 
 /* ───────────── analytics (client → server) ───────────── */

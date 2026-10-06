@@ -17,10 +17,19 @@ describe('permission matrix', () => {
       expect(canAdmin(['USER', 'SUPER_ADMIN'], action)).toBe(true);
     }
   });
-  it('SUPPORT: sessions, suspension, notes, refund triage — never money, config, world or roles', () => {
+  it('SUPPORT: sessions, suspension, notes, refund triage, the moderation queue — never money, config, world or roles', () => {
     const allowed = actions.filter((a) => canAdmin(['USER', 'SUPPORT'], a)).sort();
     expect(allowed).toEqual(
-      ['purchases.refundReview', 'users.notes', 'users.revokeSessions', 'users.suspend'].sort(),
+      [
+        'alliances.read',
+        'moderation.decide',
+        'moderation.read',
+        'moderation.sanction',
+        'purchases.refundReview',
+        'users.notes',
+        'users.revokeSessions',
+        'users.suspend',
+      ].sort(),
     );
   });
   it('GAME_ADMIN adds the game-master tools but not publishing, large adjustments, roles or geodata', () => {

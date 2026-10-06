@@ -17,7 +17,12 @@ import { platformHandlers } from './handlers/platform';
 import { adminHandlers } from './handlers/admin';
 import { majorHandlers } from './handlers/major';
 import { pushHandlers } from './handlers/push';
+import { allianceHandlers } from './handlers/alliance';
+import { allianceSocialHandlers } from './handlers/alliance-social';
+import { allianceAidHandlers } from './handlers/alliance-aid';
+import { communityHandlers } from './handlers/community';
 import { dropPushEndpoint } from './domains/push';
+import { requestAccountDeletion } from './domains/community';
 
 /** One file per feature area; each owns its routes (see contracts/ROUTES.md) and its domain module in src/mocks/domains. */
 const DOMAIN_HANDLERS: DomainHandlers[] = [
@@ -32,6 +37,10 @@ const DOMAIN_HANDLERS: DomainHandlers[] = [
   adminHandlers,
   majorHandlers,
   pushHandlers,
+  allianceHandlers,
+  allianceSocialHandlers,
+  allianceAidHandlers,
+  communityHandlers,
 ];
 
 /** MSW request handlers implementing the v1 REST contract on top of the in-browser engine. */
@@ -102,11 +111,11 @@ export function createHandlers(engine: MockEngine, baseUrl: string): HttpHandler
         return new HttpResponse(null, { status: 204 });
       }),
     ),
+    // Deprecated alias of ★POST /me/delete (account.ts): same effect.
     http.post(
       url('/me/delete-request'),
       route((ctx) => {
-        authed(ctx).status = 'DELETION_REQUESTED';
-        engine.save();
+        requestAccountDeletion(engine, authed(ctx).user.email);
         return new HttpResponse(null, { status: 204 });
       }),
     ),

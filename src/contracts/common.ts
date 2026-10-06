@@ -29,6 +29,23 @@ export const IdPrefix = {
   majorReinforcement: 'rnf',
   /* web push (D-97…D-99) */
   pushSubscription: 'psb',
+  /* alliances (D-102…D-123, analisi/brief-alleanze/00-regole-comuni.md §2) */
+  alliance: 'all',
+  allianceMember: 'alm',
+  allianceInvite: 'ali',
+  allianceJoinRequest: 'alj',
+  alliancePost: 'alp',
+  alliancePostReply: 'alr',
+  allianceChannel: 'alc',
+  allianceMessage: 'alx',
+  aidRequest: 'aid',
+  aidColumn: 'col',
+  allianceOperation: 'aop',
+  allianceObjective: 'aob',
+  /* moderation (platform agent: moderation.ts / account.ts) */
+  report: 'rep',
+  sanction: 'san',
+  block: 'blk',
 } as const;
 
 export const IsoDateTime = z.string().datetime({ offset: true });
@@ -100,6 +117,36 @@ export const ErrorCode = z.enum([
   'HOSPITAL_NOT_COMPATIBLE',
   'INVALID_STATE_TRANSITION',
   'FEATURE_DISABLED',
+  // alliances (D-102…D-123) — statuses in BE/src/shared/errors.ts
+  /** 409: no free member slot at the alliance's level. */
+  'ALLIANCE_FULL',
+  /** 409: the career already has an ACTIVE membership (one alliance per career). */
+  'ALREADY_IN_ALLIANCE',
+  /** 429: 24 h after leaving / being removed before joining or founding again (`details.until`). */
+  'ALLIANCE_COOLDOWN',
+  /** 403: the caller is not an ACTIVE member of that alliance (own-alliance routes; a foreign alliance id answers 404). */
+  'NOT_ALLIANCE_MEMBER',
+  /** 403: the action needs DEPUTY / COORDINATOR (`details.role`). */
+  'ROLE_REQUIRED',
+  /** 403: muted by a high role or by the platform (`details.until`, `details.scope` = ALLIANCE | PLATFORM). */
+  'MUTED',
+  /** 422: the text filter refused the text (`details.reason` = BANNED_TERM | URL | EMAIL | PHONE | SOCIAL_HANDLE). */
+  'TEXT_REJECTED',
+  /** 403: the community rules (current version) must be accepted before writing free text. */
+  'RULES_NOT_ACCEPTED',
+  /** 409: the incident has no uncovered REQUIRED / RECOMMENDED need (or nothing is left for a column to cover). */
+  'NO_REAL_GAP',
+  /** 409: the column would arrive after the incident deadline. */
+  'COLUMN_TOO_LATE',
+  /** 429: aid limits (`details.reason` = OPEN_REQUESTS | MIN_INTERVAL | ALREADY_REQUESTED | ACTIVE_COLUMNS | ONE_PER_REQUEST | TOO_MANY_VEHICLES). */
+  'AID_LIMIT_REACHED',
+  /** 429: a Director / alliance name or tag may change once every 30 days (`details.until`). */
+  'NAME_CHANGE_COOLDOWN',
+  /** 403: the target Director blocked the caller (or vice versa) — direct invites, mentions. */
+  'BLOCKED',
+  // account lifecycle (platform agent: account.ts)
+  /** 403: the account is waiting for its scheduled deletion (`details.scheduledAt`); sign in with `cancelDeletion: true` to keep it. */
+  'ACCOUNT_DELETING',
 ]);
 export type ErrorCode = z.infer<typeof ErrorCode>;
 

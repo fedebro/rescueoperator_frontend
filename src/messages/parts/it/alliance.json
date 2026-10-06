@@ -1,0 +1,926 @@
+{
+  "game": {
+    "nav": {
+      "alliance": "Alleanza"
+    }
+  },
+  "platform": {
+    "a11y": {
+      "allianceUnread": "{count, plural, one {# novità nell’alleanza} other {# novità nell’alleanza}}",
+      "moreUnread": "{count, plural, one {# novità nelle altre sezioni} other {# novità nelle altre sezioni}}"
+    }
+  },
+  "status": {
+    "vehicle": {
+      "ALLIED_SUPPORT": "In supporto alleato"
+    }
+  },
+  "notificationCenter": {
+    "category": {
+      "ALLIANCE": "Alleanza"
+    }
+  },
+  "push": {
+    "categories": {
+      "ALLIANCE_AID": {
+        "label": "Alleanza: aiuti e operazioni",
+        "hint": "Richieste di aiuto che puoi coprire e operazioni di alleanza."
+      },
+      "ALLIANCE_SOCIAL": {
+        "label": "Alleanza: messaggi e annunci",
+        "hint": "Menzioni, annunci fissati, richieste d’ingresso, ruoli. Mai una notifica per ogni messaggio."
+      }
+    }
+  },
+  "errors": {
+    "ALLIANCE_FULL": "L’alleanza non ha posti liberi.",
+    "ALREADY_IN_ALLIANCE": "Si può stare in una sola alleanza alla volta.",
+    "ALLIANCE_COOLDOWN": "Dopo un’uscita servono 24 ore prima di entrare in un’altra alleanza.",
+    "NOT_ALLIANCE_MEMBER": "Non fai parte di questa alleanza.",
+    "ROLE_REQUIRED": "Questa azione spetta a un ruolo più alto.",
+    "MUTED": "Sei silenziato: per ora non puoi scrivere.",
+    "TEXT_REJECTED": "Il testo non è ammesso.",
+    "RULES_NOT_ACCEPTED": "Prima accetta le regole della comunità.",
+    "NO_REAL_GAP": "L’emergenza non ha una mancanza reale da coprire.",
+    "COLUMN_TOO_LATE": "La colonna arriverebbe troppo tardi.",
+    "AID_LIMIT_REACHED": "Hai raggiunto il limite degli aiuti per ora.",
+    "NAME_CHANGE_COOLDOWN": "Il nome si può cambiare una volta ogni 30 giorni.",
+    "BLOCKED": "Non è possibile: una delle due persone ha bloccato l’altra.",
+    "ACCOUNT_DELETING": "Questo account è in attesa di eliminazione."
+  },
+  "design": {
+    "sections": {
+      "keyboard": "Schermata con tastiera"
+    },
+    "keyboard": {
+      "intro": "Pagina a tutto schermo con il campo di testo ancorato all’area visibile: si restringe quando si apre la tastiera (prova sul telefono o con l’anteprima mobile).",
+      "open": "Apri la prova",
+      "title": "Chat di prova",
+      "close": "Chiudi",
+      "line": "Messaggio numero {n}",
+      "placeholder": "Scrivi un messaggio…",
+      "send": "Invia",
+      "earlier": "Carico i precedenti…",
+      "newBelow": "Nuovi messaggi ↓"
+    }
+  },
+  "alliance": {
+    "title": "Alleanza",
+    "tabsLabel": "Schede dell’alleanza",
+    "tabs": {
+      "overview": "Panoramica",
+      "board": "Bacheca",
+      "chat": "Chat",
+      "aid": "Mutuo soccorso",
+      "members": "Membri",
+      "ranking": "Classifica"
+    },
+    "loadFailed": "Impossibile caricare l’alleanza",
+    "retry": "Riprova",
+    "role": {
+      "COORDINATOR": "Coordinatore",
+      "DEPUTY": "Vice",
+      "MEMBER": "Membro"
+    },
+    "policy": {
+      "OPEN": "Aperta",
+      "REQUEST": "Su richiesta",
+      "INVITE": "Solo su invito"
+    },
+    "policyHint": {
+      "OPEN": "Chi vuole entra con un tocco.",
+      "REQUEST": "Un Vice o il Coordinatore approva ogni richiesta.",
+      "INVITE": "Si entra solo con un invito."
+    },
+    "presence": {
+      "ON_DUTY": "In servizio",
+      "ONLINE": "Collegato",
+      "AWAY": "Assente"
+    },
+    "status": {
+      "ACTIVE": "Attiva",
+      "DISBANDING": "In scioglimento",
+      "DISBANDED": "Sciolta",
+      "CLOSED": "Chiusa dall’amministrazione"
+    },
+    "textReason": {
+      "BANNED_TERM": "parole non ammesse",
+      "URL": "indirizzi web",
+      "EMAIL": "indirizzi email",
+      "PHONE": "numeri di telefono",
+      "SOCIAL_HANDLE": "profili social"
+    },
+    "errorReason": {
+      "TRANSFER_FIRST": "Sei il Coordinatore: cedi prima il ruolo a un altro membro.",
+      "INVITE_REQUIRED": "In questa alleanza si entra solo con un invito.",
+      "BANNED": "Non puoi rientrare in questa alleanza.",
+      "NAME_TAKEN": "Questo nome è già in uso.",
+      "TAG_TAKEN": "Questa sigla è già in uso.",
+      "DIRECT_INVITES_OFF": "Questo Direttore non accetta inviti diretti.",
+      "REQUEST_PENDING": "Hai già una richiesta d’ingresso in attesa.",
+      "ALREADY_DECIDED": "Questa richiesta è già stata decisa.",
+      "EMBLEM_LOCKED": "Una parte dello stemma si sblocca a un livello superiore.",
+      "SELF": "Non puoi farlo su te stesso.",
+      "SUSPENDED": "L’account è sospeso.",
+      "READ_ONLY": "In questo momento si può solo leggere.",
+      "LEVEL_REQUIRED": "Serve il livello {level}.",
+      "DEPUTY_SLOTS_FULL": "Non ci sono altri posti da Vice a questo livello.",
+      "COORDINATOR": "Non si può fare sul Coordinatore.",
+      "REQUESTER_UNAVAILABLE": "Chi aveva chiesto non è più disponibile: la richiesta è stata ritirata.",
+      "ALLIANCE_NOT_ACTIVE": "L’alleanza non è più attiva.",
+      "ALREADY_DISBANDING": "Lo scioglimento è già in corso.",
+      "NOT_DISBANDING": "Non c’è nessuno scioglimento da annullare.",
+      "NOT_AN_ANNOUNCEMENT": "Si fissano in cima solo gli annunci.",
+      "PIN_LIMIT": "Posti in cima esauriti: togli prima un annuncio fissato.",
+      "EDIT_WINDOW_EXPIRED": "Il tempo per modificare il post è passato.",
+      "DELETE_WINDOW_EXPIRED": "Il tempo per eliminare il messaggio è passato.",
+      "REMOVED": "Il post è stato rimosso.",
+      "DUPLICATE_MESSAGE": "Hai appena inviato lo stesso messaggio.",
+      "CHANNEL_ARCHIVED": "Questo canale è chiuso: si può solo leggere.",
+      "DAILY_LIMIT": "Hai raggiunto il limite di oggi per la bacheca.",
+      "CHAT_RATE": "Stai scrivendo troppo in fretta: aspetta un momento.",
+      "OWN_REQUEST": "È la tua richiesta.",
+      "REQUEST_NOT_OPEN": "La richiesta non è più aperta.",
+      "ONE_PER_REQUEST": "Hai già inviato una colonna per questa richiesta.",
+      "ACTIVE_COLUMNS": "Hai già il massimo di colonne in viaggio.",
+      "TOO_MANY_VEHICLES": "Troppi mezzi per una colonna.",
+      "OPEN_REQUESTS": "Hai già il massimo di richieste aperte.",
+      "ALREADY_REQUESTED": "Hai già chiesto aiuto per questa emergenza.",
+      "MIN_INTERVAL": "Aspetta un minuto tra una richiesta e l’altra.",
+      "NOT_RECALLABLE": "La colonna non si può più richiamare.",
+      "INCIDENT_NOT_ACTIVE": "L’emergenza non è più in corso.",
+      "USE_MAJOR_REQUEST": "Per una maxi-emergenza l’aiuto si chiede dalla vista di coordinamento.",
+      "LEVEL": "Si scrive dal livello 2.",
+      "ACCOUNT_AGE": "Si scrive quando l’account ha almeno 24 ore."
+    },
+    "off": {
+      "title": "Le alleanze non sono attive",
+      "body": "Questa parte del gioco è spenta al momento."
+    },
+    "locked": {
+      "title": "Alleanze dal livello {level}",
+      "body": "Dal livello {level} potrai vedere le alleanze ed entrare in una. Il tuo livello: {current}."
+    },
+    "cooldown": {
+      "title": "Pausa prima di una nuova alleanza",
+      "body": "Dopo un’uscita o un’espulsione servono {hours} ore: potrai entrare in un’alleanza"
+    },
+    "find": {
+      "title": "Trova un’alleanza",
+      "search": "Cerca per nome o sigla",
+      "language": "Lingua",
+      "anyLanguage": "Tutte le lingue",
+      "openOnly": "Solo aperte",
+      "hasSlots": "Solo con posti liberi",
+      "sortedByActivity": "Ordinate per attività recente",
+      "listLabel": "Alleanze trovate",
+      "empty": "Nessuna alleanza trovata",
+      "emptyHint": "Prova con un’altra ricerca, oppure fonda la tua.",
+      "loadMore": "Mostra altre",
+      "members": "{count}/{slots} membri",
+      "level": "Liv. {level}",
+      "lastActivity": "Attiva",
+      "join": "Entra",
+      "request": "Chiedi di entrare",
+      "requested": "Richiesta inviata: un ruolo alto risponderà.",
+      "requestedShort": "Richiesta inviata",
+      "withdraw": "Ritira la richiesta",
+      "withdrawn": "Richiesta ritirata",
+      "joined": "Sei entrato nell’alleanza",
+      "blocked": {
+        "ALLIANCE_FULL": "Nessun posto libero al momento.",
+        "LEVEL_TOO_LOW": "Richiede almeno il livello {level}.",
+        "ALREADY_IN_ALLIANCE": "Sei già in un’alleanza.",
+        "ALLIANCE_COOLDOWN": "Sei in pausa dopo l’uscita da un’alleanza.",
+        "INVITE_ONLY": "Si entra solo con un invito.",
+        "BANNED": "Non puoi rientrare in questa alleanza.",
+        "REQUEST_PENDING": "La tua richiesta è in attesa.",
+        "NOT_ACTIVE": "L’alleanza non è attiva.",
+        "FEATURE_DISABLED": "Non disponibile al momento."
+      }
+    },
+    "card": {
+      "minLevel": "Livello minimo {level}",
+      "noMinLevel": "Nessun livello minimo",
+      "created": "Fondata il {date}",
+      "noDescription": "Nessuna descrizione."
+    },
+    "found": {
+      "title": "Fonda un’alleanza",
+      "cta": "Fonda",
+      "identity": "Identità",
+      "access": "Ingresso",
+      "name": "Nome",
+      "nameHint": "Da {min} a {max} caratteri, unico.",
+      "tag": "Sigla",
+      "tagHint": "Da {min} a {max} lettere o cifre: comparirà accanto ai nomi, come [ABR].",
+      "description": "Descrizione",
+      "descriptionHint": "Cosa fa la vostra alleanza e chi cercate. Solo testo: niente collegamenti o contatti.",
+      "emblem": "Stemma",
+      "shape": "Forma",
+      "symbol": "Simbolo",
+      "primary": "Colore principale",
+      "secondary": "Colore secondario",
+      "lockedAt": "dal livello {level}",
+      "language": "Lingua",
+      "languageHint": "Serve a chi cerca un’alleanza.",
+      "policy": "Ingresso",
+      "policyHint": {
+        "OPEN": "Chi vuole entra con un tocco.",
+        "REQUEST": "Un Vice o il Coordinatore approva ogni richiesta.",
+        "INVITE": "Si entra solo con un invito."
+      },
+      "minLevel": "Livello minimo",
+      "minLevelHint": "Facoltativo: il livello del Direttore richiesto per entrare.",
+      "minLevelNone": "Nessuno",
+      "minLevelValue": "Livello {level}",
+      "costLabel": "Costo",
+      "free": "Fondare un’alleanza ora non costa nulla.",
+      "requirement": "Dal livello {level}. Diventi Coordinatore.",
+      "requirementMissing": "Serve il livello {level}: ora sei al {current}.",
+      "cannotAfford": "Crediti insufficienti: hai {credits}.",
+      "confirm": "Fondare «{name}»?",
+      "confirmBody": "Costa {cost} Crediti. Diventi Coordinatore e puoi invitare chi vuoi.",
+      "confirmBodyFree": "Non costa nulla. Diventi Coordinatore e puoi invitare chi vuoi.",
+      "success": "Alleanza fondata",
+      "textRejected": "Testo non ammesso: {reasons}.",
+      "error": {
+        "name": {
+          "short": "Il nome è troppo corto.",
+          "long": "Il nome è troppo lungo.",
+          "format": "Nome non valido."
+        },
+        "tag": {
+          "short": "La sigla è troppo corta.",
+          "long": "La sigla è troppo lunga.",
+          "format": "Solo lettere e cifre."
+        },
+        "description": {
+          "short": "Descrizione non valida.",
+          "long": "La descrizione è troppo lunga.",
+          "format": "Descrizione non valida."
+        }
+      }
+    },
+    "invites": {
+      "title": "Inviti",
+      "received": "Inviti ricevuti",
+      "from": "da {name}",
+      "expires": "scade",
+      "accept": "Entra",
+      "decline": "Rifiuta",
+      "declined": "Invito rifiutato",
+      "full": "Nessun posto libero al momento",
+      "link": "Collegamento d’invito",
+      "linkHint": "Chi apre il collegamento entra direttamente. Vale {days} giorni e per più persone.",
+      "create": "Crea un collegamento",
+      "copy": "Copia",
+      "copied": "Collegamento copiato",
+      "copyFailed": "Impossibile copiare: seleziona il codice e copialo a mano.",
+      "share": "Condividi",
+      "shareText": "Entra nella mia alleanza su Rescue Control: {name} [{tag}]",
+      "revoke": "Revoca",
+      "revoked": "Invito revocato",
+      "uses": "{count, plural, =0 {nessun ingresso} one {# ingresso} other {# ingressi}}",
+      "direct": "Invita un Direttore",
+      "directHint": "Cerca per nome: riceverà un invito diretto nel gioco.",
+      "search": "Nome del Direttore",
+      "noResults": "Nessun Direttore con questo nome",
+      "hitWho": "Livello {level} · {location}",
+      "invite": "Invita",
+      "inAlliance": "Già in un’alleanza",
+      "notInvitable": "Non invitabile",
+      "inviteSent": "Invito inviato a {name}",
+      "pending": "Inviti diretti in attesa",
+      "directTo": "a {name}",
+      "linkTitle": "Invito per {name} [{tag}]",
+      "linkInvalid": "Questo invito non è più valido.",
+      "seats": "{count}/{slots} membri",
+      "joinedToast": "Sei entrato nell’alleanza",
+      "invitedShort": "Invitato"
+    },
+    "requests": {
+      "title": "Richieste d’ingresso",
+      "empty": "Nessuna richiesta in attesa",
+      "who": "Livello {level} · {location}",
+      "expires": "scade",
+      "accept": "Accetta",
+      "reject": "Rifiuta",
+      "accepted": "Richiesta accettata",
+      "rejected": "Richiesta rifiutata",
+      "mine": "La tua richiesta",
+      "mineBody": "In attesa della risposta di un ruolo alto.",
+      "pendingAria": "{count, plural, one {# richiesta in attesa} other {# richieste in attesa}}"
+    },
+    "overview": {
+      "emblemAria": "Stemma di {name}",
+      "level": "Livello {level}",
+      "xp": "{xp} / {next} punti",
+      "maxLevel": "Livello massimo",
+      "members": "Membri",
+      "onDuty": "In servizio",
+      "deputies": "Vice",
+      "coordinator": "Coordinatore",
+      "since": "membro dal {date}",
+      "disbanding": "Scioglimento previsto",
+      "disbandingBody": "Il Coordinatore può annullarlo dalle impostazioni.",
+      "disbandingCoordinator": "Puoi annullarlo dalle impostazioni finché non è avvenuto.",
+      "inviteCta": "Invita qualcuno",
+      "settings": "Impostazioni",
+      "log": "Registro",
+      "rules": "Regole della comunità",
+      "whoIsOn": "Chi è in servizio",
+      "nobodyOn": "Nessun alleato in servizio adesso.",
+      "pinned": "Annunci fissati",
+      "noPinned": "Nessun annuncio fissato.",
+      "objectives": "Obiettivi della settimana",
+      "noObjectives": "Nessun obiettivo in corso.",
+      "aid": "Richieste di aiuto",
+      "noAid": "Nessuna richiesta aperta.",
+      "operation": "Operazione di alleanza"
+    },
+    "featureOff": {
+      "board": {
+        "title": "Bacheca non attiva",
+        "body": "Gli annunci e le note dell’alleanza non sono ancora disponibili."
+      },
+      "chat": {
+        "title": "Chat non attiva",
+        "body": "La chat dell’alleanza non è ancora disponibile."
+      },
+      "aid": {
+        "title": "Mutuo soccorso non attivo",
+        "body": "Le richieste di aiuto tra alleati non sono ancora disponibili."
+      },
+      "ranking": {
+        "title": "Classifica non attiva",
+        "body": "La classifica tra alleanze non è ancora disponibile."
+      },
+      "objectives": {
+        "title": "Obiettivi non attivi",
+        "body": "Gli obiettivi settimanali non sono ancora disponibili."
+      },
+      "operations": {
+        "title": "Operazioni non attive",
+        "body": "Le operazioni di alleanza non sono ancora disponibili."
+      }
+    },
+    "board": {
+      "emptyTitle": "Nessun post",
+      "emptyBody": "Gli annunci e le note dell’alleanza compariranno qui.",
+      "system": "Il gioco",
+      "deletedDirector": "Direttore eliminato",
+      "placeholder": {
+        "removed": "Post rimosso",
+        "hidden": "Contenuto in revisione",
+        "blocked": "Messaggio di un utente bloccato"
+      },
+      "replyRemoved": "Risposta rimossa",
+      "actions": "Azioni",
+      "report": "Segnala",
+      "blockAuthor": "Blocca l’autore",
+      "remove": "Rimuovi",
+      "edited": "Post modificato",
+      "removed": "Post rimosso",
+      "replied": "Risposta pubblicata",
+      "pinned": "Fissato",
+      "editedMark": "modificato",
+      "edit": "Modifica",
+      "unpin": "Togli dalla cima",
+      "pin": "Fissa in cima",
+      "save": "Salva",
+      "reactions": "Reazioni",
+      "allReplies": "Mostra tutte le {count} risposte",
+      "replyPlaceholder": "Rispondi…",
+      "reply": "Rispondi",
+      "readOnly": "La bacheca è in sola lettura: si può leggere, non scrivere.",
+      "composer": "Nuovo post",
+      "announcementPlaceholder": "Scrivi un annuncio per tutta l’alleanza…",
+      "notePlaceholder": "Scrivi una nota…",
+      "kindLabel": "Tipo di post",
+      "kind": {
+        "NOTE": "Nota",
+        "ANNOUNCEMENT": "Annuncio"
+      },
+      "pinOnPost": "Fissa in cima (max {slots})",
+      "announce": "Pubblica l’annuncio",
+      "post": "Pubblica",
+      "limits": "Fino a {posts} post e {replies} risposte al giorno. Puoi modificare un post entro {minutes} minuti.",
+      "more": "Mostra altri",
+      "announced": "Annuncio pubblicato",
+      "posted": "Nota pubblicata"
+    },
+    "chat": {
+      "emptyTitle": "Nessun messaggio",
+      "emptyBody": "Scrivi tu il primo, o usa una frase rapida.",
+      "title": "Chat",
+      "channels": "Canali",
+      "general": "Generale",
+      "operation": "Operazione",
+      "unreadIn": "{count, plural, one {# non letto} other {# non letti}}",
+      "whoIsHere": "Chi c’è",
+      "nobody": "Nessuno {state}",
+      "quickPhrases": "Frasi rapide",
+      "blocked": {
+        "READ_ONLY": "La chat è in sola lettura. Le frasi rapide restano disponibili.",
+        "FEATURE_DISABLED": "La chat non è attiva.",
+        "SUSPENDED": "Il tuo account è sospeso: puoi solo leggere.",
+        "MUTED": "Sei silenziato: potrai scrivere di nuovo",
+        "RULES_NOT_ACCEPTED": "Per scrivere accetta le regole della comunità dalla Panoramica.",
+        "LEVEL_TOO_LOW": "Si scrive dal livello 2.",
+        "ACCOUNT_TOO_NEW": "Si scrive quando l’account ha almeno 24 ore."
+      },
+      "mentionPicker": "Membri da menzionare",
+      "composerPlaceholder": "Scrivi un messaggio… (@ per menzionare)",
+      "retry": "Riprova",
+      "send": "Invia",
+      "loadingEarlier": "Carico i messaggi precedenti…",
+      "newBelow": "{count, plural, one {Nuovo messaggio ↓} other {# nuovi messaggi ↓}}",
+      "unavailable": "La chat non è disponibile.",
+      "backToAlliance": "Torna all’alleanza",
+      "removed": "Messaggio rimosso",
+      "mutedToast": "Membro silenziato per un’ora",
+      "deletedDirector": "Direttore eliminato",
+      "placeholder": {
+        "removed": "Messaggio rimosso",
+        "hidden": "Messaggio in revisione",
+        "blocked": "Messaggio di un utente bloccato"
+      },
+      "actions": "Azioni sul messaggio",
+      "report": "Segnala",
+      "block": "Blocca",
+      "copy": "Copia",
+      "remove": "Rimuovi",
+      "mute": "Silenzia 1 ora"
+    },
+    "aid": {
+      "emptyTitle": "Nessuna richiesta",
+      "emptyBody": "Le richieste di aiuto e le tue colonne compariranno qui.",
+      "gapCovered": "Mancanza coperta",
+      "mineTitle": "La tua richiesta di aiuto",
+      "title": "{name} chiede aiuto",
+      "majorBadge": "Maxi",
+      "status": {
+        "OPEN": "Aperta",
+        "FILLED": "Coperta",
+        "CANCELLED": "Ritirata",
+        "EXPIRED": "Scaduta",
+        "CLOSED": "Conclusa"
+      },
+      "severity": "Gravità",
+      "distance": "a {distance}",
+      "missing": "Manca:",
+      "columnsInFlight": "{count, plural, one {# colonna in arrivo} other {# colonne in arrivo}}: {names}",
+      "openInTab": "Apri",
+      "openIncident": "Apri l’emergenza",
+      "withdraw": "Ritira la richiesta",
+      "sendColumn": "Invia una colonna",
+      "blocked": {
+        "OWN_REQUEST": "È la tua richiesta.",
+        "NOT_OPEN": "Richiesta non più aperta.",
+        "NO_USEFUL_VEHICLE": "Nessun tuo mezzo disponibile porta ciò che manca.",
+        "COLUMN_LIMIT": "Hai già il massimo di colonne in corso.",
+        "ALREADY_SENT": "Hai già mandato una colonna.",
+        "TOO_LATE": "Nessun tuo mezzo arriverebbe in tempo.",
+        "FEATURE_DISABLED": "Il mutuo soccorso non è attivo.",
+        "NOT_ON_DUTY": "Entra in servizio per aiutare."
+      },
+      "cancelled": "Richiesta ritirata",
+      "requested": "Richiesta inviata all’alleanza",
+      "columnTo": "Colonna a {name}",
+      "columnFrom": "Colonna da {name}",
+      "columnStatus": {
+        "EN_ROUTE": "In viaggio",
+        "ON_SCENE": "Sul posto",
+        "RECALLED": "Richiamata",
+        "RETURNING": "In rientro",
+        "RETURNED": "Rientrata",
+        "ABORTED": "Annullata"
+      },
+      "reward": {
+        "PENDING": "In attesa",
+        "PAID": "Premio pagato",
+        "NONE": "Nessun premio",
+        "CAPPED": "Solo XP (tetto giornaliero)",
+        "UNDER_REVIEW": "Premio in revisione"
+      },
+      "rewardLabel": "Premio",
+      "recall": "Richiama",
+      "recalled": "Colonna richiamata",
+      "openRequests": "Richieste aperte",
+      "noOpen": "Nessuna richiesta aperta nell’alleanza.",
+      "limitsHint": "Fino a {requests} richieste aperte per Direttore, {vehicles} mezzi per colonna, {columns} colonne in corso.",
+      "myColumns": "Colonne in corso",
+      "noColumns": "Nessuna colonna in corso.",
+      "history": "Aiuti dati e ricevuti",
+      "noHistory": "Nessun aiuto finora",
+      "noHistoryHint": "Le colonne inviate e ricevute compariranno qui con il loro premio.",
+      "more": "Mostra altri",
+      "shared": "Condivisa",
+      "alliedUnits": "Unità alleate",
+      "arriving": "in arrivo",
+      "sharedTitle": "Condivisa con l’alleanza",
+      "sharedBody": "Gli alleati vedono cosa manca e possono mandare una colonna.",
+      "sharedCovered": "La mancanza è coperta: le colonne già partite arrivano comunque.",
+      "askTitle": "Chiedi aiuto all’alleanza",
+      "askBody": "Manca qualcosa che un alleato di [{tag}] può portare. Tieni tutta la ricompensa.",
+      "ask": "Chiedi aiuto",
+      "noGap": "Nessuna mancanza da coprire: l’aiuto dell’alleanza non serve.",
+      "majorTitle": "Colonne alleate",
+      "goldWarning": "Con aiuti alleati o rinforzi niente medaglia d’oro.",
+      "alliedColumns": "Colonne alleate",
+      "supportTo": "a [{tag}] {name}",
+      "returnIn": "rientro tra",
+      "arrivesIn": "arrivo tra",
+      "onSceneThere": "sul posto",
+      "dismiss": "Nascondi",
+      "coverage": {
+        "OK": "Buona",
+        "LOW": "Bassa",
+        "CRITICAL": "Critica"
+      },
+      "toast": {
+        "aborted": "L’emergenza è finita prima dell’arrivo: la colonna rientra senza costi.",
+        "onScene": "La tua colonna è sul posto da {name}.",
+        "paid": "Colonna rientrata: +{credits} Crediti dal fondo dell’aiuto.",
+        "capped": "Colonna rientrata: oggi hai già 8 aiuti premiati, solo XP.",
+        "review": "Colonna rientrata: premio in attesa di revisione.",
+        "none": "Colonna rientrata: contributo troppo piccolo per un premio."
+      },
+      "composer": {
+        "title": "Componi la colonna",
+        "blocked": {
+          "TOO_LATE": "Arriverebbe troppo tardi",
+          "CREW_INSUFFICIENT": "Equipaggio insufficiente",
+          "FUEL_INSUFFICIENT": "Carburante insufficiente",
+          "NOT_AVAILABLE": "Non disponibile"
+        },
+        "eta": "arrivo {time}",
+        "sent": "Colonna partita",
+        "noVehicles": "Nessun mezzo utile",
+        "noVehiclesHint": "Nessun tuo mezzo disponibile porta ciò che manca.",
+        "vehicles": "Mezzi da inviare",
+        "maxVehicles": "Fino a {max} mezzi per colonna. Nessun aiuto è obbligato.",
+        "coverage": "Copertura",
+        "arrival": "Arrivo",
+        "reward": "Premio stimato",
+        "rewardHint": "Fondo dell’aiuto: {credits} Crediti, diviso per contributo utile. Oggi {used}/{cap} aiuti premiati.",
+        "pairFactor": "Con questo alleato oggi il premio vale ×{factor}.",
+        "coverageWarning": "La tua copertura scende a {band} ({pct}%).",
+        "send": "Invia la colonna"
+      }
+    },
+    "ranking": {
+      "emptyTitle": "Classifica non ancora calcolata",
+      "emptyBody": "La classifica della settimana comparirà qui."
+    },
+    "members": {
+      "title": "Membri · {count}/{slots}",
+      "listLabel": "Elenco dei membri",
+      "empty": "Nessun membro",
+      "you": "Tu",
+      "level": "Liv. {level}",
+      "inactive": "Inattivo",
+      "mutedShort": "Silenziato",
+      "muted": "Silenziato fino al {until}",
+      "blocked": "Bloccato",
+      "card": "Apri la scheda del Direttore",
+      "actions": "Azioni su {name}",
+      "promote": "Nomina Vice",
+      "demote": "Revoca il ruolo di Vice",
+      "transfer": "Cedi il ruolo di Coordinatore",
+      "mute": "Silenzia",
+      "muteFor": {
+        "H1": "1 ora",
+        "H24": "24 ore",
+        "D7": "7 giorni"
+      },
+      "unmute": "Togli il silenzio",
+      "remove": "Espelli",
+      "ban": "Allontana",
+      "promoted": "{name} è Vice",
+      "demoted": "{name} è Membro",
+      "mutedToast": "{name} è silenziato",
+      "unmutedToast": "{name} può scrivere di nuovo",
+      "removedToast": "{name} è stato espulso",
+      "bannedToast": "{name} è stato allontanato",
+      "transferred": "Hai ceduto il ruolo di Coordinatore",
+      "confirmRemove": "Espellere {name}?",
+      "confirmRemoveBody": "Potrà chiedere di rientrare dopo 24 ore.",
+      "confirmBan": "Allontanare {name}?",
+      "confirmBanBody": "Non potrà più rientrare né essere invitato.",
+      "confirmTransfer": "Cedere il ruolo a {name}?",
+      "confirmTransferBody": "Diventerai Vice, o Membro se non ci sono posti da Vice.",
+      "leave": "Esci dall’alleanza",
+      "confirmLeave": "Uscire da {name}?",
+      "confirmLeaveBody": "Non perdi nulla della tua carriera. Per {hours} ore non potrai entrare in un’altra alleanza.",
+      "leaveTransferFirst": "Sei il Coordinatore: cedi prima il ruolo a un altro membro.",
+      "left": "Sei uscito dall’alleanza"
+    },
+    "director": {
+      "title": "Scheda del Direttore",
+      "you": "Tu",
+      "level": "Livello",
+      "location": "Centrale",
+      "services": "Servizi",
+      "noAlliance": "Senza alleanza",
+      "memberSince": "Membro dal",
+      "aid": "Aiuti dati / ricevuti",
+      "medals": "Medaglie oro · argento · bronzo",
+      "lastSeen": "Ultimo accesso: {when}",
+      "lastSeenValue": {
+        "TODAY": "oggi",
+        "THIS_WEEK": "questa settimana",
+        "EARLIER": "più di una settimana fa"
+      },
+      "privacyNote": "Il comune è quello della centrale di gioco. Flotta, sedi e Crediti restano privati.",
+      "block": "Blocca",
+      "unblock": "Sblocca",
+      "blocked": "Bloccato",
+      "blockedToast": "Persona bloccata: non vedrai più ciò che scrive.",
+      "unblockedToast": "Persona sbloccata",
+      "invite": "Invita nell’alleanza",
+      "inviteSent": "Invito inviato",
+      "confirmBlock": "Bloccare {name}?",
+      "confirmBlockBody": "Non vedrai più ciò che scrive e non potrà invitarti. Non lo saprà. Puoi sbloccare dalle impostazioni."
+    },
+    "settings": {
+      "title": "Impostazioni dell’alleanza",
+      "identity": "Identità",
+      "nameCooldown": "Nome e sigla si possono cambiare una volta ogni {days} giorni.",
+      "access": "Ingresso",
+      "membersCanInvite": "I membri possono invitare",
+      "membersCanInviteHint": "Altrimenti solo Vice e Coordinatore creano inviti.",
+      "notesHighRolesOnly": "Note in bacheca solo per i ruoli alti",
+      "notesHighRolesOnlyHint": "Gli annunci sono sempre dei ruoli alti.",
+      "danger": "Scioglimento",
+      "disband": "Sciogli l’alleanza",
+      "disbandBody": "Con {hours} ore di preavviso visibile a tutti, annullabile. Immediato se sei l’unico membro.",
+      "disbandRunning": "Scioglimento previsto",
+      "confirmDisband": "Sciogliere {name}?",
+      "confirmDisbandBody": "Tutti i membri vedranno il preavviso di {hours} ore. Puoi annullare finché non è avvenuto.",
+      "cancelDisband": "Annulla lo scioglimento",
+      "disbandScheduled": "Scioglimento programmato",
+      "disbanded": "Alleanza sciolta",
+      "disbandCancelled": "Scioglimento annullato",
+      "save": "Salva",
+      "saved": "Impostazioni salvate"
+    },
+    "log": {
+      "title": "Registro dell’alleanza",
+      "empty": "Nessuna azione registrata",
+      "more": "Mostra altre",
+      "byAdmin": "Amministrazione",
+      "system": "Sistema",
+      "detailField": "campo: {field}",
+      "detailRole": {
+        "COORDINATOR": "Coordinatore",
+        "DEPUTY": "Vice",
+        "MEMBER": "Membro"
+      },
+      "detailDuration": {
+        "H1": "1 ora",
+        "H24": "24 ore",
+        "D7": "7 giorni"
+      },
+      "action": {
+        "FOUNDED": "ha fondato l’alleanza",
+        "SETTINGS_CHANGED": "ha cambiato le impostazioni",
+        "MEMBER_JOINED": "{target} è entrato",
+        "MEMBER_LEFT": "{target} è uscito",
+        "MEMBER_REMOVED": "ha espulso {target}",
+        "MEMBER_BANNED": "ha allontanato {target}",
+        "MEMBER_INVITED": "ha creato un invito {target}",
+        "INVITE_REVOKED": "ha revocato un invito {target}",
+        "REQUEST_ACCEPTED": "ha accettato la richiesta di {target}",
+        "REQUEST_REJECTED": "ha rifiutato la richiesta di {target}",
+        "ROLE_CHANGED": "ha cambiato il ruolo di {target}",
+        "MEMBER_MUTED": "ha silenziato {target}",
+        "MEMBER_UNMUTED": "ha tolto il silenzio a {target}",
+        "LEADERSHIP_TRANSFERRED": "ha ceduto il ruolo di Coordinatore a {target}",
+        "LEADERSHIP_SUCCEEDED": "{target} è il nuovo Coordinatore per assenza del precedente",
+        "DISBAND_SCHEDULED": "ha avviato lo scioglimento",
+        "DISBAND_CANCELLED": "ha annullato lo scioglimento",
+        "DISBANDED": "l’alleanza è stata sciolta",
+        "CLOSED_BY_ADMIN": "l’alleanza è stata chiusa",
+        "READ_ONLY_CHANGED": "ha cambiato la sola lettura",
+        "POST_REMOVED": "ha rimosso un post di {target}",
+        "REPLY_REMOVED": "ha rimosso una risposta di {target}",
+        "MESSAGE_REMOVED": "ha rimosso un messaggio di {target}",
+        "LEVEL_UP": "l’alleanza è salita di livello",
+        "OPERATION_STARTED": "è iniziata un’operazione di alleanza",
+        "OPERATION_ENDED": "si è conclusa un’operazione di alleanza"
+      }
+    },
+    "rules": {
+      "title": "Sicurezza e regole della comunità",
+      "intro": "Bacheca e chat servono a coordinarsi tra Direttori. Valgono per tutti, dai 14 anni in su, le stesse protezioni.",
+      "items": {
+        "respect": "Rispetta gli altri: niente insulti, molestie, odio o discriminazione.",
+        "content": "Niente contenuti sessuali, violenti o che incitino a farsi del male.",
+        "personalData": "Non condividere dati personali: né i tuoi né quelli di altri (telefono, email, indirizzi, profili social).",
+        "noLinks": "Niente collegamenti, pubblicità, spam o richieste di denaro.",
+        "stayInGame": "Resta nel gioco: la chat è per le emergenze e l’alleanza, non per conoscere persone.",
+        "report": "Se qualcosa ti mette a disagio, segnala o blocca: nessuno saprà che l’hai fatto."
+      },
+      "labels": {
+        "consequences": "Conseguenze",
+        "report": "Segnalare",
+        "minors": "Minori",
+        "contact": "Contatto"
+      },
+      "notes": {
+        "consequences": "Chi non rispetta le regole riceve un’ammonizione, poi la scrittura viene sospesa per 24 ore, poi per 7 giorni, infine l’account viene sospeso. I casi gravi saltano i passaggi. Ogni decisione è spiegata e si può contestare.",
+        "report": "Ogni messaggio, post, nome e descrizione si può segnalare con un tocco. Un moderatore legge solo ciò che viene segnalato o fermato dal filtro automatico.",
+        "minors": "Se hai meno di 18 anni: non dire mai dove abiti, quanti anni hai o come contattarti fuori dal gioco. Se qualcuno te lo chiede, segnalalo.",
+        "contact": "Per una contestazione o per un problema urgente scrivi all’indirizzo indicato nelle note legali."
+      },
+      "version": "Versione {version}",
+      "accepted": "Accettate il {date}",
+      "required": "Per scrivere in bacheca e in chat devi accettare le regole.",
+      "accept": "Accetto le regole",
+      "acceptedToast": "Regole accettate"
+    },
+    "privacy": {
+      "title": "Riservatezza",
+      "showOnDuty": "Mostra quando sono in servizio",
+      "showOnDutyHint": "Solo ai tuoi alleati. Spento, risulti sempre assente.",
+      "acceptDirectInvites": "Accetta inviti diretti",
+      "acceptDirectInvitesHint": "Gli altri Direttori possono invitarti per nome nella loro alleanza.",
+      "rules": "Regole della comunità",
+      "rulesHint": "Da accettare prima di scrivere in bacheca o in chat.",
+      "rulesAccepted": "Accettate il {date}",
+      "rulesOpen": "Leggi"
+    },
+    "blocked": {
+      "title": "Persone bloccate",
+      "hint": "Non vedi ciò che scrivono e non possono invitarti. Loro non lo sanno.",
+      "empty": "Nessuna persona bloccata.",
+      "since": "dal {date}",
+      "unblock": "Sblocca",
+      "unblocked": "Persona sbloccata"
+    },
+    "account": {
+      "export": "Esporta i miei dati",
+      "exported": "Dati esportati: il file è nei download.",
+      "deleteScheduled": "L’account verrà eliminato il {date}. Se accedi di nuovo prima, l’eliminazione si annulla."
+    },
+    "notification": {
+      "JOIN_REQUEST": {
+        "title": "Richiesta d’ingresso",
+        "body": "{director} chiede di entrare nell’alleanza."
+      },
+      "REQUEST_ACCEPTED": {
+        "title": "Sei entrato in [{tag}] {name}",
+        "body": "La tua richiesta è stata accettata."
+      },
+      "REQUEST_REJECTED": {
+        "title": "Richiesta non accettata",
+        "body": "[{tag}] {name} non ha accettato la tua richiesta d’ingresso."
+      },
+      "INVITE_RECEIVED": {
+        "title": "Invito da [{tag}] {name}",
+        "body": "{director} ti invita nell’alleanza."
+      },
+      "MEMBER_REMOVED": {
+        "title": "Espulso da [{tag}] {name}",
+        "body": "Non fai più parte dell’alleanza. Potrai chiedere di rientrare dopo 24 ore."
+      },
+      "MEMBER_BANNED": {
+        "title": "Allontanato da [{tag}] {name}",
+        "body": "Non puoi più rientrare in questa alleanza."
+      },
+      "MEMBER_MUTED": {
+        "title": "Silenziato in [{tag}] {name}",
+        "body": "Non puoi scrivere fino al {count}. Le frasi rapide restano disponibili."
+      },
+      "ROLE_DEPUTY": {
+        "title": "Sei Vice di [{tag}] {name}",
+        "body": "Puoi accettare richieste, pubblicare annunci e moderare."
+      },
+      "ROLE_MEMBER": {
+        "title": "Ruolo di Vice revocato",
+        "body": "Sei di nuovo Membro di [{tag}] {name}."
+      },
+      "LEADERSHIP_TRANSFERRED": {
+        "title": "Sei il Coordinatore di [{tag}] {name}",
+        "body": "{director} ti ha ceduto il ruolo."
+      },
+      "LEADERSHIP_SUCCEEDED": {
+        "title": "Sei il Coordinatore di [{tag}] {name}",
+        "body": "Il Coordinatore era assente da 14 giorni: il ruolo passa a te."
+      },
+      "DISBAND_SCHEDULED": {
+        "title": "[{tag}] {name} si scioglie",
+        "body": "Il Coordinatore ha avviato lo scioglimento con 48 ore di preavviso."
+      },
+      "DISBAND_CANCELLED": {
+        "title": "Scioglimento annullato",
+        "body": "[{tag}] {name} continua."
+      },
+      "ALLIANCE_DISBANDED": {
+        "title": "Alleanza sciolta",
+        "body": "[{tag}] {name} non esiste più. Puoi entrare subito in un’altra alleanza."
+      },
+      "ALLIANCE_CLOSED": {
+        "title": "Alleanza chiusa",
+        "body": "[{tag}] {name} è stata chiusa dall’amministrazione."
+      },
+      "ANNOUNCEMENT": {
+        "title": "Annuncio in [{tag}] {name}",
+        "body": "{director} ha pubblicato un annuncio."
+      },
+      "MENTION": {
+        "title": "{director} ti ha menzionato",
+        "body": "Nella chat di [{tag}] {name}."
+      },
+      "AID_REQUEST": {
+        "title": "Richiesta di aiuto",
+        "body": "{director} di [{tag}] {name} chiede una colonna: hai mezzi utili."
+      },
+      "AID_ARRIVED": {
+        "title": "Colonna alleata sul posto",
+        "body": "La colonna di {director} di [{tag}] {name} è arrivata."
+      },
+      "AID_PAID": {
+        "title": "Premio dal fondo dell’aiuto",
+        "body": "+{credits} Crediti per la colonna da {director} ([{tag}] {name})."
+      }
+    },
+    "landing": {
+      "title": "Invito in {name} [{tag}]",
+      "by": "{name} ti invita nella sua alleanza su Rescue Control.",
+      "pitch": "Un gruppo di Direttori che si aiutano sulle emergenze.",
+      "facts": "Livello {level} · {members}/{slots} membri · {language}",
+      "cta": "Apri l’invito nel gioco",
+      "ctaSignIn": "Accedi per entrare",
+      "ctaInvalid": "Vai al gioco",
+      "invalidTitle": "Invito non valido",
+      "invalidHint": "Il collegamento è scaduto o è stato revocato. Puoi comunque giocare e cercare un’alleanza dal gioco."
+    },
+    "restriction": {
+      "FEATURE_DISABLED": "Questa parte non è attiva.",
+      "SUSPENDED": "Il tuo account è sospeso: puoi solo leggere.",
+      "MUTED": "Sei silenziato: potrai scrivere di nuovo",
+      "RULES_NOT_ACCEPTED": "Per scrivere devi prima accettare le regole della comunità.",
+      "LEVEL_TOO_LOW": "Si scrive dal livello {level}.",
+      "ACCOUNT_TOO_NEW": "Si scrive quando l’account ha almeno 24 ore.",
+      "READ_ONLY": "In questo momento si può solo leggere.",
+      "readRules": "Leggi le regole"
+    },
+    "reaction": {
+      "ACK": "Ricevuto",
+      "WELL_DONE": "Ben fatto",
+      "PRESENT": "Presente",
+      "THANKS": "Grazie"
+    },
+    "quick": {
+      "NEED_FIRE_ENGINE": "Mi serve un’autopompa",
+      "NEED_ADVANCED_AMBULANCE": "Mi serve un’ambulanza avanzata",
+      "NEED_PATROL": "Mi serve una pattuglia",
+      "NEED_WILDFIRE_UNIT": "Mi serve un mezzo AIB",
+      "NEED_ALPINE_RESCUE": "Mi serve soccorso alpino",
+      "NEED_BOAT": "Mi serve una barca",
+      "COMING": "Arrivo",
+      "CANNOT_NOW": "Non posso adesso",
+      "COLUMN_SENT": "Colonna partita",
+      "ON_SCENE": "Sono sul posto",
+      "RETURNING": "Rientro",
+      "ON_DUTY": "Entro in servizio",
+      "OFF_DUTY": "Esco dal servizio",
+      "UNDER_PRESSURE": "Sono sotto pressione",
+      "ALL_CLEAR": "Qui tutto sotto controllo",
+      "THANKS": "Grazie",
+      "WELL_DONE": "Ben fatto",
+      "GOOD_SHIFT": "Buon turno"
+    },
+    "report": {
+      "title": "Segnala",
+      "about": "Segnalazione su: «{label}»",
+      "intro": "La segnalazione arriva alla moderazione. Riceverai l’esito nelle notifiche.",
+      "sentTitle": "Segnalazione inviata",
+      "sentBody": "Grazie. La moderazione la esaminerà: l’esito arriverà nel centro notifiche.",
+      "reason": "Motivo",
+      "reasons": {
+        "HARASSMENT": "Insulti o molestie",
+        "SEXUAL": "Contenuti sessuali",
+        "HATE": "Odio o discriminazione",
+        "THREAT_SELF_HARM": "Minacce o autolesionismo",
+        "PERSONAL_DATA": "Dati personali",
+        "SPAM_SCAM": "Spam o truffa",
+        "OTHER": "Altro"
+      },
+      "note": "Nota",
+      "notePlaceholder": "Nota facoltativa per la moderazione…",
+      "hint": "Una segnalazione per contenuto. I ruoli alti non la vedono: va sempre anche all’amministrazione.",
+      "submit": "Invia segnalazione"
+    },
+    "post": {
+      "system": {
+        "MEMBER_JOINED": "{director} è entrato nell’alleanza.",
+        "MEMBER_LEFT": "{director} ha lasciato l’alleanza.",
+        "LEVEL_UP": "L’alleanza è salita al livello {level}."
+      }
+    }
+  }
+}

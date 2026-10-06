@@ -450,6 +450,17 @@ export const DEFAULT_FLAGS: Record<string, boolean> = {
   referrals: true,
   soundEffects: true,
   analytics: true,
+  /**
+   * Alliances (study 2026-10-06; production code defaults are OFF, brief §2). The mock turns the section on so the game
+   * can be developed and tested; the parts not built yet stay off and the tabs show their flag-off state.
+   */
+  alliances: true,
+  alliance_board: true,
+  alliance_chat: true,
+  alliance_aid: true,
+  alliance_objectives: false,
+  alliance_ranking: false,
+  alliance_operations: false,
 };
 const emptyHooks = (): EngineHooks => ({
   careerCreated: [],
@@ -526,16 +537,20 @@ export class MockEngine {
     this.random = opts.random ?? Math.random;
     this.speed = opts.speed ?? 1;
     this.emitFn = opts.emit ?? (() => undefined);
-    this.state = this.storage.load() ?? {
-      version: 4,
-      users: {},
-      challenges: {},
-      currentSession: null,
-      careers: {},
-      sites: {},
-      featureFlags: { ...DEFAULT_FLAGS },
-      ext: {},
-    };
+    const loaded = this.storage.load();
+    // Like production (brief §2 rule 6): a flag unknown to a saved state takes the code default; known rows keep their value.
+    this.state = loaded
+      ? { ...loaded, featureFlags: { ...DEFAULT_FLAGS, ...loaded.featureFlags } }
+      : {
+          version: 4,
+          users: {},
+          challenges: {},
+          currentSession: null,
+          careers: {},
+          sites: {},
+          featureFlags: { ...DEFAULT_FLAGS },
+          ext: {},
+        };
   }
 
   save(): void {
@@ -586,6 +601,8 @@ export class MockEngine {
       acceptTerms?: boolean;
       confirmAge?: boolean;
       marketingConsent?: boolean;
+      /** Account lifecycle (account.ts): an account waiting for deletion signs in only with this, which cancels the deletion. */
+      cancelDeletion?: boolean;
     },
     userAgent: string | null,
   ) {
@@ -629,6 +646,18 @@ export class MockEngine {
         sessions: [],
       };
       this.state.users[ch.email] = account;
+    }
+    if (account.status === 'DELETION_REQUESTED') {
+      const deletion = (
+        this.state.ext.community as { deletions?: Record<string, { scheduledAt: string }> } | undefined
+      )?.deletions?.[ch.email];
+      if (!body.cancelDeletion)
+        throw new MockError(403, 'ACCOUNT_DELETING', 'Account waiting for deletion', {
+          scheduledAt: deletion?.scheduledAt ?? null,
+        });
+      account.status = 'ACTIVE';
+      const community = this.state.ext.community as { deletions?: Record<string, unknown> } | undefined;
+      if (community?.deletions) delete community.deletions[ch.email];
     }
     delete this.state.challenges[body.challengeId];
     const sessionId = `ses_${this.id('x').slice(2)}`;
@@ -1556,28 +1585,32 @@ export class MockEngine {
       onScene: sum(onScene, r.capability),
       enRoute: sum(enRoute, r.capability),
     }));
+    // Allied columns on scene (D-102) count like own units for the coverage and the work, never for the transport.
+    const covered = (r: IncidentDto['requirements'][number]) => r.onScene + (r.allied ?? 0);
+    const anyAllied = requirements.some((r) => (r.allied ?? 0) > 0);
     // Needs of a still-locked family are handled by external support: they never count against the player.
     const required = requirements.filter((r) => r.level === 'REQUIRED' && !r.external);
     const coverageRatio = required.length
-      ? Math.min(...required.map((r) => Math.min(1, r.onScene / Math.max(1, r.required))))
-      : onScene.length
+      ? Math.min(...required.map((r) => Math.min(1, covered(r) / Math.max(1, r.required))))
+      : onScene.length || anyAllied
         ? 1
         : 0;
     const recommended = requirements.filter((r) => r.level === 'RECOMMENDED' && !r.external);
     const bonus = recommended.length
-      ? recommended.reduce((s, r) => s + Math.min(1, r.onScene / Math.max(1, r.required)), 0) /
+      ? recommended.reduce((s, r) => s + Math.min(1, covered(r) / Math.max(1, r.required)), 0) /
         recommended.length
       : 0;
     // settle the work done since the previous anchor
     const elapsed = Math.max(0, (at - Date.parse(incident.work.anchorAt)) / 1000) * this.speed;
     const remaining = Math.max(0, incident.work.remaining - incident.work.ratePerSecond * elapsed);
-    const rate = onScene.length ? Math.max(0.15, coverageRatio) * (1 + 0.3 * bonus) : 0;
+    const rate = onScene.length || anyAllied ? Math.max(0.15, coverageRatio) * (1 + 0.3 * bonus) : 0;
     const endAt = rate > 0 ? at + this.dur(remaining / rate) : null;
     this.cancelActions(career, (a) => a.type === 'INCIDENT_WORK_DONE' && a.ref === incidentId);
     if (endAt !== null)
       career.actions.push({ id: this.id('act'), type: 'INCIDENT_WORK_DONE', dueAt: endAt, ref: incidentId });
     if (incident.status === 'RESOLVING') return incident;
-    const status = onScene.length ? 'ON_SCENE' : enRoute.length ? 'RESPONDING' : 'PENDING_RESPONSE';
+    const status =
+      onScene.length || anyAllied ? 'ON_SCENE' : enRoute.length ? 'RESPONDING' : 'PENDING_RESPONSE';
     return this.patchIncident(career, incidentId, {
       requirements,
       coverageRatio,

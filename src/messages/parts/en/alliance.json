@@ -1,0 +1,926 @@
+{
+  "game": {
+    "nav": {
+      "alliance": "Alliance"
+    }
+  },
+  "platform": {
+    "a11y": {
+      "allianceUnread": "{count, plural, one {# new item in the alliance} other {# new items in the alliance}}",
+      "moreUnread": "{count, plural, one {# new item in the other sections} other {# new items in the other sections}}"
+    }
+  },
+  "status": {
+    "vehicle": {
+      "ALLIED_SUPPORT": "Allied support"
+    }
+  },
+  "notificationCenter": {
+    "category": {
+      "ALLIANCE": "Alliance"
+    }
+  },
+  "push": {
+    "categories": {
+      "ALLIANCE_AID": {
+        "label": "Alliance: aid and operations",
+        "hint": "Aid requests you can cover and alliance operations."
+      },
+      "ALLIANCE_SOCIAL": {
+        "label": "Alliance: messages and announcements",
+        "hint": "Mentions, pinned announcements, join requests, roles. Never one notification per message."
+      }
+    }
+  },
+  "errors": {
+    "ALLIANCE_FULL": "The alliance has no free seat.",
+    "ALREADY_IN_ALLIANCE": "You can be in one alliance at a time.",
+    "ALLIANCE_COOLDOWN": "After leaving, 24 hours must pass before joining another alliance.",
+    "NOT_ALLIANCE_MEMBER": "You are not a member of this alliance.",
+    "ROLE_REQUIRED": "This action needs a higher role.",
+    "MUTED": "You are muted: you cannot write for now.",
+    "TEXT_REJECTED": "This text is not allowed.",
+    "RULES_NOT_ACCEPTED": "Accept the community rules first.",
+    "NO_REAL_GAP": "The incident has no real gap to cover.",
+    "COLUMN_TOO_LATE": "The column would arrive too late.",
+    "AID_LIMIT_REACHED": "You have reached the aid limit for now.",
+    "NAME_CHANGE_COOLDOWN": "The name can change once every 30 days.",
+    "BLOCKED": "Not possible: one of the two has blocked the other.",
+    "ACCOUNT_DELETING": "This account is waiting to be deleted."
+  },
+  "design": {
+    "sections": {
+      "keyboard": "Keyboard-aware screen"
+    },
+    "keyboard": {
+      "intro": "Full-screen page with the text field anchored to the visible area: it shrinks when the keyboard opens (try it on a phone or with the mobile preview).",
+      "open": "Open the demo",
+      "title": "Demo chat",
+      "close": "Close",
+      "line": "Message number {n}",
+      "placeholder": "Write a message…",
+      "send": "Send",
+      "earlier": "Loading earlier…",
+      "newBelow": "New messages ↓"
+    }
+  },
+  "alliance": {
+    "title": "Alliance",
+    "tabsLabel": "Alliance tabs",
+    "tabs": {
+      "overview": "Overview",
+      "board": "Board",
+      "chat": "Chat",
+      "aid": "Mutual aid",
+      "members": "Members",
+      "ranking": "Ranking"
+    },
+    "loadFailed": "The alliance could not be loaded",
+    "retry": "Retry",
+    "role": {
+      "COORDINATOR": "Coordinator",
+      "DEPUTY": "Deputy",
+      "MEMBER": "Member"
+    },
+    "policy": {
+      "OPEN": "Open",
+      "REQUEST": "On request",
+      "INVITE": "Invite only"
+    },
+    "policyHint": {
+      "OPEN": "Anyone joins with one tap.",
+      "REQUEST": "A Deputy or the Coordinator approves every request.",
+      "INVITE": "Only with an invite."
+    },
+    "presence": {
+      "ON_DUTY": "On duty",
+      "ONLINE": "Online",
+      "AWAY": "Away"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "DISBANDING": "Disbanding",
+      "DISBANDED": "Disbanded",
+      "CLOSED": "Closed by the administration"
+    },
+    "textReason": {
+      "BANNED_TERM": "forbidden words",
+      "URL": "web addresses",
+      "EMAIL": "e-mail addresses",
+      "PHONE": "phone numbers",
+      "SOCIAL_HANDLE": "social profiles"
+    },
+    "errorReason": {
+      "TRANSFER_FIRST": "You are the Coordinator: hand the role to another member first.",
+      "INVITE_REQUIRED": "This alliance can only be joined with an invite.",
+      "BANNED": "You cannot rejoin this alliance.",
+      "NAME_TAKEN": "This name is already taken.",
+      "TAG_TAKEN": "This tag is already taken.",
+      "DIRECT_INVITES_OFF": "This Director does not accept direct invites.",
+      "REQUEST_PENDING": "You already have a pending join request.",
+      "ALREADY_DECIDED": "This request has already been decided.",
+      "EMBLEM_LOCKED": "Part of the emblem unlocks at a higher level.",
+      "SELF": "You cannot do this to yourself.",
+      "SUSPENDED": "The account is suspended.",
+      "READ_ONLY": "Read-only right now.",
+      "LEVEL_REQUIRED": "Level {level} is required.",
+      "DEPUTY_SLOTS_FULL": "No more Deputy seats at this level.",
+      "COORDINATOR": "This cannot be done to the Coordinator.",
+      "REQUESTER_UNAVAILABLE": "The requester is no longer available: the request was withdrawn.",
+      "ALLIANCE_NOT_ACTIVE": "The alliance is no longer active.",
+      "ALREADY_DISBANDING": "The disbanding is already running.",
+      "NOT_DISBANDING": "There is no disbanding to cancel.",
+      "NOT_AN_ANNOUNCEMENT": "Only announcements can be pinned.",
+      "PIN_LIMIT": "No pinned slot left: unpin an announcement first.",
+      "EDIT_WINDOW_EXPIRED": "The time to edit the post is over.",
+      "DELETE_WINDOW_EXPIRED": "The time to delete the message is over.",
+      "REMOVED": "The post was removed.",
+      "DUPLICATE_MESSAGE": "You just sent the same message.",
+      "CHANNEL_ARCHIVED": "This channel is closed: read only.",
+      "DAILY_LIMIT": "You reached today’s limit on the board.",
+      "CHAT_RATE": "You are writing too fast: wait a moment.",
+      "OWN_REQUEST": "This is your request.",
+      "REQUEST_NOT_OPEN": "The request is no longer open.",
+      "ONE_PER_REQUEST": "You already sent a column for this request.",
+      "ACTIVE_COLUMNS": "You already have the maximum of columns in flight.",
+      "TOO_MANY_VEHICLES": "Too many vehicles for one column.",
+      "OPEN_REQUESTS": "You already have the maximum of open requests.",
+      "ALREADY_REQUESTED": "You already asked for help on this incident.",
+      "MIN_INTERVAL": "Wait a minute between requests.",
+      "NOT_RECALLABLE": "The column can no longer be recalled.",
+      "INCIDENT_NOT_ACTIVE": "The incident is no longer running.",
+      "USE_MAJOR_REQUEST": "For a major incident, help is asked from the coordination view.",
+      "LEVEL": "Writing starts at level 2.",
+      "ACCOUNT_AGE": "Writing starts once the account is 24 hours old."
+    },
+    "off": {
+      "title": "Alliances are not active",
+      "body": "This part of the game is switched off for now."
+    },
+    "locked": {
+      "title": "Alliances from level {level}",
+      "body": "From level {level} you can browse alliances and join one. Your level: {current}."
+    },
+    "cooldown": {
+      "title": "A pause before a new alliance",
+      "body": "After leaving or being removed, {hours} hours must pass: you can join an alliance"
+    },
+    "find": {
+      "title": "Find an alliance",
+      "search": "Search by name or tag",
+      "language": "Language",
+      "anyLanguage": "All languages",
+      "openOnly": "Open only",
+      "hasSlots": "With free seats only",
+      "sortedByActivity": "Sorted by recent activity",
+      "listLabel": "Alliances found",
+      "empty": "No alliance found",
+      "emptyHint": "Try another search, or found your own.",
+      "loadMore": "Show more",
+      "members": "{count}/{slots} members",
+      "level": "Lv. {level}",
+      "lastActivity": "Active",
+      "join": "Join",
+      "request": "Ask to join",
+      "requested": "Request sent: a high role will answer.",
+      "requestedShort": "Request sent",
+      "withdraw": "Withdraw the request",
+      "withdrawn": "Request withdrawn",
+      "joined": "You joined the alliance",
+      "blocked": {
+        "ALLIANCE_FULL": "No free seat right now.",
+        "LEVEL_TOO_LOW": "Requires at least level {level}.",
+        "ALREADY_IN_ALLIANCE": "You are already in an alliance.",
+        "ALLIANCE_COOLDOWN": "You are pausing after leaving an alliance.",
+        "INVITE_ONLY": "Only with an invite.",
+        "BANNED": "You cannot rejoin this alliance.",
+        "REQUEST_PENDING": "Your request is pending.",
+        "NOT_ACTIVE": "The alliance is not active.",
+        "FEATURE_DISABLED": "Not available right now."
+      }
+    },
+    "card": {
+      "minLevel": "Minimum level {level}",
+      "noMinLevel": "No minimum level",
+      "created": "Founded on {date}",
+      "noDescription": "No description."
+    },
+    "found": {
+      "title": "Found an alliance",
+      "cta": "Found",
+      "identity": "Identity",
+      "access": "Access",
+      "name": "Name",
+      "nameHint": "{min} to {max} characters, unique.",
+      "tag": "Tag",
+      "tagHint": "{min} to {max} letters or digits: shown next to names, like [ABR].",
+      "description": "Description",
+      "descriptionHint": "What your alliance does and who you are looking for. Text only: no links or contacts.",
+      "emblem": "Emblem",
+      "shape": "Shape",
+      "symbol": "Symbol",
+      "primary": "Main colour",
+      "secondary": "Secondary colour",
+      "lockedAt": "from level {level}",
+      "language": "Language",
+      "languageHint": "Helps those looking for an alliance.",
+      "policy": "Access",
+      "policyHint": {
+        "OPEN": "Anyone joins with one tap.",
+        "REQUEST": "A Deputy or the Coordinator approves every request.",
+        "INVITE": "Only with an invite."
+      },
+      "minLevel": "Minimum level",
+      "minLevelHint": "Optional: the Director level required to join.",
+      "minLevelNone": "None",
+      "minLevelValue": "Level {level}",
+      "costLabel": "Cost",
+      "free": "Founding an alliance costs nothing right now.",
+      "requirement": "From level {level}. You become Coordinator.",
+      "requirementMissing": "Level {level} is required: you are at {current}.",
+      "cannotAfford": "Not enough Credits: you have {credits}.",
+      "confirm": "Found “{name}”?",
+      "confirmBody": "It costs {cost} Credits. You become Coordinator and can invite anyone.",
+      "confirmBodyFree": "It costs nothing. You become Coordinator and can invite anyone.",
+      "success": "Alliance founded",
+      "textRejected": "Text not allowed: {reasons}.",
+      "error": {
+        "name": {
+          "short": "The name is too short.",
+          "long": "The name is too long.",
+          "format": "Invalid name."
+        },
+        "tag": {
+          "short": "The tag is too short.",
+          "long": "The tag is too long.",
+          "format": "Letters and digits only."
+        },
+        "description": {
+          "short": "Invalid description.",
+          "long": "The description is too long.",
+          "format": "Invalid description."
+        }
+      }
+    },
+    "invites": {
+      "title": "Invites",
+      "received": "Invites received",
+      "from": "from {name}",
+      "expires": "expires",
+      "accept": "Join",
+      "decline": "Decline",
+      "declined": "Invite declined",
+      "full": "No free seat right now",
+      "link": "Invite link",
+      "linkHint": "Whoever opens the link joins directly. Valid {days} days, for several people.",
+      "create": "Create a link",
+      "copy": "Copy",
+      "copied": "Link copied",
+      "copyFailed": "Could not copy: select the code and copy it by hand.",
+      "share": "Share",
+      "shareText": "Join my alliance on Rescue Control: {name} [{tag}]",
+      "revoke": "Revoke",
+      "revoked": "Invite revoked",
+      "uses": "{count, plural, =0 {no joins} one {# join} other {# joins}}",
+      "direct": "Invite a Director",
+      "directHint": "Search by name: they will receive a direct invite in the game.",
+      "search": "Director name",
+      "noResults": "No Director with this name",
+      "hitWho": "Level {level} · {location}",
+      "invite": "Invite",
+      "inAlliance": "Already in an alliance",
+      "notInvitable": "Cannot be invited",
+      "inviteSent": "Invite sent to {name}",
+      "pending": "Pending direct invites",
+      "directTo": "to {name}",
+      "linkTitle": "Invite to {name} [{tag}]",
+      "linkInvalid": "This invite is no longer valid.",
+      "seats": "{count}/{slots} members",
+      "joinedToast": "You joined the alliance",
+      "invitedShort": "Invited"
+    },
+    "requests": {
+      "title": "Join requests",
+      "empty": "No pending request",
+      "who": "Level {level} · {location}",
+      "expires": "expires",
+      "accept": "Accept",
+      "reject": "Reject",
+      "accepted": "Request accepted",
+      "rejected": "Request rejected",
+      "mine": "Your request",
+      "mineBody": "Waiting for a high role to answer.",
+      "pendingAria": "{count, plural, one {# pending request} other {# pending requests}}"
+    },
+    "overview": {
+      "emblemAria": "Emblem of {name}",
+      "level": "Level {level}",
+      "xp": "{xp} / {next} points",
+      "maxLevel": "Maximum level",
+      "members": "Members",
+      "onDuty": "On duty",
+      "deputies": "Deputies",
+      "coordinator": "Coordinator",
+      "since": "member since {date}",
+      "disbanding": "Disbanding",
+      "disbandingBody": "The Coordinator can cancel it from the settings.",
+      "disbandingCoordinator": "You can cancel it from the settings until it happens.",
+      "inviteCta": "Invite someone",
+      "settings": "Settings",
+      "log": "Log",
+      "rules": "Community rules",
+      "whoIsOn": "Who is on duty",
+      "nobodyOn": "No ally on duty right now.",
+      "pinned": "Pinned announcements",
+      "noPinned": "No pinned announcement.",
+      "objectives": "This week’s objectives",
+      "noObjectives": "No objective running.",
+      "aid": "Aid requests",
+      "noAid": "No open request.",
+      "operation": "Alliance operation"
+    },
+    "featureOff": {
+      "board": {
+        "title": "Board not active",
+        "body": "The alliance’s announcements and notes are not available yet."
+      },
+      "chat": {
+        "title": "Chat not active",
+        "body": "The alliance chat is not available yet."
+      },
+      "aid": {
+        "title": "Mutual aid not active",
+        "body": "Aid requests between allies are not available yet."
+      },
+      "ranking": {
+        "title": "Ranking not active",
+        "body": "The ranking between alliances is not available yet."
+      },
+      "objectives": {
+        "title": "Objectives not active",
+        "body": "Weekly objectives are not available yet."
+      },
+      "operations": {
+        "title": "Operations not active",
+        "body": "Alliance operations are not available yet."
+      }
+    },
+    "board": {
+      "emptyTitle": "No post",
+      "emptyBody": "The alliance’s announcements and notes will appear here.",
+      "system": "The game",
+      "deletedDirector": "Deleted Director",
+      "placeholder": {
+        "removed": "Post removed",
+        "hidden": "Content under review",
+        "blocked": "Message from a blocked user"
+      },
+      "replyRemoved": "Reply removed",
+      "actions": "Actions",
+      "report": "Report",
+      "blockAuthor": "Block the author",
+      "remove": "Remove",
+      "edited": "Post edited",
+      "removed": "Post removed",
+      "replied": "Reply posted",
+      "pinned": "Pinned",
+      "editedMark": "edited",
+      "edit": "Edit",
+      "unpin": "Unpin",
+      "pin": "Pin to top",
+      "save": "Save",
+      "reactions": "Reactions",
+      "allReplies": "Show all {count} replies",
+      "replyPlaceholder": "Reply…",
+      "reply": "Reply",
+      "readOnly": "The board is read-only: you can read, not write.",
+      "composer": "New post",
+      "announcementPlaceholder": "Write an announcement for the whole alliance…",
+      "notePlaceholder": "Write a note…",
+      "kindLabel": "Post type",
+      "kind": {
+        "NOTE": "Note",
+        "ANNOUNCEMENT": "Announcement"
+      },
+      "pinOnPost": "Pin to top (max {slots})",
+      "announce": "Publish the announcement",
+      "post": "Publish",
+      "limits": "Up to {posts} posts and {replies} replies a day. A post can be edited for {minutes} minutes.",
+      "more": "Show more",
+      "announced": "Announcement published",
+      "posted": "Note published"
+    },
+    "chat": {
+      "emptyTitle": "No message",
+      "emptyBody": "Write the first one, or use a quick phrase.",
+      "title": "Chat",
+      "channels": "Channels",
+      "general": "General",
+      "operation": "Operation",
+      "unreadIn": "{count, plural, one {# unread} other {# unread}}",
+      "whoIsHere": "Who is here",
+      "nobody": "Nobody {state}",
+      "quickPhrases": "Quick phrases",
+      "blocked": {
+        "READ_ONLY": "The chat is read-only. Quick phrases stay available.",
+        "FEATURE_DISABLED": "The chat is not active.",
+        "SUSPENDED": "Your account is suspended: read only.",
+        "MUTED": "You are muted: you can write again",
+        "RULES_NOT_ACCEPTED": "To write, accept the community rules from the Overview.",
+        "LEVEL_TOO_LOW": "Writing starts at level 2.",
+        "ACCOUNT_TOO_NEW": "Writing starts once the account is 24 hours old."
+      },
+      "mentionPicker": "Members to mention",
+      "composerPlaceholder": "Write a message… (@ to mention)",
+      "retry": "Retry",
+      "send": "Send",
+      "loadingEarlier": "Loading earlier messages…",
+      "newBelow": "{count, plural, one {New message ↓} other {# new messages ↓}}",
+      "unavailable": "The chat is not available.",
+      "backToAlliance": "Back to the alliance",
+      "removed": "Message removed",
+      "mutedToast": "Member muted for an hour",
+      "deletedDirector": "Deleted Director",
+      "placeholder": {
+        "removed": "Message removed",
+        "hidden": "Message under review",
+        "blocked": "Message from a blocked user"
+      },
+      "actions": "Message actions",
+      "report": "Report",
+      "block": "Block",
+      "copy": "Copy",
+      "remove": "Remove",
+      "mute": "Mute 1 hour"
+    },
+    "aid": {
+      "emptyTitle": "No request",
+      "emptyBody": "Aid requests and your columns will appear here.",
+      "gapCovered": "Gap covered",
+      "mineTitle": "Your aid request",
+      "title": "{name} asks for help",
+      "majorBadge": "Major",
+      "status": {
+        "OPEN": "Open",
+        "FILLED": "Covered",
+        "CANCELLED": "Withdrawn",
+        "EXPIRED": "Expired",
+        "CLOSED": "Closed"
+      },
+      "severity": "Severity",
+      "distance": "{distance} away",
+      "missing": "Missing:",
+      "columnsInFlight": "{count, plural, one {# column coming} other {# columns coming}}: {names}",
+      "openInTab": "Open",
+      "openIncident": "Open the incident",
+      "withdraw": "Withdraw the request",
+      "sendColumn": "Send a column",
+      "blocked": {
+        "OWN_REQUEST": "This is your request.",
+        "NOT_OPEN": "Request no longer open.",
+        "NO_USEFUL_VEHICLE": "None of your available vehicles brings what is missing.",
+        "COLUMN_LIMIT": "You already have the maximum of columns in flight.",
+        "ALREADY_SENT": "You already sent a column.",
+        "TOO_LATE": "None of your vehicles would arrive in time.",
+        "FEATURE_DISABLED": "Mutual aid is not active.",
+        "NOT_ON_DUTY": "Go on duty to help."
+      },
+      "cancelled": "Request withdrawn",
+      "requested": "Request sent to the alliance",
+      "columnTo": "Column to {name}",
+      "columnFrom": "Column from {name}",
+      "columnStatus": {
+        "EN_ROUTE": "En route",
+        "ON_SCENE": "On scene",
+        "RECALLED": "Recalled",
+        "RETURNING": "Returning",
+        "RETURNED": "Returned",
+        "ABORTED": "Aborted"
+      },
+      "reward": {
+        "PENDING": "Pending",
+        "PAID": "Reward paid",
+        "NONE": "No reward",
+        "CAPPED": "XP only (daily cap)",
+        "UNDER_REVIEW": "Reward under review"
+      },
+      "rewardLabel": "Reward",
+      "recall": "Recall",
+      "recalled": "Column recalled",
+      "openRequests": "Open requests",
+      "noOpen": "No open request in the alliance.",
+      "limitsHint": "Up to {requests} open requests per Director, {vehicles} vehicles per column, {columns} columns in flight.",
+      "myColumns": "Columns in flight",
+      "noColumns": "No column in flight.",
+      "history": "Aid given and received",
+      "noHistory": "No aid so far",
+      "noHistoryHint": "Columns sent and received will appear here with their reward.",
+      "more": "Show more",
+      "shared": "Shared",
+      "alliedUnits": "Allied units",
+      "arriving": "arriving",
+      "sharedTitle": "Shared with the alliance",
+      "sharedBody": "Allies see what is missing and can send a column.",
+      "sharedCovered": "The gap is covered: columns already sent still arrive.",
+      "askTitle": "Ask the alliance for help",
+      "askBody": "Something is missing that an ally of [{tag}] can bring. You keep the full reward.",
+      "ask": "Ask for help",
+      "noGap": "No gap to cover: the alliance’s help is not needed.",
+      "majorTitle": "Allied columns",
+      "goldWarning": "With allied help or reinforcements, no gold medal.",
+      "alliedColumns": "Allied columns",
+      "supportTo": "to [{tag}] {name}",
+      "returnIn": "back in",
+      "arrivesIn": "arrives in",
+      "onSceneThere": "on scene",
+      "dismiss": "Hide",
+      "coverage": {
+        "OK": "Good",
+        "LOW": "Low",
+        "CRITICAL": "Critical"
+      },
+      "toast": {
+        "aborted": "The incident ended before the arrival: the column returns at no cost.",
+        "onScene": "Your column is on scene at {name}’s.",
+        "paid": "Column back: +{credits} Credits from the aid fund.",
+        "capped": "Column back: 8 rewarded aids already today, XP only.",
+        "review": "Column back: reward pending review.",
+        "none": "Column back: contribution too small for a reward."
+      },
+      "composer": {
+        "title": "Compose the column",
+        "blocked": {
+          "TOO_LATE": "Would arrive too late",
+          "CREW_INSUFFICIENT": "Crew insufficient",
+          "FUEL_INSUFFICIENT": "Fuel insufficient",
+          "NOT_AVAILABLE": "Not available"
+        },
+        "eta": "arrives {time}",
+        "sent": "Column sent",
+        "noVehicles": "No useful vehicle",
+        "noVehiclesHint": "None of your available vehicles brings what is missing.",
+        "vehicles": "Vehicles to send",
+        "maxVehicles": "Up to {max} vehicles per column. No help is compulsory.",
+        "coverage": "Coverage",
+        "arrival": "Arrival",
+        "reward": "Estimated reward",
+        "rewardHint": "Aid fund: {credits} Credits, split by useful contribution. Today {used}/{cap} rewarded aids.",
+        "pairFactor": "With this ally today the reward counts ×{factor}.",
+        "coverageWarning": "Your coverage drops to {band} ({pct}%).",
+        "send": "Send the column"
+      }
+    },
+    "ranking": {
+      "emptyTitle": "Ranking not computed yet",
+      "emptyBody": "This week’s ranking will appear here."
+    },
+    "members": {
+      "title": "Members · {count}/{slots}",
+      "listLabel": "Member list",
+      "empty": "No member",
+      "you": "You",
+      "level": "Lv. {level}",
+      "inactive": "Inactive",
+      "mutedShort": "Muted",
+      "muted": "Muted until {until}",
+      "blocked": "Blocked",
+      "card": "Open the Director card",
+      "actions": "Actions on {name}",
+      "promote": "Make Deputy",
+      "demote": "Revoke the Deputy role",
+      "transfer": "Hand over the Coordinator role",
+      "mute": "Mute",
+      "muteFor": {
+        "H1": "1 hour",
+        "H24": "24 hours",
+        "D7": "7 days"
+      },
+      "unmute": "Unmute",
+      "remove": "Remove",
+      "ban": "Ban",
+      "promoted": "{name} is Deputy",
+      "demoted": "{name} is Member",
+      "mutedToast": "{name} is muted",
+      "unmutedToast": "{name} can write again",
+      "removedToast": "{name} was removed",
+      "bannedToast": "{name} was banned",
+      "transferred": "You handed over the Coordinator role",
+      "confirmRemove": "Remove {name}?",
+      "confirmRemoveBody": "They may ask to come back after 24 hours.",
+      "confirmBan": "Ban {name}?",
+      "confirmBanBody": "They can neither rejoin nor be invited again.",
+      "confirmTransfer": "Hand the role to {name}?",
+      "confirmTransferBody": "You become Deputy, or Member if no Deputy seat is free.",
+      "leave": "Leave the alliance",
+      "confirmLeave": "Leave {name}?",
+      "confirmLeaveBody": "You lose nothing of your career. For {hours} hours you cannot join another alliance.",
+      "leaveTransferFirst": "You are the Coordinator: hand the role to another member first.",
+      "left": "You left the alliance"
+    },
+    "director": {
+      "title": "Director card",
+      "you": "You",
+      "level": "Level",
+      "location": "Control centre",
+      "services": "Services",
+      "noAlliance": "No alliance",
+      "memberSince": "Member since",
+      "aid": "Aid given / received",
+      "medals": "Medals gold · silver · bronze",
+      "lastSeen": "Last seen: {when}",
+      "lastSeenValue": {
+        "TODAY": "today",
+        "THIS_WEEK": "this week",
+        "EARLIER": "more than a week ago"
+      },
+      "privacyNote": "The municipality is the game’s control centre. Fleet, facilities and Credits stay private.",
+      "block": "Block",
+      "unblock": "Unblock",
+      "blocked": "Blocked",
+      "blockedToast": "Person blocked: you will no longer see what they write.",
+      "unblockedToast": "Person unblocked",
+      "invite": "Invite into the alliance",
+      "inviteSent": "Invite sent",
+      "confirmBlock": "Block {name}?",
+      "confirmBlockBody": "You will no longer see what they write and they cannot invite you. They will not know. You can unblock from the settings."
+    },
+    "settings": {
+      "title": "Alliance settings",
+      "identity": "Identity",
+      "nameCooldown": "Name and tag can change once every {days} days.",
+      "access": "Access",
+      "membersCanInvite": "Members may invite",
+      "membersCanInviteHint": "Otherwise only Deputies and the Coordinator create invites.",
+      "notesHighRolesOnly": "Board notes for high roles only",
+      "notesHighRolesOnlyHint": "Announcements always belong to the high roles.",
+      "danger": "Disbanding",
+      "disband": "Disband the alliance",
+      "disbandBody": "With {hours} hours of notice visible to all, cancellable. Immediate if you are the only member.",
+      "disbandRunning": "Disbanding",
+      "confirmDisband": "Disband {name}?",
+      "confirmDisbandBody": "Every member will see the {hours}-hour notice. You can cancel until it happens.",
+      "cancelDisband": "Cancel the disbanding",
+      "disbandScheduled": "Disbanding scheduled",
+      "disbanded": "Alliance disbanded",
+      "disbandCancelled": "Disbanding cancelled",
+      "save": "Save",
+      "saved": "Settings saved"
+    },
+    "log": {
+      "title": "Alliance log",
+      "empty": "No action recorded",
+      "more": "Show more",
+      "byAdmin": "Administration",
+      "system": "System",
+      "detailField": "field: {field}",
+      "detailRole": {
+        "COORDINATOR": "Coordinator",
+        "DEPUTY": "Deputy",
+        "MEMBER": "Member"
+      },
+      "detailDuration": {
+        "H1": "1 hour",
+        "H24": "24 hours",
+        "D7": "7 days"
+      },
+      "action": {
+        "FOUNDED": "founded the alliance",
+        "SETTINGS_CHANGED": "changed the settings",
+        "MEMBER_JOINED": "{target} joined",
+        "MEMBER_LEFT": "{target} left",
+        "MEMBER_REMOVED": "removed {target}",
+        "MEMBER_BANNED": "banned {target}",
+        "MEMBER_INVITED": "created an invite {target}",
+        "INVITE_REVOKED": "revoked an invite {target}",
+        "REQUEST_ACCEPTED": "accepted the request of {target}",
+        "REQUEST_REJECTED": "rejected the request of {target}",
+        "ROLE_CHANGED": "changed the role of {target}",
+        "MEMBER_MUTED": "muted {target}",
+        "MEMBER_UNMUTED": "unmuted {target}",
+        "LEADERSHIP_TRANSFERRED": "handed the Coordinator role to {target}",
+        "LEADERSHIP_SUCCEEDED": "{target} is the new Coordinator after the previous one’s absence",
+        "DISBAND_SCHEDULED": "started the disbanding",
+        "DISBAND_CANCELLED": "cancelled the disbanding",
+        "DISBANDED": "the alliance was disbanded",
+        "CLOSED_BY_ADMIN": "the alliance was closed",
+        "READ_ONLY_CHANGED": "changed the read-only state",
+        "POST_REMOVED": "removed a post by {target}",
+        "REPLY_REMOVED": "removed a reply by {target}",
+        "MESSAGE_REMOVED": "removed a message by {target}",
+        "LEVEL_UP": "the alliance levelled up",
+        "OPERATION_STARTED": "an alliance operation started",
+        "OPERATION_ENDED": "an alliance operation ended"
+      }
+    },
+    "rules": {
+      "title": "Safety and community rules",
+      "intro": "Boards and chats are for Directors to coordinate. The same protections apply to everybody, from 14 years up.",
+      "items": {
+        "respect": "Respect others: no insults, harassment, hate or discrimination.",
+        "content": "No sexual or violent content, nothing that encourages self-harm.",
+        "personalData": "Do not share personal data: neither yours nor anyone else’s (phone, e-mail, addresses, social profiles).",
+        "noLinks": "No links, advertising, spam or requests for money.",
+        "stayInGame": "Stay in the game: the chat is for emergencies and the alliance, not for meeting people.",
+        "report": "If something makes you uncomfortable, report or block: nobody will know you did."
+      },
+      "labels": {
+        "consequences": "Consequences",
+        "report": "Reporting",
+        "minors": "Minors",
+        "contact": "Contact"
+      },
+      "notes": {
+        "consequences": "Breaking the rules brings a warning, then writing is suspended for 24 hours, then for 7 days, finally the account is suspended. Grave cases skip the steps. Every decision is explained and can be contested.",
+        "report": "Every message, post, name and description can be reported with one tap. A moderator only reads what is reported or stopped by the automatic filter.",
+        "minors": "If you are under 18: never say where you live, how old you are or how to reach you outside the game. If someone asks, report it.",
+        "contact": "To contest a decision or for an urgent problem, write to the address in the legal notice."
+      },
+      "version": "Version {version}",
+      "accepted": "Accepted on {date}",
+      "required": "To write on the board and in the chat you must accept the rules.",
+      "accept": "I accept the rules",
+      "acceptedToast": "Rules accepted"
+    },
+    "privacy": {
+      "title": "Privacy",
+      "showOnDuty": "Show when I am on duty",
+      "showOnDutyHint": "To your allies only. Off, you always appear away.",
+      "acceptDirectInvites": "Accept direct invites",
+      "acceptDirectInvitesHint": "Other Directors can invite you by name into their alliance.",
+      "rules": "Community rules",
+      "rulesHint": "To accept before writing on the board or in the chat.",
+      "rulesAccepted": "Accepted on {date}",
+      "rulesOpen": "Read"
+    },
+    "blocked": {
+      "title": "Blocked people",
+      "hint": "You do not see what they write and they cannot invite you. They do not know.",
+      "empty": "No blocked person.",
+      "since": "since {date}",
+      "unblock": "Unblock",
+      "unblocked": "Person unblocked"
+    },
+    "account": {
+      "export": "Export my data",
+      "exported": "Data exported: the file is in your downloads.",
+      "deleteScheduled": "The account will be deleted on {date}. Signing in again before that cancels the deletion."
+    },
+    "notification": {
+      "JOIN_REQUEST": {
+        "title": "Join request",
+        "body": "{director} asks to join the alliance."
+      },
+      "REQUEST_ACCEPTED": {
+        "title": "You joined [{tag}] {name}",
+        "body": "Your request was accepted."
+      },
+      "REQUEST_REJECTED": {
+        "title": "Request not accepted",
+        "body": "[{tag}] {name} did not accept your join request."
+      },
+      "INVITE_RECEIVED": {
+        "title": "Invite from [{tag}] {name}",
+        "body": "{director} invites you into the alliance."
+      },
+      "MEMBER_REMOVED": {
+        "title": "Removed from [{tag}] {name}",
+        "body": "You are no longer a member. You may ask to come back after 24 hours."
+      },
+      "MEMBER_BANNED": {
+        "title": "Banned from [{tag}] {name}",
+        "body": "You cannot rejoin this alliance."
+      },
+      "MEMBER_MUTED": {
+        "title": "Muted in [{tag}] {name}",
+        "body": "You cannot write until {count}. Quick phrases stay available."
+      },
+      "ROLE_DEPUTY": {
+        "title": "You are Deputy of [{tag}] {name}",
+        "body": "You can accept requests, publish announcements and moderate."
+      },
+      "ROLE_MEMBER": {
+        "title": "Deputy role revoked",
+        "body": "You are a Member of [{tag}] {name} again."
+      },
+      "LEADERSHIP_TRANSFERRED": {
+        "title": "You are the Coordinator of [{tag}] {name}",
+        "body": "{director} handed you the role."
+      },
+      "LEADERSHIP_SUCCEEDED": {
+        "title": "You are the Coordinator of [{tag}] {name}",
+        "body": "The Coordinator was away for 14 days: the role passes to you."
+      },
+      "DISBAND_SCHEDULED": {
+        "title": "[{tag}] {name} is disbanding",
+        "body": "The Coordinator started the disbanding with 48 hours of notice."
+      },
+      "DISBAND_CANCELLED": {
+        "title": "Disbanding cancelled",
+        "body": "[{tag}] {name} goes on."
+      },
+      "ALLIANCE_DISBANDED": {
+        "title": "Alliance disbanded",
+        "body": "[{tag}] {name} no longer exists. You can join another alliance right away."
+      },
+      "ALLIANCE_CLOSED": {
+        "title": "Alliance closed",
+        "body": "[{tag}] {name} was closed by the administration."
+      },
+      "ANNOUNCEMENT": {
+        "title": "Announcement in [{tag}] {name}",
+        "body": "{director} published an announcement."
+      },
+      "MENTION": {
+        "title": "{director} mentioned you",
+        "body": "In the chat of [{tag}] {name}."
+      },
+      "AID_REQUEST": {
+        "title": "Aid request",
+        "body": "{director} of [{tag}] {name} asks for a column: you have useful vehicles."
+      },
+      "AID_ARRIVED": {
+        "title": "Allied column on scene",
+        "body": "The column of {director} from [{tag}] {name} has arrived."
+      },
+      "AID_PAID": {
+        "title": "Reward from the aid fund",
+        "body": "+{credits} Credits for the column to {director} ([{tag}] {name})."
+      }
+    },
+    "landing": {
+      "title": "Invite to {name} [{tag}]",
+      "by": "{name} invites you into their alliance on Rescue Control.",
+      "pitch": "A group of Directors who help each other on incidents.",
+      "facts": "Level {level} · {members}/{slots} members · {language}",
+      "cta": "Open the invite in the game",
+      "ctaSignIn": "Sign in to join",
+      "ctaInvalid": "Go to the game",
+      "invalidTitle": "Invalid invite",
+      "invalidHint": "The link has expired or was revoked. You can still play and look for an alliance from the game."
+    },
+    "restriction": {
+      "FEATURE_DISABLED": "This part is not active.",
+      "SUSPENDED": "Your account is suspended: read only.",
+      "MUTED": "You are muted: you can write again",
+      "RULES_NOT_ACCEPTED": "To write, accept the community rules first.",
+      "LEVEL_TOO_LOW": "Writing starts at level {level}.",
+      "ACCOUNT_TOO_NEW": "Writing starts once the account is 24 hours old.",
+      "READ_ONLY": "Read-only right now.",
+      "readRules": "Read the rules"
+    },
+    "reaction": {
+      "ACK": "Received",
+      "WELL_DONE": "Well done",
+      "PRESENT": "Present",
+      "THANKS": "Thanks"
+    },
+    "quick": {
+      "NEED_FIRE_ENGINE": "I need a fire engine",
+      "NEED_ADVANCED_AMBULANCE": "I need an advanced ambulance",
+      "NEED_PATROL": "I need a patrol",
+      "NEED_WILDFIRE_UNIT": "I need a wildfire unit",
+      "NEED_ALPINE_RESCUE": "I need mountain rescue",
+      "NEED_BOAT": "I need a boat",
+      "COMING": "Coming",
+      "CANNOT_NOW": "Can’t right now",
+      "COLUMN_SENT": "Column sent",
+      "ON_SCENE": "On scene",
+      "RETURNING": "Returning",
+      "ON_DUTY": "Going on duty",
+      "OFF_DUTY": "Going off duty",
+      "UNDER_PRESSURE": "Under pressure",
+      "ALL_CLEAR": "All clear here",
+      "THANKS": "Thanks",
+      "WELL_DONE": "Well done",
+      "GOOD_SHIFT": "Have a good shift"
+    },
+    "report": {
+      "title": "Report",
+      "about": "Report about: “{label}”",
+      "intro": "The report goes to moderation. You will get the outcome in your notifications.",
+      "sentTitle": "Report sent",
+      "sentBody": "Thank you. Moderation will review it: the outcome will reach the notification centre.",
+      "reason": "Reason",
+      "reasons": {
+        "HARASSMENT": "Insults or harassment",
+        "SEXUAL": "Sexual content",
+        "HATE": "Hate or discrimination",
+        "THREAT_SELF_HARM": "Threats or self-harm",
+        "PERSONAL_DATA": "Personal data",
+        "SPAM_SCAM": "Spam or scam",
+        "OTHER": "Other"
+      },
+      "note": "Note",
+      "notePlaceholder": "Optional note for moderation…",
+      "hint": "One report per content. High roles do not see it: it always reaches the administration too.",
+      "submit": "Send the report"
+    },
+    "post": {
+      "system": {
+        "MEMBER_JOINED": "{director} joined the alliance.",
+        "MEMBER_LEFT": "{director} left the alliance.",
+        "LEVEL_UP": "The alliance reached level {level}."
+      }
+    }
+  }
+}

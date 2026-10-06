@@ -26,6 +26,7 @@ import { Checkbox, Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Timeline } from '@/components/ui/timeline';
 import { Tooltip } from '@/components/ui/tooltip';
+import { KeyboardDemo } from './keyboard-demo';
 
 const FAMILIES: ServiceFamily[] = ['FIRE', 'EMS', 'POLICE', 'WILDFIRE', 'ALPINE', 'UNG'];
 const TOKENS = [
@@ -456,6 +457,10 @@ export function DesignScreen() {
               </li>
             ))}
           </ul>
+        </Section>
+
+        <Section id="keyboard" title={t('sections.keyboard')}>
+          <KeyboardDemo />
         </Section>
       </div>
     </main>

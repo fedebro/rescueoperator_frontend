@@ -13,6 +13,7 @@ import {
   CheckCheck,
   ChevronRight,
   Coins,
+  Handshake,
   Info,
   Settings2,
   Siren,
@@ -66,6 +67,7 @@ const CATEGORY_ICON: Record<Category, LucideIcon> = {
   ECONOMY: Coins,
   PROGRESSION: Trophy,
   SYSTEM: Settings2,
+  ALLIANCE: Handshake,
 };
 /** Priority is always icon + label; the colour only reinforces it. */
 const PRIORITY: Record<Priority, { icon: LucideIcon; className: string; bar: string }> = {

@@ -77,7 +77,8 @@ describe('mock push backend', () => {
     expect(config.enabled).toBe(true);
     expect(config.vapidPublicKey).toBe(MOCK_VAPID_PUBLIC_KEY);
     expect(config.categories.find((c) => c.code === 'ECONOMY')?.defaultEnabled).toBe(false);
-    expect(config.categories.filter((c) => c.defaultEnabled)).toHaveLength(8);
+    // Every category but ECONOMY is on by default — the two alliance ones included (D-115).
+    expect(config.categories.filter((c) => c.defaultEnabled)).toHaveLength(10);
     engine.state.featureFlags.push_notifications = false;
     expect(pushConfig(engine)).toMatchObject({ enabled: false, vapidPublicKey: null });
   });

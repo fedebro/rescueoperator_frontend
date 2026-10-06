@@ -1,0 +1,926 @@
+{
+  "game": {
+    "nav": {
+      "alliance": "Alliance"
+    }
+  },
+  "platform": {
+    "a11y": {
+      "allianceUnread": "{count, plural, one {# nouveauté dans l’alliance} other {# nouveautés dans l’alliance}}",
+      "moreUnread": "{count, plural, one {# nouveauté dans les autres sections} other {# nouveautés dans les autres sections}}"
+    }
+  },
+  "status": {
+    "vehicle": {
+      "ALLIED_SUPPORT": "En soutien allié"
+    }
+  },
+  "notificationCenter": {
+    "category": {
+      "ALLIANCE": "Alliance"
+    }
+  },
+  "push": {
+    "categories": {
+      "ALLIANCE_AID": {
+        "label": "Alliance : aides et opérations",
+        "hint": "Demandes d’aide que vous pouvez couvrir et opérations d’alliance."
+      },
+      "ALLIANCE_SOCIAL": {
+        "label": "Alliance : messages et annonces",
+        "hint": "Mentions, annonces épinglées, demandes d’adhésion, rôles. Jamais une notification par message."
+      }
+    }
+  },
+  "errors": {
+    "ALLIANCE_FULL": "L’alliance n’a plus de place libre.",
+    "ALREADY_IN_ALLIANCE": "On ne peut être que dans une alliance à la fois.",
+    "ALLIANCE_COOLDOWN": "Après un départ, 24 heures sont nécessaires avant de rejoindre une autre alliance.",
+    "NOT_ALLIANCE_MEMBER": "Vous ne faites pas partie de cette alliance.",
+    "ROLE_REQUIRED": "Cette action revient à un rôle plus élevé.",
+    "MUTED": "Vous êtes réduit au silence : vous ne pouvez pas écrire pour le moment.",
+    "TEXT_REJECTED": "Ce texte n’est pas autorisé.",
+    "RULES_NOT_ACCEPTED": "Acceptez d’abord les règles de la communauté.",
+    "NO_REAL_GAP": "L’intervention n’a aucun manque réel à couvrir.",
+    "COLUMN_TOO_LATE": "La colonne arriverait trop tard.",
+    "AID_LIMIT_REACHED": "Vous avez atteint la limite d’aides pour le moment.",
+    "NAME_CHANGE_COOLDOWN": "Le nom ne peut changer qu’une fois tous les 30 jours.",
+    "BLOCKED": "Impossible : l’une des deux personnes a bloqué l’autre.",
+    "ACCOUNT_DELETING": "Ce compte est en attente de suppression."
+  },
+  "design": {
+    "sections": {
+      "keyboard": "Écran avec clavier"
+    },
+    "keyboard": {
+      "intro": "Page plein écran avec le champ de texte ancré à la zone visible : il se réduit quand le clavier s’ouvre (à essayer sur téléphone ou avec l’aperçu mobile).",
+      "open": "Ouvrir la démo",
+      "title": "Chat de démonstration",
+      "close": "Fermer",
+      "line": "Message numéro {n}",
+      "placeholder": "Écrire un message…",
+      "send": "Envoyer",
+      "earlier": "Chargement des précédents…",
+      "newBelow": "Nouveaux messages ↓"
+    }
+  },
+  "alliance": {
+    "title": "Alliance",
+    "tabsLabel": "Onglets de l’alliance",
+    "tabs": {
+      "overview": "Aperçu",
+      "board": "Tableau",
+      "chat": "Chat",
+      "aid": "Entraide",
+      "members": "Membres",
+      "ranking": "Classement"
+    },
+    "loadFailed": "Impossible de charger l’alliance",
+    "retry": "Réessayer",
+    "role": {
+      "COORDINATOR": "Coordinateur",
+      "DEPUTY": "Adjoint",
+      "MEMBER": "Membre"
+    },
+    "policy": {
+      "OPEN": "Ouverte",
+      "REQUEST": "Sur demande",
+      "INVITE": "Sur invitation"
+    },
+    "policyHint": {
+      "OPEN": "Qui veut entre d’un geste.",
+      "REQUEST": "Un Adjoint ou le Coordinateur approuve chaque demande.",
+      "INVITE": "On n’entre qu’avec une invitation."
+    },
+    "presence": {
+      "ON_DUTY": "En service",
+      "ONLINE": "Connecté",
+      "AWAY": "Absent"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "DISBANDING": "En dissolution",
+      "DISBANDED": "Dissoute",
+      "CLOSED": "Fermée par l’administration"
+    },
+    "textReason": {
+      "BANNED_TERM": "mots interdits",
+      "URL": "adresses web",
+      "EMAIL": "adresses e-mail",
+      "PHONE": "numéros de téléphone",
+      "SOCIAL_HANDLE": "profils sociaux"
+    },
+    "errorReason": {
+      "TRANSFER_FIRST": "Vous êtes le Coordinateur : cédez d’abord le rôle à un autre membre.",
+      "INVITE_REQUIRED": "On n’entre dans cette alliance qu’avec une invitation.",
+      "BANNED": "Vous ne pouvez pas revenir dans cette alliance.",
+      "NAME_TAKEN": "Ce nom est déjà pris.",
+      "TAG_TAKEN": "Ce sigle est déjà pris.",
+      "DIRECT_INVITES_OFF": "Ce Directeur n’accepte pas les invitations directes.",
+      "REQUEST_PENDING": "Vous avez déjà une demande d’adhésion en attente.",
+      "ALREADY_DECIDED": "Cette demande a déjà été tranchée.",
+      "EMBLEM_LOCKED": "Une partie de l’emblème se débloque à un niveau supérieur.",
+      "SELF": "Vous ne pouvez pas faire cela sur vous-même.",
+      "SUSPENDED": "Le compte est suspendu.",
+      "READ_ONLY": "Lecture seule pour le moment.",
+      "LEVEL_REQUIRED": "Le niveau {level} est requis.",
+      "DEPUTY_SLOTS_FULL": "Plus de place d’Adjoint à ce niveau.",
+      "COORDINATOR": "Impossible sur le Coordinateur.",
+      "REQUESTER_UNAVAILABLE": "Le demandeur n’est plus disponible : la demande a été retirée.",
+      "ALLIANCE_NOT_ACTIVE": "L’alliance n’est plus active.",
+      "ALREADY_DISBANDING": "La dissolution est déjà en cours.",
+      "NOT_DISBANDING": "Aucune dissolution à annuler.",
+      "NOT_AN_ANNOUNCEMENT": "Seules les annonces s’épinglent.",
+      "PIN_LIMIT": "Plus de place en haut : désépinglez d’abord une annonce.",
+      "EDIT_WINDOW_EXPIRED": "Le délai pour modifier la publication est passé.",
+      "DELETE_WINDOW_EXPIRED": "Le délai pour supprimer le message est passé.",
+      "REMOVED": "La publication a été supprimée.",
+      "DUPLICATE_MESSAGE": "Vous venez d’envoyer le même message.",
+      "CHANNEL_ARCHIVED": "Ce canal est fermé : lecture seule.",
+      "DAILY_LIMIT": "Vous avez atteint la limite du jour sur le tableau.",
+      "CHAT_RATE": "Vous écrivez trop vite : attendez un instant.",
+      "OWN_REQUEST": "C’est votre demande.",
+      "REQUEST_NOT_OPEN": "La demande n’est plus ouverte.",
+      "ONE_PER_REQUEST": "Vous avez déjà envoyé une colonne pour cette demande.",
+      "ACTIVE_COLUMNS": "Vous avez déjà le maximum de colonnes en cours.",
+      "TOO_MANY_VEHICLES": "Trop de véhicules pour une colonne.",
+      "OPEN_REQUESTS": "Vous avez déjà le maximum de demandes ouvertes.",
+      "ALREADY_REQUESTED": "Vous avez déjà demandé de l’aide pour cette intervention.",
+      "MIN_INTERVAL": "Attendez une minute entre deux demandes.",
+      "NOT_RECALLABLE": "La colonne ne peut plus être rappelée.",
+      "INCIDENT_NOT_ACTIVE": "L’intervention n’est plus en cours.",
+      "USE_MAJOR_REQUEST": "Pour une urgence majeure, l’aide se demande depuis la vue de coordination.",
+      "LEVEL": "On écrit à partir du niveau 2.",
+      "ACCOUNT_AGE": "On écrit quand le compte a au moins 24 heures."
+    },
+    "off": {
+      "title": "Les alliances ne sont pas actives",
+      "body": "Cette partie du jeu est éteinte pour le moment."
+    },
+    "locked": {
+      "title": "Alliances à partir du niveau {level}",
+      "body": "À partir du niveau {level}, vous pourrez voir les alliances et en rejoindre une. Votre niveau : {current}."
+    },
+    "cooldown": {
+      "title": "Une pause avant une nouvelle alliance",
+      "body": "Après un départ ou une exclusion, {hours} heures sont nécessaires : vous pourrez rejoindre une alliance"
+    },
+    "find": {
+      "title": "Trouver une alliance",
+      "search": "Chercher par nom ou sigle",
+      "language": "Langue",
+      "anyLanguage": "Toutes les langues",
+      "openOnly": "Ouvertes seulement",
+      "hasSlots": "Avec des places libres seulement",
+      "sortedByActivity": "Triées par activité récente",
+      "listLabel": "Alliances trouvées",
+      "empty": "Aucune alliance trouvée",
+      "emptyHint": "Essayez une autre recherche, ou fondez la vôtre.",
+      "loadMore": "Afficher plus",
+      "members": "{count}/{slots} membres",
+      "level": "Niv. {level}",
+      "lastActivity": "Active",
+      "join": "Rejoindre",
+      "request": "Demander à entrer",
+      "requested": "Demande envoyée : un rôle élevé répondra.",
+      "requestedShort": "Demande envoyée",
+      "withdraw": "Retirer la demande",
+      "withdrawn": "Demande retirée",
+      "joined": "Vous avez rejoint l’alliance",
+      "blocked": {
+        "ALLIANCE_FULL": "Aucune place libre pour le moment.",
+        "LEVEL_TOO_LOW": "Requiert au moins le niveau {level}.",
+        "ALREADY_IN_ALLIANCE": "Vous êtes déjà dans une alliance.",
+        "ALLIANCE_COOLDOWN": "Vous êtes en pause après avoir quitté une alliance.",
+        "INVITE_ONLY": "Sur invitation seulement.",
+        "BANNED": "Vous ne pouvez pas revenir dans cette alliance.",
+        "REQUEST_PENDING": "Votre demande est en attente.",
+        "NOT_ACTIVE": "L’alliance n’est pas active.",
+        "FEATURE_DISABLED": "Indisponible pour le moment."
+      }
+    },
+    "card": {
+      "minLevel": "Niveau minimum {level}",
+      "noMinLevel": "Aucun niveau minimum",
+      "created": "Fondée le {date}",
+      "noDescription": "Aucune description."
+    },
+    "found": {
+      "title": "Fonder une alliance",
+      "cta": "Fonder",
+      "identity": "Identité",
+      "access": "Accès",
+      "name": "Nom",
+      "nameHint": "De {min} à {max} caractères, unique.",
+      "tag": "Sigle",
+      "tagHint": "De {min} à {max} lettres ou chiffres : affiché à côté des noms, comme [ABR].",
+      "description": "Description",
+      "descriptionHint": "Ce que fait votre alliance et qui vous cherchez. Texte seulement : ni liens ni contacts.",
+      "emblem": "Emblème",
+      "shape": "Forme",
+      "symbol": "Symbole",
+      "primary": "Couleur principale",
+      "secondary": "Couleur secondaire",
+      "lockedAt": "à partir du niveau {level}",
+      "language": "Langue",
+      "languageHint": "Utile à ceux qui cherchent une alliance.",
+      "policy": "Accès",
+      "policyHint": {
+        "OPEN": "Qui veut entre d’un geste.",
+        "REQUEST": "Un Adjoint ou le Coordinateur approuve chaque demande.",
+        "INVITE": "On n’entre qu’avec une invitation."
+      },
+      "minLevel": "Niveau minimum",
+      "minLevelHint": "Facultatif : le niveau de Directeur requis pour entrer.",
+      "minLevelNone": "Aucun",
+      "minLevelValue": "Niveau {level}",
+      "costLabel": "Coût",
+      "free": "Fonder une alliance ne coûte rien pour le moment.",
+      "requirement": "À partir du niveau {level}. Vous devenez Coordinateur.",
+      "requirementMissing": "Le niveau {level} est requis : vous êtes au {current}.",
+      "cannotAfford": "Crédits insuffisants : vous avez {credits}.",
+      "confirm": "Fonder « {name} » ?",
+      "confirmBody": "Coûte {cost} Crédits. Vous devenez Coordinateur et pouvez inviter qui vous voulez.",
+      "confirmBodyFree": "Ne coûte rien. Vous devenez Coordinateur et pouvez inviter qui vous voulez.",
+      "success": "Alliance fondée",
+      "textRejected": "Texte non autorisé : {reasons}.",
+      "error": {
+        "name": {
+          "short": "Le nom est trop court.",
+          "long": "Le nom est trop long.",
+          "format": "Nom invalide."
+        },
+        "tag": {
+          "short": "Le sigle est trop court.",
+          "long": "Le sigle est trop long.",
+          "format": "Lettres et chiffres seulement."
+        },
+        "description": {
+          "short": "Description invalide.",
+          "long": "La description est trop longue.",
+          "format": "Description invalide."
+        }
+      }
+    },
+    "invites": {
+      "title": "Invitations",
+      "received": "Invitations reçues",
+      "from": "de {name}",
+      "expires": "expire",
+      "accept": "Rejoindre",
+      "decline": "Refuser",
+      "declined": "Invitation refusée",
+      "full": "Aucune place libre pour le moment",
+      "link": "Lien d’invitation",
+      "linkHint": "Qui ouvre le lien entre directement. Valable {days} jours, pour plusieurs personnes.",
+      "create": "Créer un lien",
+      "copy": "Copier",
+      "copied": "Lien copié",
+      "copyFailed": "Copie impossible : sélectionnez le code et copiez-le à la main.",
+      "share": "Partager",
+      "shareText": "Rejoins mon alliance sur Rescue Control : {name} [{tag}]",
+      "revoke": "Révoquer",
+      "revoked": "Invitation révoquée",
+      "uses": "{count, plural, =0 {aucune entrée} one {# entrée} other {# entrées}}",
+      "direct": "Inviter un Directeur",
+      "directHint": "Cherchez par nom : il recevra une invitation directe dans le jeu.",
+      "search": "Nom du Directeur",
+      "noResults": "Aucun Directeur avec ce nom",
+      "hitWho": "Niveau {level} · {location}",
+      "invite": "Inviter",
+      "inAlliance": "Déjà dans une alliance",
+      "notInvitable": "Ne peut pas être invité",
+      "inviteSent": "Invitation envoyée à {name}",
+      "pending": "Invitations directes en attente",
+      "directTo": "à {name}",
+      "linkTitle": "Invitation pour {name} [{tag}]",
+      "linkInvalid": "Cette invitation n’est plus valable.",
+      "seats": "{count}/{slots} membres",
+      "joinedToast": "Vous avez rejoint l’alliance",
+      "invitedShort": "Invité"
+    },
+    "requests": {
+      "title": "Demandes d’adhésion",
+      "empty": "Aucune demande en attente",
+      "who": "Niveau {level} · {location}",
+      "expires": "expire",
+      "accept": "Accepter",
+      "reject": "Refuser",
+      "accepted": "Demande acceptée",
+      "rejected": "Demande refusée",
+      "mine": "Votre demande",
+      "mineBody": "En attente de la réponse d’un rôle élevé.",
+      "pendingAria": "{count, plural, one {# demande en attente} other {# demandes en attente}}"
+    },
+    "overview": {
+      "emblemAria": "Emblème de {name}",
+      "level": "Niveau {level}",
+      "xp": "{xp} / {next} points",
+      "maxLevel": "Niveau maximum",
+      "members": "Membres",
+      "onDuty": "En service",
+      "deputies": "Adjoints",
+      "coordinator": "Coordinateur",
+      "since": "membre depuis le {date}",
+      "disbanding": "Dissolution prévue",
+      "disbandingBody": "Le Coordinateur peut l’annuler dans les paramètres.",
+      "disbandingCoordinator": "Vous pouvez l’annuler dans les paramètres tant qu’elle n’a pas eu lieu.",
+      "inviteCta": "Inviter quelqu’un",
+      "settings": "Paramètres",
+      "log": "Journal",
+      "rules": "Règles de la communauté",
+      "whoIsOn": "Qui est en service",
+      "nobodyOn": "Aucun allié en service pour le moment.",
+      "pinned": "Annonces épinglées",
+      "noPinned": "Aucune annonce épinglée.",
+      "objectives": "Objectifs de la semaine",
+      "noObjectives": "Aucun objectif en cours.",
+      "aid": "Demandes d’aide",
+      "noAid": "Aucune demande ouverte.",
+      "operation": "Opération d’alliance"
+    },
+    "featureOff": {
+      "board": {
+        "title": "Tableau inactif",
+        "body": "Les annonces et les notes de l’alliance ne sont pas encore disponibles."
+      },
+      "chat": {
+        "title": "Chat inactif",
+        "body": "Le chat de l’alliance n’est pas encore disponible."
+      },
+      "aid": {
+        "title": "Entraide inactive",
+        "body": "Les demandes d’aide entre alliés ne sont pas encore disponibles."
+      },
+      "ranking": {
+        "title": "Classement inactif",
+        "body": "Le classement entre alliances n’est pas encore disponible."
+      },
+      "objectives": {
+        "title": "Objectifs inactifs",
+        "body": "Les objectifs hebdomadaires ne sont pas encore disponibles."
+      },
+      "operations": {
+        "title": "Opérations inactives",
+        "body": "Les opérations d’alliance ne sont pas encore disponibles."
+      }
+    },
+    "board": {
+      "emptyTitle": "Aucune publication",
+      "emptyBody": "Les annonces et les notes de l’alliance apparaîtront ici.",
+      "system": "Le jeu",
+      "deletedDirector": "Directeur supprimé",
+      "placeholder": {
+        "removed": "Publication supprimée",
+        "hidden": "Contenu en cours d’examen",
+        "blocked": "Message d’un utilisateur bloqué"
+      },
+      "replyRemoved": "Réponse supprimée",
+      "actions": "Actions",
+      "report": "Signaler",
+      "blockAuthor": "Bloquer l’auteur",
+      "remove": "Supprimer",
+      "edited": "Publication modifiée",
+      "removed": "Publication supprimée",
+      "replied": "Réponse publiée",
+      "pinned": "Épinglé",
+      "editedMark": "modifié",
+      "edit": "Modifier",
+      "unpin": "Désépingler",
+      "pin": "Épingler en haut",
+      "save": "Enregistrer",
+      "reactions": "Réactions",
+      "allReplies": "Afficher les {count} réponses",
+      "replyPlaceholder": "Répondre…",
+      "reply": "Répondre",
+      "readOnly": "Le tableau est en lecture seule : on peut lire, pas écrire.",
+      "composer": "Nouvelle publication",
+      "announcementPlaceholder": "Écrire une annonce pour toute l’alliance…",
+      "notePlaceholder": "Écrire une note…",
+      "kindLabel": "Type de publication",
+      "kind": {
+        "NOTE": "Note",
+        "ANNOUNCEMENT": "Annonce"
+      },
+      "pinOnPost": "Épingler en haut (max {slots})",
+      "announce": "Publier l’annonce",
+      "post": "Publier",
+      "limits": "Jusqu’à {posts} publications et {replies} réponses par jour. Une publication se modifie pendant {minutes} minutes.",
+      "more": "Afficher plus",
+      "announced": "Annonce publiée",
+      "posted": "Note publiée"
+    },
+    "chat": {
+      "emptyTitle": "Aucun message",
+      "emptyBody": "Écrivez le premier, ou utilisez une phrase rapide.",
+      "title": "Chat",
+      "channels": "Canaux",
+      "general": "Général",
+      "operation": "Opération",
+      "unreadIn": "{count, plural, one {# non lu} other {# non lus}}",
+      "whoIsHere": "Qui est là",
+      "nobody": "Personne {state}",
+      "quickPhrases": "Phrases rapides",
+      "blocked": {
+        "READ_ONLY": "Le chat est en lecture seule. Les phrases rapides restent disponibles.",
+        "FEATURE_DISABLED": "Le chat n’est pas actif.",
+        "SUSPENDED": "Votre compte est suspendu : lecture seule.",
+        "MUTED": "Vous êtes réduit au silence : vous pourrez écrire de nouveau",
+        "RULES_NOT_ACCEPTED": "Pour écrire, acceptez les règles de la communauté depuis l’Aperçu.",
+        "LEVEL_TOO_LOW": "On écrit à partir du niveau 2.",
+        "ACCOUNT_TOO_NEW": "On écrit quand le compte a au moins 24 heures."
+      },
+      "mentionPicker": "Membres à mentionner",
+      "composerPlaceholder": "Écrire un message… (@ pour mentionner)",
+      "retry": "Réessayer",
+      "send": "Envoyer",
+      "loadingEarlier": "Chargement des messages précédents…",
+      "newBelow": "{count, plural, one {Nouveau message ↓} other {# nouveaux messages ↓}}",
+      "unavailable": "Le chat n’est pas disponible.",
+      "backToAlliance": "Retour à l’alliance",
+      "removed": "Message supprimé",
+      "mutedToast": "Membre réduit au silence pour une heure",
+      "deletedDirector": "Directeur supprimé",
+      "placeholder": {
+        "removed": "Message supprimé",
+        "hidden": "Message en cours d’examen",
+        "blocked": "Message d’un utilisateur bloqué"
+      },
+      "actions": "Actions sur le message",
+      "report": "Signaler",
+      "block": "Bloquer",
+      "copy": "Copier",
+      "remove": "Supprimer",
+      "mute": "Réduire au silence 1 h"
+    },
+    "aid": {
+      "emptyTitle": "Aucune demande",
+      "emptyBody": "Les demandes d’aide et vos colonnes apparaîtront ici.",
+      "gapCovered": "Manque couvert",
+      "mineTitle": "Votre demande d’aide",
+      "title": "{name} demande de l’aide",
+      "majorBadge": "Maxi",
+      "status": {
+        "OPEN": "Ouverte",
+        "FILLED": "Couverte",
+        "CANCELLED": "Retirée",
+        "EXPIRED": "Expirée",
+        "CLOSED": "Terminée"
+      },
+      "severity": "Gravité",
+      "distance": "à {distance}",
+      "missing": "Il manque :",
+      "columnsInFlight": "{count, plural, one {# colonne en route} other {# colonnes en route}} : {names}",
+      "openInTab": "Ouvrir",
+      "openIncident": "Ouvrir l’intervention",
+      "withdraw": "Retirer la demande",
+      "sendColumn": "Envoyer une colonne",
+      "blocked": {
+        "OWN_REQUEST": "C’est votre demande.",
+        "NOT_OPEN": "Demande plus ouverte.",
+        "NO_USEFUL_VEHICLE": "Aucun de vos véhicules disponibles n’apporte ce qui manque.",
+        "COLUMN_LIMIT": "Vous avez déjà le maximum de colonnes en cours.",
+        "ALREADY_SENT": "Vous avez déjà envoyé une colonne.",
+        "TOO_LATE": "Aucun de vos véhicules n’arriverait à temps.",
+        "FEATURE_DISABLED": "L’entraide n’est pas active.",
+        "NOT_ON_DUTY": "Prenez le service pour aider."
+      },
+      "cancelled": "Demande retirée",
+      "requested": "Demande envoyée à l’alliance",
+      "columnTo": "Colonne vers {name}",
+      "columnFrom": "Colonne de {name}",
+      "columnStatus": {
+        "EN_ROUTE": "En route",
+        "ON_SCENE": "Sur place",
+        "RECALLED": "Rappelée",
+        "RETURNING": "En retour",
+        "RETURNED": "Rentrée",
+        "ABORTED": "Annulée"
+      },
+      "reward": {
+        "PENDING": "En attente",
+        "PAID": "Prime payée",
+        "NONE": "Aucune prime",
+        "CAPPED": "XP seulement (plafond du jour)",
+        "UNDER_REVIEW": "Prime en examen"
+      },
+      "rewardLabel": "Prime",
+      "recall": "Rappeler",
+      "recalled": "Colonne rappelée",
+      "openRequests": "Demandes ouvertes",
+      "noOpen": "Aucune demande ouverte dans l’alliance.",
+      "limitsHint": "Jusqu’à {requests} demandes ouvertes par Directeur, {vehicles} véhicules par colonne, {columns} colonnes en cours.",
+      "myColumns": "Colonnes en cours",
+      "noColumns": "Aucune colonne en cours.",
+      "history": "Aides données et reçues",
+      "noHistory": "Aucune aide pour l’instant",
+      "noHistoryHint": "Les colonnes envoyées et reçues apparaîtront ici avec leur prime.",
+      "more": "Afficher plus",
+      "shared": "Partagée",
+      "alliedUnits": "Unités alliées",
+      "arriving": "en arrivée",
+      "sharedTitle": "Partagée avec l’alliance",
+      "sharedBody": "Les alliés voient ce qui manque et peuvent envoyer une colonne.",
+      "sharedCovered": "Le manque est couvert : les colonnes déjà parties arrivent quand même.",
+      "askTitle": "Demander de l’aide à l’alliance",
+      "askBody": "Il manque quelque chose qu’un allié de [{tag}] peut apporter. Vous gardez toute la récompense.",
+      "ask": "Demander de l’aide",
+      "noGap": "Aucun manque à couvrir : l’aide de l’alliance n’est pas nécessaire.",
+      "majorTitle": "Colonnes alliées",
+      "goldWarning": "Avec de l’aide alliée ou des renforts, pas de médaille d’or.",
+      "alliedColumns": "Colonnes alliées",
+      "supportTo": "chez [{tag}] {name}",
+      "returnIn": "retour dans",
+      "arrivesIn": "arrivée dans",
+      "onSceneThere": "sur place",
+      "dismiss": "Masquer",
+      "coverage": {
+        "OK": "Bonne",
+        "LOW": "Faible",
+        "CRITICAL": "Critique"
+      },
+      "toast": {
+        "aborted": "L’intervention s’est terminée avant l’arrivée : la colonne rentre sans frais.",
+        "onScene": "Votre colonne est sur place chez {name}.",
+        "paid": "Colonne rentrée : +{credits} Crédits du fonds d’aide.",
+        "capped": "Colonne rentrée : déjà 8 aides récompensées aujourd’hui, XP seulement.",
+        "review": "Colonne rentrée : prime en attente d’examen.",
+        "none": "Colonne rentrée : contribution trop faible pour une prime."
+      },
+      "composer": {
+        "title": "Composer la colonne",
+        "blocked": {
+          "TOO_LATE": "Arriverait trop tard",
+          "CREW_INSUFFICIENT": "Équipage insuffisant",
+          "FUEL_INSUFFICIENT": "Carburant insuffisant",
+          "NOT_AVAILABLE": "Indisponible"
+        },
+        "eta": "arrivée {time}",
+        "sent": "Colonne partie",
+        "noVehicles": "Aucun véhicule utile",
+        "noVehiclesHint": "Aucun de vos véhicules disponibles n’apporte ce qui manque.",
+        "vehicles": "Véhicules à envoyer",
+        "maxVehicles": "Jusqu’à {max} véhicules par colonne. Aucune aide n’est obligatoire.",
+        "coverage": "Couverture",
+        "arrival": "Arrivée",
+        "reward": "Prime estimée",
+        "rewardHint": "Fonds d’aide : {credits} Crédits, répartis selon la contribution utile. Aujourd’hui {used}/{cap} aides récompensées.",
+        "pairFactor": "Avec cet allié aujourd’hui la prime compte ×{factor}.",
+        "coverageWarning": "Votre couverture descend à {band} ({pct} %).",
+        "send": "Envoyer la colonne"
+      }
+    },
+    "ranking": {
+      "emptyTitle": "Classement pas encore calculé",
+      "emptyBody": "Le classement de la semaine apparaîtra ici."
+    },
+    "members": {
+      "title": "Membres · {count}/{slots}",
+      "listLabel": "Liste des membres",
+      "empty": "Aucun membre",
+      "you": "Vous",
+      "level": "Niv. {level}",
+      "inactive": "Inactif",
+      "mutedShort": "Silencié",
+      "muted": "Réduit au silence jusqu’au {until}",
+      "blocked": "Bloqué",
+      "card": "Ouvrir la fiche du Directeur",
+      "actions": "Actions sur {name}",
+      "promote": "Nommer Adjoint",
+      "demote": "Retirer le rôle d’Adjoint",
+      "transfer": "Céder le rôle de Coordinateur",
+      "mute": "Réduire au silence",
+      "muteFor": {
+        "H1": "1 heure",
+        "H24": "24 heures",
+        "D7": "7 jours"
+      },
+      "unmute": "Rendre la parole",
+      "remove": "Exclure",
+      "ban": "Bannir",
+      "promoted": "{name} est Adjoint",
+      "demoted": "{name} est Membre",
+      "mutedToast": "{name} est réduit au silence",
+      "unmutedToast": "{name} peut écrire de nouveau",
+      "removedToast": "{name} a été exclu",
+      "bannedToast": "{name} a été banni",
+      "transferred": "Vous avez cédé le rôle de Coordinateur",
+      "confirmRemove": "Exclure {name} ?",
+      "confirmRemoveBody": "Il pourra demander à revenir après 24 heures.",
+      "confirmBan": "Bannir {name} ?",
+      "confirmBanBody": "Il ne pourra ni revenir ni être réinvité.",
+      "confirmTransfer": "Céder le rôle à {name} ?",
+      "confirmTransferBody": "Vous deviendrez Adjoint, ou Membre s’il n’y a plus de place d’Adjoint.",
+      "leave": "Quitter l’alliance",
+      "confirmLeave": "Quitter {name} ?",
+      "confirmLeaveBody": "Vous ne perdez rien de votre carrière. Pendant {hours} heures vous ne pourrez pas rejoindre une autre alliance.",
+      "leaveTransferFirst": "Vous êtes le Coordinateur : cédez d’abord le rôle à un autre membre.",
+      "left": "Vous avez quitté l’alliance"
+    },
+    "director": {
+      "title": "Fiche du Directeur",
+      "you": "Vous",
+      "level": "Niveau",
+      "location": "Centrale",
+      "services": "Services",
+      "noAlliance": "Sans alliance",
+      "memberSince": "Membre depuis",
+      "aid": "Aides données / reçues",
+      "medals": "Médailles or · argent · bronze",
+      "lastSeen": "Dernière connexion : {when}",
+      "lastSeenValue": {
+        "TODAY": "aujourd’hui",
+        "THIS_WEEK": "cette semaine",
+        "EARLIER": "il y a plus d’une semaine"
+      },
+      "privacyNote": "La commune est celle de la centrale de jeu. Flotte, sites et Crédits restent privés.",
+      "block": "Bloquer",
+      "unblock": "Débloquer",
+      "blocked": "Bloqué",
+      "blockedToast": "Personne bloquée : vous ne verrez plus ce qu’elle écrit.",
+      "unblockedToast": "Personne débloquée",
+      "invite": "Inviter dans l’alliance",
+      "inviteSent": "Invitation envoyée",
+      "confirmBlock": "Bloquer {name} ?",
+      "confirmBlockBody": "Vous ne verrez plus ce qu’il écrit et il ne pourra pas vous inviter. Il ne le saura pas. Vous pouvez débloquer depuis les paramètres."
+    },
+    "settings": {
+      "title": "Paramètres de l’alliance",
+      "identity": "Identité",
+      "nameCooldown": "Le nom et le sigle peuvent changer une fois tous les {days} jours.",
+      "access": "Accès",
+      "membersCanInvite": "Les membres peuvent inviter",
+      "membersCanInviteHint": "Sinon, seuls les Adjoints et le Coordinateur créent des invitations.",
+      "notesHighRolesOnly": "Notes du tableau réservées aux rôles élevés",
+      "notesHighRolesOnlyHint": "Les annonces appartiennent toujours aux rôles élevés.",
+      "danger": "Dissolution",
+      "disband": "Dissoudre l’alliance",
+      "disbandBody": "Avec {hours} heures de préavis visible par tous, annulable. Immédiat si vous êtes le seul membre.",
+      "disbandRunning": "Dissolution prévue",
+      "confirmDisband": "Dissoudre {name} ?",
+      "confirmDisbandBody": "Tous les membres verront le préavis de {hours} heures. Vous pouvez annuler tant qu’elle n’a pas eu lieu.",
+      "cancelDisband": "Annuler la dissolution",
+      "disbandScheduled": "Dissolution programmée",
+      "disbanded": "Alliance dissoute",
+      "disbandCancelled": "Dissolution annulée",
+      "save": "Enregistrer",
+      "saved": "Paramètres enregistrés"
+    },
+    "log": {
+      "title": "Journal de l’alliance",
+      "empty": "Aucune action enregistrée",
+      "more": "Afficher plus",
+      "byAdmin": "Administration",
+      "system": "Système",
+      "detailField": "champ : {field}",
+      "detailRole": {
+        "COORDINATOR": "Coordinateur",
+        "DEPUTY": "Adjoint",
+        "MEMBER": "Membre"
+      },
+      "detailDuration": {
+        "H1": "1 heure",
+        "H24": "24 heures",
+        "D7": "7 jours"
+      },
+      "action": {
+        "FOUNDED": "a fondé l’alliance",
+        "SETTINGS_CHANGED": "a modifié les paramètres",
+        "MEMBER_JOINED": "{target} est entré",
+        "MEMBER_LEFT": "{target} est parti",
+        "MEMBER_REMOVED": "a exclu {target}",
+        "MEMBER_BANNED": "a banni {target}",
+        "MEMBER_INVITED": "a créé une invitation {target}",
+        "INVITE_REVOKED": "a révoqué une invitation {target}",
+        "REQUEST_ACCEPTED": "a accepté la demande de {target}",
+        "REQUEST_REJECTED": "a refusé la demande de {target}",
+        "ROLE_CHANGED": "a changé le rôle de {target}",
+        "MEMBER_MUTED": "a réduit {target} au silence",
+        "MEMBER_UNMUTED": "a rendu la parole à {target}",
+        "LEADERSHIP_TRANSFERRED": "a cédé le rôle de Coordinateur à {target}",
+        "LEADERSHIP_SUCCEEDED": "{target} est le nouveau Coordinateur après l’absence du précédent",
+        "DISBAND_SCHEDULED": "a lancé la dissolution",
+        "DISBAND_CANCELLED": "a annulé la dissolution",
+        "DISBANDED": "l’alliance a été dissoute",
+        "CLOSED_BY_ADMIN": "l’alliance a été fermée",
+        "READ_ONLY_CHANGED": "a changé la lecture seule",
+        "POST_REMOVED": "a supprimé une publication de {target}",
+        "REPLY_REMOVED": "a supprimé une réponse de {target}",
+        "MESSAGE_REMOVED": "a supprimé un message de {target}",
+        "LEVEL_UP": "l’alliance a monté de niveau",
+        "OPERATION_STARTED": "une opération d’alliance a commencé",
+        "OPERATION_ENDED": "une opération d’alliance s’est terminée"
+      }
+    },
+    "rules": {
+      "title": "Sécurité et règles de la communauté",
+      "intro": "Les tableaux et les discussions servent aux Directeurs à se coordonner. Les mêmes protections valent pour tous, dès 14 ans.",
+      "items": {
+        "respect": "Respectez les autres : pas d’insultes, de harcèlement, de haine ni de discrimination.",
+        "content": "Pas de contenu sexuel ou violent, rien qui incite à se faire du mal.",
+        "personalData": "Ne partagez pas de données personnelles : ni les vôtres ni celles d’autrui (téléphone, e-mail, adresses, profils sociaux).",
+        "noLinks": "Pas de liens, de publicité, de spam ni de demandes d’argent.",
+        "stayInGame": "Restez dans le jeu : la discussion sert aux urgences et à l’alliance, pas à faire des rencontres.",
+        "report": "Si quelque chose vous met mal à l’aise, signalez ou bloquez : personne ne le saura."
+      },
+      "labels": {
+        "consequences": "Conséquences",
+        "report": "Signaler",
+        "minors": "Mineurs",
+        "contact": "Contact"
+      },
+      "notes": {
+        "consequences": "Qui ne respecte pas les règles reçoit un avertissement, puis l’écriture est suspendue 24 heures, puis 7 jours, enfin le compte est suspendu. Les cas graves sautent les étapes. Chaque décision est expliquée et peut être contestée.",
+        "report": "Chaque message, publication, nom et description peut être signalé d’un geste. Un modérateur ne lit que ce qui est signalé ou arrêté par le filtre automatique.",
+        "minors": "Si vous avez moins de 18 ans : ne dites jamais où vous habitez, votre âge ni comment vous joindre hors du jeu. Si quelqu’un le demande, signalez-le.",
+        "contact": "Pour contester une décision ou pour un problème urgent, écrivez à l’adresse indiquée dans les mentions légales."
+      },
+      "version": "Version {version}",
+      "accepted": "Acceptées le {date}",
+      "required": "Pour écrire sur le tableau et dans le chat, vous devez accepter les règles.",
+      "accept": "J’accepte les règles",
+      "acceptedToast": "Règles acceptées"
+    },
+    "privacy": {
+      "title": "Confidentialité",
+      "showOnDuty": "Montrer quand je suis en service",
+      "showOnDutyHint": "À vos alliés seulement. Désactivé, vous apparaissez toujours absent.",
+      "acceptDirectInvites": "Accepter les invitations directes",
+      "acceptDirectInvitesHint": "Les autres Directeurs peuvent vous inviter par votre nom dans leur alliance.",
+      "rules": "Règles de la communauté",
+      "rulesHint": "À accepter avant d’écrire sur le tableau ou dans le chat.",
+      "rulesAccepted": "Acceptées le {date}",
+      "rulesOpen": "Lire"
+    },
+    "blocked": {
+      "title": "Personnes bloquées",
+      "hint": "Vous ne voyez pas ce qu’elles écrivent et elles ne peuvent pas vous inviter. Elles ne le savent pas.",
+      "empty": "Aucune personne bloquée.",
+      "since": "depuis le {date}",
+      "unblock": "Débloquer",
+      "unblocked": "Personne débloquée"
+    },
+    "account": {
+      "export": "Exporter mes données",
+      "exported": "Données exportées : le fichier est dans vos téléchargements.",
+      "deleteScheduled": "Le compte sera supprimé le {date}. Vous reconnecter avant annule la suppression."
+    },
+    "notification": {
+      "JOIN_REQUEST": {
+        "title": "Demande d’adhésion",
+        "body": "{director} demande à rejoindre l’alliance."
+      },
+      "REQUEST_ACCEPTED": {
+        "title": "Vous avez rejoint [{tag}] {name}",
+        "body": "Votre demande a été acceptée."
+      },
+      "REQUEST_REJECTED": {
+        "title": "Demande non acceptée",
+        "body": "[{tag}] {name} n’a pas accepté votre demande d’adhésion."
+      },
+      "INVITE_RECEIVED": {
+        "title": "Invitation de [{tag}] {name}",
+        "body": "{director} vous invite dans l’alliance."
+      },
+      "MEMBER_REMOVED": {
+        "title": "Exclu de [{tag}] {name}",
+        "body": "Vous ne faites plus partie de l’alliance. Vous pourrez demander à revenir après 24 heures."
+      },
+      "MEMBER_BANNED": {
+        "title": "Banni de [{tag}] {name}",
+        "body": "Vous ne pouvez plus revenir dans cette alliance."
+      },
+      "MEMBER_MUTED": {
+        "title": "Réduit au silence dans [{tag}] {name}",
+        "body": "Vous ne pouvez pas écrire jusqu’au {count}. Les phrases rapides restent disponibles."
+      },
+      "ROLE_DEPUTY": {
+        "title": "Vous êtes Adjoint de [{tag}] {name}",
+        "body": "Vous pouvez accepter les demandes, publier des annonces et modérer."
+      },
+      "ROLE_MEMBER": {
+        "title": "Rôle d’Adjoint retiré",
+        "body": "Vous êtes de nouveau Membre de [{tag}] {name}."
+      },
+      "LEADERSHIP_TRANSFERRED": {
+        "title": "Vous êtes le Coordinateur de [{tag}] {name}",
+        "body": "{director} vous a cédé le rôle."
+      },
+      "LEADERSHIP_SUCCEEDED": {
+        "title": "Vous êtes le Coordinateur de [{tag}] {name}",
+        "body": "Le Coordinateur était absent depuis 14 jours : le rôle vous revient."
+      },
+      "DISBAND_SCHEDULED": {
+        "title": "[{tag}] {name} se dissout",
+        "body": "Le Coordinateur a lancé la dissolution avec 48 heures de préavis."
+      },
+      "DISBAND_CANCELLED": {
+        "title": "Dissolution annulée",
+        "body": "[{tag}] {name} continue."
+      },
+      "ALLIANCE_DISBANDED": {
+        "title": "Alliance dissoute",
+        "body": "[{tag}] {name} n’existe plus. Vous pouvez rejoindre une autre alliance tout de suite."
+      },
+      "ALLIANCE_CLOSED": {
+        "title": "Alliance fermée",
+        "body": "[{tag}] {name} a été fermée par l’administration."
+      },
+      "ANNOUNCEMENT": {
+        "title": "Annonce dans [{tag}] {name}",
+        "body": "{director} a publié une annonce."
+      },
+      "MENTION": {
+        "title": "{director} vous a mentionné",
+        "body": "Dans le chat de [{tag}] {name}."
+      },
+      "AID_REQUEST": {
+        "title": "Demande d’aide",
+        "body": "{director} de [{tag}] {name} demande une colonne : vous avez des véhicules utiles."
+      },
+      "AID_ARRIVED": {
+        "title": "Colonne alliée sur place",
+        "body": "La colonne de {director} de [{tag}] {name} est arrivée."
+      },
+      "AID_PAID": {
+        "title": "Prime du fonds d’aide",
+        "body": "+{credits} Crédits pour la colonne chez {director} ([{tag}] {name})."
+      }
+    },
+    "landing": {
+      "title": "Invitation dans {name} [{tag}]",
+      "by": "{name} vous invite dans son alliance sur Rescue Control.",
+      "pitch": "Un groupe de Directeurs qui s’entraident sur les interventions.",
+      "facts": "Niveau {level} · {members}/{slots} membres · {language}",
+      "cta": "Ouvrir l’invitation dans le jeu",
+      "ctaSignIn": "Se connecter pour rejoindre",
+      "ctaInvalid": "Aller au jeu",
+      "invalidTitle": "Invitation invalide",
+      "invalidHint": "Le lien a expiré ou a été révoqué. Vous pouvez quand même jouer et chercher une alliance depuis le jeu."
+    },
+    "restriction": {
+      "FEATURE_DISABLED": "Cette partie n’est pas active.",
+      "SUSPENDED": "Votre compte est suspendu : lecture seule.",
+      "MUTED": "Vous êtes réduit au silence : vous pourrez écrire de nouveau",
+      "RULES_NOT_ACCEPTED": "Pour écrire, acceptez d’abord les règles de la communauté.",
+      "LEVEL_TOO_LOW": "On écrit à partir du niveau {level}.",
+      "ACCOUNT_TOO_NEW": "On écrit quand le compte a au moins 24 heures.",
+      "READ_ONLY": "Lecture seule pour le moment.",
+      "readRules": "Lire les règles"
+    },
+    "reaction": {
+      "ACK": "Reçu",
+      "WELL_DONE": "Bien joué",
+      "PRESENT": "Présent",
+      "THANKS": "Merci"
+    },
+    "quick": {
+      "NEED_FIRE_ENGINE": "J’ai besoin d’une autopompe",
+      "NEED_ADVANCED_AMBULANCE": "J’ai besoin d’une ambulance avancée",
+      "NEED_PATROL": "J’ai besoin d’une patrouille",
+      "NEED_WILDFIRE_UNIT": "J’ai besoin d’un engin feux de forêt",
+      "NEED_ALPINE_RESCUE": "J’ai besoin du secours en montagne",
+      "NEED_BOAT": "J’ai besoin d’un bateau",
+      "COMING": "J’arrive",
+      "CANNOT_NOW": "Pas maintenant",
+      "COLUMN_SENT": "Colonne partie",
+      "ON_SCENE": "Sur place",
+      "RETURNING": "Je rentre",
+      "ON_DUTY": "Je prends le service",
+      "OFF_DUTY": "Je quitte le service",
+      "UNDER_PRESSURE": "Je suis sous pression",
+      "ALL_CLEAR": "Tout est sous contrôle ici",
+      "THANKS": "Merci",
+      "WELL_DONE": "Bien joué",
+      "GOOD_SHIFT": "Bon service"
+    },
+    "report": {
+      "title": "Signaler",
+      "about": "Signalement sur : « {label} »",
+      "intro": "Le signalement arrive à la modération. Vous recevrez la suite dans les notifications.",
+      "sentTitle": "Signalement envoyé",
+      "sentBody": "Merci. La modération l’examinera : la décision arrivera dans le centre de notifications.",
+      "reason": "Motif",
+      "reasons": {
+        "HARASSMENT": "Insultes ou harcèlement",
+        "SEXUAL": "Contenu sexuel",
+        "HATE": "Haine ou discrimination",
+        "THREAT_SELF_HARM": "Menaces ou automutilation",
+        "PERSONAL_DATA": "Données personnelles",
+        "SPAM_SCAM": "Spam ou arnaque",
+        "OTHER": "Autre"
+      },
+      "note": "Note",
+      "notePlaceholder": "Note facultative pour la modération…",
+      "hint": "Un signalement par contenu. Les rôles élevés ne le voient pas : il parvient toujours aussi à l’administration.",
+      "submit": "Envoyer le signalement"
+    },
+    "post": {
+      "system": {
+        "MEMBER_JOINED": "{director} a rejoint l’alliance.",
+        "MEMBER_LEFT": "{director} a quitté l’alliance.",
+        "LEVEL_UP": "L’alliance a atteint le niveau {level}."
+      }
+    }
+  }
+}

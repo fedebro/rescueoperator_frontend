@@ -29,7 +29,7 @@ import { Switch } from '@/components/ui/switch';
 import { StipendCard } from '@/features/world/stipend-card';
 import { MilestonesCard, ReputationCard } from '@/features/world/progression-extras';
 import { MORE_ITEMS } from './nav';
-import { useVisibleNav } from './use-nav';
+import { useNavBadges, useVisibleNav } from './use-nav';
 import { DutyToggle } from './duty-toggle';
 import { PrivacyAndAppSettings, SoundSettings } from '@/features/platform/settings-sections';
 import { PushSettings } from '@/features/push/push-settings';
@@ -38,6 +38,12 @@ import { track } from '@/lib/analytics';
 import { SectionHelpButton, SectionPrimer } from '@/features/coaching/section-primer';
 import { LedgerDescription } from '@/features/autonomy/ledger';
 import { MajorTrophiesCard } from '@/features/major/trophies';
+import { accountApi } from '@/lib/api/alliance';
+import {
+  BlockedPeopleSettings,
+  ExportDataButton,
+  PrivacySettings,
+} from '@/features/alliance/settings-sections';
 import { useCareerId, useSnapshot } from './hooks';
 import { PageBody } from './shell';
 
@@ -290,6 +296,7 @@ export function SettingsScreen() {
   const qc = useQueryClient();
   const errorMessage = useErrorMessage();
   const tk = useTranslations('coaching');
+  const ta = useTranslations('alliance.account');
   const user = useAuthStore((s) => s.user);
   const clearAuth = useAuthStore((s) => s.clear);
   const settings = useSettingsStore();
@@ -317,10 +324,16 @@ export function SettingsScreen() {
     onSuccess: () => qc.invalidateQueries({ queryKey: qk.sessions }),
     onError: (e) => toast({ tone: 'danger', title: errorMessage(e) }),
   });
+  // The real deletion (account.ts, study 04 §6): a grace period, then the job; signing in again before it cancels it.
   const remove = useMutation({
-    mutationFn: authApi.requestDeletion,
-    onSuccess: () => {
-      toast({ tone: 'info', title: t('deleteRequested') });
+    mutationFn: accountApi.requestDeletion,
+    onSuccess: (result) => {
+      toast({
+        tone: 'info',
+        title: t('deleteRequested'),
+        description: ta('deleteScheduled', { date: formatDateTime(result.scheduledAt, locale) }),
+        durationMs: 8000,
+      });
       signOut();
     },
     onError: (e) => toast({ tone: 'danger', title: errorMessage(e) }),
@@ -372,6 +385,9 @@ export function SettingsScreen() {
       <SoundSettings />
       <PushSettings />
       <PrivacyAndAppSettings />
+      {/* Alliances (study 09 §7): who sees my duty state, direct invites, the community rules, the people I blocked. */}
+      <PrivacySettings />
+      <BlockedPeopleSettings />
       <Card>
         <SectionTitle>{t('duty')}</SectionTitle>
         <DutyToggle />
@@ -419,7 +435,13 @@ export function SettingsScreen() {
           <LogOut className="size-4" aria-hidden />
           {t('logout')}
         </Button>
-        <Button variant="danger" size="lg" onClick={() => setConfirmDelete(true)}>
+        <ExportDataButton />
+        <Button
+          variant="danger"
+          size="lg"
+          onClick={() => setConfirmDelete(true)}
+          data-testid="delete-account"
+        >
           <Trash2 className="size-4" aria-hidden />
           {t('deleteAccount')}
         </Button>
@@ -446,23 +468,49 @@ export function SettingsScreen() {
 /* ───────────────────────────── more (mobile hub) ───────────────────────────── */
 export function MoreScreen() {
   const t = useTranslations('game.nav');
+  const ta = useTranslations('platform.a11y');
   const { career } = useSnapshot();
   const items = useVisibleNav(MORE_ITEMS);
+  const badges = useNavBadges();
+  const describedBy = React.useId();
   return (
     <PageBody title={t('more')} subtitle={`${career.directorName} · ${career.locationName}`}>
       <ul className="flex flex-col gap-2">
-        {items.map((item) => (
-          <li key={item.href}>
-            <Link
-              href={item.href}
-              className="border-border bg-surface-2 flex h-14 items-center gap-3 rounded-md border px-4 text-sm font-semibold"
-            >
-              <item.icon className="text-muted size-5" aria-hidden />
-              <span className="flex-1">{t(item.labelKey)}</span>
-              <ChevronRight className="text-subtle size-4" aria-hidden />
-            </Link>
-          </li>
-        ))}
+        {items.map((item) => {
+          const count = item.badge ? badges[item.badge] : 0;
+          const badgeId = `${describedBy}-${item.labelKey}`;
+          return (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                aria-describedby={count > 0 ? badgeId : undefined}
+                data-nav={item.labelKey}
+                className="border-border bg-surface-2 flex h-14 items-center gap-3 rounded-md border px-4 text-sm font-semibold"
+              >
+                <item.icon className="text-muted size-5" aria-hidden />
+                <span className="flex-1">{t(item.labelKey)}</span>
+                {count > 0 ? (
+                  // The count is a description of the link, not part of its name (the row stays "Alleanza").
+                  <span
+                    aria-hidden
+                    className="tabular bg-brand grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-xs leading-none font-bold text-white"
+                    data-testid={`more-badge-${item.labelKey}`}
+                  >
+                    {count > 99 ? '99+' : count}
+                  </span>
+                ) : null}
+                <ChevronRight className="text-subtle size-4" aria-hidden />
+              </Link>
+              {count > 0 && item.badge ? (
+                <span id={badgeId} className="sr-only">
+                  {item.badge === 'pendingIncidents'
+                    ? ta('pendingIncidents', { count })
+                    : ta('allianceUnread', { count })}
+                </span>
+              ) : null}
+            </li>
+          );
+        })}
       </ul>
     </PageBody>
   );

@@ -6,6 +6,7 @@ import {
   CircleDashed,
   Clock,
   Hammer,
+  Handshake,
   Hourglass,
   Navigation,
   PackageCheck,
@@ -54,6 +55,8 @@ export const STATUS_VISUALS: Record<string, { icon: LucideIcon; tone: Tone }> = 
   BROKEN_DOWN: { icon: AlertTriangle, tone: 'danger' },
   BEING_RECOVERED: { icon: Truck, tone: 'warning' },
   OUT_OF_SERVICE: { icon: Ban, tone: 'neutral' },
+  // alliances (D-102): lent to an ally as part of an allied column — "In supporto alleato"
+  ALLIED_SUPPORT: { icon: Handshake, tone: 'info' },
   // facilities
   OPERATIONAL: { icon: CheckCircle2, tone: 'success' },
   UNDER_CONSTRUCTION: { icon: Hammer, tone: 'warning' },

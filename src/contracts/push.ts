@@ -12,6 +12,12 @@ import { IdPrefix, publicId } from './common';
  */
 export const PushCategory = z.enum([
   'INCIDENT_NEW', 'INCIDENT_EXPIRING', 'INCIDENT_CLOSED', 'MAJOR', 'PATIENT', 'FLEET', 'MANAGEMENT', 'PROGRESSION', 'ECONOMY',
+  /**
+   * Alliances (additive, D-115): `ALLIANCE_AID` "Alleanza: aiuti e operazioni" (aid requests I can cover, operation alerts) ·
+   * `ALLIANCE_SOCIAL` "Alleanza: messaggi e annunci" (mentions, pinned announcements, join requests, accepted / removed / muted).
+   * Never a push per chat message (03 §4.1). Both on by default.
+   */
+  'ALLIANCE_AID', 'ALLIANCE_SOCIAL',
 ]);
 export type PushCategory = z.infer<typeof PushCategory>;
 
@@ -89,6 +95,9 @@ export type PushFocusKind = (typeof PUSH_FOCUS_KINDS)[number];
 /** Deep links carried by `PushPayload.url` (same-origin relative paths): `/game?focus=<kind>:<publicId>`, or `/game`. */
 export const pushFocusUrl = (kind: PushFocusKind, id: string): string => `/game?focus=${kind}:${id}`;
 export const PUSH_HOME_URL = '/game';
+/** Alliance pushes (additive): `/game/alliance?focus=<targetId>` with an `AllianceNotificationTarget` (alliances.ts), or the section itself. */
+export const ALLIANCE_PUSH_URL = '/game/alliance';
+export const alliancePushUrl = (targetId: string): string => `${ALLIANCE_PUSH_URL}?focus=${encodeURIComponent(targetId)}`;
 
 /**
  * Plaintext of every push (UTF-8 JSON, ≤ ~3.9 KB). Texts are already localized in the player's `users.locale`.

@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import { Amount, Domain, FacilityFamily, I18nText, IdPrefix, IsoDateTime, LineCoords, LngLat, ServiceFamily, publicId } from './common';
+import { AllianceSnapshotDto } from './alliances';
+import { IncidentAlliedColumnDto, VehicleAlliedSupportDto } from './alliance-aid';
 
 /* ───────────────────────────── statuses ───────────────────────────── */
 
@@ -17,6 +19,12 @@ export const VehicleStatus = z.enum([
   'TO_WATER_SOURCE', 'AT_WATER_SOURCE',
   /* AIR-domain taxi + takeoff (additive): between PREPARING and EN_ROUTE, only for helicopters/planes. */
   'TAXIING', 'TAKING_OFF',
+  /**
+   * Alliances (additive, D-102): lent to an ally as part of an allied column ("In supporto alleato"). Not dispatchable, not
+   * recallable by own incidents, not counted in own coverage; the vehicle leaves its facility on the map and reappears on
+   * return. Details in `VehicleDto.alliedSupport`.
+   */
+  'ALLIED_SUPPORT',
 ]);
 export type VehicleStatus = z.infer<typeof VehicleStatus>;
 
@@ -230,6 +238,8 @@ export const VehicleDto = z.object({
   busyUntil: IsoDateTime.nullable(),
   /** Autonomy (additive, D-22): always present with the YAML catalog; absent only without depth content (core-loop tests). */
   autonomy: VehicleAutonomyDto.optional(),
+  /** Additive (alliances, D-102): set while `status: 'ALLIED_SUPPORT'` — whom the vehicle is lent to and when it is back. */
+  alliedSupport: VehicleAlliedSupportDto.nullable().optional(),
 });
 export type VehicleDto = z.infer<typeof VehicleDto>;
 
@@ -250,6 +260,11 @@ export const IncidentRequirementDto = z.object({
    * meeting point (land units deliver only their shore-side capabilities there). Absent on land incidents.
    */
   side: z.enum(['WATER', 'SHORE']).optional(),
+  /**
+   * Additive (alliances, D-102): capability brought by allied columns ON SCENE (`incident_external_cover`), counted in the
+   * coverage and in patient care like `onScene` — but revocable: it drops when the column is recalled or returns.
+   */
+  allied: z.number().int().optional(),
 });
 
 /** System unit (UNG) requested while the incident is RESOLVING. It never blocks the player's reward. */
@@ -358,6 +373,13 @@ export const IncidentDto = z.object({
   /* ── additive (major incidents, D-24/D-69) ── */
   /** Set when the incident belongs to a major incident (main scene or linked incident); null/absent otherwise. */
   major: MajorIncidentRefDto.nullable().optional(),
+  /* ── additive (alliances, D-102 — analisi/note-agenti/alleanze-backend.md) ── */
+  /** `ALLIANCE` while an aid request is OPEN on it ("Condivisa" badge); `PRIVATE` / absent otherwise. */
+  visibility: z.enum(['PRIVATE', 'ALLIANCE']).optional(),
+  /** The aid request of this incident (OPEN or already closed), for the requester; null/absent when none was ever made. */
+  aidRequestId: publicId(IdPrefix.aidRequest).nullable().optional(),
+  /** "Unità alleate": allied columns towards this incident (en route, on scene, returning). Absent when none. */
+  allied: z.array(IncidentAlliedColumnDto).optional(),
 });
 export type IncidentDto = z.infer<typeof IncidentDto>;
 
@@ -643,6 +665,11 @@ export const SyncSnapshot = z.object({
   configVersion: z.string(),
   /** Additive (major incidents, D-24/D-69): the running major incident, if any — fetch `GET /major-incidents/current` for the full view. */
   activeMajorIncidentId: publicId(IdPrefix.majorIncident).nullable().optional(),
+  /**
+   * Additive (alliances, D-102…D-123): the career's alliance with its unread counters and running operation — the nav badge.
+   * Null = no alliance (or flag `alliances` off); fetch `GET /careers/:id/alliance` for the section.
+   */
+  alliance: AllianceSnapshotDto.nullable().optional(),
 });
 export type SyncSnapshot = z.infer<typeof SyncSnapshot>;
 

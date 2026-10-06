@@ -21,6 +21,7 @@ import { canQuickDispatch, useQuickDispatch } from './quick-dispatch';
 import { incidentScene } from '@/features/water/water';
 import { WaterBodyBadge, useIncidentPlace } from '@/features/water/incident-water';
 import { splitQueue } from '@/features/major/major';
+import { SharedBadge } from '@/features/alliance/aid-incident';
 import { MajorIconMark, MajorQueueHeader, MajorSectorLabel } from '@/features/major/queue';
 
 /** Marks the element whose bottom edge ends the bottom sheet's peek state (see `BottomSheet.peekAnchor`). */
@@ -132,6 +133,7 @@ export function IncidentCard({
           ) : null}
           {/* Water incidents (D-68): an anchor + "Al largo di …" instead of the street of the meeting point. */}
           <WaterBodyBadge incident={incident} compact className="shrink-0" />
+          <SharedBadge incident={incident} compact />
           {incident.major ? (
             // A member of a major (D-24): its sector instead of the address the whole event shares.
             <MajorSectorLabel majorRef={incident.major} />
