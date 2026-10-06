@@ -315,7 +315,7 @@
     "overview": {
       "emblemAria": "Wappen von {name}",
       "level": "Stufe {level}",
-      "xp": "{xp} / {next} Punkte",
+      "xp": "Letzte Punkte",
       "maxLevel": "Höchste Stufe",
       "members": "Mitglieder",
       "onDuty": "Im Dienst",
@@ -572,7 +572,29 @@
     },
     "ranking": {
       "emptyTitle": "Rangliste noch nicht berechnet",
-      "emptyBody": "Die Rangliste der Woche erscheint hier."
+      "emptyBody": "Die Rangliste der Woche erscheint hier.",
+      "disabledTitle": "Rangliste noch nicht aktiv",
+      "disabledBody": "Sie startet, sobald genug Allianzen im Spiel sind.",
+      "title": "Wochenrangliste",
+      "week": "Vom {start} bis {end}",
+      "rollover": "Zurückgesetzt in",
+      "how": "Es zählt die Summe der {bestOf} besten Mitglieder; mindestens {min} Mitglieder mit Punkten sind nötig.",
+      "myPosition": "Deine Allianz",
+      "notRanked": "{min} Mitglieder mit Punkten nötig",
+      "score": "Allianzpunkte",
+      "myPoints": "Deine Punkte",
+      "topContributors": "Brachten die meisten Punkte:",
+      "deletedDirector": "Gelöschter Direktor",
+      "lastWeek": "Letzte Woche: #{position} von {total} mit {score} Punkten",
+      "frame": {
+        "GOLD": "Goldrahmen",
+        "SILVER": "Silberrahmen",
+        "BRONZE": "Bronzerahmen"
+      },
+      "top": "Die ersten {count}",
+      "privacy": "Nur Namen und Embleme der Allianzen sind sichtbar.",
+      "level": "Stufe {level}",
+      "scoring": "{count, plural, one {# Mitglied mit Punkten} other {# Mitglieder mit Punkten}}"
     },
     "members": {
       "title": "Mitglieder · {count}/{slots}",
@@ -708,8 +730,8 @@
         "REPLY_REMOVED": "hat eine Antwort von {target} entfernt",
         "MESSAGE_REMOVED": "hat eine Nachricht von {target} entfernt",
         "LEVEL_UP": "die Allianz ist aufgestiegen",
-        "OPERATION_STARTED": "eine Allianz-Operation hat begonnen",
-        "OPERATION_ENDED": "eine Allianz-Operation ist beendet"
+        "OPERATION_STARTED": "Allianzeinsatz gestartet",
+        "OPERATION_ENDED": "Allianzeinsatz beendet"
       }
     },
     "rules": {
@@ -739,7 +761,8 @@
       "accepted": "Akzeptiert am {date}",
       "required": "Um auf der Pinnwand und im Chat zu schreiben, musst du die Regeln akzeptieren.",
       "accept": "Ich akzeptiere die Regeln",
-      "acceptedToast": "Regeln akzeptiert"
+      "acceptedToast": "Regeln akzeptiert",
+      "fullVersion": "Vollständige Fassung auf der Website"
     },
     "privacy": {
       "title": "Privatsphäre",
@@ -845,6 +868,30 @@
       "AID_PAID": {
         "title": "Prämie aus dem Hilfsfonds",
         "body": "+{credits} Credits für die Kolonne bei {director} ([{tag}] {name})."
+      },
+      "OPERATION_ALERT": {
+        "title": "Allianzeinsatz",
+        "body": "[{tag}] {name}: {minutes} Minuten. Geh in den Dienst, um teilzunehmen."
+      },
+      "OPERATION_STARTED": {
+        "title": "Einsatz gestartet",
+        "body": "[{tag}] {name}: {joined} Teilnehmer, die Fronten sind offen."
+      },
+      "OPERATION_CANCELLED": {
+        "title": "Einsatz abgesagt",
+        "body": "[{tag}] {name}: weniger als zwei haben angenommen."
+      },
+      "OPERATION_ENDED": {
+        "title": "Einsatz beendet",
+        "body": "[{tag}] {name}: Ergebnis {outcome}."
+      },
+      "OBJECTIVE_COMPLETED": {
+        "title": "Ziel erreicht",
+        "body": "[{tag}] {name}: {credits, plural, =0 {Punkte für die Allianz} other {+# Credits für dich}}."
+      },
+      "RANKING_RESULT": {
+        "title": "Rangliste der Woche",
+        "body": "[{tag}] {name}: {position, plural, =0 {nicht platziert} other {Platz #}}."
       }
     },
     "landing": {
@@ -920,6 +967,172 @@
         "MEMBER_JOINED": "{director} ist der Allianz beigetreten.",
         "MEMBER_LEFT": "{director} hat die Allianz verlassen.",
         "LEVEL_UP": "Die Allianz hat Stufe {level} erreicht."
+      }
+    },
+    "objectives": {
+      "completed": "Erreicht",
+      "progressLabel": "{progress} von {target}",
+      "mine": "Dein Beitrag: {value}",
+      "paid": "Prämie erhalten",
+      "eligible": "Prämie: {credits} Credits am Ziel",
+      "threshold": "{count, plural, one {Persönliche Prämie ab # Beitrag} other {Persönliche Prämie ab # Beiträgen}}",
+      "reward": "+{xp} XP für die Allianz",
+      "contributions": "{count, plural, one {# Beitrag} other {# Beiträge}}",
+      "deletedDirector": "Gelöschter Direktor",
+      "emptyTitle": "Kein Ziel",
+      "emptyBody": "Die Wochenziele erscheinen hier.",
+      "week": "Woche vom {start} bis {end}",
+      "lastWeek": "letzte Woche {completed}/{total}",
+      "sized": "Bemessen an {count} aktiven Mitgliedern."
+    },
+    "xp": {
+      "source": {
+        "INCIDENT_RESOLVED": "Einsatz gelöst",
+        "AID_COLUMN": "Nützliche alliierte Kolonne",
+        "OBJECTIVE": "Ziel erreicht",
+        "OPERATION": "Allianzeinsatz",
+        "RANKING": "Platzierung in der Rangliste"
+      },
+      "capped": "Wochenlimit",
+      "empty": "Noch keine Punkte: Von Mitgliedern gelöste Einsätze lassen die Allianz wachsen.",
+      "more": "Mehr anzeigen",
+      "capHint": "Jedes Mitglied bringt höchstens 60 Punkte pro Woche aus Einsätzen: Die Allianz wächst, wenn viele mitmachen."
+    },
+    "operation": {
+      "eyebrow": "Allianzeinsatz",
+      "status": {
+        "ALERT": "Alarm",
+        "ACTIVE": "Läuft",
+        "ENDED": "Beendet",
+        "CANCELLED": "Abgesagt"
+      },
+      "outcome": {
+        "GOLD": "Gold",
+        "SILVER": "Silber",
+        "BRONZE": "Bronze",
+        "FAILED": "Nicht geschafft"
+      },
+      "joined": "Teilnehmer",
+      "joinedCount": "{count, plural, one {# Teilnehmer} other {# Teilnehmer}}",
+      "join": "Teilnehmen",
+      "decline": "Jetzt nicht",
+      "joinedToast": "Du bist dabei: Deine Front öffnet sich beim Start.",
+      "declinedToast": "In Ordnung, jetzt nicht. Ohne Folgen.",
+      "youJoined": "Du nimmst teil",
+      "youDeclined": "Du hast jetzt nicht gesagt",
+      "blocked": {
+        "LEVEL_TOO_LOW": "Teilnahme ab Stufe 5.",
+        "PERSONAL_MAJOR_OPEN": "Du hast einen offenen Großeinsatz: Schließe ihn zuerst.",
+        "TOO_LATE": "Zu spät zum Einstieg: Die letzte Phase hat begonnen.",
+        "NOT_RUNNING": "Kein Einsatz läuft.",
+        "ALREADY_JOINED": "Du nimmst schon teil.",
+        "DECLINED": "Du hast jetzt nicht gesagt.",
+        "FEATURE_DISABLED": "Einsätze sind nicht aktiv."
+      },
+      "alertEndsIn": "Der Alarm endet in",
+      "endsIn": "Endet in",
+      "progress": "Fortschritt {pct} %",
+      "sharedProgress": "Gemeinsamer Fortschritt {pct} %",
+      "phase": {
+        "ALARM": "Alarm",
+        "CONTAINMENT": "Eindämmung",
+        "RESCUE": "Rettung",
+        "SECURING": "Sicherung",
+        "ENDED": "Beendet"
+      },
+      "endedSummary": "Beendet: +{xp} XP für die Allianz.",
+      "cancelledBody": "Weniger als zwei haben angenommen: ohne Folgen abgesagt.",
+      "myFront": "Meine Front",
+      "openBoard": "Tafel öffnen",
+      "history": "Verlauf",
+      "none": "Kein Einsatz läuft.",
+      "noneHint": "Er beginnt überraschend, wenn genug Mitglieder im Dienst sind. Push an alle, niemand wird eingezogen.",
+      "duration": "{minutes} Minuten",
+      "alertHint": "Wer nicht antwortet, wird nicht eingezogen. Einstieg bis zur letzten Phase möglich.",
+      "boardTitle": "Tafel",
+      "unavailable": "Einsätze sind nicht verfügbar.",
+      "phaseLabel": "Phase",
+      "clock": "Uhr",
+      "lateJoin": "Einstieg bis",
+      "closed": "geschlossen",
+      "chat": "Einsatz-Chat",
+      "outcomeTitle": "Ergebnis",
+      "quality": "Qualität {pct} %",
+      "trophy": "Trophäe auf der Tafel",
+      "fronts": "Die Fronten",
+      "participant": {
+        "INVITED": "Eingeladen",
+        "JOINED": "Nimmt teil",
+        "DECLINED": "Jetzt nicht"
+      },
+      "sectors": "{closed}/{total} Sektoren geschlossen",
+      "coverage": "Abdeckung {pct} %",
+      "frontEnded": "Front geschlossen",
+      "contribution": "{incidents} Einsätze · {columns} nützliche Kolonnen · {points} Punkte",
+      "needsHelp": "Bittet um eine Kolonne",
+      "myRequestOpen": "Deine Hilfsanfrage ist offen",
+      "you": "du",
+      "deletedDirector": "Gelöschter Direktor",
+      "notEligible": "Keine Prämie: kein Einsatz geschlossen, keine nützliche Kolonne.",
+      "historyEmptyTitle": "Bisher kein Einsatz",
+      "historyEmptyBody": "Beendete Einsätze erscheinen hier mit ihrer Medaille.",
+      "more": "Mehr anzeigen",
+      "columnsInFlight": "Kolonnen unterwegs",
+      "noColumns": "Keine Kolonne zwischen den Fronten unterwegs.",
+      "columnLine": "{helper} → {requester}",
+      "arrived": "angekommen",
+      "scenario": {
+        "AOP_VALLEY_FLOOD": {
+          "title": "Talhochwasser",
+          "description": "Der Fluss tritt im ganzen Tal über die Ufer: Häuser, Straßen und Unterführungen überflutet, bei jedem Teilnehmer.",
+          "alert": "Allianzeinsatz [{tag}]: Talhochwasser"
+        },
+        "AOP_SEISMIC_SWARM": {
+          "title": "Erdbebenschwarm",
+          "description": "Eine Folge von Erdstößen trifft das Gebiet: Einstürze, Eingeschlossene, zu räumende Straßen.",
+          "alert": "Allianzeinsatz [{tag}]: Erdbebenschwarm"
+        },
+        "AOP_WILDFIRE": {
+          "title": "Ausgedehnter Waldbrand",
+          "description": "Das Feuer läuft über die Hügel und bedroht die Weiler: Jede Front verteidigt ihr Gebiet.",
+          "alert": "Allianzeinsatz [{tag}]: ausgedehnter Waldbrand"
+        },
+        "AOP_STORM_WAVE": {
+          "title": "Unwetterfront",
+          "description": "Wind und Starkregen über dem ganzen Gebiet: umgestürzte Bäume, abgedeckte Dächer, gesperrte Straßen.",
+          "alert": "Allianzeinsatz [{tag}]: Unwetterfront"
+        },
+        "AOP_SNOWFALL": {
+          "title": "Außergewöhnlicher Schneefall",
+          "description": "Starker Schnee schneidet die Weiler ab: festsitzende Menschen, gefährdete Dächer, zu öffnende Straßen.",
+          "alert": "Allianzeinsatz [{tag}]: außergewöhnlicher Schneefall"
+        }
+      }
+    },
+    "objective": {
+      "VOLUME": {
+        "title": "Löst gemeinsam {target} Einsätze",
+        "description": "Jeder von einem Mitglied gelöste Einsatz zählt."
+      },
+      "COOPERATION": {
+        "title": "Schickt {target} nützliche alliierte Kolonnen",
+        "description": "Eine Kolonne zählt, wenn sie bringt, was fehlte."
+      },
+      "QUALITY": {
+        "title": "Schließt {target} Einsätze mit vollem Erfolg ab",
+        "description": "Jeder Bedarf gedeckt, wenn der Einsatz endet."
+      },
+      "MEDICAL": {
+        "title": "Löst {target} medizinische Einsätze",
+        "description": "Einsätze mit beteiligtem Rettungsdienst."
+      },
+      "OPERATIONS": {
+        "title": "Schließt {target} Allianzeinsatz ab",
+        "description": "Jeder Einsatz, der mindestens Bronze erreicht, zählt."
+      },
+      "PRESENCE": {
+        "title": "{target} verschiedene Mitglieder am selben Tag im Dienst",
+        "description": "Der Tag mit den meisten Mitgliedern im Dienst zählt."
       }
     }
   }

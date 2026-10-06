@@ -1,5 +1,7 @@
 import { http } from 'msw';
+import { MockError } from '../engine';
 import { allianceApiOf } from '../domains/alliance';
+import { allianceProgressOf } from '../domains/alliance-progress';
 import type { DomainHandlers } from './kit';
 
 /**
@@ -24,11 +26,14 @@ export const allianceHandlers: DomainHandlers = ({
     ok(page.data, { meta: { nextCursor: page.nextCursor, hasMore: page.hasMore } });
   return [
     /* ── bearer routes ── */
+    // Before `/alliances/:allianceId`: the literal path would otherwise be read as an alliance id.
     http.get(
       url('/alliances/ranking'),
       route((ctx) => {
-        authed(ctx);
-        return ok(null); // phase 3 (flag `alliance_ranking`)
+        const a = authed(ctx);
+        const career = engine.state.careers[a.user.activeCareerId ?? ''];
+        if (!career) throw new MockError(403, 'NOT_ALLIANCE_MEMBER', 'No active career');
+        return ok(allianceProgressOf(engine).ranking(career));
       }),
     ),
     http.get(

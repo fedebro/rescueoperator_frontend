@@ -70,18 +70,27 @@ export const qk = {
   allianceInvites: (id: string) => ['career', id, 'alliance', 'invites'] as const,
   allianceLog: (id: string) => ['career', id, 'alliance', 'log'] as const,
   allianceBoard: (id: string) => ['career', id, 'alliance', 'board'] as const,
-  allianceBoardReplies: (id: string, postId: string) => ['career', id, 'alliance', 'board', 'replies', postId] as const,
+  allianceBoardReplies: (id: string, postId: string) =>
+    ['career', id, 'alliance', 'board', 'replies', postId] as const,
   allianceChat: (id: string) => ['career', id, 'alliance', 'chat'] as const,
   allianceChannels: (id: string) => ['career', id, 'alliance', 'chat', 'channels'] as const,
-  allianceMessages: (id: string, channelId: string) => ['career', id, 'alliance', 'chat', 'messages', channelId] as const,
+  allianceMessages: (id: string, channelId: string) =>
+    ['career', id, 'alliance', 'chat', 'messages', channelId] as const,
   alliancePresence: (id: string) => ['career', id, 'alliance', 'chat', 'presence'] as const,
   allianceAid: (id: string) => ['career', id, 'alliance', 'aid'] as const,
-  allianceAidRequests: (id: string, status: 'OPEN' | 'ALL') => ['career', id, 'alliance', 'aid', 'requests', status] as const,
-  allianceAidRequest: (id: string, requestId: string) => ['career', id, 'alliance', 'aid', 'request', requestId] as const,
-  allianceAidColumns: (id: string, role: string, active: boolean) => ['career', id, 'alliance', 'aid', 'columns', role, active] as const,
-  allianceColumnOptions: (id: string, requestId: string) => ['career', id, 'alliance', 'aid', 'options', requestId] as const,
+  allianceAidRequests: (id: string, status: 'OPEN' | 'ALL') =>
+    ['career', id, 'alliance', 'aid', 'requests', status] as const,
+  allianceAidRequest: (id: string, requestId: string) =>
+    ['career', id, 'alliance', 'aid', 'request', requestId] as const,
+  allianceAidColumns: (id: string, role: string, active: boolean) =>
+    ['career', id, 'alliance', 'aid', 'columns', role, active] as const,
+  allianceColumnOptions: (id: string, requestId: string) =>
+    ['career', id, 'alliance', 'aid', 'options', requestId] as const,
   allianceProgress: (id: string) => ['career', id, 'alliance', 'progress'] as const,
   allianceOperation: (id: string) => ['career', id, 'alliance', 'operation'] as const,
+  allianceObjectives: (id: string) => ['career', id, 'alliance', 'progress', 'objectives'] as const,
+  allianceXp: (id: string) => ['career', id, 'alliance', 'progress', 'xp'] as const,
+  allianceOperations: (id: string) => ['career', id, 'alliance', 'operation', 'history'] as const,
   allianceSearch: (query: string) => ['alliances', 'search', query] as const,
   allianceCard: (allianceId: string) => ['alliances', 'card', allianceId] as const,
   allianceRanking: ['alliances', 'ranking'] as const,

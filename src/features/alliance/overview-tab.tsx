@@ -13,6 +13,8 @@ import { PolicyBadge } from './alliance-card';
 import { Emblem } from './emblem';
 import { FeatureOff } from './feature-off';
 import { useAllianceMembers } from './hooks';
+import { OperationSection } from './operation-card';
+import { ObjectivesSection, XpSection } from './progress-cards';
 
 /**
  * Panoramica (study 09 §2.2): emblem, level and progress, who is on duty, pinned announcements / objectives / aid /
@@ -196,11 +198,7 @@ export function OverviewTab({
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <SectionTitle>{t('overview.objectives')}</SectionTitle>
-          {flags.objectives ? (
-            <p className="text-muted text-sm">{t('overview.noObjectives')}</p>
-          ) : (
-            <FeatureOff part="objectives" />
-          )}
+          {flags.objectives ? <ObjectivesSection onMember={onMember} /> : <FeatureOff part="objectives" />}
         </Card>
         <Card>
           <SectionTitle>{t('overview.aid')}</SectionTitle>
@@ -211,12 +209,14 @@ export function OverviewTab({
           )}
         </Card>
       </div>
-      {flags.operations ? null : (
-        <Card>
-          <SectionTitle>{t('overview.operation')}</SectionTitle>
-          <FeatureOff part="operations" />
-        </Card>
-      )}
+      <Card>
+        <SectionTitle>{t('overview.operation')}</SectionTitle>
+        {flags.operations ? <OperationSection /> : <FeatureOff part="operations" />}
+      </Card>
+      <Card>
+        <SectionTitle>{t('overview.xp')}</SectionTitle>
+        <XpSection />
+      </Card>
     </div>
   );
 }

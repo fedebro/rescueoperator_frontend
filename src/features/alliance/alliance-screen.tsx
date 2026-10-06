@@ -27,6 +27,7 @@ import { MembersTab } from './members-tab';
 import { DirectorCardDialog } from './director-card';
 import { AllianceLogDialog, AllianceSettingsSheet } from './settings-sheet';
 import { CommunityRulesDialog } from './community-rules';
+import { RankingTab } from './ranking-tab';
 import { BoardTab } from './board-tab';
 import { AidTab } from './aid-tab';
 import { BlockConfirmDialog, ReportDialog, type ReportTarget } from './report-dialog';
@@ -168,6 +169,8 @@ function AllianceScreenBody({ focus, invite }: { focus: string | null; invite: s
     const target = focusToTab(focus);
     if (target)
       track('alliance_focus_opened', { kind: target.itemId ? focus!.split(':')[0]! : 'tab', success: true });
+    // `operation:<aop_…>` (a notification, a push): the shared board is its own page.
+    if (focus?.startsWith('operation:')) router.push('/game/alliance/operation');
   }, [focus, invite, pathname, router]);
   const selectTab = (next: AllianceTab) => {
     if (next === 'chat') {
@@ -296,13 +299,7 @@ function AllianceScreenBody({ focus, invite }: { focus: string | null; invite: s
           <MembersTab alliance={alliance} onOpenMember={setMember} onLeft={refresh} invitesRef={invitesRef} />
         </TabsContent>
         <TabsContent value="ranking" className="pt-3">
-          {flags.ranking ? (
-            <div data-testid="alliance-ranking-empty">
-              <EmptyState title={t('ranking.emptyTitle')} description={t('ranking.emptyBody')} />
-            </div>
-          ) : (
-            <FeatureOff part="ranking" />
-          )}
+          {flags.ranking ? <RankingTab /> : <FeatureOff part="ranking" />}
         </TabsContent>
       </Tabs>
       <DirectorCardDialog

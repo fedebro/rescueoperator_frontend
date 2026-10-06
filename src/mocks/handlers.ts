@@ -20,6 +20,8 @@ import { pushHandlers } from './handlers/push';
 import { allianceHandlers } from './handlers/alliance';
 import { allianceSocialHandlers } from './handlers/alliance-social';
 import { allianceAidHandlers } from './handlers/alliance-aid';
+import { allianceProgressHandlers } from './handlers/alliance-progress';
+import { allianceOperationsHandlers } from './handlers/alliance-operations';
 import { communityHandlers } from './handlers/community';
 import { dropPushEndpoint } from './domains/push';
 import { requestAccountDeletion } from './domains/community';
@@ -40,6 +42,8 @@ const DOMAIN_HANDLERS: DomainHandlers[] = [
   allianceHandlers,
   allianceSocialHandlers,
   allianceAidHandlers,
+  allianceProgressHandlers,
+  allianceOperationsHandlers,
   communityHandlers,
 ];
 

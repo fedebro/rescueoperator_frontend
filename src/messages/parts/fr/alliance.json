@@ -315,7 +315,7 @@
     "overview": {
       "emblemAria": "Emblème de {name}",
       "level": "Niveau {level}",
-      "xp": "{xp} / {next} points",
+      "xp": "Derniers points",
       "maxLevel": "Niveau maximum",
       "members": "Membres",
       "onDuty": "En service",
@@ -572,7 +572,29 @@
     },
     "ranking": {
       "emptyTitle": "Classement pas encore calculé",
-      "emptyBody": "Le classement de la semaine apparaîtra ici."
+      "emptyBody": "Le classement de la semaine apparaîtra ici.",
+      "disabledTitle": "Classement pas encore actif",
+      "disabledBody": "Il s’allume quand il y a assez d’alliances en jeu.",
+      "title": "Classement hebdomadaire",
+      "week": "Du {start} au {end}",
+      "rollover": "Remise à zéro dans",
+      "how": "La somme des {bestOf} meilleurs membres compte ; il faut au moins {min} membres avec des points.",
+      "myPosition": "Votre alliance",
+      "notRanked": "Il faut {min} membres avec des points",
+      "score": "Points de l’alliance",
+      "myPoints": "Vos points",
+      "topContributors": "Ont apporté le plus de points :",
+      "deletedDirector": "Directeur supprimé",
+      "lastWeek": "Semaine dernière : #{position} sur {total} avec {score} points",
+      "frame": {
+        "GOLD": "Cadre d’or",
+        "SILVER": "Cadre d’argent",
+        "BRONZE": "Cadre de bronze"
+      },
+      "top": "Les {count} premières",
+      "privacy": "Seuls les noms et les emblèmes des alliances sont visibles.",
+      "level": "Niveau {level}",
+      "scoring": "{count, plural, one {# membre avec des points} other {# membres avec des points}}"
     },
     "members": {
       "title": "Membres · {count}/{slots}",
@@ -708,8 +730,8 @@
         "REPLY_REMOVED": "a supprimé une réponse de {target}",
         "MESSAGE_REMOVED": "a supprimé un message de {target}",
         "LEVEL_UP": "l’alliance a monté de niveau",
-        "OPERATION_STARTED": "une opération d’alliance a commencé",
-        "OPERATION_ENDED": "une opération d’alliance s’est terminée"
+        "OPERATION_STARTED": "Opération d’alliance lancée",
+        "OPERATION_ENDED": "Opération d’alliance terminée"
       }
     },
     "rules": {
@@ -739,7 +761,8 @@
       "accepted": "Acceptées le {date}",
       "required": "Pour écrire sur le tableau et dans le chat, vous devez accepter les règles.",
       "accept": "J’accepte les règles",
-      "acceptedToast": "Règles acceptées"
+      "acceptedToast": "Règles acceptées",
+      "fullVersion": "Version complète sur le site"
     },
     "privacy": {
       "title": "Confidentialité",
@@ -845,6 +868,30 @@
       "AID_PAID": {
         "title": "Prime du fonds d’aide",
         "body": "+{credits} Crédits pour la colonne chez {director} ([{tag}] {name})."
+      },
+      "OPERATION_ALERT": {
+        "title": "Opération d’alliance",
+        "body": "[{tag}] {name} : {minutes} minutes. Prenez le service pour participer."
+      },
+      "OPERATION_STARTED": {
+        "title": "Opération lancée",
+        "body": "[{tag}] {name} : {joined} participants, les fronts sont ouverts."
+      },
+      "OPERATION_CANCELLED": {
+        "title": "Opération annulée",
+        "body": "[{tag}] {name} : moins de deux ont accepté."
+      },
+      "OPERATION_ENDED": {
+        "title": "Opération terminée",
+        "body": "[{tag}] {name} : résultat {outcome}."
+      },
+      "OBJECTIVE_COMPLETED": {
+        "title": "Objectif atteint",
+        "body": "[{tag}] {name} : {credits, plural, =0 {points à l’alliance} other {+# Crédits pour vous}}."
+      },
+      "RANKING_RESULT": {
+        "title": "Classement de la semaine",
+        "body": "[{tag}] {name} : {position, plural, =0 {hors classement} other {position #}}."
       }
     },
     "landing": {
@@ -920,6 +967,172 @@
         "MEMBER_JOINED": "{director} a rejoint l’alliance.",
         "MEMBER_LEFT": "{director} a quitté l’alliance.",
         "LEVEL_UP": "L’alliance a atteint le niveau {level}."
+      }
+    },
+    "objectives": {
+      "completed": "Atteint",
+      "progressLabel": "{progress} sur {target}",
+      "mine": "Votre contribution : {value}",
+      "paid": "Prime reçue",
+      "eligible": "Prime : {credits} Crédits à l’arrivée",
+      "threshold": "{count, plural, one {Prime personnelle à partir de # contribution} other {Prime personnelle à partir de # contributions}}",
+      "reward": "+{xp} XP à l’alliance",
+      "contributions": "{count, plural, one {# contribution} other {# contributions}}",
+      "deletedDirector": "Directeur supprimé",
+      "emptyTitle": "Aucun objectif",
+      "emptyBody": "Les objectifs de la semaine apparaîtront ici.",
+      "week": "Semaine du {start} au {end}",
+      "lastWeek": "la semaine dernière {completed}/{total}",
+      "sized": "Dimensionnés sur {count} membres actifs."
+    },
+    "xp": {
+      "source": {
+        "INCIDENT_RESOLVED": "Urgence résolue",
+        "AID_COLUMN": "Colonne alliée utile",
+        "OBJECTIVE": "Objectif atteint",
+        "OPERATION": "Opération d’alliance",
+        "RANKING": "Place au classement"
+      },
+      "capped": "plafond hebdomadaire",
+      "empty": "Pas encore de points : les urgences résolues par les membres font grandir l’alliance.",
+      "more": "Afficher plus",
+      "capHint": "Chaque membre apporte au plus 60 points par semaine avec les urgences : l’alliance grandit quand beaucoup participent."
+    },
+    "operation": {
+      "eyebrow": "Opération d’alliance",
+      "status": {
+        "ALERT": "Alerte",
+        "ACTIVE": "En cours",
+        "ENDED": "Terminée",
+        "CANCELLED": "Annulée"
+      },
+      "outcome": {
+        "GOLD": "Or",
+        "SILVER": "Argent",
+        "BRONZE": "Bronze",
+        "FAILED": "Non réussie"
+      },
+      "joined": "Participants",
+      "joinedCount": "{count, plural, one {# participant} other {# participants}}",
+      "join": "Participer",
+      "decline": "Pas maintenant",
+      "joinedToast": "Vous êtes dedans : votre front s’ouvre au départ.",
+      "declinedToast": "D’accord, pas maintenant. Sans conséquence.",
+      "youJoined": "Vous participez",
+      "youDeclined": "Vous avez dit pas maintenant",
+      "blocked": {
+        "LEVEL_TOO_LOW": "On participe à partir du niveau 5.",
+        "PERSONAL_MAJOR_OPEN": "Vous avez une urgence majeure ouverte : fermez-la d’abord.",
+        "TOO_LATE": "Trop tard pour entrer : la dernière phase a commencé.",
+        "NOT_RUNNING": "Aucune opération en cours.",
+        "ALREADY_JOINED": "Vous participez déjà.",
+        "DECLINED": "Vous avez dit pas maintenant.",
+        "FEATURE_DISABLED": "Les opérations ne sont pas actives."
+      },
+      "alertEndsIn": "L’alerte se termine dans",
+      "endsIn": "Se termine dans",
+      "progress": "Avancement {pct} %",
+      "sharedProgress": "Avancement commun {pct} %",
+      "phase": {
+        "ALARM": "Alarme",
+        "CONTAINMENT": "Confinement",
+        "RESCUE": "Secours",
+        "SECURING": "Mise en sécurité",
+        "ENDED": "Terminée"
+      },
+      "endedSummary": "Terminée : +{xp} XP à l’alliance.",
+      "cancelledBody": "Moins de deux ont accepté : annulée sans conséquence.",
+      "myFront": "Mon front",
+      "openBoard": "Ouvrir le tableau",
+      "history": "Historique",
+      "none": "Aucune opération en cours.",
+      "noneHint": "Elle démarre par surprise quand assez de membres sont en service. Push à tous, personne n’est enrôlé.",
+      "duration": "{minutes} minutes",
+      "alertHint": "Qui ne répond pas n’est pas enrôlé. On peut entrer jusqu’à la dernière phase.",
+      "boardTitle": "Tableau",
+      "unavailable": "Les opérations ne sont pas disponibles.",
+      "phaseLabel": "Phase",
+      "clock": "Horloge",
+      "lateJoin": "Entrée jusqu’à",
+      "closed": "fermée",
+      "chat": "Chat de l’opération",
+      "outcomeTitle": "Résultat",
+      "quality": "qualité {pct} %",
+      "trophy": "Trophée au tableau",
+      "fronts": "Les fronts",
+      "participant": {
+        "INVITED": "Invité",
+        "JOINED": "Participe",
+        "DECLINED": "Pas maintenant"
+      },
+      "sectors": "{closed}/{total} secteurs fermés",
+      "coverage": "couverture {pct} %",
+      "frontEnded": "Front fermé",
+      "contribution": "{incidents} urgences · {columns} colonnes utiles · {points} points",
+      "needsHelp": "Demande une colonne",
+      "myRequestOpen": "Votre demande d’aide est ouverte",
+      "you": "vous",
+      "deletedDirector": "Directeur supprimé",
+      "notEligible": "Pas de prime : aucune urgence fermée ni colonne utile.",
+      "historyEmptyTitle": "Aucune opération pour l’instant",
+      "historyEmptyBody": "Les opérations terminées apparaîtront ici avec leur médaille.",
+      "more": "Afficher plus",
+      "columnsInFlight": "Colonnes en route",
+      "noColumns": "Aucune colonne en route entre les fronts.",
+      "columnLine": "{helper} → {requester}",
+      "arrived": "arrivée",
+      "scenario": {
+        "AOP_VALLEY_FLOOD": {
+          "title": "Crue de fond de vallée",
+          "description": "La rivière sort de son lit sur toute la vallée : maisons, routes et passages inondés chez chaque participant.",
+          "alert": "Opération d’alliance [{tag}] : crue de fond de vallée"
+        },
+        "AOP_SEISMIC_SWARM": {
+          "title": "Essaim sismique",
+          "description": "Une série de secousses frappe la zone : effondrements, personnes coincées, routes à dégager.",
+          "alert": "Opération d’alliance [{tag}] : essaim sismique"
+        },
+        "AOP_WILDFIRE": {
+          "title": "Feu de forêt étendu",
+          "description": "Le feu court sur les collines et menace les hameaux : chaque front défend son territoire.",
+          "alert": "Opération d’alliance [{tag}] : feu de forêt étendu"
+        },
+        "AOP_STORM_WAVE": {
+          "title": "Vague de mauvais temps",
+          "description": "Vent et pluie battante sur toute la zone : arbres tombés, toits arrachés, routes coupées.",
+          "alert": "Opération d’alliance [{tag}] : vague de mauvais temps"
+        },
+        "AOP_SNOWFALL": {
+          "title": "Chute de neige exceptionnelle",
+          "description": "Une neige abondante isole les hameaux : personnes bloquées, toits menacés, routes à rouvrir.",
+          "alert": "Opération d’alliance [{tag}] : chute de neige exceptionnelle"
+        }
+      }
+    },
+    "objective": {
+      "VOLUME": {
+        "title": "Résolvez ensemble {target} urgences",
+        "description": "Chaque urgence résolue par un membre compte."
+      },
+      "COOPERATION": {
+        "title": "Envoyez {target} colonnes alliées utiles",
+        "description": "Une colonne compte quand elle apporte ce qui manquait."
+      },
+      "QUALITY": {
+        "title": "Clôturez {target} urgences avec un résultat complet",
+        "description": "Tous les besoins couverts à la clôture."
+      },
+      "MEDICAL": {
+        "title": "Résolvez {target} urgences sanitaires",
+        "description": "Les urgences avec un service sanitaire engagé."
+      },
+      "OPERATIONS": {
+        "title": "Menez à bien {target} opération d’alliance",
+        "description": "Toute opération terminée avec au moins le bronze compte."
+      },
+      "PRESENCE": {
+        "title": "{target} membres différents en service le même jour",
+        "description": "Le jour avec le plus de membres en service compte."
       }
     }
   }

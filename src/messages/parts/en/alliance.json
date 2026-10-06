@@ -315,7 +315,7 @@
     "overview": {
       "emblemAria": "Emblem of {name}",
       "level": "Level {level}",
-      "xp": "{xp} / {next} points",
+      "xp": "Latest points",
       "maxLevel": "Maximum level",
       "members": "Members",
       "onDuty": "On duty",
@@ -572,7 +572,29 @@
     },
     "ranking": {
       "emptyTitle": "Ranking not computed yet",
-      "emptyBody": "This week’s ranking will appear here."
+      "emptyBody": "This week’s ranking will appear here.",
+      "disabledTitle": "Ranking not active yet",
+      "disabledBody": "It switches on once there are enough alliances in the game.",
+      "title": "Weekly ranking",
+      "week": "From {start} to {end}",
+      "rollover": "Resets in",
+      "how": "The sum of the best {bestOf} members counts; at least {min} members with points are needed.",
+      "myPosition": "Your alliance",
+      "notRanked": "{min} members with points needed",
+      "score": "Alliance points",
+      "myPoints": "Your points",
+      "topContributors": "Carried the most points:",
+      "deletedDirector": "Deleted Director",
+      "lastWeek": "Last week: #{position} of {total} with {score} points",
+      "frame": {
+        "GOLD": "Gold frame",
+        "SILVER": "Silver frame",
+        "BRONZE": "Bronze frame"
+      },
+      "top": "Top {count}",
+      "privacy": "Only alliance names and emblems are shown.",
+      "level": "Level {level}",
+      "scoring": "{count, plural, one {# member with points} other {# members with points}}"
     },
     "members": {
       "title": "Members · {count}/{slots}",
@@ -708,8 +730,8 @@
         "REPLY_REMOVED": "removed a reply by {target}",
         "MESSAGE_REMOVED": "removed a message by {target}",
         "LEVEL_UP": "the alliance levelled up",
-        "OPERATION_STARTED": "an alliance operation started",
-        "OPERATION_ENDED": "an alliance operation ended"
+        "OPERATION_STARTED": "Alliance operation started",
+        "OPERATION_ENDED": "Alliance operation ended"
       }
     },
     "rules": {
@@ -739,7 +761,8 @@
       "accepted": "Accepted on {date}",
       "required": "To write on the board and in the chat you must accept the rules.",
       "accept": "I accept the rules",
-      "acceptedToast": "Rules accepted"
+      "acceptedToast": "Rules accepted",
+      "fullVersion": "Full version on the website"
     },
     "privacy": {
       "title": "Privacy",
@@ -845,6 +868,30 @@
       "AID_PAID": {
         "title": "Reward from the aid fund",
         "body": "+{credits} Credits for the column to {director} ([{tag}] {name})."
+      },
+      "OPERATION_ALERT": {
+        "title": "Alliance operation",
+        "body": "[{tag}] {name}: {minutes} minutes. Go on duty to take part."
+      },
+      "OPERATION_STARTED": {
+        "title": "Operation started",
+        "body": "[{tag}] {name}: {joined} participants, the fronts are open."
+      },
+      "OPERATION_CANCELLED": {
+        "title": "Operation cancelled",
+        "body": "[{tag}] {name}: fewer than two accepted."
+      },
+      "OPERATION_ENDED": {
+        "title": "Operation ended",
+        "body": "[{tag}] {name}: outcome {outcome}."
+      },
+      "OBJECTIVE_COMPLETED": {
+        "title": "Objective reached",
+        "body": "[{tag}] {name}: {credits, plural, =0 {points to the alliance} other {+# Credits for you}}."
+      },
+      "RANKING_RESULT": {
+        "title": "This week’s ranking",
+        "body": "[{tag}] {name}: {position, plural, =0 {not ranked} other {position #}}."
       }
     },
     "landing": {
@@ -920,6 +967,172 @@
         "MEMBER_JOINED": "{director} joined the alliance.",
         "MEMBER_LEFT": "{director} left the alliance.",
         "LEVEL_UP": "The alliance reached level {level}."
+      }
+    },
+    "objectives": {
+      "completed": "Reached",
+      "progressLabel": "{progress} of {target}",
+      "mine": "Your contribution: {value}",
+      "paid": "Reward received",
+      "eligible": "Reward: {credits} Credits at the finish",
+      "threshold": "{count, plural, one {Personal reward from # contribution} other {Personal reward from # contributions}}",
+      "reward": "+{xp} XP to the alliance",
+      "contributions": "{count, plural, one {# contribution} other {# contributions}}",
+      "deletedDirector": "Deleted Director",
+      "emptyTitle": "No objective",
+      "emptyBody": "This week’s objectives will appear here.",
+      "week": "Week from {start} to {end}",
+      "lastWeek": "last week {completed}/{total}",
+      "sized": "Sized on {count} active members."
+    },
+    "xp": {
+      "source": {
+        "INCIDENT_RESOLVED": "Incident resolved",
+        "AID_COLUMN": "Useful allied column",
+        "OBJECTIVE": "Objective reached",
+        "OPERATION": "Alliance operation",
+        "RANKING": "Ranking placement"
+      },
+      "capped": "weekly cap",
+      "empty": "No points yet: incidents resolved by members make the alliance grow.",
+      "more": "Show more",
+      "capHint": "Each member brings at most 60 points a week from incidents: the alliance grows when many take part."
+    },
+    "operation": {
+      "eyebrow": "Alliance operation",
+      "status": {
+        "ALERT": "Alert",
+        "ACTIVE": "Running",
+        "ENDED": "Ended",
+        "CANCELLED": "Cancelled"
+      },
+      "outcome": {
+        "GOLD": "Gold",
+        "SILVER": "Silver",
+        "BRONZE": "Bronze",
+        "FAILED": "Not achieved"
+      },
+      "joined": "Participants",
+      "joinedCount": "{count, plural, one {# participant} other {# participants}}",
+      "join": "Join",
+      "decline": "Not now",
+      "joinedToast": "You are in: your front opens at the start.",
+      "declinedToast": "Fine, not now. No consequences.",
+      "youJoined": "You take part",
+      "youDeclined": "You said not now",
+      "blocked": {
+        "LEVEL_TOO_LOW": "Joining starts at level 5.",
+        "PERSONAL_MAJOR_OPEN": "You have a major incident open: close it first.",
+        "TOO_LATE": "Too late to enter: the last phase has begun.",
+        "NOT_RUNNING": "No operation running.",
+        "ALREADY_JOINED": "You already take part.",
+        "DECLINED": "You said not now.",
+        "FEATURE_DISABLED": "Operations are not active."
+      },
+      "alertEndsIn": "The alert ends in",
+      "endsIn": "Ends in",
+      "progress": "Progress {pct}%",
+      "sharedProgress": "Shared progress {pct}%",
+      "phase": {
+        "ALARM": "Alarm",
+        "CONTAINMENT": "Containment",
+        "RESCUE": "Rescue",
+        "SECURING": "Securing",
+        "ENDED": "Ended"
+      },
+      "endedSummary": "Ended: +{xp} XP to the alliance.",
+      "cancelledBody": "Fewer than two accepted: cancelled with no consequences.",
+      "myFront": "My front",
+      "openBoard": "Open the board",
+      "history": "History",
+      "none": "No operation running.",
+      "noneHint": "It starts by surprise when enough members are on duty. Push to everybody, nobody is enlisted.",
+      "duration": "{minutes} minutes",
+      "alertHint": "Whoever does not answer is not enlisted. You can enter until the last phase.",
+      "boardTitle": "Board",
+      "unavailable": "Operations are not available.",
+      "phaseLabel": "Phase",
+      "clock": "Clock",
+      "lateJoin": "Entry until",
+      "closed": "closed",
+      "chat": "Operation chat",
+      "outcomeTitle": "Outcome",
+      "quality": "quality {pct}%",
+      "trophy": "Trophy on the board",
+      "fronts": "The fronts",
+      "participant": {
+        "INVITED": "Invited",
+        "JOINED": "Takes part",
+        "DECLINED": "Not now"
+      },
+      "sectors": "{closed}/{total} sectors closed",
+      "coverage": "coverage {pct}%",
+      "frontEnded": "Front closed",
+      "contribution": "{incidents} incidents · {columns} useful columns · {points} points",
+      "needsHelp": "Asks for a column",
+      "myRequestOpen": "Your aid request is open",
+      "you": "you",
+      "deletedDirector": "Deleted Director",
+      "notEligible": "No reward: no incident closed nor useful column.",
+      "historyEmptyTitle": "No operation so far",
+      "historyEmptyBody": "Ended operations will appear here with their medal.",
+      "more": "Show more",
+      "columnsInFlight": "Columns in flight",
+      "noColumns": "No column in flight between the fronts.",
+      "columnLine": "{helper} → {requester}",
+      "arrived": "arrived",
+      "scenario": {
+        "AOP_VALLEY_FLOOD": {
+          "title": "Valley flood",
+          "description": "The river bursts its banks along the whole valley: homes, roads and underpasses flooded in every participant’s territory.",
+          "alert": "Alliance operation [{tag}]: valley flood"
+        },
+        "AOP_SEISMIC_SWARM": {
+          "title": "Seismic swarm",
+          "description": "A sequence of tremors hits the area: collapses, trapped people, roads to clear.",
+          "alert": "Alliance operation [{tag}]: seismic swarm"
+        },
+        "AOP_WILDFIRE": {
+          "title": "Extended wildfire",
+          "description": "Fire runs over the hills and threatens the hamlets: every front defends its own territory.",
+          "alert": "Alliance operation [{tag}]: extended wildfire"
+        },
+        "AOP_STORM_WAVE": {
+          "title": "Storm wave",
+          "description": "Wind and driving rain over the whole area: fallen trees, roofs torn off, roads cut.",
+          "alert": "Alliance operation [{tag}]: storm wave"
+        },
+        "AOP_SNOWFALL": {
+          "title": "Exceptional snowfall",
+          "description": "Heavy snow cuts off the hamlets: stranded people, roofs at risk, roads to reopen.",
+          "alert": "Alliance operation [{tag}]: exceptional snowfall"
+        }
+      }
+    },
+    "objective": {
+      "VOLUME": {
+        "title": "Resolve {target} incidents together",
+        "description": "Every incident resolved by a member counts."
+      },
+      "COOPERATION": {
+        "title": "Send {target} useful allied columns",
+        "description": "A column counts when it brings what was missing."
+      },
+      "QUALITY": {
+        "title": "Close {target} incidents with a full outcome",
+        "description": "Every need covered when the incident closes."
+      },
+      "MEDICAL": {
+        "title": "Resolve {target} medical incidents",
+        "description": "Incidents with a medical service involved."
+      },
+      "OPERATIONS": {
+        "title": "Complete {target} alliance operation",
+        "description": "Any operation ending with at least bronze counts."
+      },
+      "PRESENCE": {
+        "title": "{target} different members on duty on the same day",
+        "description": "The day with the most members on duty counts."
       }
     }
   }

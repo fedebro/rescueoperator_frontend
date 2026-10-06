@@ -162,6 +162,13 @@ async function allowFreshAccountsToWrite(admin: Player): Promise<void> {
   });
 }
 
+/** List responses come either as a plain array or as a page `{ data: [...] }`. */
+function rowsOf<T>(response: unknown): T[] {
+  if (Array.isArray(response)) return response as T[];
+  const data = (response as { data?: unknown }).data;
+  return Array.isArray(data) ? (data as T[]) : [];
+}
+
 test('two players: found, invite code, promote, board, chat, mute, report, allied column', async ({
   browser,
   page,
@@ -200,6 +207,22 @@ test('two players: found, invite code, promote, board, chat, mute, report, allie
   await test.step('levels through the operator CLI: A level 5 + founding cost, B level 3', async () => {
     cli('career:grant', careerA, '--xp=900', '--credits=5000');
     cli('career:grant', careerB, '--xp=300');
+  });
+
+  let playerA!: Player;
+  let playerB!: Player;
+  await test.step('API sessions for both players; A becomes SUPER_ADMIN and lets fresh accounts write (founding carries a description: the write gate applies)', async () => {
+    playerA = await apiSession(api, a, careerA);
+    playerB = await apiSession(api, b, careerB);
+    cli('grant-role', a.email, 'SUPER_ADMIN');
+    await allowFreshAccountsToWrite(playerA);
+    // A only reports and moderates: rules accepted through the API. B, who writes, accepts them in the UI below.
+    const rules = await playerA.call<{ version: string; accepted: boolean }>(
+      'GET',
+      '/api/v1/me/community-rules',
+    );
+    if (!rules.accepted)
+      await playerA.call('POST', '/api/v1/me/community-rules/accept', { version: rules.version });
   });
 
   let allianceName = '';
@@ -260,74 +283,91 @@ test('two players: found, invite code, promote, board, chat, mute, report, allie
 
   /* ── phase 2 through the API (UI steps replace these when the frontend's board / chat / aid screens land) ── */
 
-  let playerA!: Player;
-  let playerB!: Player;
-  await test.step('API sessions for both players; A becomes SUPER_ADMIN and lets fresh accounts write', async () => {
-    playerA = await apiSession(api, a, careerA);
-    playerB = await apiSession(api, b, careerB);
-    cli('grant-role', a.email, 'SUPER_ADMIN');
-    await allowFreshAccountsToWrite(playerA);
-    for (const player of [playerA, playerB]) {
-      const rules = await player.call<{ version: string; accepted: boolean }>(
-        'GET',
-        '/api/v1/me/community-rules',
-      );
-      if (!rules.accepted)
-        await player.call('POST', '/api/v1/me/community-rules/accept', { version: rules.version });
+  const MASKED_NOTE = 'Turno pesante, che c**** di giornata. Grazie a tutti.';
+  await test.step('board (UI): B accepts the rules from the composer notice and posts a note; the filter masks a word; A reads it live', async () => {
+    await page.goto('/game/alliance');
+    await page.getByTestId('alliance-tab-board').click();
+    await expect(page.getByTestId('alliance-board')).toBeVisible();
+    await pageB.goto('/game/alliance');
+    await pageB.getByTestId('alliance-tab-board').click();
+    const blocked = pageB.locator('[data-testid^="write-blocked-"]:not([data-testid="write-blocked-rules"])');
+    await expect(blocked).toBeVisible();
+    expect(await blocked.getAttribute('data-testid'), 'the only block left for a fresh level-3 account').toBe(
+      'write-blocked-RULES_NOT_ACCEPTED',
+    );
+    await pageB.getByTestId('write-blocked-rules').click();
+    await pageB.getByTestId('rules-accept').click();
+    await expect(pageB.getByTestId('rules-accepted')).toBeVisible();
+    await pageB.keyboard.press('Escape');
+    const composer = pageB.getByTestId('board-composer');
+    try {
+      await expect(composer).toBeVisible({ timeout: 10_000 });
+    } catch {
+      test.info().annotations.push({
+        type: 'ux',
+        description: 'the board composer did not unlock live after accepting the rules: needed a reload',
+      });
+      await pageB.reload();
+      await pageB.getByTestId('alliance-tab-board').click();
+      await expect(composer).toBeVisible();
     }
+    await pageB.getByTestId('board-textarea').fill('Turno pesante, che cazzo di giornata. Grazie a tutti.');
+    await pageB.getByTestId('board-post-button').click();
+    await expect(pageB.getByTestId('board-post').filter({ hasText: MASKED_NOTE })).toBeVisible();
+    // A has the board open in the other browser: the post arrives through the alliance stream, no reload.
+    await expect(page.getByTestId('board-post').filter({ hasText: MASKED_NOTE })).toBeVisible();
   });
 
-  await test.step('board: B posts a note, the filter masks a vulgar word, A reads it', async () => {
-    const post = await playerB.call<{ id: string; text: string | null }>(
-      'POST',
-      `${playerB.base}/alliance/posts`,
-      { kind: 'NOTE', text: 'Turno pesante, che cazzo di giornata. Grazie a tutti.' },
-    );
-    expect(post.text).toBe('Turno pesante, che c**** di giornata. Grazie a tutti.');
-    const posts = await playerA.call<Array<{ id: string; text: string | null }>>(
-      'GET',
-      `${playerA.base}/alliance/posts`,
-    );
-    expect(posts.some((p) => p.id === post.id && p.text === post.text)).toBe(true);
-  });
-
+  const TEXT_B = 'Arrivo con due APS, dieci minuti.';
   let channelId = '';
   let messageId = '';
-  await test.step('chat: a text and a quick phrase from B reach A; a link is refused', async () => {
-    const channels = await playerB.call<Array<{ id: string; kind: string }>>(
-      'GET',
-      `${playerB.base}/alliance/channels`,
+  await test.step('chat (UI): a text and a quick phrase from B reach A live; a link is refused (API)', async () => {
+    await page.goto('/game/alliance/chat');
+    await expect(page.getByTestId('chat-composer')).toBeVisible();
+    await pageB.goto('/game/alliance/chat');
+    await pageB.getByTestId('chat-composer').fill(TEXT_B);
+    await pageB.getByTestId('chat-send').click();
+    await expect(pageB.getByTestId('chat-message').filter({ hasText: TEXT_B })).toBeVisible();
+    await pageB.getByTestId('quick-COMING').click();
+    await expect(page.getByTestId('chat-message').filter({ hasText: TEXT_B })).toBeVisible();
+    await expect.poll(() => page.getByTestId('chat-message').count()).toBeGreaterThanOrEqual(2);
+    const channels = rowsOf<{ id: string; kind: string }>(
+      await playerB.call('GET', `${playerB.base}/alliance/channels`),
     );
     channelId = channels.find((c) => c.kind === 'GENERAL')?.id ?? channels[0]!.id;
-    const message = await playerB.call<{ id: string; text: string | null }>(
-      'POST',
-      `${playerB.base}/alliance/channels/${channelId}/messages`,
-      { kind: 'TEXT', text: 'Arrivo con due APS, dieci minuti.' },
-    );
-    messageId = message.id;
-    await playerB.call('POST', `${playerB.base}/alliance/channels/${channelId}/messages`, {
-      kind: 'QUICK',
-      code: 'COMING',
-    });
     const refused = await playerB.refused('POST', `${playerB.base}/alliance/channels/${channelId}/messages`, {
       kind: 'TEXT',
       text: 'scrivimi su www.esempio.it',
     });
     expect(refused).toMatchObject({ status: 422, code: 'TEXT_REJECTED' });
-    const seen = await playerA.call<
-      Array<{ id: string; kind: string; text: string | null; quick: { code: string } | null }>
-    >('GET', `${playerA.base}/alliance/channels/${channelId}/messages`);
-    expect(seen.some((m) => m.id === messageId && m.text === 'Arrivo con due APS, dieci minuti.')).toBe(true);
+    const seen = rowsOf<{ id: string; kind: string; text: string | null; quick: { code: string } | null }>(
+      await playerA.call('GET', `${playerA.base}/alliance/channels/${channelId}/messages`),
+    );
+    const textMessage = seen.find((m) => m.text === TEXT_B);
+    expect(textMessage, 'the text message is in the channel').toBeTruthy();
+    messageId = textMessage!.id;
     expect(seen.some((m) => m.kind === 'QUICK' && m.quick?.code === 'COMING')).toBe(true);
   });
 
-  await test.step('mute: A silences B for an hour — text refused, quick phrase allowed — then lifts it', async () => {
-    const members = await playerA.call<Array<{ id: string; careerId: string }>>(
-      'GET',
-      `${playerA.base}/alliance/members`,
-    );
-    const memberB = members.find((m) => m.careerId === careerB)!;
-    await playerA.call('POST', `${playerA.base}/alliance/members/${memberB.id}/mute`, { duration: 'H1' });
+  await test.step('mute (UI): A silences B for an hour from the members tab; B sees it live; text refused, quick phrase allowed; A lifts it', async () => {
+    await page.goto('/game/alliance');
+    await page.getByTestId('alliance-tab-members').click();
+    const rowB = page.locator('[data-testid="member-row"][data-role="DEPUTY"]');
+    await expect(rowB).toHaveCount(1);
+    await rowB.getByTestId('member-actions').click();
+    await page.getByTestId('action-mute-H1').click();
+    // B still has the chat open: the composer locks without a reload.
+    const mutedBanner = pageB.getByTestId('chat-blocked-MUTED');
+    try {
+      await expect(mutedBanner).toBeVisible({ timeout: 15_000 });
+    } catch {
+      test.info().annotations.push({
+        type: 'ux',
+        description: 'the muted notice did not appear live in the chat: needed a reload',
+      });
+      await pageB.reload();
+      await expect(mutedBanner).toBeVisible();
+    }
     const muted = await playerB.refused('POST', `${playerB.base}/alliance/channels/${channelId}/messages`, {
       kind: 'TEXT',
       text: 'Provo a scrivere.',
@@ -337,11 +377,14 @@ test('two players: found, invite code, promote, board, chat, mute, report, allie
       kind: 'QUICK',
       code: 'ON_SCENE',
     });
-    const sanctions = await playerB.call<Array<{ kind: string; active: boolean }>>(
-      'GET',
-      '/api/v1/me/sanctions',
+    const sanctions = rowsOf<{ kind: string; active: boolean }>(
+      await playerB.call('GET', '/api/v1/me/sanctions'),
     );
     expect(sanctions.some((s) => s.kind === 'MUTE_ALLIANCE' && s.active)).toBe(true);
+    const members = rowsOf<{ id: string; careerId: string }>(
+      await playerA.call('GET', `${playerA.base}/alliance/members`),
+    );
+    const memberB = members.find((m) => m.careerId === careerB)!;
     await playerA.call('POST', `${playerA.base}/alliance/members/${memberB.id}/unmute`, {});
     await playerB.call('POST', `${playerB.base}/alliance/channels/${channelId}/messages`, {
       kind: 'TEXT',
@@ -349,69 +392,83 @@ test('two players: found, invite code, promote, board, chat, mute, report, allie
     });
   });
 
-  await test.step('report: A reports a message of B and sees the case with its context in the moderation queue', async () => {
-    const report = await playerA.call<{ id: string; status: string }>('POST', `${playerA.base}/reports`, {
-      targetKind: 'MESSAGE',
-      targetId: messageId,
-      reason: 'HARASSMENT',
-      note: 'prova e2e',
-    });
-    expect(report.status).toBe('OPEN');
+  await test.step('report (UI): A reports the message of B from the chat; the case shows content and context in the moderation queue', async () => {
+    await page.goto('/game/alliance/chat');
+    const target = page.getByTestId('chat-message').filter({ hasText: TEXT_B });
+    await expect(target).toBeVisible();
+    await target.hover();
+    await target.getByTestId('message-actions').click();
+    await page.getByTestId('message-report').click();
+    await expect(page.getByTestId('report-form')).toBeVisible();
+    await page.getByTestId('report-reason-HARASSMENT').check();
+    await page.getByTestId('report-note').fill('prova e2e');
+    await page.getByTestId('report-submit').click();
+    await expect(page.getByTestId('report-done')).toBeVisible();
+    const rows = rowsOf<{ id: string; targetKind: string; targetId: string; status: string }>(
+      await playerA.call('GET', '/api/v1/admin/moderation/reports'),
+    );
+    const row = rows.find((r) => r.targetKind === 'MESSAGE' && r.targetId === messageId);
+    expect(row, 'the report is in the moderation queue').toBeTruthy();
+    expect(row!.status).toBe('OPEN');
     const detail = await playerA.call<{
       content: { text: string };
       reporters: unknown[];
       context: unknown[];
-    }>('GET', `/api/v1/admin/moderation/reports/${report.id}`);
-    expect(detail.content.text).toBe('Arrivo con due APS, dieci minuti.');
+    }>('GET', `/api/v1/admin/moderation/reports/${row!.id}`);
+    expect(detail.content.text).toBe(TEXT_B);
     expect(detail.reporters).toHaveLength(1);
     expect(detail.context.length).toBeGreaterThan(0);
   });
 
-  await test.step('aid: A asks for help on a real incident, B sends a column, the column reaches the scene', async () => {
+  await test.step('aid (UI): A asks for help from the incident inspector, B sends a column from the aid tab; the column reaches the scene', async () => {
     const created = cli('incident:create', careerA, 'FIRE_DWELLING', '5', '900');
     const incidentId = /inc_[0-9A-Z]{26}/.exec(created)?.[0];
     expect(incidentId, `incident id in: ${created}`).toBeTruthy();
-    const aidRequest = await playerA.call<{ id: string; status: string; gaps: unknown[] }>(
-      'POST',
-      `${playerA.base}/incidents/${incidentId}/aid-request`,
-      {},
+    await page.goto('/game');
+    await page.locator(`[data-testid="incident-card"][data-incident-id="${incidentId}"]`).click();
+    await expect(page.getByTestId('incident-inspector')).toBeVisible();
+    await page.getByTestId('aid-request-button').click();
+    await expect(page.getByTestId('aid-withdraw')).toBeVisible();
+    // B: the request is in the aid tab; the composer lists B's vehicles.
+    await pageB.goto('/game/alliance');
+    await pageB.getByTestId('alliance-tab-aid').click();
+    const request = pageB.getByTestId('aid-request');
+    await expect(request).toHaveCount(1);
+    await request.getByTestId('aid-send').click();
+    await expect(pageB.getByTestId('column-composer')).toBeVisible();
+    const checks = pageB.getByTestId('column-vehicle-check');
+    await expect(checks.first()).toBeVisible();
+    let picked = 0;
+    for (let i = 0; i < (await checks.count()) && picked < 2; i += 1) {
+      const check = checks.nth(i);
+      if (await check.isEnabled()) {
+        await check.click();
+        picked += 1;
+      }
+    }
+    expect(picked, 'at least one vehicle can be sent').toBeGreaterThan(0);
+    await pageB.getByTestId('column-send').click();
+    const columnRow = pageB.locator('[data-testid="aid-column"][data-mine="true"]').first();
+    await expect(columnRow).toBeVisible();
+    await expect(columnRow).toHaveAttribute('data-status', 'EN_ROUTE');
+    const columnId = await columnRow.getAttribute('data-column-id');
+    expect(columnId).toBeTruthy();
+    const vehiclesB = rowsOf<{ id: string; status: string }>(
+      await playerB.call('GET', `${playerB.base}/vehicles`),
     );
-    expect(aidRequest.status).toBe('OPEN');
-    expect(aidRequest.gaps.length).toBeGreaterThan(0);
-    const options = await playerB.call<{
-      blockedReason: string | null;
-      vehicles: Array<{ vehicleId: string; capabilities: Array<{ useful: number }> }>;
-    }>('GET', `${playerB.base}/alliance/aid-requests/${aidRequest.id}/column-options`);
-    expect(options.blockedReason).toBeNull();
-    const vehicleIds = options.vehicles
-      .filter((v) => v.capabilities.some((c) => c.useful > 0))
-      .map((v) => v.vehicleId)
-      .slice(0, 2);
-    expect(vehicleIds.length).toBeGreaterThan(0);
-    const column = await playerB.call<{ id: string; status: string }>(
-      'POST',
-      `${playerB.base}/alliance/aid-requests/${aidRequest.id}/columns`,
-      { vehicleIds },
+    expect(vehiclesB.filter((v) => v.status === 'ALLIED_SUPPORT').length).toBe(picked);
+    const received = rowsOf<{ id: string }>(
+      await playerA.call('GET', `${playerA.base}/alliance/aid-columns`),
     );
-    expect(column.status).toBe('EN_ROUTE');
-    const vehiclesB = await playerB.call<Array<{ id: string; status: string }>>(
-      'GET',
-      `${playerB.base}/vehicles`,
-    );
-    expect(
-      vehiclesB.filter((v) => vehicleIds.includes(v.id)).every((v) => v.status === 'ALLIED_SUPPORT'),
-    ).toBe(true);
-    const received = await playerA.call<Array<{ id: string }>>('GET', `${playerA.base}/alliance/aid-columns`);
-    expect(received.some((c) => c.id === column.id)).toBe(true);
-    // The column drives for real (2–15 game minutes): poll the helper's columns until it is on scene, then A's incident shows the allied units.
+    expect(received.some((c) => c.id === columnId)).toBe(true);
+    // The column drives for real (2–15 game minutes): poll the helper's columns until it is on scene.
     await waitFor(
       'the allied column on scene',
       async () => {
-        const columns = await playerB.call<Array<{ id: string; status: string }>>(
-          'GET',
-          `${playerB.base}/alliance/aid-columns`,
+        const columns = rowsOf<{ id: string; status: string }>(
+          await playerB.call('GET', `${playerB.base}/alliance/aid-columns`),
         );
-        const mine = columns.find((c) => c.id === column.id);
+        const mine = columns.find((c) => c.id === columnId);
         return mine && mine.status !== 'EN_ROUTE' ? mine : null;
       },
       { timeoutMs: 16 * 60_000, intervalMs: 5_000 },
@@ -423,6 +480,10 @@ test('two players: found, invite code, promote, board, chat, mute, report, allie
     expect((incident.allied ?? []).length > 0 || incident.requirements.some((r) => (r.allied ?? 0) > 0)).toBe(
       true,
     );
+    // The requester's inspector shows the allied units once they are on scene.
+    await page.goto('/game');
+    await page.locator(`[data-testid="incident-card"][data-incident-id="${incidentId}"]`).click();
+    await expect(page.getByTestId('allied-units')).toBeVisible();
   });
 
   await test.step('settlement: the incident ends, the helper is paid (phase 2b-2: needs the incident to close)', async () => {

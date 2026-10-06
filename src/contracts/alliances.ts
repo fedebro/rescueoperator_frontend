@@ -524,6 +524,13 @@ export const DirectorCardDto = z.object({
 });
 export type DirectorCardDto = z.infer<typeof DirectorCardDto>;
 
+/**
+ * GET /directors?q=<name> (bearer, rate limited) — Directors by name prefix for a direct invite: ≥ 3 chars, ≤ 10 results, public card
+ * fields only (`presence`/`lastSeen` null), never players who disabled direct invites or who blocked the caller.
+ */
+export const DirectorSearchQuery = z.object({ q: z.string().trim().min(3).max(40) });
+export type DirectorSearchQuery = z.infer<typeof DirectorSearchQuery>;
+
 /** GET|PATCH /me/profile (bearer) — privacy of the Director card. */
 export const ProfileSettingsDto = z.object({ showOnDuty: z.boolean(), acceptDirectInvites: z.boolean() });
 export type ProfileSettingsDto = z.infer<typeof ProfileSettingsDto>;

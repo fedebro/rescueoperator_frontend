@@ -37,6 +37,7 @@ import { useSnapshot } from '@/features/game/hooks';
 import { InspectorHeaderButton, SHEET_HEADER } from '@/features/game/inspector-parts';
 import { useMajor, useRequestReinforcements } from './hooks';
 import { AidMajorSection } from '@/features/alliance/aid-incident';
+import { OperationStrip } from '@/features/alliance/operation-strip';
 import {
   OPERATIONAL_PHASES,
   assignedVehicles,
@@ -757,6 +758,8 @@ export function MajorInspector({ majorId }: { majorId: string }) {
         data-sheet-scroll
         data-testid="major-body"
       >
+        {/* Alliances (D-106, 09 §5): this major is my front of an alliance operation. */}
+        <OperationStrip major={major} />
         {!active ? <RewardSection major={major} /> : null}
         {active ? <PhaseSection major={major} main={main} /> : null}
         {active ? (

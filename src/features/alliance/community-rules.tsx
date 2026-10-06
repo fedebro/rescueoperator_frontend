@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/misc';
 import { resolveCatalogText, useCatalogMessages } from '@/i18n/catalog-texts';
+import { env } from '@/lib/env';
 import { useAllianceMutation, useCommunityRules } from './hooks';
 
 const RULE_KEYS = ['respect', 'content', 'personalData', 'noLinks', 'stayInGame', 'report'] as const;
@@ -68,6 +69,15 @@ export function CommunityRulesDialog({
               {fromBundle(key) ?? t(`notes.${key}`)}
             </p>
           ))}
+          <a
+            href={`${env.landingUrl}/legal/community`}
+            target="_blank"
+            rel="noreferrer"
+            className="text-link text-xs underline-offset-2 hover:underline"
+            data-testid="rules-full-version"
+          >
+            {t('fullVersion')}
+          </a>
           {rules.isPending ? (
             <Skeleton className="h-6 w-48" />
           ) : rules.data ? (

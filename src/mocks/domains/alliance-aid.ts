@@ -69,6 +69,19 @@ interface AidWorld {
   daily: Record<string, { day: string; rewarded: number; pairs: Record<string, number> }>;
   lastRequestAt: Record<string, number>;
 }
+/** Listeners of the aid domain (no imports in the other direction: the dependants subscribe). */
+export interface AidHooks {
+  columnPaid: ((column: { helperCareerId: string; allianceId: string; columnId: string }) => void)[];
+}
+const hooks = new WeakMap<MockEngine, AidHooks>();
+export const aidHooksOf = (engine: MockEngine): AidHooks => {
+  let h = hooks.get(engine);
+  if (!h) {
+    h = { columnPaid: [] };
+    hooks.set(engine, h);
+  }
+  return h;
+};
 export const aidWorld = (engine: MockEngine): AidWorld =>
   (engine.state.ext.allianceAid ??= {
     requests: {},
@@ -513,6 +526,9 @@ export function installAllianceAid(engine: MockEngine): void {
               'IMPORTANT',
             );
         }
+        // Progression / operations listen here (06 §1.1, 07 §5.2): the domains that depend on aid subscribe at install.
+        for (const hook of aidHooksOf(engine).columnPaid)
+          hook({ helperCareerId: column.helperCareerId, allianceId: column.allianceId, columnId: column.id });
         engine.awardXp(helper, xp);
       }
       careerAlliance(helper).aidGiven += 1;

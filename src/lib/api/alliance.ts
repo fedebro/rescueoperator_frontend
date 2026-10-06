@@ -55,6 +55,10 @@ import {
   type UpdateAllianceSettingsBody,
   type UpdateProfileBody,
   type AllianceJoinPolicy,
+  AllianceObjectivesDto,
+  AllianceXpEntryDto,
+  AllianceRankingDto,
+  AllianceOperationDto,
 } from '@/contracts';
 import { api } from './client';
 
@@ -259,4 +263,31 @@ export const aidApi = {
     api.command(`${a(careerId)}/aid-requests/${requestId}/columns`, body, { schema: AidColumnDto }),
   recall: (careerId: string, columnId: string) =>
     api.command(`${a(careerId)}/aid-columns/${columnId}/recall`, {}, { schema: AidColumnDto }),
+};
+
+/** Progression (study 06): objectives, the XP ledger, the weekly ranking (`GET /alliances/ranking`, bearer). */
+export const progressApi = {
+  objectives: (careerId: string) =>
+    api.get(`${a(careerId)}/objectives`, { schema: AllianceObjectivesDto.nullable() }),
+  xp: (careerId: string, cursor?: string | null) =>
+    api.getPage(`${a(careerId)}/xp`, {
+      schema: z.array(AllianceXpEntryDto),
+      query: { cursor: cursor ?? undefined, limit: 50 },
+    }),
+  ranking: () => api.get('/alliances/ranking', { schema: AllianceRankingDto }),
+};
+
+/** Alliance operations (study 07): the running / recent one, the history, Partecipa / Non ora. */
+export const operationApi = {
+  current: (careerId: string) =>
+    api.get(`${a(careerId)}/operation`, { schema: AllianceOperationDto.nullable() }),
+  history: (careerId: string, cursor?: string | null) =>
+    api.getPage(`${a(careerId)}/operations`, {
+      schema: z.array(AllianceOperationDto),
+      query: { cursor: cursor ?? undefined, limit: 20 },
+    }),
+  join: (careerId: string) =>
+    api.command(`${a(careerId)}/operation/join`, {}, { schema: AllianceOperationDto }),
+  decline: (careerId: string) =>
+    api.command(`${a(careerId)}/operation/decline`, {}, { schema: AllianceOperationDto }),
 };

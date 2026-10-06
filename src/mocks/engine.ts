@@ -458,9 +458,9 @@ export const DEFAULT_FLAGS: Record<string, boolean> = {
   alliance_board: true,
   alliance_chat: true,
   alliance_aid: true,
-  alliance_objectives: false,
-  alliance_ranking: false,
-  alliance_operations: false,
+  alliance_objectives: true,
+  alliance_ranking: true,
+  alliance_operations: true,
 };
 const emptyHooks = (): EngineHooks => ({
   careerCreated: [],

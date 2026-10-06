@@ -2,6 +2,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as React from 'react';
 import type {
   AidColumnOptionsDto,
+  AllianceObjectivesDto,
+  AllianceOperationDto,
+  AllianceOperationParticipantDto,
+  AllianceRankingDto,
+  SyncSnapshot,
   AidRequestDto,
   AllianceChannelDto,
   AllianceHomeDto,
@@ -320,11 +325,158 @@ export const columnOptions = (patch: Partial<AidColumnOptionsDto> = {}): AidColu
 /** One page of a paged list, as the API client returns it. */
 export const page = <T,>(data: T[]) => ({ data, meta: { nextCursor: null, hasMore: false, serverTime: T0 } });
 
+export const OPERATION_ID = 'aop_01J8Z0000000000000000000AA';
+/** The alliance as the career snapshot carries it (badge, operation id). */
+export const snapshotAlliance = (patch: Partial<NonNullable<SyncSnapshot['alliance']>> = {}) =>
+  ({
+    id: ALLIANCE_ID,
+    name: 'Abruzzo Soccorso',
+    tag: 'ABR',
+    role: 'COORDINATOR',
+    unread: { chat: 0, board: 0 },
+    operationId: null,
+    ...patch,
+  }) as NonNullable<SyncSnapshot['alliance']>;
+
+export const participant = (
+  patch: Partial<AllianceOperationParticipantDto> = {},
+): AllianceOperationParticipantDto => ({
+  participant: { careerId: MARTA_ID, directorName: 'Marta' },
+  status: 'JOINED',
+  joinedAt: T0,
+  front: null,
+  contribution: { incidentsClosed: 0, usefulColumns: 0, points: 0 },
+  reward: { eligible: false, multiplier: null, credits: null, xp: null },
+  ...patch,
+});
+export const operation = (patch: Partial<AllianceOperationDto> = {}): AllianceOperationDto => ({
+  id: OPERATION_ID,
+  allianceId: ALLIANCE_ID,
+  scenarioCode: 'AOP_VALLEY_FLOOD',
+  title: { key: 'alliance.operation.scenario.AOP_VALLEY_FLOOD.title' },
+  description: { key: 'alliance.operation.scenario.AOP_VALLEY_FLOOD.description' },
+  alert: { key: 'alliance.operation.scenario.AOP_VALLEY_FLOOD.alert', params: { tag: 'ABR' } },
+  icon: 'waves',
+  status: 'ALERT',
+  triggeredBy: 'SYSTEM',
+  phase: null,
+  progress: 0,
+  durationMinutes: 90,
+  alertedAt: T0,
+  alertEndsAt: '2026-10-06T09:05:00.000Z',
+  startedAt: null,
+  endsAt: null,
+  endedAt: null,
+  lateJoinUntil: null,
+  outcome: null,
+  participants: [
+    participant({
+      participant: { careerId: CAREER_ID, directorName: 'Federico' },
+      status: 'INVITED',
+      joinedAt: null,
+    }),
+    participant(),
+  ],
+  joinedCount: 1,
+  columnsInFlight: [],
+  channelId: null,
+  me: { status: null, canJoin: true, blockedReason: null, majorId: null },
+  reward: { allianceXp: null, trophy: false, quality: null },
+  ...patch,
+});
+export const objectives = (patch: Partial<AllianceObjectivesDto> = {}): AllianceObjectivesDto => ({
+  week: { start: '2026-10-05T00:00:00.000Z', end: '2026-10-12T00:00:00.000Z' },
+  objectives: [
+    {
+      id: 'aob_01J8Z0000000000000000000AA',
+      type: 'VOLUME',
+      title: { key: 'alliance.objective.VOLUME.title', params: { target: 30 } },
+      description: { key: 'alliance.objective.VOLUME.description', params: { target: 30 } },
+      target: 30,
+      progress: 4,
+      completed: false,
+      completedAt: null,
+      reward: { allianceXp: 150, memberCredits: '150', memberXp: '60', minShare: 0.05, minCount: 3 },
+      contributions: [
+        { careerId: CAREER_ID, directorName: 'Federico', value: 4 },
+        { careerId: MARTA_ID, directorName: 'Marta', value: 0 },
+      ],
+      myContribution: 4,
+      myRewardEligible: true,
+      myRewardPaidAt: null,
+    },
+    {
+      id: 'aob_01J8Z0000000000000000000AB',
+      type: 'COOPERATION',
+      title: { key: 'alliance.objective.COOPERATION.title', params: { target: 4 } },
+      description: { key: 'alliance.objective.COOPERATION.description', params: { target: 4 } },
+      target: 4,
+      progress: 4,
+      completed: true,
+      completedAt: T0,
+      reward: { allianceXp: 200, memberCredits: '150', memberXp: '60', minShare: 0.05, minCount: 3 },
+      contributions: [{ careerId: MARTA_ID, directorName: 'Marta', value: 4 }],
+      myContribution: 0,
+      myRewardEligible: false,
+      myRewardPaidAt: null,
+    },
+    {
+      id: 'aob_01J8Z0000000000000000000AC',
+      type: 'PRESENCE',
+      title: { key: 'alliance.objective.PRESENCE.title', params: { target: 2 } },
+      description: { key: 'alliance.objective.PRESENCE.description', params: { target: 2 } },
+      target: 2,
+      progress: 1,
+      completed: false,
+      completedAt: null,
+      reward: { allianceXp: 150, memberCredits: '150', memberXp: '60', minShare: 0.05, minCount: 3 },
+      contributions: [],
+      myContribution: 0,
+      myRewardEligible: false,
+      myRewardPaidAt: null,
+    },
+  ],
+  activeMembersLastWeek: 2,
+  generatedAt: T0,
+  lastWeek: { completed: 2, total: 3 },
+  ...patch,
+});
+const rankingEntry = (position: number, mine = false): AllianceRankingDto['entries'][number] => ({
+  position,
+  alliance: {
+    id: mine ? ALLIANCE_ID : `all_01J8Z00000000000000000${String(position).padStart(4, '0')}`,
+    name: mine ? 'Abruzzo Soccorso' : `Alleanza ${position}`,
+    tag: mine ? 'ABR' : `A${position}`,
+    emblem: { shape: 'SHIELD', symbol: 'FLAME', primaryColor: 'RED', secondaryColor: 'SILVER' },
+    level: 2,
+  },
+  score: 3000 - position * 100,
+  scoringMembers: 4,
+  topContributors: mine ? [{ careerId: CAREER_ID, directorName: 'Federico', points: 120 }] : null,
+  isMine: mine,
+});
+export const ranking = (patch: Partial<AllianceRankingDto> = {}): AllianceRankingDto => ({
+  enabled: true,
+  week: { start: '2026-10-05T00:00:00.000Z', end: '2026-10-12T00:00:00.000Z' },
+  bestOf: 10,
+  minScoringMembers: 3,
+  entries: Array.from({ length: 20 }, (_, i) => rankingEntry(i + 1)),
+  mine: rankingEntry(23, true),
+  myPoints: 120,
+  lastWeek: { position: 2, score: 2400, frame: 'SILVER', totalRanked: 14 },
+  rolloverAt: '2026-10-12T00:00:00.000Z',
+  ...patch,
+});
+
 /** Renders inside the query client + career context, with a sync snapshot of a level-5 Director. */
-export function renderGame(ui: React.ReactElement, level = 5) {
+export function renderGame(ui: React.ReactElement, level = 5, snapshotPatch: Partial<SyncSnapshot> = {}) {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const snap = snapshot();
-  qc.setQueryData(qk.sync(CAREER_ID), { ...snap, career: { ...snap.career, level, credits: '5000' } });
+  qc.setQueryData(qk.sync(CAREER_ID), {
+    ...snap,
+    ...snapshotPatch,
+    career: { ...snap.career, level, credits: '5000' },
+  });
   return renderWithIntl(
     <QueryClientProvider client={qc}>
       <CareerProvider value={CAREER_ID}>{ui}</CareerProvider>

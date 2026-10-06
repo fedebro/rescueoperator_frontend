@@ -315,7 +315,7 @@
     "overview": {
       "emblemAria": "Emblema de {name}",
       "level": "Nivel {level}",
-      "xp": "{xp} / {next} puntos",
+      "xp": "Últimos puntos",
       "maxLevel": "Nivel máximo",
       "members": "Miembros",
       "onDuty": "De servicio",
@@ -572,7 +572,29 @@
     },
     "ranking": {
       "emptyTitle": "Clasificación aún no calculada",
-      "emptyBody": "La clasificación de la semana aparecerá aquí."
+      "emptyBody": "La clasificación de la semana aparecerá aquí.",
+      "disabledTitle": "Clasificación aún no activa",
+      "disabledBody": "Se activa cuando hay bastantes alianzas en juego.",
+      "title": "Clasificación semanal",
+      "week": "Del {start} al {end}",
+      "rollover": "Se reinicia en",
+      "how": "Cuenta la suma de los {bestOf} mejores miembros; hacen falta al menos {min} miembros con puntos.",
+      "myPosition": "Tu alianza",
+      "notRanked": "Hacen falta {min} miembros con puntos",
+      "score": "Puntos de la alianza",
+      "myPoints": "Tus puntos",
+      "topContributors": "Aportaron más puntos:",
+      "deletedDirector": "Director eliminado",
+      "lastWeek": "Semana pasada: #{position} de {total} con {score} puntos",
+      "frame": {
+        "GOLD": "Marco de oro",
+        "SILVER": "Marco de plata",
+        "BRONZE": "Marco de bronce"
+      },
+      "top": "Las {count} primeras",
+      "privacy": "Solo se ven nombres y emblemas de las alianzas.",
+      "level": "Nivel {level}",
+      "scoring": "{count, plural, one {# miembro con puntos} other {# miembros con puntos}}"
     },
     "members": {
       "title": "Miembros · {count}/{slots}",
@@ -708,8 +730,8 @@
         "REPLY_REMOVED": "eliminó una respuesta de {target}",
         "MESSAGE_REMOVED": "eliminó un mensaje de {target}",
         "LEVEL_UP": "la alianza subió de nivel",
-        "OPERATION_STARTED": "empezó una operación de alianza",
-        "OPERATION_ENDED": "terminó una operación de alianza"
+        "OPERATION_STARTED": "Operación de alianza iniciada",
+        "OPERATION_ENDED": "Operación de alianza concluida"
       }
     },
     "rules": {
@@ -739,7 +761,8 @@
       "accepted": "Aceptadas el {date}",
       "required": "Para escribir en el tablón y en el chat debes aceptar las reglas.",
       "accept": "Acepto las reglas",
-      "acceptedToast": "Reglas aceptadas"
+      "acceptedToast": "Reglas aceptadas",
+      "fullVersion": "Versión completa en el sitio web"
     },
     "privacy": {
       "title": "Privacidad",
@@ -845,6 +868,30 @@
       "AID_PAID": {
         "title": "Recompensa del fondo de ayuda",
         "body": "+{credits} Créditos por la columna con {director} ([{tag}] {name})."
+      },
+      "OPERATION_ALERT": {
+        "title": "Operación de alianza",
+        "body": "[{tag}] {name}: {minutes} minutos. Entra de servicio para participar."
+      },
+      "OPERATION_STARTED": {
+        "title": "Operación iniciada",
+        "body": "[{tag}] {name}: {joined} participantes, los frentes están abiertos."
+      },
+      "OPERATION_CANCELLED": {
+        "title": "Operación anulada",
+        "body": "[{tag}] {name}: aceptaron menos de dos."
+      },
+      "OPERATION_ENDED": {
+        "title": "Operación concluida",
+        "body": "[{tag}] {name}: resultado {outcome}."
+      },
+      "OBJECTIVE_COMPLETED": {
+        "title": "Objetivo logrado",
+        "body": "[{tag}] {name}: {credits, plural, =0 {puntos para la alianza} other {+# Créditos para ti}}."
+      },
+      "RANKING_RESULT": {
+        "title": "Clasificación de la semana",
+        "body": "[{tag}] {name}: {position, plural, =0 {fuera de la clasificación} other {puesto #}}."
       }
     },
     "landing": {
@@ -920,6 +967,172 @@
         "MEMBER_JOINED": "{director} ha entrado en la alianza.",
         "MEMBER_LEFT": "{director} ha dejado la alianza.",
         "LEVEL_UP": "La alianza ha subido al nivel {level}."
+      }
+    },
+    "objectives": {
+      "completed": "Logrado",
+      "progressLabel": "{progress} de {target}",
+      "mine": "Tu aportación: {value}",
+      "paid": "Recompensa recibida",
+      "eligible": "Recompensa: {credits} Créditos al llegar",
+      "threshold": "{count, plural, one {Recompensa personal a partir de # aportación} other {Recompensa personal a partir de # aportaciones}}",
+      "reward": "+{xp} XP para la alianza",
+      "contributions": "{count, plural, one {# aportación} other {# aportaciones}}",
+      "deletedDirector": "Director eliminado",
+      "emptyTitle": "Ningún objetivo",
+      "emptyBody": "Los objetivos de la semana aparecerán aquí.",
+      "week": "Semana del {start} al {end}",
+      "lastWeek": "la semana pasada {completed}/{total}",
+      "sized": "Dimensionados sobre {count} miembros activos."
+    },
+    "xp": {
+      "source": {
+        "INCIDENT_RESOLVED": "Emergencia resuelta",
+        "AID_COLUMN": "Columna aliada útil",
+        "OBJECTIVE": "Objetivo logrado",
+        "OPERATION": "Operación de alianza",
+        "RANKING": "Puesto en la clasificación"
+      },
+      "capped": "tope semanal",
+      "empty": "Aún sin puntos: las emergencias resueltas por los miembros hacen crecer la alianza.",
+      "more": "Mostrar más",
+      "capHint": "Cada miembro aporta como máximo 60 puntos por semana con las emergencias: la alianza crece si participan muchos."
+    },
+    "operation": {
+      "eyebrow": "Operación de alianza",
+      "status": {
+        "ALERT": "Alerta",
+        "ACTIVE": "En curso",
+        "ENDED": "Concluida",
+        "CANCELLED": "Anulada"
+      },
+      "outcome": {
+        "GOLD": "Oro",
+        "SILVER": "Plata",
+        "BRONZE": "Bronce",
+        "FAILED": "No lograda"
+      },
+      "joined": "Participantes",
+      "joinedCount": "{count, plural, one {# participante} other {# participantes}}",
+      "join": "Participar",
+      "decline": "Ahora no",
+      "joinedToast": "Estás dentro: tu frente se abre al empezar.",
+      "declinedToast": "De acuerdo, ahora no. Sin consecuencias.",
+      "youJoined": "Participas",
+      "youDeclined": "Dijiste ahora no",
+      "blocked": {
+        "LEVEL_TOO_LOW": "Se participa desde el nivel 5.",
+        "PERSONAL_MAJOR_OPEN": "Tienes una gran emergencia abierta: ciérrala antes.",
+        "TOO_LATE": "Demasiado tarde para entrar: ha empezado la última fase.",
+        "NOT_RUNNING": "Ninguna operación en curso.",
+        "ALREADY_JOINED": "Ya participas.",
+        "DECLINED": "Dijiste ahora no.",
+        "FEATURE_DISABLED": "Las operaciones no están activas."
+      },
+      "alertEndsIn": "La alerta termina en",
+      "endsIn": "Termina en",
+      "progress": "Avance {pct} %",
+      "sharedProgress": "Avance común {pct} %",
+      "phase": {
+        "ALARM": "Alarma",
+        "CONTAINMENT": "Contención",
+        "RESCUE": "Rescate",
+        "SECURING": "Aseguramiento",
+        "ENDED": "Concluida"
+      },
+      "endedSummary": "Concluida: +{xp} XP para la alianza.",
+      "cancelledBody": "Aceptaron menos de dos: anulada sin consecuencias.",
+      "myFront": "Mi frente",
+      "openBoard": "Abrir el tablero",
+      "history": "Historial",
+      "none": "Ninguna operación en curso.",
+      "noneHint": "Empieza por sorpresa cuando hay bastantes miembros de servicio. Push a todos, nadie es reclutado.",
+      "duration": "{minutes} minutos",
+      "alertHint": "Quien no responde no es reclutado. Se puede entrar hasta la última fase.",
+      "boardTitle": "Tablero",
+      "unavailable": "Las operaciones no están disponibles.",
+      "phaseLabel": "Fase",
+      "clock": "Reloj",
+      "lateJoin": "Entrada hasta",
+      "closed": "cerrada",
+      "chat": "Chat de la operación",
+      "outcomeTitle": "Resultado",
+      "quality": "calidad {pct} %",
+      "trophy": "Trofeo en el tablón",
+      "fronts": "Los frentes",
+      "participant": {
+        "INVITED": "Invitado",
+        "JOINED": "Participa",
+        "DECLINED": "Ahora no"
+      },
+      "sectors": "{closed}/{total} sectores cerrados",
+      "coverage": "cobertura {pct} %",
+      "frontEnded": "Frente cerrado",
+      "contribution": "{incidents} emergencias · {columns} columnas útiles · {points} puntos",
+      "needsHelp": "Pide una columna",
+      "myRequestOpen": "Tu petición de ayuda está abierta",
+      "you": "tú",
+      "deletedDirector": "Director eliminado",
+      "notEligible": "Sin recompensa: ninguna emergencia cerrada ni columna útil.",
+      "historyEmptyTitle": "Ninguna operación por ahora",
+      "historyEmptyBody": "Las operaciones concluidas aparecerán aquí con su medalla.",
+      "more": "Mostrar más",
+      "columnsInFlight": "Columnas en camino",
+      "noColumns": "Ninguna columna en camino entre los frentes.",
+      "columnLine": "{helper} → {requester}",
+      "arrived": "llegó",
+      "scenario": {
+        "AOP_VALLEY_FLOOD": {
+          "title": "Inundación del valle",
+          "description": "El río se desborda en todo el valle: casas, calles y pasos inundados en el territorio de cada participante.",
+          "alert": "Operación de alianza [{tag}]: inundación del valle"
+        },
+        "AOP_SEISMIC_SWARM": {
+          "title": "Enjambre sísmico",
+          "description": "Una secuencia de sacudidas golpea la zona: derrumbes, personas atrapadas, calles que despejar.",
+          "alert": "Operación de alianza [{tag}]: enjambre sísmico"
+        },
+        "AOP_WILDFIRE": {
+          "title": "Incendio forestal extenso",
+          "description": "El fuego corre por las colinas y amenaza las aldeas: cada frente defiende su territorio.",
+          "alert": "Operación de alianza [{tag}]: incendio forestal extenso"
+        },
+        "AOP_STORM_WAVE": {
+          "title": "Ola de mal tiempo",
+          "description": "Viento y lluvia intensa en toda la zona: árboles caídos, tejados arrancados, carreteras cortadas.",
+          "alert": "Operación de alianza [{tag}]: ola de mal tiempo"
+        },
+        "AOP_SNOWFALL": {
+          "title": "Nevada excepcional",
+          "description": "Una nevada intensa aísla las aldeas: personas bloqueadas, tejados en riesgo, carreteras que reabrir.",
+          "alert": "Operación de alianza [{tag}]: nevada excepcional"
+        }
+      }
+    },
+    "objective": {
+      "VOLUME": {
+        "title": "Resolved juntos {target} emergencias",
+        "description": "Cada emergencia resuelta por un miembro cuenta."
+      },
+      "COOPERATION": {
+        "title": "Enviad {target} columnas aliadas útiles",
+        "description": "Una columna cuenta cuando aporta lo que faltaba."
+      },
+      "QUALITY": {
+        "title": "Cerrad {target} emergencias con resultado pleno",
+        "description": "Todas las necesidades cubiertas al cierre."
+      },
+      "MEDICAL": {
+        "title": "Resolved {target} emergencias sanitarias",
+        "description": "Las emergencias con un servicio sanitario implicado."
+      },
+      "OPERATIONS": {
+        "title": "Completad {target} operación de alianza",
+        "description": "Cuenta cada operación concluida al menos con bronce."
+      },
+      "PRESENCE": {
+        "title": "{target} miembros distintos de servicio el mismo día",
+        "description": "Cuenta el día con más miembros de servicio."
       }
     }
   }

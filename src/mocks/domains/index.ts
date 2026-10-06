@@ -16,6 +16,8 @@ import { installCommunity } from './community';
 import { installAlliance } from './alliance';
 import { installAllianceSocial } from './alliance-social';
 import { installAllianceAid } from './alliance-aid';
+import { installAllianceProgress } from './alliance-progress';
+import { installAllianceOperations } from './alliance-operations';
 import { installQa } from '../qa';
 
 const installed = new WeakSet<MockEngine>();
@@ -49,7 +51,9 @@ export function installDomains(engine: MockEngine): void {
   installCommunity(engine);
   installAlliance(engine);
   installAllianceSocial(engine);
+  installAllianceProgress(engine);
   installAllianceAid(engine);
+  installAllianceOperations(engine);
 }
 
 /** Typed accessor for a domain's per-career state (created on first use — old saves stay loadable). */

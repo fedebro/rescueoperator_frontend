@@ -9,7 +9,15 @@ import {
 } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import type { AllianceHomeDto, SyncSnapshot } from '@/contracts';
-import { aidApi, allianceApi, boardApi, chatApi, moderationApi } from '@/lib/api/alliance';
+import {
+  aidApi,
+  allianceApi,
+  boardApi,
+  chatApi,
+  moderationApi,
+  progressApi,
+  operationApi,
+} from '@/lib/api/alliance';
 import { ApiClientError } from '@/lib/api/errors';
 import { useErrorMessage } from '@/lib/api/error-message';
 import { invalidateFresh } from '@/lib/api/invalidate';
@@ -241,4 +249,47 @@ export function useApplyUnread(): (unread: { board: number; chat: number }) => v
     },
     [qc, careerId],
   );
+}
+
+/* ───────────── phase 3: progression + operations ───────────── */
+export function useObjectives(enabled = true) {
+  const careerId = useCareerId();
+  return useQuery({
+    queryKey: qk.allianceObjectives(careerId),
+    queryFn: () => progressApi.objectives(careerId),
+    enabled,
+  });
+}
+export function useAllianceXp(enabled = true) {
+  const careerId = useCareerId();
+  return useInfiniteQuery({
+    queryKey: qk.allianceXp(careerId),
+    queryFn: ({ pageParam }) => progressApi.xp(careerId, pageParam),
+    initialPageParam: null as string | null,
+    getNextPageParam: (last) => (last.meta.hasMore ? (last.meta.nextCursor ?? null) : null),
+    enabled,
+  });
+}
+export function useRanking(enabled = true) {
+  return useQuery({ queryKey: qk.allianceRanking, queryFn: () => progressApi.ranking(), enabled });
+}
+/** The running / recent operation; polled gently so the clock and the fronts stay honest between stream events. */
+export function useOperation(enabled = true) {
+  const careerId = useCareerId();
+  return useQuery({
+    queryKey: qk.allianceOperation(careerId),
+    queryFn: () => operationApi.current(careerId),
+    enabled,
+    refetchInterval: enabled ? 30_000 : false,
+  });
+}
+export function useOperationHistory(enabled = true) {
+  const careerId = useCareerId();
+  return useInfiniteQuery({
+    queryKey: qk.allianceOperations(careerId),
+    queryFn: ({ pageParam }) => operationApi.history(careerId, pageParam),
+    initialPageParam: null as string | null,
+    getNextPageParam: (last) => (last.meta.hasMore ? (last.meta.nextCursor ?? null) : null),
+    enabled,
+  });
 }

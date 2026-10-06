@@ -4,6 +4,7 @@ import { z } from 'zod';
 const schema = z.object({
   apiUrl: z.string().url().default('http://localhost:4000'),
   apiMock: z.boolean(),
+  landingUrl: z.string().url(),
   mockSpeed: z.number().positive().default(1),
   mapTileJsonUrl: z.string().url().default('https://tiles.openfreemap.org/planet'),
   mapGlyphsUrl: z.string().default('https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf'),
@@ -19,6 +20,8 @@ const orUndefined = (v: string | undefined): string | undefined =>
 export const env = schema.parse({
   apiUrl: orUndefined(process.env.NEXT_PUBLIC_API_URL),
   apiMock: process.env.NEXT_PUBLIC_API_MOCK === '1',
+  /** Public site (legal pages such as `/legal/community`); the production domain when unset. */
+  landingUrl: orUndefined(process.env.NEXT_PUBLIC_LANDING_URL) ?? 'https://www.rescue-control.com',
   mockSpeed: orUndefined(process.env.NEXT_PUBLIC_MOCK_SPEED)
     ? Number(process.env.NEXT_PUBLIC_MOCK_SPEED)
     : undefined,

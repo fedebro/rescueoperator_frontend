@@ -13,6 +13,7 @@ import { TutorialOverlay } from './tutorial-overlay';
 import { InsufficientCreditsHost } from '@/features/monetization/insufficient-credits';
 import { FamilyUnlockCelebration } from '@/features/families/family-unlock-celebration';
 import { MajorAlertHost } from '@/features/major/major-alert';
+import { OperationAlertHost } from '@/features/alliance/operation-alert';
 
 export function GameLayout({ children }: { children: React.ReactNode }) {
   const t = useTranslations('common');
@@ -36,6 +37,8 @@ export function GameLayout({ children }: { children: React.ReactNode }) {
       <FamilyUnlockCelebration />
       {/* The full-screen alert of a major incident, over any page (D-24, study 06 §2.6). */}
       <MajorAlertHost />
+      {/* The full-screen alert of an alliance operation (D-106, study 07 §3.2). */}
+      <OperationAlertHost />
     </GameRuntime>
   );
 }
