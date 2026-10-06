@@ -149,9 +149,13 @@ async function allowFreshAccountsToWrite(admin: Player): Promise<void> {
   );
   const moderation = (draft.content.moderation ?? {}) as Record<string, unknown>;
   const write = (moderation.write ?? {}) as Record<string, unknown>;
+  // Two knobs today: the moderation rule (board/chat text) and the alliance gate's own `accountMinAgeHours` (founding,
+  // name/description, the restrictions shown in the section). Both must be lifted for a minute-old account.
+  const alliances = (draft.content.alliances ?? {}) as Record<string, unknown>;
   const content = {
     ...draft.content,
     moderation: { ...moderation, write: { ...write, minAccountAgeHours: 0 } },
+    alliances: { ...alliances, accountMinAgeHours: 0 },
   };
   await admin.call('PUT', `/api/v1/admin/config/versions/${draft.id}`, {
     content,
