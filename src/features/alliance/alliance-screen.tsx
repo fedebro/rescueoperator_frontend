@@ -136,9 +136,21 @@ function InviteCodeCard({ code, onDone }: { code: string; onDone: () => void }) 
  */
 function AllianceScreenParams() {
   const params = useSearchParams();
-  const focus = params.get('focus');
-  const invite = params.get('invite');
-  return <AllianceScreenBody key={`${focus ?? ''}|${invite ?? ''}`} focus={focus} invite={invite} />;
+  const urlFocus = params.get('focus');
+  const urlInvite = params.get('invite');
+  // The instructions outlive the URL clean-up below: cleaning the params must not remount the body and lose the invite
+  // code (seen on the real stack: the card never showed). A new instruction in the URL replaces the previous one.
+  const [link, setLink] = React.useState(() => ({ focus: urlFocus, invite: urlInvite }));
+  // (state adjusted during render, the React way for "a prop changed": no effect, no extra commit)
+  if ((urlFocus && urlFocus !== link.focus) || (urlInvite && urlInvite !== link.invite))
+    setLink({ focus: urlFocus, invite: urlInvite });
+  return (
+    <AllianceScreenBody
+      key={`${link.focus ?? ''}|${link.invite ?? ''}`}
+      focus={link.focus}
+      invite={link.invite}
+    />
+  );
 }
 
 function AllianceScreenBody({ focus, invite }: { focus: string | null; invite: string | null }) {
