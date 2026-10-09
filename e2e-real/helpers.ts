@@ -206,12 +206,22 @@ export async function signUp(page: Page, account: Account): Promise<void> {
   await expect(page).toHaveURL(/\/onboarding$/, { timeout: 30_000 });
 }
 
-/** Onboarding against the real geodata: search Pescara, pick the central starter site, create the career. */
-export async function createCareer(page: Page): Promise<void> {
-  await page.getByTestId('location-search').fill('Pescara');
-  const pescara = page.getByTestId('location-result').filter({ hasText: 'Pescara' }).first();
-  await expect(pescara).toHaveAttribute('data-playable', 'true', { timeout: 30_000 });
-  await pescara.click();
+/**
+ * Onboarding against the real geodata: search the city, pick the central starter site, create the career.
+ * The city is Pescara unless `E2E_CITY` names another one (used to prove a newly imported region end to end;
+ * the backend must then import that region too, see `GEODATA_RELEASE` in the backend's `scripts/reset-db.mjs`).
+ */
+export async function createCareer(page: Page, city = process.env.E2E_CITY ?? 'Pescara'): Promise<void> {
+  await page.getByTestId('location-search').fill(city);
+  // The row reads "Pescara (PE)" followed by region and population: match the name itself, not a longer one
+  // that merely starts the same way ("Roma" must not pick "Romagnano Sesia").
+  const name = city.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const result = page
+    .getByTestId('location-result')
+    .filter({ hasText: new RegExp(`^\\s*${name}(?:\\s*\\(|[A-Z]|$)`) })
+    .first();
+  await expect(result).toHaveAttribute('data-playable', 'true', { timeout: 30_000 });
+  await result.click();
   await expect(page.getByTestId('site-card')).toHaveCount(3, { timeout: 30_000 });
   await page.getByTestId('start-career').click();
   await expect(page).toHaveURL(/\/game$/, { timeout: 60_000 });
