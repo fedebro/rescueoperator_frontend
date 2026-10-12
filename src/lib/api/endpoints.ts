@@ -28,6 +28,7 @@ import {
   type SupportedLocale,
 } from '@/contracts';
 import { api } from './client';
+import type { ChainOptions } from './types';
 import { DispatchOptionsResult, NotificationDto, StipendDto, SyncDelta } from '@/contracts';
 
 const c = (careerId: string) => `/careers/${careerId}`;
@@ -84,9 +85,16 @@ export const gameApi = {
   vehicles: (careerId: string) => api.get(`${c(careerId)}/vehicles`, { schema: z.array(VehicleDto) }),
   recallVehicle: (careerId: string, vehicleId: string) =>
     api.command(`${c(careerId)}/vehicles/${vehicleId}/recall`, {}, { schema: VehicleDto }),
-  /** Redirects the vehicle now if it's RETURNING and eligible, otherwise queues the incident as its next assignment. */
-  chainVehicle: (careerId: string, vehicleId: string, incidentId: string) =>
-    api.command(`${c(careerId)}/vehicles/${vehicleId}/chain`, { incidentId }, { schema: ChainVehicleResult }),
+  /**
+   * Redirects the vehicle now if it's RETURNING and eligible, otherwise queues the incident as its next assignment.
+   * `queueOnly` never redirects: the vehicle finishes its way home and its resupply first, then leaves by itself.
+   */
+  chainVehicle: (careerId: string, vehicleId: string, incidentId: string, options: ChainOptions = {}) =>
+    api.command(
+      `${c(careerId)}/vehicles/${vehicleId}/chain`,
+      options.queueOnly ? { incidentId, queueOnly: true } : { incidentId },
+      { schema: ChainVehicleResult },
+    ),
   cancelChain: (careerId: string, vehicleId: string) =>
     api.post(`${c(careerId)}/vehicles/${vehicleId}/chain/cancel`, {}, { schema: VehicleDto }),
   /** Manual "return to resupply" (D-22 §3.4): at base now, on the way home at the arrival, patrolling at the next hop. */

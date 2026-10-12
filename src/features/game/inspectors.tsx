@@ -57,6 +57,7 @@ import { useServerNow } from '@/hooks/use-server-now';
 import { useCareerId, useSnapshot, useVehicleTypeLookup } from './hooks';
 import { InspectorHeaderButton, SHEET_HEADER } from './inspector-parts';
 import { DispatchPanel, RequirementBars } from './dispatch-panel';
+import { ResendHere } from './dispatch-chain';
 import { IncidentExternalSupport } from '@/features/families/external-support';
 import { AidIncidentSection, AlliedSupportLine, SharedBadge } from '@/features/alliance/aid-incident';
 import { IncidentFamilies } from '@/features/families/family-chips';
@@ -542,6 +543,8 @@ export function VehicleInspector({ vehicle }: { vehicle: VehicleDto }) {
             {t('recall')}
           </Button>
         ) : null}
+        {/* Recalled by mistake: back to the same emergency, for as long as the call is open (never wait for the base). */}
+        <ResendHere vehicle={vehicle} />
         {vehicle.movement ? (
           <div>
             <SectionTitle>{t('movement')}</SectionTitle>

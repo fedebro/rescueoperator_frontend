@@ -35,8 +35,8 @@
     "sections": {
       "personnel": {
         "title": "Personal",
-        "body": "Hier stellst du Einsatzkräfte deiner Wachen ein, bildest sie aus und organisierst sie in Teams: Ohne Besatzung kann ein Fahrzeug nicht ausrücken.",
-        "tip1": "Schnelleinstellungen decken den Notfall ab; Teams geben dauerhafte Boni.",
+        "body": "Hier stellst du die Einsatzkräfte deiner Wachen ein, bildest sie aus und organisierst sie. Ohne Besatzung kann ein Fahrzeug nicht ausrücken; ein Team ist die feste Besatzung eines Fahrzeugs, aber freiwillig.",
+        "tip1": "Schnelleinstellungen decken den Notfall ab; ein festes Team hält immer dieselben Kräfte auf demselben Fahrzeug.",
         "tip2": "Ein erschöpfter Mitarbeiter kann im Reiter Dienstplan ausgeruht werden."
       },
       "medical": {

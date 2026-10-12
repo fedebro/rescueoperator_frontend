@@ -51,8 +51,12 @@ export const PromotionOfferDto = z.object({
 export const FacilityDetailV2Dto = FacilityDetailDto.extend({ promotionOffer: PromotionOfferDto.nullable().optional() });
 export type FacilityDetailV2Dto = z.infer<typeof FacilityDetailV2Dto>;
 
-/** POST /careers/:id/vehicles/:vehicleId/transfer (Idempotency-Key) → { vehicle, facilities } */
-export const TransferVehicleBody = z.object({ facilityId: publicId(IdPrefix.facility) });
+/**
+ * POST /careers/:id/vehicles/:vehicleId/transfer (Idempotency-Key) → { vehicle, facilities }
+ * `withTeam` (additive, default true): the team bound to the vehicle travels with it, arriving together. `false` leaves the team
+ * where it is, released from the vehicle (its operators become free again); the vehicle goes alone.
+ */
+export const TransferVehicleBody = z.object({ facilityId: publicId(IdPrefix.facility), withTeam: z.boolean().optional() });
 export const TransferVehicleResult = z.object({ vehicle: VehicleDto, facilities: z.array(FacilityDto) });
 
 /* GET /coverage → `CoverageDto`, GET /economy/stipend → `StipendDto`: both live in business.ts (extended additively there). */

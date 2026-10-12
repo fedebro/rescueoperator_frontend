@@ -30,7 +30,8 @@ export const qk = {
     ['career', id, 'personnel', 'detail', personnelId] as const,
   candidates: (id: string) => ['career', id, 'personnel', 'candidates'] as const,
   teams: (id: string) => ['career', id, 'personnel', 'teams'] as const,
-  departments: (id: string) => ['career', id, 'personnel', 'departments'] as const,
+  teamProposal: (id: string, vehicleId: string) =>
+    ['career', id, 'personnel', 'team-proposal', vehicleId] as const,
   training: (id: string) => ['career', id, 'personnel', 'training'] as const,
   medicalRoot: (id: string) => ['career', id, 'medical'] as const,
   patients: (id: string, incidentId: string) => ['career', id, 'medical', 'patients', incidentId] as const,

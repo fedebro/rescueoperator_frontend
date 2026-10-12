@@ -35,8 +35,8 @@
     "sections": {
       "personnel": {
         "title": "Personale",
-        "body": "Qui assumi, formi e organizzi in squadre gli operatori delle tue sedi: senza equipaggio un mezzo non può partire.",
-        "tip1": "Le assunzioni rapide (recluta) coprono l’emergenza; le squadre danno bonus stabili.",
+        "body": "Qui assumi, formi e organizzi gli operatori delle tue sedi. Senza equipaggio un mezzo non può partire; una squadra è l’equipaggio fisso di un mezzo, ma è facoltativa.",
+        "tip1": "Le assunzioni rapide coprono l’emergenza; una squadra fissa tiene sempre gli stessi operatori sullo stesso mezzo.",
         "tip2": "Un operatore affaticato va messo a riposo dalla scheda Ruolo."
       },
       "medical": {

@@ -10,6 +10,7 @@ import { facilitiesHandlers } from './handlers/facilities';
 import { personnelHandlers } from './handlers/personnel';
 import { medicalHandlers } from './handlers/medical';
 import { logisticsHandlers } from './handlers/logistics';
+import { dispatchChainHandlers } from './handlers/dispatch-chain';
 import { worldHandlers } from './handlers/world';
 import { worldApiOf } from './domains/world';
 import { monetizationHandlers } from './handlers/monetization';
@@ -33,6 +34,7 @@ const DOMAIN_HANDLERS: DomainHandlers[] = [
   personnelHandlers,
   medicalHandlers,
   logisticsHandlers,
+  dispatchChainHandlers,
   worldHandlers,
   monetizationHandlers,
   platformHandlers,

@@ -18,7 +18,7 @@ const NEXT_ACTION: Record<
   MISSING_ROLE: { href: '/game/personnel?tab=recruitment', messageKey: 'hire' },
   CREW_ROLE_MISSING: { href: '/game/personnel?tab=recruitment', messageKey: 'hire' },
   MISSING_QUALIFICATION: { href: '/game/personnel?tab=training', messageKey: 'train' },
-  FATIGUED_MEMBERS: { href: '/game/personnel?tab=roster', messageKey: 'rest' },
+  MEMBER_FATIGUED: { href: '/game/personnel?tab=roster', messageKey: 'rest' },
   CREW_FATIGUED: { href: '/game/personnel?tab=roster', messageKey: 'rest' },
   STOCK_LOW: { href: '/game/logistics', messageKey: 'order' },
   STOCK_MISSING: { href: '/game/logistics', messageKey: 'order' },

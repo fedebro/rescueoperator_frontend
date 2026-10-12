@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { bootCareer, goTo, isMobile, qa, trackProblems } from './helpers';
 
 /**
- * Personnel area on both layouts: quick hire → onboarding → roster; team with members, leader and vehicle → readiness;
+ * Personnel area on both layouts: quick hire → onboarding → roster; team formed from the vehicle, members and leader → readiness;
  * course enrollment → completion; crew preview and blocking reason in the dispatch panel; locked features show their level.
  * Mock time runs ×1 here so the managerial timers are observable; they are completed with `qa fastForward`.
  */
@@ -34,9 +34,10 @@ test('locked features show the level that opens them; the starter crew is on the
   await expect(sheet.getByTestId('action-rest')).toBeDisabled();
   await page.getByRole('button', { name: 'Chiudi' }).click();
 
-  await page.getByRole('tab', { name: 'Squadre e reparti' }).click();
+  await page.getByRole('tab', { name: 'Squadre', exact: true }).click();
   await expect(page.getByTestId('locked-TEAMS')).toContainText('Richiede il livello 4');
-  await expect(page.getByTestId('locked-DEPARTMENTS')).toContainText('Richiede il livello 12');
+  // Departments are retired from the game: nothing about them is left on the screen.
+  await expect(page.getByTestId('locked-DEPARTMENTS')).toHaveCount(0);
   await page.getByRole('tab', { name: 'Formazione' }).click();
   await expect(page.getByTestId('locked-TRAINING')).toContainText('Richiede il livello 2');
 });
@@ -63,33 +64,46 @@ test('hire → team with vehicle and readiness → course → crew preview and b
     await expect(page.getByTestId('roster-count')).toHaveText('8 di 8 operatori');
   });
 
-  await test.step('create a team, add members + leader, assign the vehicle: readiness is shown', async () => {
-    await page.getByRole('tab', { name: 'Squadre e reparti' }).click();
-    await expect(page.getByTestId('locked-DEPARTMENTS')).toBeVisible();
-    await page.getByTestId('new-team').click();
+  await test.step('form the team of the vehicle in one tap, then change members and leader: readiness is shown', async () => {
+    await page.getByRole('tab', { name: 'Squadre', exact: true }).click();
+    await expect(page.getByTestId('locked-DEPARTMENTS')).toHaveCount(0);
+    await expect(page.getByTestId('teams-intro')).toContainText('equipaggio fisso di un mezzo');
+    await page.getByTestId('form-team').click();
+    // the game proposes the crew: five of the eight operators (the minimum is three)
+    await expect(page.getByTestId('proposal-summary')).toContainText('5 operatori su 5 (minimo 3)');
+    await expect(page.getByTestId('proposal-members').getByRole('listitem')).toHaveCount(5);
     await page.getByLabel('Nome').fill('Prima partenza');
-    await page.getByRole('button', { name: 'Crea', exact: true }).click();
+    await page.getByTestId('confirm-form-team').click();
     await expect(
-      page.getByTestId('toast').filter({ hasText: 'Squadra «Prima partenza» creata' }),
+      page.getByTestId('toast').filter({ hasText: 'Squadra «Prima partenza» formata' }),
     ).toBeVisible();
 
-    // the members dialog opens right after the creation
+    const card = page.getByTestId('team-card');
+    await expect(card).toHaveAttribute('data-team-status', 'READY');
+    await expect(card.getByTestId('team-readiness')).toHaveText('100%');
+    await expect(card.getByText('Pronta')).toBeVisible();
+    // the vehicle has its team: it is not offered again
+    await expect(page.getByTestId('team-less-vehicle')).toHaveCount(0);
+
+    await card.getByTestId('edit-members').click();
     const members = page.getByTestId('member-list');
     await expect(members.getByRole('checkbox')).toHaveCount(8);
-    for (let i = 0; i < 6; i++) await members.getByRole('checkbox').nth(i).click();
+    const picked = await members.getByRole('checkbox', { checked: true }).count();
+    expect(picked).toBe(5);
+    await members.getByRole('checkbox', { checked: false }).first().click();
     await expect(page.getByTestId('member-count')).toHaveText('Membri 6/12');
     await page.getByRole('combobox', { name: 'Caposquadra' }).click();
     await page.getByRole('option').nth(1).click();
     await page.getByTestId('save-members').click();
     await expect(page.getByTestId('toast').filter({ hasText: 'Squadra aggiornata' })).toBeVisible();
 
-    const card = page.getByTestId('team-card');
+    // the vehicle can be taken away and given back: the warning says what is missing, the team is ready again
+    await card.getByRole('combobox', { name: 'Mezzo' }).click();
+    await page.getByRole('option', { name: 'Nessun mezzo' }).click();
     await expect(card.getByTestId('team-warnings')).toContainText('Nessun mezzo assegnato');
-    await card.getByRole('combobox', { name: 'Mezzo assegnato' }).click();
+    await card.getByRole('combobox', { name: 'Mezzo' }).click();
     await page.getByRole('option', { name: /APS 1/ }).click();
     await expect(card).toHaveAttribute('data-team-status', 'READY');
-    await expect(card.getByTestId('team-readiness')).toHaveText('100%');
-    await expect(card.getByText('Pronta')).toBeVisible();
   });
 
   await test.step('enroll an operator in a course and see it complete', async () => {

@@ -1,7 +1,7 @@
 'use client';
 import * as React from 'react';
 import Link from 'next/link';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import {
   AlertTriangle,
@@ -40,7 +40,6 @@ import { Countdown } from '@/components/ui/countdown';
 import { DispatchCrewBlocked, DispatchCrewPreview, crewBlockOf } from '@/features/personnel/slots';
 import { AUTONOMY_WARNINGS } from '@/features/autonomy/autonomy';
 import {
-  ChainFuelStop,
   DispatchAutonomyFlag,
   DispatchFlightNote,
   DispatchReloadNote,
@@ -52,6 +51,7 @@ import { useFamilyLabel } from '@/features/facilities/site-details';
 import { DispatchWaterRoute } from '@/features/water/incident-water';
 import { isWaterIncident, requirementsBySide } from '@/features/water/water';
 import { useCareerId, useCatalog, useSnapshot, useVehicleTypeLookup } from './hooks';
+import { ChainActions, ChainMission, useChainFlow, useDispatchOptions } from './dispatch-chain';
 
 type FamilyFilter = 'ALL' | ServiceFamily;
 
@@ -327,94 +327,6 @@ function DispatchEligibilityBlock({
   );
 }
 
-/**
- * A vehicle that isn't AVAILABLE but is on a mission or returning (`option.chain` present, see the contract's
- * `DispatchOption.chain` doc) can still be pointed at THIS incident: redirected immediately if it's RETURNING and
- * every chaining condition holds, otherwise queued as its next assignment once it frees up. One button either way —
- * the server decides which — mirroring the single `chain` endpoint it calls.
- */
-function ChainAction({
-  option,
-  incidentId,
-  now,
-  onChain,
-  onCancel,
-  chaining,
-  cancelling,
-}: {
-  option: DispatchOptionsResult['options'][number];
-  incidentId: string;
-  now: number;
-  onChain: () => void;
-  onCancel: () => void;
-  chaining: boolean;
-  cancelling: boolean;
-}) {
-  const t = useTranslations('game.dispatch.chain');
-  const chain = option.chain;
-  if (!chain) return null;
-  const queuedHere = chain.queuedIncidentId === incidentId;
-  const availableInSeconds = chain.availableAt
-    ? Math.max(0, Math.round((Date.parse(chain.availableAt) - now) / 1000))
-    : null;
-
-  // 44 px on touch screens (03 §2.10), the compact 32 px only where there is a mouse.
-  const size = 'h-11 lg:h-8';
-  if (queuedHere)
-    return (
-      <div className="flex shrink-0 flex-col items-end gap-1">
-        <Badge tone="info">{t('queued')}</Badge>
-        <Button size="sm" variant="ghost" className={size} onClick={onCancel} loading={cancelling}>
-          {t('cancelQueue')}
-        </Button>
-      </div>
-    );
-
-  if (chain.redirectEligible)
-    return (
-      <div className="flex shrink-0 flex-col items-end gap-1">
-        <Button size="sm" className={size} onClick={onChain} loading={chaining} data-testid="chain-redirect">
-          {t('redirect')}
-        </Button>
-        {/* A redirect in reserve refuels at a pump on the way first: its seconds are already in the new ETA. */}
-        {chain.fuelStop ? <ChainFuelStop fuelStop={chain.fuelStop} /> : null}
-      </div>
-    );
-
-  return (
-    <div className="flex shrink-0 flex-col items-end gap-1">
-      <Button
-        size="sm"
-        variant="secondary"
-        className={size}
-        onClick={onChain}
-        loading={chaining}
-        data-testid="chain-queue"
-      >
-        {t('queue')}
-      </Button>
-      {chain.blockedReason ? (
-        <span
-          className="text-subtle text-right text-xs"
-          data-testid="chain-reason"
-          data-reason={chain.blockedReason}
-        >
-          {t.has(`reason.${chain.blockedReason}` as never)
-            ? t(`reason.${chain.blockedReason}` as never)
-            : chain.blockedReason}
-        </span>
-      ) : null}
-      {/* "Free at" = back home + the resupply stop the rule predicts (or the end of the stop it is making). */}
-      {availableInSeconds !== null ? (
-        <span className="text-subtle text-xs" data-testid="chain-available-in">
-          {t('availableIn', { time: formatClock(availableInSeconds) })}
-        </span>
-      ) : null}
-      {chain.fuelStop ? <ChainFuelStop fuelStop={chain.fuelStop} /> : null}
-    </div>
-  );
-}
-
 /** Assisted but fully editable dispatch: one tap sends the recommended set, no confirmation step (Spec 05 §13). */
 export function DispatchPanel({ incident }: { incident: IncidentDto }) {
   const careerId = useCareerId();
@@ -450,13 +362,7 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
   const facilityNameOf = (facilityId: string): string =>
     facilities.find((f) => f.id === facilityId)?.name ?? '—';
   // Options depend on which vehicles are free: refetch whenever the fleet's status signature changes.
-  const signature = vehicles.map((v) => `${v.id}:${v.status}`).join('|');
-  const options = useQuery({
-    queryKey: [...qk.dispatchOptions(careerId, incident.id), signature],
-    queryFn: () => gameApi.dispatchOptions(careerId, incident.id),
-    staleTime: 5_000,
-    placeholderData: (prev) => prev,
-  });
+  const options = useDispatchOptions(incident.id);
   const [manual, setManual] = React.useState<Set<string> | null>(null);
   const [familyFilter, setFamilyFilter] = React.useState<FamilyFilter>('ALL');
 
@@ -540,34 +446,8 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
     },
   });
 
-  const [chainingId, setChainingId] = React.useState<string | null>(null);
-  const chainMutation = useMutation({
-    mutationFn: (vehicleId: string) => gameApi.chainVehicle(careerId, vehicleId, incident.id),
-    onMutate: (vehicleId) => setChainingId(vehicleId),
-    onSuccess: (result) => {
-      playSound('dispatch', soundEnabled(useSettingsStore.getState().sound));
-      toast({
-        tone: 'success',
-        title: t(result.mode === 'REDIRECTED' ? 'chain.redirected' : 'chain.queuedToast', {
-          callSign: result.vehicle.callSign,
-        }),
-      });
-      void qc.invalidateQueries({ queryKey: qk.dispatchOptions(careerId, incident.id) });
-    },
-    onError: (e) => toast({ tone: 'danger', title: errorMessage(e) }),
-    onSettled: () => setChainingId(null),
-  });
-  const [cancellingId, setCancellingId] = React.useState<string | null>(null);
-  const cancelChainMutation = useMutation({
-    mutationFn: (vehicleId: string) => gameApi.cancelChain(careerId, vehicleId),
-    onMutate: (vehicleId) => setCancellingId(vehicleId),
-    onSuccess: () => {
-      toast({ tone: 'info', title: t('chain.queueCancelled') });
-      void qc.invalidateQueries({ queryKey: qk.dispatchOptions(careerId, incident.id) });
-    },
-    onError: (e) => toast({ tone: 'danger', title: errorMessage(e) }),
-    onSettled: () => setCancellingId(null),
-  });
+  // Busy vehicles (`chain`): a redirect at one tap, a queue through its confirmation (see dispatch-chain.tsx).
+  const flow = useChainFlow(incident, options.data?.options);
 
   const toggle = (id: string) =>
     setManual((prev) => {
@@ -759,95 +639,125 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
                   const type = typeOf(vehicle.typeCode);
                   const checked = selected.has(o.vehicleId);
                   const id = `opt-${o.vehicleId}`;
+                  // A vehicle on a mission, returning or resupplying (`chain`): shown whole — its full name, the mission it is on,
+                  // what it can do about THIS call — instead of an action squeezed next to a truncated name (row 1 / 2 / 3).
+                  const busy = !o.dispatchable && !!o.chain;
+                  const indent = busy ? 'pl-[38px]' : 'pl-[30px]';
+                  const name = (
+                    <span className="min-w-0 flex-1">
+                      <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+                        <span
+                          className="text-fg text-sm font-semibold break-words"
+                          data-testid="dispatch-option-name"
+                        >
+                          {vehicle.callSign}
+                        </span>
+                        {o.recommended ? <Badge tone="brand">{t('recommended')}</Badge> : null}
+                        {vehicle.movement?.purpose === 'PATROLLING' ? (
+                          <Badge tone="info" data-testid="dispatch-option-patrolling">
+                            <Radar className="size-3" aria-hidden />
+                            {tv('patrol.onPatrol')}
+                          </Badge>
+                        ) : null}
+                      </span>
+                      <span className="text-muted block text-xs break-words">
+                        {type ? tx(type.name) : vehicle.typeCode}
+                      </span>
+                      <span
+                        className="text-subtle block text-xs break-words"
+                        data-testid="dispatch-option-facility"
+                      >
+                        {facilityNameOf(vehicle.facilityId)}
+                      </span>
+                    </span>
+                  );
                   return (
                     <li
                       key={o.vehicleId}
                       className={cn(
                         'bg-surface-2 rounded-md border p-2.5',
                         checked ? 'border-focus' : 'border-border',
-                        !o.dispatchable && 'opacity-60',
                       )}
                       data-testid="dispatch-option"
+                      data-busy={busy}
+                      data-vehicle-id={o.vehicleId}
+                      data-vehicle-status={vehicle.status}
                     >
-                      <div className="flex items-center gap-2.5">
-                        {/* The whole row (box, icon, names) is one target: the 20 px box alone was a thumb trap. */}
-                        <label
-                          htmlFor={id}
-                          className={cn(
-                            'flex min-h-11 min-w-0 flex-1 items-center gap-2.5',
-                            o.dispatchable ? 'cursor-pointer' : 'cursor-default',
-                          )}
-                        >
-                          <Checkbox
-                            id={id}
-                            checked={checked}
-                            disabled={!o.dispatchable || (capReached && !checked)}
-                            onCheckedChange={() => toggle(o.vehicleId)}
-                            aria-label={t('selectVehicle', { callSign: vehicle.callSign })}
-                          />
+                      {busy ? (
+                        <div className="flex items-start gap-2.5">
                           <TopdownGlyph
                             vehicleClass={vehicleClassOf(type?.icon)}
                             family={vehicle.family}
                             size={28}
                           />
-                          <span className="min-w-0 flex-1">
-                            <span className="flex items-center gap-1.5">
-                              <span className="text-fg truncate text-sm font-semibold">
-                                {vehicle.callSign}
+                          {name}
+                          {/* Not selectable: told by a small label, never by making the name hard to read. */}
+                          <Badge
+                            tone="neutral"
+                            className="mt-0.5 shrink-0"
+                            data-testid="dispatch-option-busy"
+                          >
+                            {t('chain.busy')}
+                          </Badge>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2.5">
+                          {/* The whole row (box, icon, names) is one target: the 20 px box alone was a thumb trap. */}
+                          <label
+                            htmlFor={id}
+                            className={cn(
+                              'flex min-h-11 min-w-0 flex-1 items-center gap-2.5',
+                              o.dispatchable ? 'cursor-pointer' : 'cursor-default',
+                            )}
+                          >
+                            <Checkbox
+                              id={id}
+                              checked={checked}
+                              disabled={!o.dispatchable || (capReached && !checked)}
+                              onCheckedChange={() => toggle(o.vehicleId)}
+                              aria-label={t('selectVehicle', { callSign: vehicle.callSign })}
+                            />
+                            <TopdownGlyph
+                              vehicleClass={vehicleClassOf(type?.icon)}
+                              family={vehicle.family}
+                              size={28}
+                            />
+                            {name}
+                          </label>
+                          {o.dispatchable ? (
+                            <span className="text-right">
+                              <span className="tabular text-fg block text-sm font-semibold">
+                                {formatClock(o.etaSeconds)}
                               </span>
-                              {o.recommended ? <Badge tone="brand">{t('recommended')}</Badge> : null}
-                              {vehicle.movement?.purpose === 'PATROLLING' ? (
-                                <Badge tone="info" data-testid="dispatch-option-patrolling">
-                                  <Radar className="size-3" aria-hidden />
-                                  {tv('patrol.onPatrol')}
-                                </Badge>
+                              <span className="tabular text-subtle block text-xs">
+                                {formatDistance(o.distanceMeters, locale)}
+                              </span>
+                            </span>
+                          ) : (
+                            <span className="flex shrink-0 flex-col items-end gap-1">
+                              <StatusChip status={vehicle.status} label={ts(vehicle.status)} />
+                              {vehicle.status === 'RESTOCKING' && vehicle.busyUntil ? (
+                                <Countdown
+                                  to={vehicle.busyUntil}
+                                  doneLabel="…"
+                                  className="text-muted text-xs"
+                                />
                               ) : null}
                             </span>
-                            <span className="text-muted block truncate text-xs">
-                              {type ? tx(type.name) : vehicle.typeCode}
-                            </span>
-                            <span
-                              className="text-subtle block truncate text-xs"
-                              data-testid="dispatch-option-facility"
-                            >
-                              {facilityNameOf(vehicle.facilityId)}
-                            </span>
-                          </span>
-                        </label>
-                        {o.dispatchable ? (
-                          <span className="text-right">
-                            <span className="tabular text-fg block text-sm font-semibold">
-                              {formatClock(o.etaSeconds)}
-                            </span>
-                            <span className="tabular text-subtle block text-xs">
-                              {formatDistance(o.distanceMeters, locale)}
-                            </span>
-                          </span>
-                        ) : o.chain ? (
-                          <ChainAction
-                            option={o}
-                            incidentId={incident.id}
-                            now={now}
-                            onChain={() => chainMutation.mutate(o.vehicleId)}
-                            onCancel={() => cancelChainMutation.mutate(o.vehicleId)}
-                            chaining={chainingId === o.vehicleId && chainMutation.isPending}
-                            cancelling={cancellingId === o.vehicleId && cancelChainMutation.isPending}
-                          />
-                        ) : (
-                          <span className="flex shrink-0 flex-col items-end gap-1">
-                            <StatusChip status={vehicle.status} label={ts(vehicle.status)} />
-                            {vehicle.status === 'RESTOCKING' && vehicle.busyUntil ? (
-                              <Countdown
-                                to={vehicle.busyUntil}
-                                doneLabel="…"
-                                className="text-muted text-xs"
-                              />
-                            ) : null}
-                          </span>
-                        )}
-                      </div>
+                          )}
+                        </div>
+                      )}
+                      {busy ? (
+                        <>
+                          <ChainMission chain={o.chain!} incident={incident} busyUntil={vehicle.busyUntil} />
+                          {/* A vehicle that is wrong for this call by nature (a boat on land): the reason below, no action. */}
+                          {eligibilityBlockOf(o) ? null : (
+                            <ChainActions option={o} incident={incident} now={now} flow={flow} />
+                          )}
+                        </>
+                      ) : null}
                       {o.contributes.length > 0 || o.warnings.length > 0 ? (
-                        <div className="mt-2 flex flex-wrap gap-1 pl-[30px]">
+                        <div className={cn('mt-2 flex flex-wrap gap-1', indent)}>
                           {o.contributes.map((c) => (
                             <Badge key={c.code} tone="neutral">
                               <GameIcon name={capabilityIconName(c.code)} size={12} />
@@ -866,13 +776,13 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
                             ))}
                         </div>
                       ) : null}
-                      <DispatchReloadNote option={o} className="mt-1.5 pl-[30px]" />
+                      <DispatchReloadNote option={o} className={cn('mt-1.5', indent)} />
                       {/* Aircraft (flight endurance): minutes needed / on board, how long it can stay over the scene. */}
-                      <DispatchFlightNote option={o} className="mt-1.5 pl-[30px]" />
+                      <DispatchFlightNote option={o} className={cn('mt-1.5', indent)} />
                       {/* Mass-casualty care: the maxi ambulance carries 4, the field post treats on scene. */}
-                      <DispatchPatientCapacityNote tags={type?.tags} className="mt-1.5 pl-[30px]" />
+                      <DispatchPatientCapacityNote tags={type?.tags} className={cn('mt-1.5', indent)} />
                       {/* Water incidents: where it goes (scene / meeting point) and a boat's way there. */}
-                      <DispatchWaterRoute option={o} className="mt-1.5 pl-[30px]" />
+                      <DispatchWaterRoute option={o} className={cn('mt-1.5', indent)} />
                       <DispatchEligibilityBlock
                         option={o}
                         incident={incident}
@@ -887,6 +797,7 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
           </div>
         </>
       )}
+      {flow.dialog}
     </div>
   );
 }

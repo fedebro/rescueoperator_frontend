@@ -209,6 +209,8 @@ const LOAD_DECAY_PER_HOUR = MEDICAL.hospitalLoadDecayPerHour ?? 6;
 
 const MEDICAL_CAPS = ['MEDICAL_BASIC', 'MEDICAL_ADVANCED'];
 const TRANSPORT_CAP = 'PATIENT_TRANSPORT';
+/** A need the medical area serves: the capabilities of the patients' care and their transport (the backend's MEDICAL_CAPABILITY). */
+const MEDICAL_NEED = /^(MEDICAL_|PATIENT_TRANSPORT$)/;
 const FINAL = new Set<PatientDto['status']>(['ADMITTED', 'RELEASED_ON_SCENE', 'DECEASED']);
 const ON_SCENE = new Set<PatientDto['status']>([
   'UNASSESSED',
@@ -606,6 +608,49 @@ export function installMedical(engine: MockEngine): void {
       if (vehicles.length) engine.emit(career, 'vehicle.returning', { vehicles });
     } else releaseAfterRecovery(career, incidentId, at);
     if (list.every(isFinal)) engine.checkResolved(career, incidentId, at);
+    closeWhenPatientsDone(career, incidentId, at);
+  };
+
+  /**
+   * A purely medical call (every REQUIRED need is medical) whose patients were all looked after — admitted to a hospital or
+   * treated and released, at least one — is done, whatever work was left on the scene: the patient reached care (the backend's
+   * `closeWhenPatientsDone`). Without it an ambulance leaving with the patient while the last unit is recalled left the call
+   * open and unattended, and it expired as a FAILURE minutes after the patient was safely in hospital. Only when no unit of
+   * the player is still working on the scene (while someone is there the work completion closes the call); units still on
+   * their way are sent home. The outcome carries the patient component: it is computed before the patients leave the world.
+   */
+  const closeWhenPatientsDone = (career: MockCareer, incidentId: string, at: number) => {
+    const incident = career.incidents.find((i) => i.id === incidentId);
+    if (!incident || incident.isTutorial || career.rewarded[incident.id]) return;
+    if (!['PENDING_RESPONSE', 'RESPONDING', 'ON_SCENE'].includes(incident.status)) return;
+    const list = patientsOf(career, incidentId);
+    if (list.length === 0 || !list.every(isFinal)) return;
+    if (!list.some((p) => p.outcome !== null && p.outcome !== 'NOT_TREATED')) return;
+    const required = incident.requirements.filter((r) => r.level === 'REQUIRED' && !r.external);
+    if (required.length === 0 || !required.every((r) => MEDICAL_NEED.test(r.capability))) return;
+    if (career.vehicles.some((v) => v.incidentId === incident.id && v.status === 'ON_SCENE')) return;
+    engine.log(career, incident.id, 'incident.patients_done', text('timeline.incident_patients_done'), at);
+    // The consumption of the mission, the reward and the XP — exactly the sequence of the end of the on-scene work.
+    for (const hook of engine.hooks.workDone) hook(career, incident, at);
+    const done = engine.patchIncident(career, incident.id, {
+      status: 'RESOLVING',
+      rewardedAt: iso(at),
+      // The need of the call — the patients cared for — was met, whoever is left on the scene: a success, not a "partial".
+      coverageRatio: 1,
+      work: { ...incident.work, remaining: 0, ratePerSecond: 0, anchorAt: iso(at), estimatedEndAt: null },
+    })!;
+    career.rewarded[incident.id] = true;
+    engine.cancelActions(career, (a) => a.ref === incident.id);
+    const { outcome } = engine.reward(career, done, at);
+    engine.emit(career, 'incident.resolved', {
+      incident: done,
+      outcome,
+      vehicles: [],
+      career: career.summary,
+    });
+    engine.awardXp(career, Number(outcome.xp));
+    // Closes the call as RESOLVED (the reward is already paid): units still on their way go home.
+    engine.close(career, done, 'RESOLVED', at);
   };
 
   const notifyAwaitingTransport = (career: MockCareer, incidentId: string) => {
@@ -1083,6 +1128,15 @@ export function installMedical(engine: MockEngine): void {
   });
 
   engine.hooks.resolvingBlockers.push((career, incident) => !patientsOf(career, incident.id).every(isFinal));
+
+  // A patient on the road to a hospital (or in the hand-off) keeps the abandoned call open: it neither expires nor escalates.
+  engine.hooks.expiryHold.push((career, incident) =>
+    patientsOf(career, incident.id).some(
+      (p) => p.dto.status === 'IN_TRANSPORT' || p.dto.status === 'HANDOFF',
+    ),
+  );
+  // The last unit leaves the scene (a recall) after the patients were all looked after: the call is done.
+  engine.hooks.unitRecalled.push((career, incident, at) => closeWhenPatientsDone(career, incident.id, at));
 
   engine.hooks.patientOutcome.push((career, incident) =>
     outcomeFactor(patientsOf(career, incident.id), engine.now()),

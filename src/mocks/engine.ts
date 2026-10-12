@@ -14,6 +14,7 @@ import type {
 } from '@/contracts';
 import type { z } from 'zod';
 import type { NotificationDto as NotificationSchema } from '@/contracts';
+import type { DispatchOption as DispatchOptionSchema } from '@/contracts';
 import { haversineMeters, movementPoint, pathLengthMeters, type LngLat } from '@/lib/geo';
 import {
   FACILITY_TYPES,
@@ -57,6 +58,8 @@ export class MockError extends Error {
 }
 
 export type NotificationDto = z.infer<typeof NotificationSchema>;
+/** `DispatchOption.chain` of the contract: what ★POST /vehicles/:id/chain would do for the incident of the options. */
+export type MockChainOption = NonNullable<z.infer<typeof DispatchOptionSchema>['chain']>;
 /** Core action types; domain modules (src/mocks/domains/*) register their own with `engine.registerExecutor`. */
 type CoreActionType =
   | 'INCIDENT_SPAWN'
@@ -145,6 +148,23 @@ export interface EngineHooks {
   facilityDetail: ((career: MockCareer, facility: FacilityDto) => Record<string, unknown>)[];
   /** Called on every /sync heartbeat. */
   touched: ((career: MockCareer) => void)[];
+  /**
+   * A vehicle re-based to another facility takes the team bound to it along (the backend's `VehicleTeamHooks`): `travelSeconds`
+   * is the least time the team's operators need for the same trip (null = no team to take), `move` runs once the vehicle is
+   * committed (`arriveInSeconds` = the arrival of both) — `withTeam: false` releases the team instead.
+   */
+  vehicleTransfer: {
+    travelSeconds: (career: MockCareer, vehicle: VehicleDto, target: FacilityDto) => number | null;
+    /** Throws a MockError when the team cannot go (the simulation has no transactions: nothing may be changed before this passes). */
+    check: (career: MockCareer, vehicle: VehicleDto, target: FacilityDto, withTeam: boolean) => void;
+    move: (
+      career: MockCareer,
+      vehicle: VehicleDto,
+      target: FacilityDto,
+      arriveInSeconds: number,
+      withTeam: boolean,
+    ) => void;
+  }[];
   /** Amounts deducted from the periodic stipend (personnel cost per period, D-41). Never makes it negative. */
   stipendDeductions: ((career: MockCareer) => number)[];
   /**
@@ -181,6 +201,19 @@ export interface EngineHooks {
   ) => void)[];
   /** Decorates the sync snapshot (e.g. `activeMajorIncidentId`). */
   snapshotView: ((career: MockCareer, snapshot: SyncSnapshot) => SyncSnapshot)[];
+  /**
+   * A scheduled action just ran and the world is consistent again (the vehicles are where their last transition left
+   * them): the place for what the backend does "the instant a vehicle becomes AVAILABLE" — the queued next call of a vehicle.
+   */
+  settled: ((career: MockCareer, at: number) => void)[];
+  /**
+   * True while something keeps an incident alive that nobody is working on (a patient still on the road to a hospital): the
+   * expiry and the escalation of an unattended call are pushed back instead of running (the backend's "never fails while a
+   * patient is in transport or handoff").
+   */
+  expiryHold: ((career: MockCareer, incident: IncidentDto) => boolean)[];
+  /** A unit was recalled from an incident (it is on its way home already): the domains re-evaluate what is left on the scene. */
+  unitRecalled: ((career: MockCareer, incident: IncidentDto, at: number) => void)[];
 }
 
 /** Options of `spawnIncident` (QA, admin, domains). */
@@ -276,6 +309,8 @@ export interface MockDispatchOption {
   };
   /** Internal: flagged (reserve, range) — never recommended, still selectable. Stripped from the response. */
   notRecommended?: boolean;
+  /** Chaining (additive): what ★POST /vehicles/:id/chain would do for THIS incident — set by the `dispatch-chain` domain. */
+  chain?: MockChainOption;
 }
 
 interface LedgerRow {
@@ -485,6 +520,7 @@ const emptyHooks = (): EngineHooks => ({
   travelFactor: [],
   facilityDetail: [],
   touched: [],
+  vehicleTransfer: [],
   stipendDeductions: [],
   spawnPlace: [],
   spawnWeight: [],
@@ -493,8 +529,13 @@ const emptyHooks = (): EngineHooks => ({
   sceneCapabilities: [],
   dispatchCancelled: [],
   snapshotView: [],
+  settled: [],
+  expiryHold: [],
+  unitRecalled: [],
 });
 
+/** Game seconds an expiry / escalation held back by `hooks.expiryHold` waits before it looks again. */
+const EXPIRY_HOLD_SECONDS = 30;
 /** `dispatch.cancelGraceSeconds` (6 REAL seconds): the free undo window of a dispatch — wall time, whatever the demo speed. */
 export const CANCEL_GRACE_MS = 6000;
 /** `notifications.severeIncidentMinSeverity` of the backend config: from this severity a new call is also notified. */
@@ -854,6 +895,7 @@ export class MockEngine {
         if (!due) break;
         career.actions = career.actions.filter((a) => a.id !== due.id);
         this.execute(career, due);
+        for (const hook of this.hooks.settled) hook(career, due.dueAt);
         dirty = true;
       }
     }
@@ -1654,11 +1696,13 @@ export class MockEngine {
     const incident = career.incidents.find((i) => i.id === incidentId);
     if (!incident) throw new MockError(404, 'NOT_FOUND', 'Incident not found');
     const needed = incident.requirements.filter((r) => r.level !== 'OPTIONAL' && !r.external);
+    // Every vehicle of the fleet, like the server: one already assigned to this very incident shows as "not available" (no
+    // `chain` block), the one called back from it is the one the player may send again.
     const options: MockDispatchOption[] = career.vehicles
-      .filter((v) => v.incidentId !== incidentId)
       .map((v) => {
-        // Boats and aircraft go to the scene, land units to the meeting point of a water incident (D-68).
-        const leg = this.legFor(career, v, incident);
+        // Boats and aircraft go to the scene, land units to the meeting point of a water incident (D-68). A busy unit is
+        // measured from its facility, as the server's table of ETAs does (it starts at the base).
+        const leg = this.legFor(career, v.status === 'AVAILABLE' ? v : this.atBase(career, v), incident);
         const dispatchable = v.status === 'AVAILABLE';
         const contributes = this.sceneCapabilities(career, v, incident).filter((c) =>
           incident.requirements.some((r) => r.capability === c.code),
@@ -1709,6 +1753,21 @@ export class MockEngine {
     };
   }
 
+  /** The vehicle as if it stood at its facility (a boat on its berth): the origin of the ETAs of `dispatchOptions`. */
+  atBase(career: MockCareer, vehicle: VehicleDto): VehicleDto {
+    const facility = career.facilities.find((f) => f.id === vehicle.facilityId);
+    return facility ? { ...vehicle, position: this.homePositionOf(facility, vehicle.typeCode) } : vehicle;
+  }
+
+  /**
+   * True while the incident can still receive vehicles (the server's `canReceive`): open, or RESOLVING while a domain queue keeps
+   * it open (a patient still waiting for an ambulance).
+   */
+  canReceive(career: MockCareer, incident: IncidentDto): boolean {
+    if (['PENDING_RESPONSE', 'RESPONDING', 'ON_SCENE'].includes(incident.status)) return true;
+    return incident.status === 'RESOLVING' && this.hooks.resolvingBlockers.some((h) => h(career, incident));
+  }
+
   /** How many vehicles ONE dispatch may send to this incident: 12 for a normal call, 24 on a major's incidents (D-69). */
   maxVehiclesPerDispatch(incident: Pick<IncidentDto, 'major'>): number {
     return incident.major ? MAJOR_SETTINGS.maxVehiclesPerDispatch : MAX_VEHICLES_PER_DISPATCH;
@@ -1723,9 +1782,7 @@ export class MockEngine {
     const incident = career.incidents.find((i) => i.id === incidentId);
     if (!incident) throw new MockError(404, 'NOT_FOUND', 'Incident not found');
     // A RESOLVING incident still accepts vehicles while a domain queue keeps it open (a patient waiting for an ambulance).
-    const openQueue =
-      incident.status === 'RESOLVING' && this.hooks.resolvingBlockers.some((h) => h(career, incident));
-    if (!['PENDING_RESPONSE', 'RESPONDING', 'ON_SCENE'].includes(incident.status) && !openQueue)
+    if (!this.canReceive(career, incident))
       throw new MockError(409, 'INCIDENT_NOT_DISPATCHABLE', 'Incident cannot receive vehicles');
     if (vehicleIds.length > this.maxVehiclesPerDispatch(incident))
       throw new MockError(400, 'VALIDATION_ERROR', 'Too many vehicles in one dispatch', {
@@ -1805,7 +1862,8 @@ export class MockEngine {
     };
   }
 
-  private recordDispatch(
+  /** Remembers a dispatch for the free undo; also used by the chain domain for the legs it opens (`REDIRECT`). */
+  recordDispatch(
     career: MockCareer,
     record: Omit<MockDispatchRecord, 'id' | 'cancelled'>,
   ): MockDispatchRecord {
@@ -2078,6 +2136,9 @@ export class MockEngine {
       if (incident && incident.status === 'PENDING_RESPONSE' && !incident.isTutorial)
         this.schedule(career, 'INCIDENT_EXPIRE', 600, incidentId);
       this.emit(career, 'vehicle.returning', { vehicle: patched, ...(incident ? { incident } : {}) });
+      // Nobody of the player left on the scene of a call whose patients are all looked after: it is over (medical domain).
+      const live = career.incidents.find((i) => i.id === incidentId);
+      if (live) for (const hook of this.hooks.unitRecalled) hook(career, live, now);
     } else this.emit(career, 'vehicle.updated', { vehicle: patched });
     this.save();
     return patched;
@@ -2204,11 +2265,20 @@ export class MockEngine {
   private onExpire(career: MockCareer, incidentId: string, at: number): void {
     const incident = career.incidents.find((i) => i.id === incidentId);
     if (!incident || incident.status !== 'PENDING_RESPONSE') return;
+    // A patient still on the road to hospital keeps the abandoned call open: the expiry is pushed back, never executed.
+    if (this.hooks.expiryHold.some((hold) => hold(career, incident))) {
+      this.schedule(career, 'INCIDENT_EXPIRE', EXPIRY_HOLD_SECONDS, incident.id);
+      return;
+    }
     this.close(career, incident, 'EXPIRED', at);
   }
   private onEscalate(career: MockCareer, incidentId: string, at: number): void {
     const incident = career.incidents.find((i) => i.id === incidentId);
     if (!incident || incident.status !== 'PENDING_RESPONSE' || incident.severity >= 10) return;
+    if (this.hooks.expiryHold.some((hold) => hold(career, incident))) {
+      this.schedule(career, 'INCIDENT_ESCALATE', EXPIRY_HOLD_SECONDS, incident.id);
+      return;
+    }
     const next = this.patchIncident(career, incidentId, {
       severity: incident.severity + 1,
       escalating: true,

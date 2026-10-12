@@ -2,8 +2,8 @@
 import * as React from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { ArrowRightLeft, Ban, CheckCircle2, Hammer, MapPin } from 'lucide-react';
-import type { FacilityDto, VehicleDto } from '@/contracts';
+import { ArrowRightLeft, Ban, BedDouble, CheckCircle2, Hammer, MapPin } from 'lucide-react';
+import type { VehicleDto } from '@/contracts';
 import { facilitiesApi } from '@/lib/api/depth';
 import { track } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
@@ -11,40 +11,14 @@ import { toast } from '@/stores/toast';
 import { FamilyBadge } from '@/design/icons';
 import { Button, IconButton } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/switch';
 import { useCareerId, usePatchSnapshot, useSnapshot, useVehicleTypeLookup } from '@/features/game/hooks';
+import { useFeature, useInvalidatePersonnel, usePersonnel, useTeams } from '@/features/personnel/queries';
+import { canTravel, teamTargets } from '@/features/personnel/team-actions';
 import { useFixItToast } from './error-fix';
+import { transferTargets } from './transfer-targets';
 
-export type TransferState = 'OK' | 'CURRENT' | 'INCOMPATIBLE' | 'NOT_OPERATIONAL' | 'FULL';
-export interface TransferTarget {
-  facility: FacilityDto;
-  state: TransferState;
-  free: number;
-}
-
-/** Every facility as a transfer target with the reason when it cannot take the vehicle (valid ones first). */
-export function transferTargets(
-  vehicle: Pick<VehicleDto, 'facilityId'>,
-  type: { compatibleFacilityTypes: string[]; domain: string; capacityPoints: number } | undefined,
-  facilities: readonly FacilityDto[],
-): TransferTarget[] {
-  return facilities
-    .map((facility) => {
-      const c = facility.capacities.find((x) => x.domain === type?.domain);
-      const free = c ? c.total - c.used : 0;
-      const state: TransferState =
-        facility.id === vehicle.facilityId
-          ? 'CURRENT'
-          : !type || !type.compatibleFacilityTypes.includes(facility.typeCode)
-            ? 'INCOMPATIBLE'
-            : facility.status !== 'OPERATIONAL'
-              ? 'NOT_OPERATIONAL'
-              : free < type.capacityPoints
-                ? 'FULL'
-                : 'OK';
-      return { facility, state, free };
-    })
-    .sort((a, b) => Number(b.state === 'OK') - Number(a.state === 'OK'));
-}
+export { transferTargets, type TransferState, type TransferTarget } from './transfer-targets';
 
 const STATE_ICON = {
   OK: CheckCircle2,
@@ -52,9 +26,13 @@ const STATE_ICON = {
   INCOMPATIBLE: Ban,
   NOT_OPERATIONAL: Hammer,
   FULL: Ban,
+  NO_BEDS: BedDouble,
 } as const;
 
-/** Re-base an AVAILABLE vehicle to another compatible facility with free capacity in its domain. */
+/**
+ * Re-base an AVAILABLE vehicle to another compatible facility with free capacity in its domain. The team bound to the vehicle
+ * travels with it (one trip, one arrival) unless the player leaves it behind: then it stays, free, and the vehicle goes alone.
+ */
 export function TransferVehicleButton({
   vehicle,
   compact,
@@ -68,15 +46,23 @@ export function TransferVehicleButton({
   const careerId = useCareerId();
   const t = useTranslations('facilities.transfer');
   const tn = useTranslations('nautical.transfer');
+  const tteam = useTranslations('personnel.teams');
   const td = useTranslations('game.facility');
   const tc = useTranslations('common');
   const fixItToast = useFixItToast();
   const patch = usePatchSnapshot();
+  const invalidatePersonnel = useInvalidatePersonnel();
   const { facilities } = useSnapshot();
   const type = useVehicleTypeLookup()(vehicle.typeCode);
+  const teams = useTeams(useFeature('TEAMS').unlocked).data;
+  const people = usePersonnel().data;
+  const team = teams?.find((x) => x.vehicleId === vehicle.id);
   const [open, setOpen] = React.useState(false);
+  const [leaveTeam, setLeaveTeam] = React.useState(false);
+  const withTeam = team !== undefined && !leaveTeam;
   const transfer = useMutation({
-    mutationFn: (facilityId: string) => facilitiesApi.transferVehicle(careerId, vehicle.id, facilityId),
+    mutationFn: (facilityId: string) =>
+      facilitiesApi.transferVehicle(careerId, vehicle.id, facilityId, team ? withTeam : undefined),
     onSuccess: (result, facilityId) => {
       track('vehicle_transferred', { type: vehicle.typeCode });
       patch((s) => ({
@@ -92,6 +78,7 @@ export function TransferVehicleButton({
         }),
         description: t('doneHint'),
       });
+      if (team) void invalidatePersonnel();
       setOpen(false);
     },
     // NEEDS_NAUTICAL_BASE, no free berth…: the refusal says where to go to fix it.
@@ -100,7 +87,11 @@ export function TransferVehicleButton({
   if (facilities.length < 2) return null;
   const boat = type?.domain === 'WATER';
   const available = vehicle.status === 'AVAILABLE';
-  const targets = transferTargets(vehicle, type, facilities);
+  const travellers = (people ?? []).filter((p) => team?.memberIds.includes(p.id) && canTravel(p));
+  // With its team the vehicle also needs beds at the destination for the operators that travel.
+  const targets = withTeam
+    ? teamTargets({ facilityId: vehicle.facilityId }, vehicle, type, facilities, travellers.length)
+    : transferTargets(vehicle, type, facilities);
   const trigger = compact ? (
     <IconButton
       label={t('actionFor', { callSign: vehicle.callSign })}
@@ -125,7 +116,7 @@ export function TransferVehicleButton({
       data-testid="transfer-vehicle"
     >
       <ArrowRightLeft className="size-4" aria-hidden />
-      {t('action')}
+      {team ? tteam('transferWithTeam') : t('action')}
     </Button>
   );
   return (
@@ -142,6 +133,25 @@ export function TransferVehicleButton({
           closeLabel={tc('close')}
           data-testid="transfer-dialog"
         >
+          {team ? (
+            <div className="mb-3 flex flex-col gap-2" data-testid="transfer-team-option">
+              <div className="flex items-center gap-2.5 text-sm">
+                <Checkbox
+                  id={`bring-team-${vehicle.id}`}
+                  checked={!leaveTeam}
+                  onCheckedChange={(checked) => setLeaveTeam(checked !== true)}
+                />
+                <label htmlFor={`bring-team-${vehicle.id}`} className="min-w-0 flex-1 cursor-pointer">
+                  {tteam('transferBringTeam', { name: team.name })}
+                </label>
+              </div>
+              <p className="text-muted text-xs">
+                {withTeam
+                  ? tteam('transferTeamTogether', { count: travellers.length })
+                  : tteam('transferTeamStays')}
+              </p>
+            </div>
+          ) : null}
           <ul className="flex flex-col gap-2">
             {targets.map(({ facility, state, free }) => {
               const Icon = STATE_ICON[state];
@@ -169,7 +179,9 @@ export function TransferVehicleButton({
                           ? t('state.OK', { free })
                           : state === 'INCOMPATIBLE' && boat
                             ? tn('boatOnly')
-                            : t(`state.${state}`)}
+                            : state === 'NO_BEDS'
+                              ? tteam('transfer.state.NO_BEDS', { free, count: travellers.length })
+                              : t(`state.${state}`)}
                       </span>
                     </span>
                   </button>

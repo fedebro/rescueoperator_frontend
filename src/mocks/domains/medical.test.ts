@@ -965,3 +965,158 @@ describe('water patients (analisi/note-agenti/water-patients.md)', () => {
     expect(w.career.stats.resolved + w.career.stats.failed).toBe(1);
   });
 });
+
+/**
+ * A purely medical call ends when its patient is in hospital (the backend's `closeWhenPatientsDone`): an ambulance leaving with
+ * the patient while the last unit is recalled used to leave the call open and unattended — it expired as a FAILURE minutes
+ * after the patient was safely admitted. Everything here follows backend/tests/integration/depth-medical.test.ts.
+ */
+describe('a purely medical call ends when its patient is looked after', () => {
+  /** An ambulance at the call, the work made long (so it is never the work that closes the call), the patient on the road. */
+  async function patientOnTheRoad() {
+    const w = await world(1, 6);
+    w.qa.medicalConfig({ autoTransportSeconds: 6000, externalSeconds: 6000 });
+    (w.qa as unknown as { medicalConfig: (c: Record<string, unknown>) => void }).medicalConfig({
+      alwaysTransport: true,
+      handoffSeconds: 90,
+    });
+    const { vehicleId } = w.qa.giveAmbulance();
+    const incidentId = spawnFall(w, 3);
+    w.engine.patchIncident(w.career, incidentId, {
+      work: {
+        ...w.career.incidents.find((i) => i.id === incidentId)!.work,
+        total: 100_000,
+        remaining: 100_000,
+      },
+    });
+    const patient = patientOf(w.career, incidentId);
+    w.engine.dispatch(w.career, incidentId, [vehicleId]);
+    until(w, () => patient.dto.status !== 'UNASSESSED');
+    w.qa.stabilize(patient.dto.id);
+    const hospitalId = w.medical
+      .hospitalOptions(w.career, patient.dto.id)
+      .find((o) => o.recommended)!.hospitalId;
+    w.medical.transport(w.career, patient.dto.id, { hospitalId });
+    return { w, vehicleId, incidentId, patient };
+  }
+  const incidentOf = (w: World, id: string) => w.career.incidents.find((i) => i.id === id);
+
+  it('resolves the call as a success when the patient is admitted although nobody is left on the scene', async () => {
+    const { w, incidentId, patient } = await patientOnTheRoad();
+    // the only unit left with the patient: the scene is uncovered, the call is back to "nobody on it" with work still to do
+    expect(incidentOf(w, incidentId)).toMatchObject({ status: 'PENDING_RESPONSE' });
+    expect(incidentOf(w, incidentId)!.work.remaining).toBeGreaterThan(0);
+
+    until(w, () => patient.dto.status === 'ADMITTED');
+    until(w, () => !incidentOf(w, incidentId));
+    expect(w.career.stats).toMatchObject({ resolved: 1, failed: 0 });
+    const outcome = w.career.pendingOutcomes.find((o) => o.incidentId === incidentId)!;
+    expect(outcome.result).toBe('SUCCESS');
+    expect(Number(outcome.netCredits)).toBeGreaterThan(0);
+    expect(
+      w.events.filter(
+        (e) =>
+          e.type === 'incident.resolved' &&
+          (e.payload.outcome as { incidentId: string }).incidentId === incidentId,
+      ),
+    ).toHaveLength(1);
+    // and it never expires afterwards: the timer went with the call
+    w.advance(3_600_000, 5000);
+    expect(
+      w.events.filter(
+        (e) =>
+          (e.type === 'incident.expired' || e.type === 'incident.failed') &&
+          (e.payload.incident as { id: string }).id === incidentId,
+      ),
+    ).toHaveLength(0);
+    expect(w.career.pendingOutcomes.filter((o) => o.incidentId === incidentId)).toHaveLength(1);
+  });
+
+  it('does not let the call expire while its patient is still on the road', async () => {
+    const { w, incidentId, patient } = await patientOnTheRoad();
+    // the expiry of the abandoned scene falls due while the ambulance is still driving: it is pushed back, not executed
+    w.engine.schedule(w.career, 'INCIDENT_EXPIRE', 0.001, incidentId);
+    w.advance(1000);
+    expect(['IN_TRANSPORT', 'HANDOFF']).toContain(patient.dto.status);
+    expect(incidentOf(w, incidentId)).toMatchObject({ status: 'PENDING_RESPONSE' });
+    expect(w.events.some((e) => e.type === 'incident.expired')).toBe(false);
+
+    until(w, () => !incidentOf(w, incidentId));
+    expect(w.career.stats).toMatchObject({ resolved: 1, failed: 0 });
+  });
+
+  it('closes the call when the last unit left on the scene is recalled after the patient was admitted', async () => {
+    const w = await world(1, 6);
+    (w.qa as unknown as { medicalConfig: (c: Record<string, unknown>) => void }).medicalConfig({
+      autoTransportSeconds: 6000,
+      externalSeconds: 6000,
+      alwaysTransport: true,
+      handoffSeconds: 30,
+    });
+    const first = w.qa.giveAmbulance();
+    const second = w.qa.giveAmbulance();
+    const incidentId = spawnFall(w, 3);
+    w.engine.patchIncident(w.career, incidentId, {
+      work: {
+        ...w.career.incidents.find((i) => i.id === incidentId)!.work,
+        total: 100_000,
+        remaining: 100_000,
+      },
+    });
+    const patient = patientOf(w.career, incidentId);
+    w.engine.dispatch(w.career, incidentId, [first.vehicleId, second.vehicleId]);
+    until(w, () => patient.dto.status !== 'UNASSESSED');
+    w.qa.stabilize(patient.dto.id);
+    const hospitalId = w.medical
+      .hospitalOptions(w.career, patient.dto.id)
+      .find((o) => o.recommended)!.hospitalId;
+    w.medical.transport(w.career, patient.dto.id, { hospitalId, vehicleId: first.vehicleId });
+    until(w, () => patient.dto.status === 'ADMITTED');
+    // somebody is still working on the scene: the call goes on (the work completion would close it)
+    expect(incidentOf(w, incidentId)).toBeDefined();
+    expect(w.career.vehicles.find((v) => v.id === second.vehicleId)!.status).toBe('ON_SCENE');
+
+    w.engine.recall(w.career, second.vehicleId);
+    expect(incidentOf(w, incidentId)).toBeUndefined();
+    expect(w.career.stats).toMatchObject({ resolved: 1, failed: 0 });
+  });
+
+  it('still fails an abandoned call that no patient ever reached hospital from', async () => {
+    const w = await world(1, 6);
+    const incidentId = spawnFall(w, 3);
+    w.engine.schedule(w.career, 'INCIDENT_EXPIRE', 0.001, incidentId);
+    w.advance(2000);
+    expect(incidentOf(w, incidentId)).toBeUndefined();
+    expect(w.career.stats).toMatchObject({ resolved: 0, failed: 1 });
+    expect(w.events.some((e) => e.type === 'incident.expired')).toBe(true);
+  });
+
+  it('does not close a call that needs more than care (a patient and a fire still burning)', async () => {
+    const w = await world(1, 6);
+    const incidentId = spawnFall(w, 3);
+    const incident = w.career.incidents.find((i) => i.id === incidentId)!;
+    // a fire fighting need that nobody served: not "purely medical", the patient alone does not end it
+    w.engine.patchIncident(w.career, incidentId, {
+      requirements: [
+        ...incident.requirements,
+        { capability: 'FIRE_SUPPRESSION', level: 'REQUIRED', required: 40, onScene: 0, enRoute: 0 },
+      ],
+    });
+    const { vehicleId } = w.qa.giveAmbulance();
+    const patient = patientOf(w.career, incidentId);
+    w.qa.medicalConfig({ autoTransportSeconds: 6000, externalSeconds: 6000 });
+    (w.qa as unknown as { medicalConfig: (c: Record<string, unknown>) => void }).medicalConfig({
+      alwaysTransport: true,
+      handoffSeconds: 30,
+    });
+    w.engine.dispatch(w.career, incidentId, [vehicleId]);
+    until(w, () => patient.dto.status !== 'UNASSESSED');
+    w.qa.stabilize(patient.dto.id);
+    const hospitalId = w.medical
+      .hospitalOptions(w.career, patient.dto.id)
+      .find((o) => o.recommended)!.hospitalId;
+    w.medical.transport(w.career, patient.dto.id, { hospitalId });
+    until(w, () => patient.dto.status === 'ADMITTED');
+    expect(w.career.incidents.some((i) => i.id === incidentId)).toBe(true);
+  });
+});

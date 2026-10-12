@@ -35,8 +35,8 @@
     "sections": {
       "personnel": {
         "title": "Personnel",
-        "body": "Ici vous recrutez, formez et organisez en équipes les opérateurs de vos casernes : sans équipage, un véhicule ne peut pas partir.",
-        "tip1": "Les recrutements rapides couvrent l’urgence ; les équipes offrent des bonus stables.",
+        "body": "Ici vous recrutez, formez et organisez les opérateurs de vos casernes. Sans équipage, un véhicule ne peut pas partir ; une équipe est l’équipage fixe d’un véhicule, mais elle est facultative.",
+        "tip1": "Les recrutements rapides couvrent l’urgence ; une équipe fixe garde toujours les mêmes opérateurs sur le même véhicule.",
         "tip2": "Un opérateur fatigué peut être mis au repos depuis l’onglet Effectif."
       },
       "medical": {

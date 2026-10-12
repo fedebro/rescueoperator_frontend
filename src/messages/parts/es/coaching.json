@@ -35,8 +35,8 @@
     "sections": {
       "personnel": {
         "title": "Personal",
-        "body": "Aquí contratas, formas y organizas en equipos a los operadores de tus bases: sin tripulación un vehículo no puede salir.",
-        "tip1": "Las contrataciones rápidas cubren la emergencia; los equipos dan bonificaciones estables.",
+        "body": "Aquí contratas, formas y organizas a los operadores de tus bases. Sin tripulación un vehículo no puede salir; un equipo es la dotación fija de un vehículo, pero es opcional.",
+        "tip1": "Las contrataciones rápidas cubren la emergencia; un equipo fijo mantiene siempre a los mismos operadores en el mismo vehículo.",
         "tip2": "Un operador fatigado puede ponerse a descansar desde la pestaña Plantilla."
       },
       "medical": {

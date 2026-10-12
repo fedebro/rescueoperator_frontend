@@ -14,7 +14,6 @@ import {
   type CourseDto,
   CoverageDto,
   CreditPackageDto,
-  DepartmentDto,
   EnrollmentDto,
   FacilityDetailV2Dto,
   HospitalDto,
@@ -42,7 +41,9 @@ import {
   SpeedupResult,
   StipendDto,
   TeamDto,
+  TeamProposalDto,
   TrainingOverview,
+  TransferTeamResult,
   TransferVehicleResult,
   TransportPatientResult,
   WaterSourcesResult,
@@ -76,10 +77,11 @@ export const facilitiesApi = {
     api.get(`${c(careerId)}/facilities/${id}`, { schema: FacilityDetailV2Dto }),
   promote: (careerId: string, id: string) =>
     api.command(`${c(careerId)}/facilities/${id}/promote`, {}, { schema: FacilityDetailV2Dto }),
-  transferVehicle: (careerId: string, vehicleId: string, facilityId: string) =>
+  /** `withTeam: false` leaves the team bound to the vehicle behind (released); omitted = the team travels along. */
+  transferVehicle: (careerId: string, vehicleId: string, facilityId: string, withTeam?: boolean) =>
     api.command(
       `${c(careerId)}/vehicles/${vehicleId}/transfer`,
-      { facilityId },
+      withTeam === undefined ? { facilityId } : { facilityId, withTeam },
       { schema: TransferVehicleResult },
     ),
 };
@@ -108,18 +110,23 @@ export const personnelApi = {
   hireCandidate: (careerId: string, id: string, facilityId: string) =>
     api.command(`${c(careerId)}/candidates/${id}/hire`, { facilityId }, { schema: PersonnelDto }),
   teams: (careerId: string) => api.get(`${c(careerId)}/teams`, { schema: z.array(TeamDto) }),
-  createTeam: (careerId: string, body: { name: string; facilityId: string; departmentId?: string | null }) =>
+  /** The crew the game would form for a vehicle (read-only). */
+  teamProposal: (careerId: string, vehicleId: string) =>
+    api.get(`${c(careerId)}/vehicles/${vehicleId}/team-proposal`, { schema: TeamProposalDto }),
+  /** Forms the team of a vehicle: the recommended crew unless `memberIds` is given; the name defaults to the call sign. */
+  formTeam: (careerId: string, body: { vehicleId: string; name?: string; memberIds?: string[] }) =>
     api.post(`${c(careerId)}/teams`, body, { schema: TeamDto }),
-  updateTeam: (careerId: string, id: string, body: { name?: string; departmentId?: string | null }) =>
+  updateTeam: (careerId: string, id: string, body: { name?: string }) =>
     api.patch(`${c(careerId)}/teams/${id}`, body, { schema: TeamDto }),
+  /** Dissolves the team: its operators are free again and its vehicle keeps its place. */
+  disbandTeam: (careerId: string, id: string) => api.delete(`${c(careerId)}/teams/${id}`),
+  /** Moves the team to another facility together with its vehicle. */
+  transferTeam: (careerId: string, id: string, facilityId: string) =>
+    api.command(`${c(careerId)}/teams/${id}/transfer`, { facilityId }, { schema: TransferTeamResult }),
   setTeamMembers: (careerId: string, id: string, body: { memberIds: string[]; leaderId?: string | null }) =>
     api.put(`${c(careerId)}/teams/${id}/members`, body, { schema: TeamDto }),
   setTeamVehicle: (careerId: string, id: string, vehicleId: string | null) =>
     api.put(`${c(careerId)}/teams/${id}/vehicle`, { vehicleId }, { schema: TeamDto }),
-  departments: (careerId: string) =>
-    api.get(`${c(careerId)}/departments`, { schema: z.array(DepartmentDto) }),
-  createDepartment: (careerId: string, body: { name: string; family: string; facilityId: string }) =>
-    api.post(`${c(careerId)}/departments`, body, { schema: DepartmentDto }),
   training: (careerId: string) => api.get(`${c(careerId)}/training/courses`, { schema: TrainingOverview }),
   enroll: (careerId: string, body: { courseCode: string; personnelIds: string[] }) =>
     api.command(`${c(careerId)}/training/enroll`, body, { schema: z.array(EnrollmentDto) }),

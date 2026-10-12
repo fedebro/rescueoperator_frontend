@@ -44,6 +44,8 @@ export const facilitiesHandlers: DomainHandlers = ({
   ),
   http.post(
     url(`${C}/vehicles/:id/transfer`),
-    command((ctx, body, career) => transferVehicle(engine, career, String(ctx.params.id), body.facilityId)),
+    command((ctx, body, career) =>
+      transferVehicle(engine, career, String(ctx.params.id), body.facilityId, body.withTeam !== false),
+    ),
   ),
 ];

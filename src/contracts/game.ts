@@ -231,6 +231,9 @@ export const VehicleDto = z.object({
   position: LngLat,
   movement: MovementDto.nullable(),
   incidentId: publicId(IdPrefix.incident).nullable(),
+  /** While `RETURNING`: the incident the vehicle is coming back from (`incidentId` is null then). Lets the client offer "send it back
+   * to the same emergency" after a recall, also after a reload. `null` in every other status. */
+  returningFromIncidentId: publicId(IdPrefix.incident).nullable().optional(),
   capabilities: z.array(CapabilityValue),
   health: z.number().min(0).max(100),
   healthBand: HealthBand,
@@ -487,6 +490,29 @@ export const DispatchOption = z.object({
     }).nullable(),
     /** This vehicle's current queue slot, if any (set by a previous `chain` call that queued instead of redirecting). */
     queuedIncidentId: publicId(IdPrefix.incident).nullable(),
+    /** The incident this vehicle is on right now (its active dispatch), `null` while resupplying at base. The same incident as
+     * the one the options are for means the vehicle is coming back from it (a recalled or released unit): `chain` sends it back. */
+    currentIncidentId: publicId(IdPrefix.incident).nullable().optional(),
+    /** Item codes the vehicle is short of (the single resupply rule would stop it at base). A redirect is still allowed: it goes
+     * with what it has on board, and its capabilities are scaled down accordingly. Empty/absent = nothing short. */
+    stockLow: z.array(z.string()).optional(),
+    /** When it would reach THIS incident if sent here now (queued, or redirected): the end of what it is doing, the way home and
+     * the resupply, then the normal preparation and trip. Best effort — see `basis` and `approximate`. */
+    estimate: z.object({
+      /** Expected instant the vehicle is free (back at base and resupplied); `null` when it cannot be told. */
+      freeAt: IsoDateTime.nullable(),
+      /** Expected arrival at this incident; `null` when `freeAt` is. */
+      arriveAt: IsoDateTime.nullable(),
+      /** What `freeAt` rests on: `RETURNING` the planned return leg, `RESTOCKING` the end of the stop, `WORK_END` the end of the work on
+       * the current scene (+ the way home), `HOSPITAL` the patient handoff (+ the way home), `UNKNOWN` nothing reliable. */
+      basis: z.enum(['RETURNING', 'RESTOCKING', 'WORK_END', 'HOSPITAL', 'UNKNOWN']),
+      /** True when part of it is a projection (scene work still to finish, handoff, the way home as the crow flies). */
+      approximate: z.boolean(),
+      /** The incident's own expiry while nobody has taken charge of it (`null` once units are on their way). */
+      incidentExpiresAt: IsoDateTime.nullable(),
+      /** The vehicle would arrive after `incidentExpiresAt`: the queue would be cleared before it could help. */
+      afterExpiry: z.boolean(),
+    }).optional(),
   }).optional(),
 });
 export const DispatchOptionsResult = z.object({
@@ -512,7 +538,11 @@ export const DispatchBody = z.object({ vehicleIds: z.array(publicId(IdPrefix.veh
  * AVAILABLE again — after return and, if needed, RESTOCKING — it auto-dispatches here through the normal dispatch
  * path, which re-checks everything). Only one queue slot per vehicle: calling this again replaces it.
  */
-export const ChainVehicleBody = z.object({ incidentId: publicId(IdPrefix.incident) });
+export const ChainVehicleBody = z.object({
+  incidentId: publicId(IdPrefix.incident),
+  /** `true` = never redirect: queue the vehicle even when it could divert now (it finishes its way home and its resupply first). */
+  queueOnly: z.boolean().optional(),
+});
 export const ChainVehicleResult = z.object({
   mode: z.enum(['REDIRECTED', 'QUEUED']),
   vehicle: VehicleDto,

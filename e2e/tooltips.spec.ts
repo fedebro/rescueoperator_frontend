@@ -37,7 +37,7 @@ test('personnel: a locked-feature icon shows a hover tooltip', async ({ page }, 
   await bootCareer(page, info.project.name, { level: 1 });
   await goTo(page, 'Personale', true);
   await expect(page.getByRole('heading', { name: 'Personale', level: 1 })).toBeVisible();
-  await page.getByRole('tab', { name: 'Squadre e reparti' }).click();
+  await page.getByRole('tab', { name: 'Squadre', exact: true }).click();
 
   const locked = page.getByTestId('locked-TEAMS');
   await expect(locked).toContainText('Richiede il livello 4');
@@ -50,25 +50,24 @@ test('personnel: a team leader crown shows a hover tooltip', async ({ page }, in
   await bootCareer(page, info.project.name, { level: 4, credits: 5000, speed: 1 });
   await goTo(page, 'Personale', true);
   await expect(page.getByRole('heading', { name: 'Personale', level: 1 })).toBeVisible();
-  await page.getByRole('tab', { name: 'Squadre e reparti' }).click();
+  await page.getByRole('tab', { name: 'Squadre', exact: true }).click();
 
-  await page.getByTestId('new-team').click();
+  // The guided path: one tap on the vehicle forms the team with the crew the game proposes.
+  await page.getByTestId('form-team').click();
   await page.getByLabel('Nome').fill('Prima partenza');
-  await page.getByRole('button', { name: 'Crea', exact: true }).click();
+  await page.getByTestId('confirm-form-team').click();
   await expect(
-    page.getByTestId('toast').filter({ hasText: 'Squadra «Prima partenza» creata' }),
+    page.getByTestId('toast').filter({ hasText: 'Squadra «Prima partenza» formata' }),
   ).toBeVisible();
 
-  // The members dialog opens right after creation: pick two of the starter crew and make the first one leader.
-  const members = page.getByTestId('member-list');
-  await members.getByRole('checkbox').nth(0).click();
-  await members.getByRole('checkbox').nth(1).click();
+  // The leader is automatic; a member change lets the player choose one explicitly.
+  const card = page.getByTestId('team-card');
+  await card.getByTestId('edit-members').click();
   await page.getByRole('combobox', { name: 'Caposquadra' }).click();
   await page.getByRole('option').nth(1).click();
   await page.getByTestId('save-members').click();
   await expect(page.getByTestId('toast').filter({ hasText: 'Squadra aggiornata' })).toBeVisible();
 
-  const card = page.getByTestId('team-card');
   // The crown already carries `aria-label={t('leader')}` for screen readers; `title` makes the same "team leader"
   // information visible to a sighted mouse user on hover.
   await expect(card.locator('[title="Caposquadra"]')).toHaveCount(1);

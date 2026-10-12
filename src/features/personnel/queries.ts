@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
-import type { CandidateDto, DepartmentDto, EnrollmentDto, TeamDto } from '@/contracts';
+import type { CandidateDto, EnrollmentDto, TeamDto, TeamProposalDto } from '@/contracts';
 import { personnelApi, type CourseDto } from '@/lib/api/depth';
 import { qk } from '@/lib/api/query-keys';
 import { isApiError } from '@/lib/api/errors';
@@ -13,7 +13,7 @@ import { useCareerId, useCatalog, useSnapshot } from '@/features/game/hooks';
 
 export type Team = z.infer<typeof TeamDto>;
 export type TeamStatus = Team['status'];
-export type Department = z.infer<typeof DepartmentDto>;
+export type TeamProposal = z.infer<typeof TeamProposalDto>;
 export type Candidate = z.infer<typeof CandidateDto>;
 export type Enrollment = z.infer<typeof EnrollmentDto>;
 export type Course = z.infer<typeof CourseDto>;
@@ -35,12 +35,16 @@ export function useTeams(enabled = true) {
   const careerId = useCareerId();
   return useQuery({ queryKey: qk.teams(careerId), queryFn: () => personnelApi.teams(careerId), enabled });
 }
-export function useDepartments(enabled = true) {
+/** What the game would put on a vehicle (read-only), fetched while the "form the team" dialog is open. */
+export function useTeamProposal(vehicleId: string | null) {
   const careerId = useCareerId();
   return useQuery({
-    queryKey: qk.departments(careerId),
-    queryFn: () => personnelApi.departments(careerId),
-    enabled,
+    queryKey: qk.teamProposal(careerId, vehicleId ?? 'none'),
+    queryFn: () => personnelApi.teamProposal(careerId, vehicleId!),
+    enabled: vehicleId !== null,
+    // The pool moves with every hire, rest and mission: never show yesterday's proposal.
+    staleTime: 0,
+    gcTime: 0,
   });
 }
 export function useCandidates() {
@@ -89,8 +93,8 @@ export function useRoles(): RoleInfo[] {
   );
 }
 
-/** Level gate of a catalog feature (TEAMS 4 · DEPARTMENTS 12 · TRAINING 2): locked screens show the level, never hide. */
-export function useFeature(feature: 'TEAMS' | 'DEPARTMENTS' | 'TRAINING'): {
+/** Level gate of a catalog feature (TEAMS 4 · TRAINING 2): locked screens show the level, never hide. */
+export function useFeature(feature: 'TEAMS' | 'TRAINING'): {
   unlocked: boolean;
   requiredLevel: number | null;
 } {

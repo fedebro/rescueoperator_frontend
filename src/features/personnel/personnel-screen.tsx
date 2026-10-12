@@ -21,7 +21,8 @@ const isTab = (value: string | null): value is TabId => TABS.includes(value as T
 
 /**
  * /game/personnel. Deep links: `?tab=roster|teams|recruitment|training`, `?operator=<personnelId>` (notification action
- * OPEN_PERSONNEL, dispatch "fix it" links) and `?facility=<facilityId>` (roster pre-filtered from the facility page).
+ * OPEN_PERSONNEL, dispatch "fix it" links), `?team=<teamId>` (the team highlighted on the teams tab, from the vehicle
+ * sheet) and `?facility=<facilityId>` (roster pre-filtered from the facility page).
  */
 /** Phone tab geometry: stacked icon + label, centred, allowed to wrap on two short lines. */
 const TAB_CLASS =
@@ -95,7 +96,7 @@ export function PersonnelScreen() {
           <RosterTab onSelect={setSelected} selectedId={selected} initialFacility={params.get('facility')} />
         </TabsContent>
         <TabsContent value="teams" className="pt-4">
-          <TeamsTab onSelect={setSelected} />
+          <TeamsTab onSelect={setSelected} focusTeam={params.get('team')} />
         </TabsContent>
         <TabsContent value="recruitment" className="pt-4">
           <RecruitmentTab onSelect={setSelected} />

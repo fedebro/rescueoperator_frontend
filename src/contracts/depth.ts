@@ -5,7 +5,7 @@
  */
 import { z } from 'zod';
 import { Amount, I18nText, IdPrefix, IsoDateTime, LineCoords, LngLat, ServiceFamily, publicId } from './common';
-import { FatigueBand, HealthBand, IncidentDto, PatientStatus, PersonnelStatus, TriageCode, VehicleDto } from './game';
+import { FacilityDto, FatigueBand, HealthBand, IncidentDto, PatientStatus, PersonnelStatus, TriageCode, VehicleDto } from './game';
 
 /* ───────────── personnel ───────────── */
 
@@ -33,18 +33,29 @@ export const PersonnelDto = z.object({
 export type PersonnelDto = z.infer<typeof PersonnelDto>;
 
 export const TeamStatus = z.enum(['READY', 'PARTIAL', 'ON_MISSION', 'RESTING', 'UNAVAILABLE']);
+/**
+ * A team is the FIXED CREW of one vehicle (analisi/studio-2026-10-12-squadre): the same operators always board that vehicle and
+ * no other vehicle draws them. Optional — without a team the crew is drawn from the free operators of the facility at dispatch.
+ * `warnings` codes: NO_MEMBERS, NO_VEHICLE, BELOW_MIN_CREW, BELOW_OPTIMAL_CREW, MEMBER_FATIGUED, MEMBER_UNAVAILABLE,
+ * MISSING_QUALIFICATION:<code> (NO_LEADER is no longer emitted: the leader is derived).
+ */
 export const TeamDto = z.object({
   id: publicId(IdPrefix.team),
   name: z.string(),
   facilityId: publicId(IdPrefix.facility),
+  /** Legacy (departments are retired from the game, the data stays): never set by the new flows. */
   departmentId: publicId(IdPrefix.department).nullable(),
   vehicleId: publicId(IdPrefix.vehicle).nullable(),
+  /** The stored leader, else the most senior member (TEAM_LEADER role first, then competence, then XP): `null` only without members. */
   leaderId: publicId(IdPrefix.personnel).nullable(),
   memberIds: z.array(publicId(IdPrefix.personnel)),
   status: TeamStatus,
   readiness: z.number().min(0).max(1),
   warnings: z.array(z.string()),
+  /** Additive: while the team travels to another facility (members TRANSFERRING), the instant the last one arrives. `null`/absent otherwise. */
+  transferUntil: IsoDateTime.nullable().optional(),
 });
+/** Retired concept (kept for compatibility, no UI): a label grouping the teams of a facility, with no effect on the game. */
 export const DepartmentDto = z.object({
   id: publicId(IdPrefix.department), name: z.string(), family: ServiceFamily, facilityId: publicId(IdPrefix.facility),
 });
@@ -67,10 +78,62 @@ export type VehicleCrewGapDto = z.infer<typeof VehicleCrewGapDto>;
 export const QuickHireBody = z.object({ roleCode: z.string(), facilityId: publicId(IdPrefix.facility), count: z.number().int().min(1).max(10).default(1) });
 /** ★POST /candidates/:id/hire */
 export const HireCandidateBody = z.object({ facilityId: publicId(IdPrefix.facility) });
-export const CreateTeamBody = z.object({ name: z.string().min(2).max(40), facilityId: publicId(IdPrefix.facility), departmentId: publicId(IdPrefix.department).nullable().optional() });
+/**
+ * POST /teams. Two ways in (additive over the original `{ name, facilityId }`, which still creates an empty team):
+ *  - the guided one, `{ vehicleId }`: the team of THAT vehicle, in the vehicle's facility, name defaulting to the call sign and
+ *    members defaulting to the recommended crew (`GET /vehicles/:id/team-proposal`); `memberIds` overrides the members;
+ *  - the legacy one, `{ name, facilityId }`.
+ */
+export const CreateTeamBody = z
+  .object({
+    name: z.string().trim().min(2).max(40).optional(),
+    facilityId: publicId(IdPrefix.facility).optional(),
+    vehicleId: publicId(IdPrefix.vehicle).optional(),
+    memberIds: z.array(publicId(IdPrefix.personnel)).max(12).optional(),
+    /** Legacy: departments are retired, a value is stored but never shown. */
+    departmentId: publicId(IdPrefix.department).nullable().optional(),
+  })
+  .refine((body) => body.vehicleId !== undefined || (body.name !== undefined && body.facilityId !== undefined), {
+    message: 'Give a vehicleId, or a name and a facilityId',
+  });
 export const SetTeamMembersBody = z.object({ memberIds: z.array(publicId(IdPrefix.personnel)).max(12), leaderId: publicId(IdPrefix.personnel).nullable().optional() });
 export const SetTeamVehicleBody = z.object({ vehicleId: publicId(IdPrefix.vehicle).nullable() });
 export const TransferPersonnelBody = z.object({ facilityId: publicId(IdPrefix.facility) });
+
+/**
+ * GET /vehicles/:vehicleId/team-proposal — the crew the game would form for a vehicle: free operators of its facility (no team,
+ * AVAILABLE, not exhausted, of its service), picked with the same rules as a dispatch (required qualifications and roles first,
+ * then the most rested and competent) up to the vehicle's optimal crew. Read-only; `POST /teams { vehicleId }` forms it.
+ */
+export const TeamProposalDto = z.object({
+  vehicleId: publicId(IdPrefix.vehicle),
+  facilityId: publicId(IdPrefix.facility),
+  memberIds: z.array(publicId(IdPrefix.personnel)),
+  leaderId: publicId(IdPrefix.personnel).nullable(),
+  min: z.number().int(),
+  optimal: z.number().int(),
+  /** Free operators of the facility that could crew this vehicle (before the proposal takes its members). */
+  available: z.number().int(),
+  /** Free operators left in the facility for the vehicles WITHOUT a team once the proposal is formed (own service and shared roles). */
+  remainingFree: z.number().int(),
+  /** RECOMMENDED roles the proposed crew lacks (efficiency penalty). */
+  missingRoles: z.array(z.string()),
+  /** REQUIRED qualifications the proposed crew lacks: without them the team alone could not leave (the dispatch tops it up). */
+  missingQualifications: z.array(z.string()),
+  /** Efficiency of the proposed crew on this vehicle; 0 when it is under the minimum or lacks a REQUIRED qualification. */
+  efficiency: z.number(),
+  /** Set when the vehicle already has a team: there is nothing to propose (`memberIds` is empty). */
+  teamId: publicId(IdPrefix.team).nullable(),
+});
+export type TeamProposalDto = z.infer<typeof TeamProposalDto>;
+
+/**
+ * POST /teams/:teamId/transfer (Idempotency-Key). The team moves with its vehicle (same trip, same arrival: never sooner than an
+ * operator travelling alone); a team without a vehicle moves alone. `vehicle` is the vehicle that travelled (null without one).
+ */
+export const TransferTeamBody = z.object({ facilityId: publicId(IdPrefix.facility) });
+export const TransferTeamResult = z.object({ team: TeamDto, vehicle: VehicleDto.nullable(), facilities: z.array(FacilityDto) });
+export type TransferTeamResult = z.infer<typeof TransferTeamResult>;
 
 export const CourseDto = z.object({
   code: z.string(), name: I18nText, description: I18nText, family: ServiceFamily.nullable(),

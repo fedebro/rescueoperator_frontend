@@ -185,9 +185,18 @@ describe('deriveTeam', () => {
   it('is UNAVAILABLE without the required role, ON_MISSION while out, READY when complete', () => {
     const noDriver = deriveTeam(team, members.slice(1), APS, NOW);
     expect(noDriver.status).toBe('UNAVAILABLE');
+    // The warning codes are the backend's: a missing REQUIRED qualification is named, a missing role is not (dispatch only).
     expect(noDriver.warnings).toEqual(
-      expect.arrayContaining(['BELOW_MIN_CREW', 'MISSING_ROLE:DRIVER_OPERATOR']),
+      expect.arrayContaining(['BELOW_MIN_CREW', 'MISSING_QUALIFICATION:HEAVY_VEHICLE_LICENSE']),
     );
+    const tired = members.map((m, i) => (i === 1 ? { ...m, status: 'INJURED' as const } : m));
+    expect(deriveTeam(team, tired, APS, NOW).warnings).toEqual(
+      expect.arrayContaining(['MEMBER_UNAVAILABLE']),
+    );
+    const worn = members.map((m, i) =>
+      i === 2 ? { ...m, fatigue: { ...m.fatigue, value: 70, ratePerSecond: 0 } } : m,
+    );
+    expect(deriveTeam(team, worn, APS, NOW).warnings).toEqual(expect.arrayContaining(['MEMBER_FATIGUED']));
     const out = members.map((m) => ({ ...m, status: 'ON_MISSION' as const }));
     expect(deriveTeam(team, out, APS, NOW).status).toBe('ON_MISSION');
     const full = [...members, operator({ id: 'per_4' }), operator({ id: 'per_5' })];
@@ -387,12 +396,12 @@ describe('personnel domain', () => {
     w.domain.setTeamMembers(w.career, other.id, { memberIds: [driver.id] });
     const first = w.domain.teams(w.career).find((t) => t.id === team.id)!;
     expect(first.memberIds).not.toContain(driver.id);
-    expect(first.leaderId).toBeNull();
-    expect(first.warnings).toContain('MISSING_ROLE:DRIVER_OPERATOR');
+    // The leader is automatic: the stored one left, the most senior of the others takes the title (never a NO_LEADER warning).
+    expect(first.leaderId).not.toBeNull();
+    expect(first.memberIds).toContain(first.leaderId);
+    expect(first.warnings).not.toContain('NO_LEADER');
+    expect(first.warnings).toContain('MISSING_QUALIFICATION:HEAVY_VEHICLE_LICENSE');
     expect(w.domain.updateTeam(w.career, team.id, { name: 'Prima partenza' }).name).toBe('Prima partenza');
-    expect(() =>
-      w.domain.createDepartment(w.career, { name: 'Reparto', family: 'FIRE', facilityId: hq(w.career).id }),
-    ).toThrowError(expect.objectContaining({ code: 'LEVEL_TOO_LOW' }));
   });
 
   it('training: slots, eligibility, completion grants the qualification, cancel refunds half', () => {

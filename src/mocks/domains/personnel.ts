@@ -2,13 +2,13 @@ import type { z } from 'zod';
 import type {
   CandidateDto as CandidateSchema,
   CourseDto as CourseSchema,
-  DepartmentDto as DepartmentSchema,
   EnrollmentDto as EnrollmentSchema,
   FacilityDto,
   I18nText,
   PersonnelDto,
   ServiceFamily,
   TeamDto as TeamSchema,
+  TeamProposalDto as TeamProposalSchema,
   VehicleDto,
 } from '@/contracts';
 import generated from '../data/generated/catalog.json';
@@ -24,21 +24,23 @@ import {
   type MockVehicleType,
 } from '../data/catalog';
 import { PESCARA } from '../data/pescara';
+import { haversineMeters } from '@/lib/geo';
 import { MockError, iso, text, type MockCareer, type MockDispatchOption, type MockEngine } from '../engine';
 import { domainState } from './index';
 
 /**
  * Simulation of the `personnel` area (analisi/03 §5, Spec 09): individual operators with an ANCHORED fatigue value, crews drawn
- * automatically at dispatch, teams with a derived status, departments, quick hire + candidates market, training.
+ * automatically at dispatch, teams (the fixed crew of one vehicle: formed from the vehicle, dissolved, moved with it; derived
+ * status), quick hire + candidates market, training. Departments are retired, as in the backend.
  * No tick: every timer is a scheduled action (ONBOARDING_DONE / REST_DONE / TRAINING_DONE follow the binding conventions table,
  * TRANSFER_DONE / INJURY_RECOVERED / CANDIDATES_REFRESH are private to this module).
  */
 
 type CandidateDto = z.infer<typeof CandidateSchema>;
 type CourseDto = z.infer<typeof CourseSchema>;
-type DepartmentDto = z.infer<typeof DepartmentSchema>;
 type EnrollmentDto = z.infer<typeof EnrollmentSchema>;
 type TeamDto = z.infer<typeof TeamSchema>;
+type TeamProposalDto = z.infer<typeof TeamProposalSchema>;
 export type FatigueBand = PersonnelDto['fatigue']['band'];
 export type CrewBlock = 'CREW_INSUFFICIENT' | 'CREW_UNQUALIFIED' | 'CREW_EXHAUSTED';
 type LoadClass = 'ROUTINE' | 'MEDIUM' | 'HIGH' | 'EXTREME';
@@ -87,6 +89,9 @@ export const TEAM_MAX_MEMBERS = 12;
 export const BASE_TRAINING_SLOTS = 2;
 const TRAINING_SLOTS_PER_ROOM_LEVEL = 2;
 const TRANSFER_SECONDS = managerial(600);
+/** An operator's own trip between two facilities, as the backend's `personnelTravelSeconds`: 180 s + 20 s per km (min 30 s). */
+const TRAVEL_BASE_SECONDS = 180;
+const TRAVEL_SECONDS_PER_KM = 20;
 const CANCEL_REFUND_SHARE = 0.5;
 const HISTORY_LIMIT = 30;
 /** Injuries never hit a brand-new career: the first hours must stay friendly (analisi/05 §7). */
@@ -112,6 +117,7 @@ export interface MockTeam {
   id: string;
   name: string;
   facilityId: string;
+  /** Retired concept: always null (the contract keeps the field). */
   departmentId: string | null;
   vehicleId: string | null;
   leaderId: string | null;
@@ -121,7 +127,6 @@ export interface PersonnelState {
   seeded: boolean;
   people: MockOperator[];
   teams: MockTeam[];
-  departments: DepartmentDto[];
   candidates: CandidateDto[];
   nextRefreshAt: number;
   enrollments: EnrollmentDto[];
@@ -189,8 +194,8 @@ export function crewQuality(
 
 /**
  * Operators of `pool` (based at the vehicle's facility) that could be drafted now, best first: members of the vehicle's
- * own team, then free operators, last the ones assigned to another vehicle's team; within a rank the freshest, then the
- * most competent. Operators in the REST_REQUIRED band are left out (`exhausted`).
+ * own team, then the free ones; within a rank the freshest, then the most competent. Members of a team that holds ANOTHER
+ * vehicle are never drawn (the backend's reserved teams). Operators in the REST_REQUIRED band are left out (`exhausted`).
  */
 export function crewCandidates(
   type: MockVehicleType,
@@ -200,12 +205,12 @@ export function crewCandidates(
   const { now, ownTeam } = opts;
   const draftable = pool.filter(
     (op) =>
-      (op.status === 'AVAILABLE' || op.status === 'ASSIGNED') &&
+      (op.status === 'AVAILABLE' || (op.status === 'ASSIGNED' && ownTeam.has(op.id))) &&
       (op.family === type.family || ROLES.find((r) => r.code === op.roleCode)?.family === 'SHARED'),
   );
   const fit = draftable.filter((op) => bandOf(fatigueAt(op.fatigue, now)) !== 'REST_REQUIRED');
   const exhausted = draftable.filter((op) => !fit.includes(op));
-  const rank = (op: MockOperator) => (ownTeam.has(op.id) ? 0 : op.status === 'ASSIGNED' ? 2 : 1);
+  const rank = (op: MockOperator) => (ownTeam.has(op.id) ? 0 : 1);
   const ordered = [...fit].sort(
     (a, b) =>
       rank(a) - rank(b) ||
@@ -270,6 +275,25 @@ export function selectCrew(
 }
 
 /* ───────────── team status (derived, pure) ───────────── */
+/**
+ * The title of team leader is automatic (the backend's `seniorMember`): the TEAM_LEADER role, then competence, then
+ * experience (missions here), then the earliest hire.
+ */
+export function seniorMember<
+  T extends { id: string; roleCode: string; competence: number; missions: number },
+>(members: readonly T[]): T | undefined {
+  return [...members].sort(
+    (a, b) =>
+      Number(b.roleCode === 'TEAM_LEADER') - Number(a.roleCode === 'TEAM_LEADER') ||
+      b.competence - a.competence ||
+      b.missions - a.missions ||
+      a.id.localeCompare(b.id),
+  )[0];
+}
+
+/** Statuses that make a member unable to crew the vehicle now, apart from fatigue (the backend's MEMBER_UNAVAILABLE). */
+const OUT_OF_SERVICE = ['INJURED', 'TRAINING', 'TRANSFERRING', 'UNAVAILABLE', 'ONBOARDING'];
+
 export function deriveTeam(
   team: MockTeam,
   people: MockOperator[],
@@ -279,14 +303,10 @@ export function deriveTeam(
   const members = people.filter((op) => team.memberIds.includes(op.id));
   const warnings: string[] = [];
   if (members.length === 0) return { status: 'UNAVAILABLE', readiness: 0, warnings: ['NO_MEMBERS'] };
-  if (!team.leaderId) warnings.push('NO_LEADER');
   const band = (op: MockOperator) => bandOf(fatigueAt(op.fatigue, now));
   const ready = members.filter(
     (op) => (op.status === 'AVAILABLE' || op.status === 'ASSIGNED') && band(op) !== 'REST_REQUIRED',
   );
-  if (members.some((op) => op.status === 'INJURED')) warnings.push('INJURED_MEMBERS');
-  if (members.some((op) => band(op) === 'FATIGUED' || band(op) === 'REST_REQUIRED'))
-    warnings.push('FATIGUED_MEMBERS');
   const fatigueFactor =
     members.reduce((s, op) => s + P.fatigue.efficiencyByBand[band(op)], 0) / members.length;
 
@@ -304,13 +324,14 @@ export function deriveTeam(
     requirementFactor = required === 0 ? 1 : (required - selection.missing.length) / required;
     headcount = Math.min(1, selection.crew.length / vehicleType.crewOptimal);
     crewable = selection.blocked === null;
+    // The team state names missing QUALIFICATIONS only (a missing role is a dispatch warning, as in the backend).
+    for (const code of selection.missingQualifications) warnings.push(`MISSING_QUALIFICATION:${code}`);
     if (selection.crew.length < vehicleType.crewMin) warnings.push('BELOW_MIN_CREW');
     else if (selection.crew.length < vehicleType.crewOptimal) warnings.push('BELOW_OPTIMAL_CREW');
-    for (const code of selection.missing)
-      warnings.push(
-        `${ROLES.some((r) => r.code === code) ? 'MISSING_ROLE' : 'MISSING_QUALIFICATION'}:${code}`,
-      );
   }
+  if (members.some((op) => band(op) === 'FATIGUED' || band(op) === 'REST_REQUIRED'))
+    warnings.push('MEMBER_FATIGUED');
+  if (members.some((op) => OUT_OF_SERVICE.includes(op.status))) warnings.push('MEMBER_UNAVAILABLE');
   const readiness = Math.round(Math.max(0, headcount * requirementFactor * fatigueFactor) * 100) / 100;
   const status: TeamDto['status'] = members.some((op) => op.status === 'ON_MISSION')
     ? 'ON_MISSION'
@@ -350,12 +371,28 @@ export interface PersonnelDomain {
   candidates(career: MockCareer): { candidates: CandidateDto[]; nextRefreshAt: string };
   hireCandidate(career: MockCareer, id: string, facilityId: unknown): PersonnelDto;
   teams(career: MockCareer): TeamDto[];
+  /** `{ vehicleId }`: the guided path (that vehicle's team, recommended crew unless `memberIds`); `{ name, facilityId }`: an empty team. */
   createTeam(career: MockCareer, body: Record<string, unknown>): TeamDto;
   updateTeam(career: MockCareer, id: string, body: Record<string, unknown>): TeamDto;
   setTeamMembers(career: MockCareer, id: string, body: Record<string, unknown>): TeamDto;
   setTeamVehicle(career: MockCareer, id: string, vehicleId: unknown): TeamDto;
-  departments(career: MockCareer): DepartmentDto[];
-  createDepartment(career: MockCareer, body: Record<string, unknown>): DepartmentDto;
+  /** GET /vehicles/:id/team-proposal. */
+  teamProposal(career: MockCareer, vehicleId: string): TeamProposalDto;
+  /** DELETE /teams/:id — allowed whatever the team is doing. */
+  disbandTeam(career: MockCareer, id: string): void;
+  /**
+   * POST /teams/:id/transfer. A team with a vehicle moves through `moveVehicle` (the vehicle transfer of the facilities area,
+   * which takes the team along through the engine hook); a team without one travels by itself.
+   */
+  transferTeam(
+    career: MockCareer,
+    id: string,
+    facilityId: unknown,
+    moveVehicle: (
+      vehicleId: string,
+      facilityId: string,
+    ) => { vehicle: VehicleDto; facilities: FacilityDto[] },
+  ): { team: TeamDto; vehicle: VehicleDto | null; facilities: FacilityDto[] };
   training(career: MockCareer): {
     courses: CourseDto[];
     enrollments: EnrollmentDto[];
@@ -476,7 +513,6 @@ export function installPersonnel(engine: MockEngine): void {
       seeded: false,
       people: [],
       teams: [],
-      departments: [],
       candidates: [],
       nextRefreshAt: 0,
       enrollments: [],
@@ -843,11 +879,23 @@ export function installPersonnel(engine: MockEngine): void {
     return toDto(op);
   }
 
-  /* ── teams & departments ── */
+  /* ── teams ── */
   const teamDto = (career: MockCareer, team: MockTeam): TeamDto => {
     const vehicle = career.vehicles.find((v) => v.id === team.vehicleId);
     const type = vehicle ? (VEHICLE_TYPES.find((t) => t.code === vehicle.typeCode) ?? null) : null;
-    return { ...team, ...deriveTeam(team, state(career).people, type, engine.now()) };
+    const people = state(career).people;
+    const members = people.filter((op) => team.memberIds.includes(op.id));
+    // The leader is a title, never a chore: the stored one while he is a member, otherwise the most senior member.
+    const leader = members.find((op) => op.id === team.leaderId) ?? seniorMember(members);
+    const travelling = members
+      .filter((op) => op.status === 'TRANSFERRING' && op.busyUntil !== null)
+      .map((op) => Date.parse(op.busyUntil!));
+    return {
+      ...team,
+      leaderId: leader?.id ?? null,
+      ...deriveTeam(team, people, type, engine.now()),
+      transferUntil: travelling.length > 0 ? iso(Math.max(...travelling)) : null,
+    };
   };
   const teamOf = (career: MockCareer, id: string): MockTeam => {
     const team = state(career).teams.find((t) => t.id === id);
@@ -860,54 +908,187 @@ export function installPersonnel(engine: MockEngine): void {
       throw new MockError(422, 'VALIDATION_ERROR', 'Invalid name', { fields: ['name'] });
     return name;
   };
-  const departmentIdOf = (career: MockCareer, value: unknown, facilityId: string): string | null => {
-    if (value === null || value === undefined) return null;
-    requireFeature(career, 'DEPARTMENTS');
-    const department = state(career).departments.find((d) => d.id === value);
-    if (!department || department.facilityId !== facilityId)
-      throw new MockError(422, 'VALIDATION_ERROR', 'Department does not belong to this facility', {
-        fields: ['departmentId'],
+  const membersOf = (career: MockCareer, team: MockTeam): MockOperator[] =>
+    state(career).people.filter((op) => team.memberIds.includes(op.id));
+  const assertNotTravelling = (career: MockCareer, team: MockTeam): void => {
+    if (membersOf(career, team).some((op) => op.status === 'TRANSFERRING'))
+      throw new MockError(409, 'CONFLICT', 'The team is travelling to another facility', {
+        reason: 'TEAM_IN_TRANSIT',
       });
-    return department.id;
   };
+
+  /**
+   * The crew the game would form for a vehicle (the backend's `crewProposal`): the free operators of its facility — AVAILABLE,
+   * no team, of its service — drawn with the dispatch rules up to the optimal crew.
+   */
+  function crewProposal(career: MockCareer, vehicle: VehicleDto) {
+    const type = VEHICLE_TYPES.find((t) => t.code === vehicle.typeCode);
+    const now = engine.now();
+    const free = state(career).people.filter(
+      (op) =>
+        op.facilityId === vehicle.facilityId &&
+        op.status === 'AVAILABLE' &&
+        op.teamId === null &&
+        (op.family === vehicle.family || ROLES.find((r) => r.code === op.roleCode)?.family === 'SHARED'),
+    );
+    const fit = free.filter((op) => bandOf(fatigueAt(op.fatigue, now)) !== 'REST_REQUIRED');
+    if (!type)
+      return {
+        crew: [] as MockOperator[],
+        available: fit.length,
+        remainingFree: fit.length,
+        min: 0,
+        optimal: 0,
+        selection: null,
+      };
+    const selection = selectCrew(type, free, { now, ownTeam: new Set(), target: 'OPTIMAL' });
+    return {
+      crew: selection.crew,
+      available: fit.length,
+      remainingFree: Math.max(0, fit.length - selection.crew.length),
+      min: type.crewMin,
+      optimal: type.crewOptimal,
+      selection,
+    };
+  }
+  function teamProposal(career: MockCareer, vehicleId: string): TeamProposalDto {
+    const vehicle = career.vehicles.find((v) => v.id === vehicleId);
+    if (!vehicle) throw new MockError(404, 'NOT_FOUND', 'Vehicle not found');
+    const base = { vehicleId: vehicle.id, facilityId: vehicle.facilityId };
+    const existing = state(career).teams.find((t) => t.vehicleId === vehicle.id);
+    const proposal = crewProposal(career, vehicle);
+    if (existing)
+      return {
+        ...base,
+        memberIds: [],
+        leaderId: null,
+        min: proposal.min,
+        optimal: proposal.optimal,
+        available: 0,
+        remainingFree: 0,
+        missingRoles: [],
+        missingQualifications: [],
+        efficiency: 0,
+        teamId: existing.id,
+      };
+    return {
+      ...base,
+      memberIds: proposal.crew.map((op) => op.id),
+      leaderId: seniorMember(proposal.crew)?.id ?? null,
+      min: proposal.min,
+      optimal: proposal.optimal,
+      available: proposal.available,
+      remainingFree: proposal.remainingFree,
+      missingRoles: proposal.selection?.missingRoles ?? [],
+      missingQualifications: proposal.selection?.missingQualifications ?? [],
+      // Under the minimum or lacking a REQUIRED qualification the crew alone could not leave: the backend says 0.
+      efficiency: !proposal.selection || proposal.selection.blocked ? 0 : proposal.selection.efficiency,
+      teamId: null,
+    };
+  }
+
+  /** A member list inside the limits of the backend: known operators of this facility, at most `TEAM_MAX_MEMBERS`. */
+  const resolveMembers = (career: MockCareer, value: unknown, facilityId: string): MockOperator[] => {
+    const ids = Array.isArray(value) ? [...new Set(value.map(String))] : null;
+    if (!ids || ids.length > TEAM_MAX_MEMBERS)
+      throw new MockError(422, 'VALIDATION_ERROR', `A team has at most ${TEAM_MAX_MEMBERS} members`, {
+        fields: ['memberIds'],
+      });
+    const members = ids.map((memberId) => operator(career, memberId));
+    if (members.some((op) => op.facilityId !== facilityId || op.status === 'TRANSFERRING'))
+      throw new MockError(422, 'VALIDATION_ERROR', 'Members must be based at the facility of the team', {
+        fields: ['memberIds'],
+      });
+    return members;
+  };
+  /** Makes `members` the members of `team` (one team per operator: joining here leaves the other one). */
+  const putMembers = (career: MockCareer, team: MockTeam, members: MockOperator[]): void => {
+    const s = state(career);
+    const ids = members.map((op) => op.id);
+    for (const op of s.people.filter((x) => x.teamId === team.id && !ids.includes(x.id))) op.teamId = null;
+    for (const op of members) {
+      if (op.teamId !== team.id) {
+        leaveTeam(career, op);
+        remember(op, 'TEAM_JOINED', { team: team.name });
+      }
+      op.teamId = team.id;
+    }
+    team.memberIds = ids;
+  };
+
   function createTeam(career: MockCareer, body: Record<string, unknown>): TeamDto {
     requireFeature(career, 'TEAMS');
+    const s = state(career);
+    if (typeof body.vehicleId === 'string') {
+      const vehicle = career.vehicles.find((v) => v.id === body.vehicleId);
+      if (!vehicle) throw new MockError(404, 'NOT_FOUND', 'Vehicle not found');
+      if (body.facilityId !== undefined && body.facilityId !== vehicle.facilityId)
+        throw new MockError(422, 'VALIDATION_ERROR', 'The vehicle is not stationed at that facility');
+      const existing = s.teams.find((t) => t.vehicleId === vehicle.id);
+      if (existing)
+        throw new MockError(409, 'CONFLICT', 'This vehicle already has a team', {
+          reason: 'VEHICLE_HAS_TEAM',
+          teamId: existing.id,
+        });
+      let members: MockOperator[];
+      if (body.memberIds !== undefined) members = resolveMembers(career, body.memberIds, vehicle.facilityId);
+      else {
+        const proposal = crewProposal(career, vehicle);
+        if (proposal.crew.length === 0)
+          throw new MockError(
+            409,
+            'CREW_INSUFFICIENT',
+            'No free operator can form the team of this vehicle',
+            {
+              vehicleId: vehicle.id,
+              available: proposal.available,
+              min: proposal.min,
+            },
+          );
+        members = proposal.crew;
+      }
+      const given =
+        typeof body.name === 'string' && body.name.trim() !== '' ? validName(body.name, 40) : null;
+      const team: MockTeam = {
+        id: engine.id('tem'),
+        name: given ?? vehicle.callSign.slice(0, 40),
+        facilityId: vehicle.facilityId,
+        departmentId: null,
+        vehicleId: vehicle.id,
+        leaderId: seniorMember(members)?.id ?? null,
+        memberIds: [],
+      };
+      s.teams.push(team);
+      putMembers(career, team, members);
+      publish(career);
+      return teamDto(career, team);
+    }
     const facility = facilityOf(career, body.facilityId);
     const team: MockTeam = {
       id: engine.id('tem'),
       name: validName(body.name, 40),
       facilityId: facility.id,
-      departmentId: departmentIdOf(career, body.departmentId, facility.id),
+      departmentId: null,
       vehicleId: null,
       leaderId: null,
       memberIds: [],
     };
-    state(career).teams.push(team);
+    s.teams.push(team);
     publish(career);
     return teamDto(career, team);
   }
   function updateTeam(career: MockCareer, id: string, body: Record<string, unknown>): TeamDto {
     const team = teamOf(career, id);
     if (body.name !== undefined) team.name = validName(body.name, 40);
-    if (body.departmentId !== undefined)
-      team.departmentId = departmentIdOf(career, body.departmentId, team.facilityId);
     publish(career);
     return teamDto(career, team);
   }
   function setTeamMembers(career: MockCareer, id: string, body: Record<string, unknown>): TeamDto {
     requireFeature(career, 'TEAMS');
-    const s = state(career);
     const team = teamOf(career, id);
-    const ids = Array.isArray(body.memberIds) ? [...new Set(body.memberIds.map(String))] : null;
-    if (!ids || ids.length > TEAM_MAX_MEMBERS)
-      throw new MockError(422, 'VALIDATION_ERROR', `A team has at most ${TEAM_MAX_MEMBERS} members`, {
-        fields: ['memberIds'],
-      });
-    const members = ids.map((memberId) => operator(career, memberId));
-    if (members.some((op) => op.facilityId !== team.facilityId || op.status === 'TRANSFERRING'))
-      throw new MockError(422, 'VALIDATION_ERROR', 'Members must be based at the facility of the team', {
-        fields: ['memberIds'],
-      });
+    assertNotTravelling(career, team);
+    const members = resolveMembers(career, body.memberIds, team.facilityId);
+    const ids = members.map((op) => op.id);
     const leaderId =
       body.leaderId === undefined
         ? ids.includes(team.leaderId ?? '')
@@ -920,15 +1101,7 @@ export function installPersonnel(engine: MockEngine): void {
       throw new MockError(422, 'VALIDATION_ERROR', 'The leader must be a member of the team', {
         fields: ['leaderId'],
       });
-    for (const op of s.people.filter((x) => x.teamId === team.id && !ids.includes(x.id))) op.teamId = null;
-    for (const op of members) {
-      if (op.teamId !== team.id) {
-        leaveTeam(career, op);
-        remember(op, 'TEAM_JOINED', { team: team.name });
-      }
-      op.teamId = team.id;
-    }
-    team.memberIds = ids;
+    putMembers(career, team, members);
     team.leaderId = leaderId;
     publish(career);
     return teamDto(career, team);
@@ -936,6 +1109,7 @@ export function installPersonnel(engine: MockEngine): void {
   function setTeamVehicle(career: MockCareer, id: string, vehicleId: unknown): TeamDto {
     requireFeature(career, 'TEAMS');
     const team = teamOf(career, id);
+    assertNotTravelling(career, team);
     if (vehicleId === null || vehicleId === undefined) team.vehicleId = null;
     else {
       const vehicle = career.vehicles.find((v) => v.id === vehicleId);
@@ -951,24 +1125,127 @@ export function installPersonnel(engine: MockEngine): void {
     publish(career);
     return teamDto(career, team);
   }
-  function createDepartment(career: MockCareer, body: Record<string, unknown>): DepartmentDto {
-    requireFeature(career, 'DEPARTMENTS');
-    const facility = facilityOf(career, body.facilityId);
-    const family = String(body.family) as ServiceFamily;
-    if (!career.summary.unlockedFamilies.includes(family))
-      throw new MockError(422, 'NOT_UNLOCKED', 'Family not unlocked', {
-        requiredLevel: resolvedFamilyLevel(family),
-      });
-    const department: DepartmentDto = {
-      id: engine.id('dep'),
-      name: validName(body.name, 40),
-      family,
-      facilityId: facility.id,
-    };
-    state(career).departments.push(department);
+  /**
+   * Dissolves the team: its operators stay on the roster, free again; the vehicle stays where it is, back to the automatic
+   * crew. Allowed at any time — members on a mission finish it and come back free, travelling ones arrive free.
+   */
+  function disbandTeam(career: MockCareer, id: string): void {
+    const s = state(career);
+    const team = teamOf(career, id);
+    for (const op of s.people.filter((x) => x.teamId === team.id)) op.teamId = null;
+    s.teams = s.teams.filter((t) => t.id !== team.id);
     publish(career);
-    return department;
   }
+
+  /** The operators' own trip between two facilities (managerial time, like every transfer of this module). */
+  const travelSeconds = (from: FacilityDto | undefined, to: FacilityDto): number =>
+    managerial(
+      Math.max(
+        30,
+        TRAVEL_BASE_SECONDS +
+          (from ? haversineMeters(from.position, to.position) / 1000 : 0) * TRAVEL_SECONDS_PER_KM,
+      ),
+    );
+  /**
+   * What stops a team from travelling (the backend's checks inside `sendMembers`): it travels already, nobody in it can leave
+   * (a team with members), or the destination has no beds for the operators that can. Nothing is changed here.
+   */
+  function assertCanTravel(career: MockCareer, team: MockTeam, target: FacilityDto): MockOperator[] {
+    assertNotTravelling(career, team);
+    const people = membersOf(career, team);
+    const travellers = people.filter(idle);
+    if (people.length > 0 && travellers.length === 0)
+      throw new MockError(409, 'CONFLICT', 'Nobody in the team can travel right now', {
+        reason: 'TEAM_NOT_READY',
+        members: people.map((op) => ({ personnelId: op.id, status: op.status })),
+      });
+    const row = target.capacities.find((c) => c.domain === 'PERSONNEL');
+    const used = state(career).people.filter((op) => op.facilityId === target.id).length;
+    if (!row || row.total - used < travellers.length)
+      throw new MockError(409, 'CAPACITY_EXCEEDED', 'No room for more operators in this facility', {
+        reason: 'NO_BEDS',
+        domain: 'PERSONNEL',
+        total: row?.total ?? 0,
+        used,
+        needed: travellers.length,
+      });
+    return travellers;
+  }
+  /**
+   * Sends the operators of a team that can travel (AVAILABLE / ASSIGNED) to `target`, arriving together after `seconds`; the
+   * beds move at once. Whoever cannot travel stays and leaves the team.
+   */
+  function sendMembers(career: MockCareer, team: MockTeam, target: FacilityDto, seconds: number): void {
+    const people = membersOf(career, team);
+    const travellers = assertCanTravel(career, team, target);
+    const until = engine.now() + engine.dur(seconds);
+    for (const op of travellers) {
+      // The bed at the destination is reserved from now on, so two transfers can never overbook it.
+      op.facilityId = target.id;
+      setStatus(op, 'TRANSFERRING', { reason: 'TRANSFER', until });
+      engine.schedule(career, 'TRANSFER_DONE', seconds, op.id);
+      remember(op, 'TEAM_TRANSFER_STARTED', { facility: target.name });
+    }
+    for (const op of people.filter((x) => !travellers.includes(x))) {
+      op.teamId = null;
+      team.memberIds = team.memberIds.filter((id) => id !== op.id);
+    }
+    if (team.leaderId !== null && !team.memberIds.includes(team.leaderId)) team.leaderId = null;
+    team.facilityId = target.id;
+  }
+  function transferTeam(
+    career: MockCareer,
+    id: string,
+    facilityId: unknown,
+    moveVehicle: (
+      vehicleId: string,
+      facilityId: string,
+    ) => { vehicle: VehicleDto; facilities: FacilityDto[] },
+  ): { team: TeamDto; vehicle: VehicleDto | null; facilities: FacilityDto[] } {
+    const team = teamOf(career, id);
+    const target = facilityOf(career, facilityId);
+    if (target.id === team.facilityId)
+      throw new MockError(422, 'VALIDATION_ERROR', 'The team is already stationed there');
+    if (target.status !== 'OPERATIONAL')
+      throw new MockError(409, 'CAPACITY_EXCEEDED', 'The destination is not operational yet', {
+        reason: 'FACILITY_NOT_OPERATIONAL',
+      });
+    assertNotTravelling(career, team);
+    if (team.vehicleId) {
+      // One trip: the vehicle transfer takes the team along (engine hook `vehicleTransfer`), arriving together.
+      const moved = moveVehicle(team.vehicleId, target.id);
+      return { team: teamDto(career, team), vehicle: moved.vehicle, facilities: career.facilities };
+    }
+    const from = career.facilities.find((f) => f.id === team.facilityId);
+    sendMembers(career, team, target, travelSeconds(from, target));
+    publish(career);
+    return { team: teamDto(career, team), vehicle: null, facilities: career.facilities };
+  }
+
+  // A vehicle re-based by `POST /vehicles/:id/transfer` takes its team along — or releases it (`withTeam: false`).
+  engine.hooks.vehicleTransfer.push({
+    travelSeconds: (career, vehicle, target) => {
+      const team = state(career).teams.find((t) => t.vehicleId === vehicle.id);
+      if (!team || team.memberIds.length === 0) return null;
+      return travelSeconds(
+        career.facilities.find((f) => f.id === vehicle.facilityId),
+        target,
+      );
+    },
+    check: (career, vehicle, target, withTeam) => {
+      const team = state(career).teams.find((t) => t.vehicleId === vehicle.id);
+      if (!team) return;
+      assertNotTravelling(career, team);
+      if (withTeam) assertCanTravel(career, team, target);
+    },
+    move: (career, vehicle, target, arriveInSeconds, withTeam) => {
+      const team = state(career).teams.find((t) => t.vehicleId === vehicle.id);
+      if (!team) return;
+      if (withTeam) sendMembers(career, team, target, arriveInSeconds);
+      else team.vehicleId = null;
+      publish(career);
+    },
+  });
 
   /* ── training ── */
   const trainingRoomLevel = (facility: FacilityDto): number =>
@@ -1368,8 +1645,9 @@ export function installPersonnel(engine: MockEngine): void {
     updateTeam,
     setTeamMembers,
     setTeamVehicle,
-    departments: (career) => state(career).departments,
-    createDepartment,
+    teamProposal,
+    disbandTeam,
+    transferTeam,
     training,
     enroll,
     cancelEnrollment,

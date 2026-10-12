@@ -6,6 +6,7 @@ import { installPersonnel } from './personnel';
 import { installMedical } from './medical';
 import { installLogistics } from './logistics';
 import { installAutonomy } from './autonomy';
+import { installDispatchChain } from './dispatch-chain';
 import { installMajor } from './major';
 import { installWorld } from './world';
 import { installMonetization } from './monetization';
@@ -40,6 +41,8 @@ export function installDomains(engine: MockEngine): void {
   installLogistics(engine);
   // Vehicle autonomy (D-22) reads the warehouses of the logistics domain: installed right after it.
   installAutonomy(engine);
+  // Mission chaining (redirect from the way home + the queue slot): reads crew, autonomy and maintenance — after them.
+  installDispatchChain(engine);
   // Major incidents (D-24 / D-69): their members are normal incidents of the core, so every other domain applies to them.
   installMajor(engine);
   installWorld(engine);

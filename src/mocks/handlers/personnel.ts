@@ -1,4 +1,5 @@
 import { http } from 'msw';
+import { transferVehicle } from '../domains/facilities';
 import { personnelDomain } from '../domains/personnel';
 import type { DomainHandlers } from './kit';
 
@@ -80,9 +81,34 @@ export const personnelHandlers: DomainHandlers = ({
       url(`${C}/teams`),
       route((ctx) => ok(domain().teams(careerOf(ctx)))),
     ),
+    // The guided formation: what the game would put on a vehicle (read-only).
+    http.get(
+      url(`${C}/vehicles/:vehicleId/team-proposal`),
+      route((ctx) => ok(domain().teamProposal(careerOf(ctx), id(ctx.params.vehicleId)))),
+    ),
     http.post(
       url(`${C}/teams`),
-      mutate((ctx, body) => domain().createTeam(careerOf(ctx), body)),
+      route((ctx, body) => {
+        const team = domain().createTeam(careerOf(ctx), body);
+        engine.save();
+        return ok(team, { status: 201 });
+      }),
+    ),
+    http.delete(
+      url(`${C}/teams/:teamId`),
+      route((ctx) => {
+        domain().disbandTeam(careerOf(ctx), id(ctx.params.teamId));
+        engine.save();
+        return noContent();
+      }),
+    ),
+    http.post(
+      url(`${C}/teams/:teamId/transfer`),
+      command((ctx, body, career) =>
+        domain().transferTeam(career, id(ctx.params.teamId), body.facilityId, (vehicleId, facilityId) =>
+          transferVehicle(engine, career, vehicleId, facilityId, true),
+        ),
+      ),
     ),
     http.patch(
       url(`${C}/teams/:teamId`),
@@ -95,15 +121,6 @@ export const personnelHandlers: DomainHandlers = ({
     http.put(
       url(`${C}/teams/:teamId/vehicle`),
       mutate((ctx, body) => domain().setTeamVehicle(careerOf(ctx), id(ctx.params.teamId), body.vehicleId)),
-    ),
-
-    http.get(
-      url(`${C}/departments`),
-      route((ctx) => ok(domain().departments(careerOf(ctx)))),
-    ),
-    http.post(
-      url(`${C}/departments`),
-      mutate((ctx, body) => domain().createDepartment(careerOf(ctx), body)),
     ),
 
     http.get(

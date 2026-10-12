@@ -280,12 +280,17 @@ export function promoteFacility(engine: MockEngine, career: MockCareer, facility
   return engine.facilityDetail(career, facilityId);
 }
 
-/** ★POST /vehicles/:id/transfer {facilityId} — re-bases an AVAILABLE vehicle; it is IN_DELIVERY while it drives over. */
+/**
+ * ★POST /vehicles/:id/transfer {facilityId, withTeam?} — re-bases an AVAILABLE vehicle; it is IN_DELIVERY while it drives over.
+ * The team bound to it travels along (arriving together, never sooner than an operator alone) unless `withTeam` is false: then
+ * it is released and stays (the backend's `ShopService.transferVehicle` + `VehicleTeamHooks`).
+ */
 export function transferVehicle(
   engine: MockEngine,
   career: MockCareer,
   vehicleId: string,
   facilityId: unknown,
+  withTeam = true,
 ): { vehicle: VehicleDto; facilities: FacilityDto[] } {
   const vehicle = career.vehicles.find((v) => v.id === vehicleId);
   const target = career.facilities.find((f) => f.id === facilityId);
@@ -299,6 +304,8 @@ export function transferVehicle(
   // Same gate as the shop (backend `assertBoatBase` + compatibility + room): a boat moves only to a Base nautica — the
   // (free) move of a boat still kept at a fire station included (D-68).
   engine.assertCanHost(type, target);
+  // The team that cannot follow (it travels already, nobody can leave, no beds) stops the whole trip before anything moves.
+  for (const hook of engine.hooks.vehicleTransfer) hook.check(career, vehicle, target, withTeam);
   const fromId = vehicle.facilityId;
   const shift = (f: FacilityDto, delta: number): FacilityDto => ({
     ...f,
@@ -318,7 +325,14 @@ export function transferVehicle(
     `transfer:${vehicle.id}`,
     vehicle.typeCode,
   );
-  const seconds = engine.travelSeconds(distanceMeters, vehicle.typeCode);
+  const driveSeconds = engine.travelSeconds(distanceMeters, vehicle.typeCode);
+  const teamSeconds = withTeam
+    ? engine.hooks.vehicleTransfer.reduce<number>(
+        (most, hook) => Math.max(most, hook.travelSeconds(career, vehicle, target) ?? 0),
+        0,
+      )
+    : 0;
+  const seconds = Math.max(driveSeconds, teamSeconds);
   const moved = engine.patchVehicle(career, vehicleId, {
     facilityId: target.id,
     position: engine.homePositionOf(target, vehicle.typeCode),
@@ -326,10 +340,13 @@ export function transferVehicle(
     busyUntil: iso(engine.now() + engine.dur(seconds)),
   })!;
   engine.schedule(career, 'VEHICLE_DELIVERED', seconds, vehicle.id);
+  // Beds and the team move with it (the personnel domain keeps its own books), then the client hears about everything.
+  for (const hook of engine.hooks.vehicleTransfer) hook.move(career, vehicle, target, seconds, withTeam);
   const facilities = career.facilities.filter((f) => f.id === fromId || f.id === target.id);
-  engine.emit(career, 'vehicle.updated', { vehicle: moved, facilities, transfer: true });
+  const settled = career.vehicles.find((v) => v.id === vehicleId) ?? moved;
+  engine.emit(career, 'vehicle.updated', { vehicle: settled, facilities, transfer: true });
   engine.save();
-  return { vehicle: moved, facilities };
+  return { vehicle: settled, facilities };
 }
 
 /** Boats kept at a facility that is not a Base nautica (grandfathered berths of a fire station, D-68 / studio 05 §2.4). */
@@ -385,6 +402,23 @@ export function installFacilities(engine: MockEngine): void {
       const detail = acquireFacility(engine, career, {
         siteId: siteId(engine, site),
         facilityTypeCode: 'NAUTICAL_BASE',
+      });
+      const ready = engine.findAction(career, ['FACILITY_READY'], detail.id);
+      if (ready) engine.completeNow(career, ready);
+      engine.save();
+      return detail.id;
+    },
+    /**
+     * Buys a second facility on a candidate site (default: a local fire station in the north) through the normal acquisition —
+     * credits, level gate — and finishes its construction at once. Returns the facility id.
+     */
+    buildStation: (siteKey = 'fire-north', typeCode = 'FIRE_LOCAL_STATION'): string => {
+      const career = engine.qa.career();
+      const site = CANDIDATE_SITES.find((s) => s.key === siteKey);
+      if (!site) throw new MockError(404, 'NOT_FOUND', 'Unknown site');
+      const detail = acquireFacility(engine, career, {
+        siteId: siteId(engine, site),
+        facilityTypeCode: typeCode,
       });
       const ready = engine.findAction(career, ['FACILITY_READY'], detail.id);
       if (ready) engine.completeNow(career, ready);

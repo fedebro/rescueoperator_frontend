@@ -150,7 +150,9 @@ test('search, the card of an alliance and a one-tap join into an open one', asyn
   await expect(page.getByTestId('alliance-section')).toBeVisible();
   await expect(page.getByTestId('alliance-overview')).toContainText(`Marsica ${suffix}`);
   await expect(page.getByTestId('alliance-overview')).toContainText('Membro');
-  // The nav shows the alliance; the badge stays off (nothing unread).
+  // The nav shows the alliance. A new member may find one unread announcement (the week's objectives, posted when the week turns:
+  // on a Monday it is there at once), so the check is that reading the board clears the badge — not that it is never shown.
+  await page.getByTestId('alliance-tab-board').click();
   if (isMobile(page)) await expect(page.getByTestId('nav-badge-more')).toHaveCount(0);
   else await expect(page.getByTestId('nav-badge-alliance')).toHaveCount(0);
 });

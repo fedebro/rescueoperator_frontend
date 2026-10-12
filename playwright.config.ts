@@ -34,7 +34,9 @@ export default defineConfig({
       name: 'iphone',
       use: { ...devices['iPhone 14'] },
       // Alliances (D-123): the section lives under "Altro" and its chat screen handles the keyboard — phone-specific too.
-      testMatch: /(mobile-ux|core-loop|in-app-browsers|alliance[a-z-]*)\.spec\.ts$/,
+      // Sending a busy vehicle (confirmation sheet, rows at 360 px) lives on the phone as much as on the desktop.
+      // Teams (squadre): dialogs are bottom sheets on a phone, opened from the vehicle sheet — WebKit covers them as well.
+      testMatch: /(mobile-ux|core-loop|in-app-browsers|dispatch-chain|alliance[a-z-]*|squadre)\.spec\.ts$/,
     },
   ],
   webServer: {

@@ -2,7 +2,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { AlertTriangle, BedDouble, Gauge, UserPlus, Users } from 'lucide-react';
+import { AlertTriangle, BedDouble, Gauge, Trash2, UserPlus, Users } from 'lucide-react';
 import type { FacilityDto, VehicleDto } from '@/contracts';
 import type { DispatchOptionsResult } from '@/lib/api/types';
 import { formatClock } from '@/lib/format';
@@ -15,6 +15,7 @@ import { WarningNextAction } from '@/features/coaching/warning-next-action';
 import { FatigueBandLabel } from './fatigue-gauge';
 import { PersonnelStatusChip, TeamStatusChip } from './status';
 import { useFeature, usePersonnel, useTeams } from './queries';
+import { DisbandTeamDialog, FormTeamDialog } from './team-actions';
 import { useTeamWarning } from './teams-tab';
 
 type DispatchOptionRow = DispatchOptionsResult['options'][number];
@@ -34,13 +35,21 @@ function useRequirementName(): (code: string) => string {
   );
 }
 
-/** SLOT — crew of a vehicle (numbers, assigned team with readiness and members) in the vehicle inspector. */
+/**
+ * SLOT — crew of a vehicle (numbers, assigned team with readiness and members) in the vehicle inspector. The two things a
+ * player wants from here: form the vehicle's team (one tap, the game proposes the crew) or dissolve it. Moving it to
+ * another facility is the transfer button right below (the team travels with the vehicle).
+ */
 export function VehicleCrewSection({ vehicle }: { vehicle: VehicleDto }) {
   const t = useTranslations('personnel.crew');
+  const tt = useTranslations('personnel.teams');
   const name = useCatalogName();
   const warningText = useTeamWarning();
-  const teams = useTeams(useFeature('TEAMS').unlocked).data;
+  const teamsFeature = useFeature('TEAMS');
+  const teams = useTeams(teamsFeature.unlocked).data;
   const people = usePersonnel().data;
+  const [forming, setForming] = React.useState(false);
+  const [disbanding, setDisbanding] = React.useState(false);
   const team = teams?.find((x) => x.vehicleId === vehicle.id);
   const members = team ? (people ?? []).filter((p) => team.memberIds.includes(p.id)) : [];
   const { min, optimal, assigned } = vehicle.crew;
@@ -104,10 +113,43 @@ export function VehicleCrewSection({ vehicle }: { vehicle: VehicleDto }) {
               </li>
             ))}
           </ul>
+          <div className="flex flex-wrap gap-2 pt-1">
+            <Button asChild size="sm" variant="secondary">
+              <Link href={`/game/personnel?tab=teams&team=${team.id}`} data-testid="vehicle-team-manage">
+                <Users className="size-4" aria-hidden />
+                {tt('manageTeam')}
+              </Link>
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setDisbanding(true)}
+              data-testid="vehicle-team-disband"
+            >
+              <Trash2 className="size-4" aria-hidden />
+              {tt('disband')}
+            </Button>
+          </div>
         </div>
       ) : (
-        <p className="text-subtle mt-1 text-xs">{t('autoCrew')}</p>
+        <div className="mt-1 flex flex-col gap-2">
+          <p className="text-subtle text-xs">{t('autoCrew')}</p>
+          {teamsFeature.unlocked && vehicle.crew.optimal > 0 ? (
+            <Button
+              size="sm"
+              variant="secondary"
+              className="self-start"
+              onClick={() => setForming(true)}
+              data-testid="vehicle-form-team"
+            >
+              <Users className="size-4" aria-hidden />
+              {tt('formTeam')}
+            </Button>
+          ) : null}
+        </div>
       )}
+      <FormTeamDialog vehicle={forming ? vehicle : null} onClose={() => setForming(false)} />
+      <DisbandTeamDialog team={disbanding ? (team ?? null) : null} onClose={() => setDisbanding(false)} />
     </div>
   );
 }

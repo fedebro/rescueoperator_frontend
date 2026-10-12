@@ -1,9 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as React from 'react';
 import { qk } from '@/lib/api/query-keys';
 import { ApiClientError } from '@/lib/api/errors';
+import { useToastStore } from '@/stores/toast';
 import { renderWithIntl } from '@/test/render';
 import { CareerProvider } from '@/features/game/hooks';
 import { gameApi } from '@/lib/api/endpoints';
@@ -17,6 +18,8 @@ vi.mock('@/lib/api/endpoints', () => ({
     catalog: vi.fn(),
     dispatchOptions: vi.fn(),
     dispatch: vi.fn(),
+    chainVehicle: vi.fn(),
+    cancelChain: vi.fn(),
     tutorialAdvance: vi.fn(),
   },
 }));
@@ -249,6 +252,7 @@ describe('DispatchPanel — vehicle autonomy', () => {
     status: 'RESTOCKING',
   };
   const chain = (patch: Record<string, unknown>) => ({
+    vehicleStatus: 'RETURNING',
     queuedIncidentId: null,
     redirectEligible: false,
     blockedReason: null,
@@ -286,7 +290,7 @@ describe('DispatchPanel — vehicle autonomy', () => {
           vehicleId: restocking.id,
           dispatchable: false,
           blockedReason: 'VEHICLE_NOT_AVAILABLE',
-          chain: chain({ blockedReason: 'VEHICLE_RESTOCKING' }),
+          chain: chain({ vehicleStatus: 'RESTOCKING', blockedReason: 'VEHICLE_RESTOCKING' }),
         },
       ],
       recommendedVehicleIds: [vehicle.id],
@@ -299,6 +303,7 @@ describe('DispatchPanel — vehicle autonomy', () => {
     const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     qc.setQueryData(qk.sync(CAREER_ID), {
       vehicles: [vehicle, returning, restocking],
+      incidents: [],
       facilities: [facility],
     });
     renderWithIntl(
@@ -375,6 +380,7 @@ describe('DispatchPanel — water incidents', () => {
           blockedReason: 'VEHICLE_NOT_AVAILABLE',
           destination: 'SCENE',
           chain: {
+            vehicleStatus: 'RETURNING',
             queuedIncidentId: null,
             redirectEligible: false,
             blockedReason: 'BOAT_NEEDS_BASE',
@@ -392,7 +398,11 @@ describe('DispatchPanel — water incidents', () => {
 
   it('explains the gate in water words, queues a returning boat and shows each destination', async () => {
     const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    qc.setQueryData(qk.sync(CAREER_ID), { vehicles: [vehicle, tanker, boat], facilities: [facility] });
+    qc.setQueryData(qk.sync(CAREER_ID), {
+      vehicles: [vehicle, tanker, boat],
+      incidents: [],
+      facilities: [facility],
+    });
     renderWithIntl(
       <QueryClientProvider client={qc}>
         <CareerProvider value={CAREER_ID}>
@@ -602,5 +612,399 @@ describe('DispatchPanel — major incidents, aircraft, mass-casualty vehicles', 
       'Trasporta fino a 4 pazienti per viaggio',
     );
     expect(screen.getByTestId('dispatch-field-post')).toHaveTextContent('non trasporta');
+  });
+});
+
+/**
+ * Sending a vehicle that is not free (owner, 2026-10-12): the row names the vehicle in full and says which mission it is on
+ * (never a name cut to "…" next to an action), the queue is confirmed with the mission and the estimate, a vehicle called back
+ * from this emergency can be sent back to it, and a redirect that cannot happen says why.
+ */
+describe('DispatchPanel — vehicles on a mission', () => {
+  const LONG_NAME = 'Autopompa serbatoio Centrale Nord 12';
+  const other = {
+    id: 'inc_01HZZZZZZZZZZZZZZZZZZZZZY9',
+    title: { key: 'incident.test.title', params: { fallback: 'Incendio cassonetto' } },
+    address: 'Via Roma 12, Pescara',
+    placeText: null,
+    status: 'ON_SCENE',
+  };
+  const busyVehicle = {
+    ...vehicle,
+    id: 'veh_01HZZZZZZZZZZZZZZZZZZZZZB1',
+    callSign: LONG_NAME,
+    status: 'ON_SCENE',
+  };
+  const FREE_AT = '2099-01-01T10:00:00.000Z';
+  const ARRIVE_AT = '2099-01-01T10:05:00.000Z';
+  const chain = (patch: Record<string, unknown> = {}) => ({
+    vehicleStatus: 'ON_SCENE',
+    redirectEligible: false,
+    blockedReason: 'VEHICLE_NOT_RETURNING',
+    queueable: true,
+    availableAt: null,
+    crew: null,
+    fuelStop: null,
+    queuedIncidentId: null,
+    currentIncidentId: other.id,
+    stockLow: [],
+    estimate: {
+      freeAt: FREE_AT,
+      arriveAt: ARRIVE_AT,
+      basis: 'WORK_END',
+      approximate: true,
+      incidentExpiresAt: null,
+      afterExpiry: false,
+    },
+    ...patch,
+  });
+  const busyOption = (patch: Record<string, unknown> = {}, chainPatch: Record<string, unknown> = {}) => ({
+    ...dispatchableOption,
+    vehicleId: busyVehicle.id,
+    dispatchable: false,
+    blockedReason: 'VEHICLE_NOT_AVAILABLE',
+    etaSeconds: 185,
+    distanceMeters: 2400,
+    chain: chain(chainPatch),
+    ...patch,
+  });
+
+  function renderBusy(opts: { options: unknown[]; vehicles?: unknown[]; incidents?: unknown[] }) {
+    vi.mocked(gameApi.dispatchOptions).mockResolvedValue({
+      options: [dispatchableOption, ...opts.options],
+      recommendedVehicleIds: [],
+      recommendationCoversRequired: true,
+    } as never);
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    qc.setQueryData(qk.sync(CAREER_ID), {
+      vehicles: opts.vehicles ?? [vehicle, busyVehicle],
+      incidents: opts.incidents ?? [other],
+      facilities: [facility],
+      career: { timezone: 'Europe/Rome' },
+    });
+    return renderWithIntl(
+      <QueryClientProvider client={qc}>
+        <CareerProvider value={CAREER_ID}>
+          <DispatchPanel incident={incident as never} />
+        </CareerProvider>
+      </QueryClientProvider>,
+    );
+  }
+  const row = async (callSign: string) =>
+    (await screen.findAllByTestId('dispatch-option')).find((li) => li.textContent?.includes(callSign))!;
+
+  beforeEach(() => {
+    useToastStore.setState({ toasts: [] });
+    vi.mocked(gameApi.catalog).mockResolvedValue({ vehicleTypes: [] } as never);
+    vi.mocked(gameApi.chainVehicle).mockResolvedValue({
+      mode: 'REDIRECTED',
+      vehicle: { callSign: LONG_NAME },
+    } as never);
+    vi.mocked(gameApi.cancelChain).mockResolvedValue({ callSign: LONG_NAME } as never);
+  });
+  afterEach(() => vi.clearAllMocks());
+
+  it('names the vehicle in full, says which mission it is on and what state it is in — no checkbox, no greyed-out text', async () => {
+    renderBusy({ options: [busyOption()] });
+    const li = await row(LONG_NAME);
+    expect(li).toHaveAttribute('data-busy', 'true');
+    // the full name, not a truncated one, and not dimmed
+    expect(within(li).getByTestId('dispatch-option-name')).toHaveTextContent(LONG_NAME);
+    expect(li.className).not.toMatch(/opacity|truncate/);
+    expect(within(li).getByTestId('dispatch-option-name').className).not.toContain('truncate');
+    expect(within(li).getByTestId('dispatch-option-busy')).toHaveTextContent('Impegnato');
+    const mission = within(li).getByTestId('chain-mission');
+    expect(mission).toHaveTextContent('Impegnato su:');
+    expect(mission).toHaveTextContent('Incendio cassonetto');
+    expect(mission).toHaveTextContent('Via Roma 12, Pescara');
+    expect(mission).toHaveTextContent('Sul posto');
+    // a busy vehicle is not a checkbox (the dispatchable one still is)
+    expect(within(li).queryByRole('checkbox')).toBeNull();
+    expect(screen.getByRole('checkbox', { name: /VF-1/ })).toBeInTheDocument();
+    // the reason and the way to the queue, full width below
+    expect(within(li).getByTestId('chain-reason')).toHaveAttribute('data-reason', 'VEHICLE_NOT_RETURNING');
+    expect(within(li).getByTestId('chain-queue')).toHaveTextContent('Metti in coda');
+  });
+
+  it('a vehicle on its way home from a call that is over still says where it comes from', async () => {
+    renderBusy({
+      options: [
+        busyOption(
+          {},
+          { vehicleStatus: 'RETURNING', blockedReason: 'CREW_EXHAUSTED', currentIncidentId: 'inc_gone' },
+        ),
+      ],
+      incidents: [],
+    });
+    const li = await row(LONG_NAME);
+    expect(within(li).getByTestId('chain-mission')).toHaveTextContent('Rientra da un intervento concluso');
+    expect(within(li).getByTestId('chain-mission')).toHaveTextContent('In rientro');
+    // the reason says what to do: rest, and queue it
+    expect(within(li).getByTestId('chain-reason')).toHaveTextContent('Equipaggio troppo affaticato');
+    expect(within(li).getByTestId('chain-hint')).toHaveTextContent('Rientra e riposa');
+  });
+
+  it('a unit resupplying at base: no mission, a countdown to the end of its stop', async () => {
+    renderBusy({
+      options: [
+        busyOption(
+          {},
+          { vehicleStatus: 'RESTOCKING', blockedReason: 'VEHICLE_RESTOCKING', currentIncidentId: null },
+        ),
+      ],
+      vehicles: [vehicle, { ...busyVehicle, status: 'RESTOCKING', busyUntil: '2099-01-01T09:59:00.000Z' }],
+    });
+    const li = await row(LONG_NAME);
+    expect(within(li).getByTestId('chain-mission')).toHaveTextContent('Sta rifornendo in sede');
+    expect(within(li).getByTestId('chain-reason')).toHaveTextContent('Sta facendo rifornimento in sede');
+  });
+
+  it('the queue is confirmed: the vehicle, its mission, when it is free and would arrive — nothing is sent before', async () => {
+    renderBusy({ options: [busyOption()] });
+    fireEvent.click(within(await row(LONG_NAME)).getByTestId('chain-queue'));
+
+    const dialog = await screen.findByTestId('chain-confirm');
+    expect(dialog).toHaveTextContent(`Mettere in coda ${LONG_NAME}?`);
+    expect(within(dialog).getByTestId('chain-confirm-vehicle')).toHaveTextContent(LONG_NAME);
+    expect(within(dialog).getByTestId('chain-confirm-mission')).toHaveTextContent('Incendio cassonetto');
+    expect(within(dialog).getByTestId('chain-confirm-mission')).toHaveTextContent('Via Roma 12, Pescara');
+    expect(within(dialog).getByTestId('chain-confirm-mission')).toHaveTextContent('Sul posto');
+    expect(within(dialog).getByTestId('chain-confirm-free-at')).toHaveTextContent('Libero verso le 11:00');
+    expect(within(dialog).getByTestId('chain-confirm-arrive-at')).toHaveTextContent(
+      'Arriverebbe qui verso le 11:05',
+    );
+    expect(within(dialog).getByTestId('chain-confirm-countdown')).toHaveTextContent(/^tra /);
+    // a projection says so, and on what it rests
+    expect(within(dialog).getByTestId('chain-confirm-approximate')).toHaveTextContent('stima');
+    expect(within(dialog).getByTestId('chain-confirm-basis')).toHaveAttribute('data-basis', 'WORK_END');
+    expect(within(dialog).getByTestId('chain-confirm-basis')).toHaveTextContent(
+      'fine del lavoro sul posto più il rientro in sede',
+    );
+    expect(within(dialog).queryByTestId('chain-confirm-expiry')).toBeNull();
+    expect(gameApi.chainVehicle).not.toHaveBeenCalled();
+
+    vi.mocked(gameApi.chainVehicle).mockResolvedValueOnce({
+      mode: 'QUEUED',
+      vehicle: { callSign: LONG_NAME },
+      queue: { incidentId: incident.id, queuedAt: FREE_AT },
+    } as never);
+    fireEvent.click(within(dialog).getByTestId('chain-confirm-submit'));
+    await waitFor(() =>
+      expect(gameApi.chainVehicle).toHaveBeenCalledWith(CAREER_ID, busyVehicle.id, incident.id, {
+        queueOnly: false,
+      }),
+    );
+    // the toast repeats the estimate
+    await waitFor(() =>
+      expect(useToastStore.getState().toasts.map((x) => x.title)).toContain(
+        `${LONG_NAME} in coda: arriverebbe verso le 11:05`,
+      ),
+    );
+    await waitFor(() => expect(screen.queryByTestId('chain-confirm')).toBeNull());
+  });
+
+  it('cancelling the confirmation sends nothing', async () => {
+    renderBusy({ options: [busyOption()] });
+    fireEvent.click(within(await row(LONG_NAME)).getByTestId('chain-queue'));
+    fireEvent.click(await screen.findByTestId('chain-confirm-cancel'));
+    await waitFor(() => expect(screen.queryByTestId('chain-confirm')).toBeNull());
+    expect(gameApi.chainVehicle).not.toHaveBeenCalled();
+  });
+
+  it('warns, loudly, when it would arrive after the call expires', async () => {
+    renderBusy({
+      options: [
+        busyOption(
+          {},
+          {
+            estimate: {
+              freeAt: FREE_AT,
+              arriveAt: ARRIVE_AT,
+              basis: 'RETURNING',
+              approximate: false,
+              incidentExpiresAt: '2099-01-01T10:02:00.000Z',
+              afterExpiry: true,
+            },
+          },
+        ),
+      ],
+    });
+    fireEvent.click(within(await row(LONG_NAME)).getByTestId('chain-queue'));
+    const warning = await screen.findByTestId('chain-confirm-expiry');
+    expect(warning).toHaveAttribute('role', 'alert');
+    expect(warning).toHaveTextContent(
+      'Arriverebbe dopo la scadenza della chiamata (11:02): la coda verrebbe annullata.',
+    );
+    // an exact estimate carries no "stima" label
+    expect(screen.queryByTestId('chain-confirm-approximate')).toBeNull();
+  });
+
+  it('a vehicle already queued here shows its estimate and can be taken off the queue', async () => {
+    renderBusy({ options: [busyOption({}, { queuedIncidentId: incident.id })] });
+    const li = await row(LONG_NAME);
+    expect(within(li).getByTestId('chain-queued')).toHaveTextContent('In coda per questa emergenza');
+    expect(within(li).getByTestId('chain-arrival')).toHaveTextContent('Arriverebbe verso le 11:05 (stima)');
+    fireEvent.click(within(li).getByTestId('chain-cancel'));
+    await waitFor(() => expect(gameApi.cancelChain).toHaveBeenCalledWith(CAREER_ID, busyVehicle.id));
+  });
+
+  it('a redirect is one tap: the row already says when it arrives, the toast confirms', async () => {
+    renderBusy({
+      options: [busyOption({}, { vehicleStatus: 'RETURNING', redirectEligible: true, blockedReason: null })],
+    });
+    const li = await row(LONG_NAME);
+    expect(within(li).getByTestId('chain-eta')).toHaveTextContent('Arriva in 3:05');
+    expect(within(li).getByTestId('chain-eta')).toHaveTextContent('2,4 km');
+    fireEvent.click(within(li).getByTestId('chain-redirect'));
+    await waitFor(() =>
+      expect(gameApi.chainVehicle).toHaveBeenCalledWith(CAREER_ID, busyVehicle.id, incident.id, {
+        queueOnly: false,
+      }),
+    );
+    expect(screen.queryByTestId('chain-confirm')).toBeNull();
+    await waitFor(() =>
+      expect(useToastStore.getState().toasts.map((x) => x.title)).toContain(`${LONG_NAME} reindirizzato qui`),
+    );
+  });
+
+  it('short supplies never block a redirect: they are said, and the queue after the resupply is the other way', async () => {
+    renderBusy({
+      options: [
+        busyOption(
+          {},
+          {
+            vehicleStatus: 'RETURNING',
+            redirectEligible: true,
+            blockedReason: null,
+            stockLow: ['FOAM', 'ABSORBENT'],
+          },
+        ),
+      ],
+    });
+    const li = await row(LONG_NAME);
+    expect(within(li).getByTestId('chain-redirect')).toBeEnabled();
+    expect(within(li).getByTestId('chain-stock-low')).toHaveTextContent('Scorte basse: Foam, Absorbent');
+    fireEvent.click(within(li).getByTestId('chain-queue-after-restock'));
+    const dialog = await screen.findByTestId('chain-confirm');
+    expect(within(dialog).getByTestId('chain-confirm-after-restock')).toHaveTextContent(
+      'parte dopo il rifornimento',
+    );
+    expect(gameApi.chainVehicle).not.toHaveBeenCalled();
+    vi.mocked(gameApi.chainVehicle).mockResolvedValueOnce({
+      mode: 'QUEUED',
+      vehicle: { callSign: LONG_NAME },
+      queue: { incidentId: incident.id, queuedAt: FREE_AT },
+    } as never);
+    fireEvent.click(within(dialog).getByTestId('chain-confirm-submit'));
+    await waitFor(() =>
+      expect(gameApi.chainVehicle).toHaveBeenCalledWith(CAREER_ID, busyVehicle.id, incident.id, {
+        queueOnly: true,
+      }),
+    );
+  });
+
+  it('a vehicle called back from THIS emergency can be sent back to it', async () => {
+    renderBusy({
+      options: [
+        busyOption(
+          {},
+          {
+            vehicleStatus: 'RETURNING',
+            redirectEligible: true,
+            blockedReason: null,
+            currentIncidentId: incident.id,
+          },
+        ),
+      ],
+    });
+    const li = await row(LONG_NAME);
+    expect(within(li).getByTestId('chain-mission')).toHaveAttribute('data-here', 'true');
+    expect(within(li).getByTestId('chain-recalled-here')).toHaveTextContent('Richiamato da questa emergenza');
+    expect(within(li).queryByTestId('chain-redirect')).toBeNull();
+    fireEvent.click(within(li).getByTestId('chain-resend'));
+    await waitFor(() =>
+      expect(gameApi.chainVehicle).toHaveBeenCalledWith(CAREER_ID, busyVehicle.id, incident.id, {
+        queueOnly: false,
+      }),
+    );
+    await waitFor(() =>
+      expect(useToastStore.getState().toasts.map((x) => x.title)).toContain(`${LONG_NAME} rimandato qui`),
+    );
+  });
+
+  it('a redirect the server turned into a queue says why in the toast', async () => {
+    renderBusy({
+      options: [busyOption({}, { vehicleStatus: 'RETURNING', redirectEligible: true, blockedReason: null })],
+    });
+    const li = await row(LONG_NAME);
+    vi.mocked(gameApi.chainVehicle).mockResolvedValueOnce({
+      mode: 'QUEUED',
+      vehicle: { callSign: LONG_NAME },
+      queue: { incidentId: incident.id, queuedAt: FREE_AT },
+    } as never);
+    // by the time of the answer the crew has become too tired: the options of NOW say so
+    vi.mocked(gameApi.dispatchOptions).mockResolvedValue({
+      options: [
+        dispatchableOption,
+        busyOption({}, { vehicleStatus: 'RETURNING', blockedReason: 'CREW_EXHAUSTED' }),
+      ],
+      recommendedVehicleIds: [],
+      recommendationCoversRequired: true,
+    } as never);
+    fireEvent.click(within(li).getByTestId('chain-redirect'));
+    await waitFor(() =>
+      expect(useToastStore.getState().toasts.map((x) => x.title)).toContain(
+        `${LONG_NAME} in coda: Equipaggio troppo affaticato`,
+      ),
+    );
+  });
+
+  it('every reason the server can give is explained, in words, with the way to fix it where there is one', async () => {
+    const reasons = [
+      'VEHICLE_NOT_RETURNING',
+      'VEHICLE_RESTOCKING',
+      'VEHICLE_INOPERABLE',
+      'MAINTENANCE_DUE',
+      'GROUNDED_BY_CONDITIONS',
+      'FUEL_RESERVE',
+      'CREW_INSUFFICIENT',
+      'CREW_UNQUALIFIED',
+      'CREW_EXHAUSTED',
+      'BOAT_NEEDS_BASE',
+    ];
+    const vehicles = reasons.map((_, i) => ({
+      ...busyVehicle,
+      id: `veh_01HZZZZZZZZZZZZZZZZZZZZZR${i}`,
+      callSign: `R-${i}`,
+    }));
+    renderBusy({
+      vehicles: [vehicle, ...vehicles],
+      options: reasons.map((reason, i) => ({
+        ...busyOption({ vehicleId: vehicles[i]!.id }, { blockedReason: reason }),
+      })),
+    });
+    const items = await screen.findAllByTestId('chain-reason');
+    expect(items.map((e) => e.getAttribute('data-reason'))).toEqual(reasons);
+    for (const item of items) expect(item.textContent!.length).toBeGreaterThan(8);
+    const fixes = screen.getAllByTestId('chain-fix-link').map((a) => [a.textContent, a.getAttribute('href')]);
+    expect(fixes).toEqual([
+      ['Vai in Logistica', '/game/logistics'],
+      ['Vai in Logistica', '/game/logistics'],
+      ['Vai in Personale', '/game/personnel?tab=recruitment'],
+      ['Vai in Personale', '/game/personnel?tab=recruitment'],
+    ]);
+  });
+
+  it('a unit that is wrong for the call by nature has no action: only the reason', async () => {
+    renderBusy({
+      options: [busyOption({ blockedReason: 'VEHICLE_DOMAIN_MISMATCH' })],
+    });
+    const li = await row(LONG_NAME);
+    expect(within(li).getByTestId('dispatch-ineligible')).toHaveAttribute(
+      'data-blocked',
+      'VEHICLE_DOMAIN_MISMATCH',
+    );
+    expect(within(li).queryByTestId('chain-queue')).toBeNull();
+    expect(within(li).queryByTestId('chain-redirect')).toBeNull();
   });
 });

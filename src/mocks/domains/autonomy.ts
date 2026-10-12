@@ -1,5 +1,5 @@
 import type { IncidentDto, MovementDto, ResupplyVehicleResult, VehicleDto } from '@/contracts';
-import { haversineMeters, type LngLat } from '@/lib/geo';
+import { haversineMeters, movementPoint, type LngLat } from '@/lib/geo';
 import { AUTONOMY as K, INCIDENT_TEMPLATES, ITEM_TYPES, VEHICLE_TYPES } from '../data/catalog';
 import { MockError, iso, text, type MockCareer, type MockEngine } from '../engine';
 import type { QaHelpers } from '../qa';
@@ -121,6 +121,8 @@ const FUEL_STOP_AT = 0.4;
 const SHORTAGE_WORK_PENALTY = 0.25;
 /** Hospital transport length from the straight line (the medical domain does not keep the leg). */
 const ROAD_FACTOR = 1.3;
+/** Straight line → road for the read-only estimates before any route exists (the routing fallback factor of the backend, 1.4). */
+const STRAIGHT_LINE_FACTOR = 1.4;
 
 export interface AutonomyDomain {
   stateOf(career: MockCareer, vehicleId: string): VehicleAutonomyState;
@@ -136,6 +138,39 @@ export interface AutonomyDomain {
     vehicleId: string,
     patch: { fuel?: number; stock?: Record<string, number>; requested?: boolean },
   ): VehicleDto;
+  /**
+   * The autonomy half of the chaining gate of a vehicle on its way home (the backend's `chainCheck`), read-only: the SAME single
+   * rule applied to the state the mission leaves behind. Short items never block a redirect (`stockLow` says what is short: the
+   * vehicle goes with what it has on board); a fuel shortfall — the rule's, or not enough for the new call there and back — is
+   * solved by a stop at a filling station when one is in reach (`fuelStop`), else it blocks (`FUEL_RESERVE`).
+   */
+  chainCheck(
+    career: MockCareer,
+    vehicleId: string,
+    target: { position: LngLat; workRemaining: number } | null,
+    at: number,
+  ): ChainAutonomyCheck;
+  /**
+   * The redirect commits: the old leg is closed (fuel for the share actually driven), the new mission starts with whatever is
+   * still on board; `fuelStop` refuels at the pump on the way (premium in the ledger).
+   */
+  chainCommit(
+    career: MockCareer,
+    vehicleId: string,
+    incident: IncidentDto,
+    at: number,
+    fuelStop: ChainAutonomyCheck['fuelStop'],
+  ): void;
+}
+
+export interface ChainAutonomyCheck {
+  blocked: 'FUEL_RESERVE' | null;
+  /** Game seconds the stop adds (stop at the pump, the detour), the km it refills and the premium (credits). */
+  fuelStop: { extraSeconds: number; refilledKm: number; premium: number } | null;
+  /** Game seconds of the stop the single rule predicts once home (0 = none). */
+  resupplySecondsAtBase: number;
+  /** Item codes under their threshold that the shelf could refill: a stop at base would reload them. */
+  stockLow: string[];
 }
 
 const domains = new WeakMap<MockEngine, AutonomyDomain>();
@@ -937,11 +972,146 @@ export function installAutonomy(engine: MockEngine): void {
     return dto;
   };
 
+  /* ───────────── chaining: the autonomy half of the gate of a vehicle on its way home ───────────── */
+  /** What `charge` would burn for this pending state, without charging it. */
+  const burnOf = (career: MockCareer, vehicle: VehicleDto, pending: Pending): number => {
+    const s = stateOf(career, vehicle.id);
+    const profile = profileFor(career, vehicle);
+    if (!profile.fuel || s.mission?.tutorial) return 0;
+    return profile.fuel.unit === 'MIN'
+      ? Math.max(0, pending.flightMinutes ?? 0) +
+          Math.max(0, pending.onSceneMinutes) * profile.fuel.perMinuteOnScene
+      : legsFuelKm(pending, profile.fuel, environmentOf(career, s.mission), K);
+  };
+  /** The pending burn of a vehicle on its way home when `share` (0..1) of the planned return has been driven: the leg is booked whole. */
+  const pendingAtShare = (vehicle: VehicleDto, pending: Pending, share: number): Pending => {
+    const notDriven = 1 - Math.min(1, Math.max(0, share));
+    if (isAircraft(vehicle))
+      return {
+        ...pending,
+        flightMinutes: Math.max(
+          0,
+          (pending.flightMinutes ?? 0) -
+            flyMinutes(vehicle.typeCode, vehicle.movement?.distanceMeters ?? 0) * notDriven,
+        ),
+      };
+    return {
+      ...pending,
+      plainMeters: Math.max(0, pending.plainMeters - fuelMetersOf(vehicle.movement) * notDriven),
+    };
+  };
+  const returnShare = (vehicle: VehicleDto, at: number): number => {
+    const m = vehicle.movement;
+    if (!m) return 1;
+    const depart = Date.parse(m.departAt);
+    return Math.min(1, Math.max(0, (at - depart) / Math.max(1, Date.parse(m.arriveAt) - depart)));
+  };
+
+  const chainCheck: AutonomyDomain['chainCheck'] = (career, vehicleId, target, at) => {
+    const none: ChainAutonomyCheck = {
+      blocked: null,
+      fuelStop: null,
+      resupplySecondsAtBase: 0,
+      stockLow: [],
+    };
+    const vehicle = career.vehicles.find((v) => v.id === vehicleId);
+    if (!vehicle) return none;
+    const profile = profileFor(career, vehicle);
+    if (!tracked(profile)) return none;
+    const s = stateOf(career, vehicleId);
+    const storage = storageLevel(career, vehicle.facilityId);
+    const shelf = shelfOf(career, vehicle.facilityId);
+    const share = returnShare(vehicle, at);
+    const apply = (pending: Pending): AutonomyState =>
+      profile.fuel ? afterFuel(profile.fuel, asState(s), burnOf(career, vehicle, pending)) : asState(s);
+    const now = apply(pendingAtShare(vehicle, s.pending, share));
+    const home = apply(s.pending);
+    const atBase = resupplyDecision(profile, home, shelf, K, {
+      forced: s.resupplyRequested,
+      forcedReason: 'MANUAL',
+      storageLevel: storage,
+    });
+    const rule = resupplyDecision(profile, now, shelf, K, { storageLevel: storage });
+    const result: ChainAutonomyCheck = {
+      blocked: null,
+      fuelStop: null,
+      resupplySecondsAtBase: atBase ? Math.round(atBase.seconds) : 0,
+      stockLow: (rule?.reasons ?? [])
+        .filter((r) => r.startsWith('ITEM:'))
+        .map((r) => r.slice('ITEM:'.length)),
+    };
+    if (!profile.fuel) return result;
+
+    const fuelNow = fuelKmOf(profile.fuel, now);
+    let shortfall = resupplyNeed({ ...profile, items: [] }, now, K).fuelLow;
+    const from = vehicle.movement ? movementPoint(vehicle.movement, at).position : vehicle.position;
+    if (target) {
+      const home = homeOf(career, vehicle);
+      const onScene = Math.max(0, target.workRemaining) / 60;
+      if (profile.fuel.unit === 'MIN') {
+        const trip: FlightTrip = {
+          outboundMinutes:
+            takeoffMinutesOf(typeOf(vehicle.typeCode)?.mobilityProfile) +
+            flyMinutes(vehicle.typeCode, haversineMeters(from, target.position)),
+          backMinutes: flyMinutes(vehicle.typeCode, haversineMeters(target.position, home)),
+        };
+        shortfall ||= fuelNow + 1e-6 < flightNeeds(trip, profile.fuel, K, onScene).minimum;
+      } else {
+        // Read-only estimate before any route exists: the straight line × the routing fallback factor (1.4).
+        const out = haversineMeters(from, target.position) * STRAIGHT_LINE_FACTOR;
+        const back = haversineMeters(target.position, home) * STRAIGHT_LINE_FACTOR;
+        shortfall ||=
+          fuelNow + 1e-6 < tripFuelKm(out, back, onScene, profile.fuel, environmentOf(career, s.mission), K);
+      }
+    }
+    if (!shortfall) return result;
+    // No filling stations in the sky: an aircraft refuels at its own base.
+    if (profile.fuel.unit !== 'KM' || !K.fuelStations.enabled || !gates().fuel)
+      return { ...result, blocked: 'FUEL_RESERVE' };
+    const refilledKm = round1(profile.fuel.rangeKm - fuelNow);
+    return {
+      ...result,
+      fuelStop: {
+        extraSeconds: K.fuelStations.stopSeconds,
+        refilledKm,
+        premium: fuelStationPremium(refilledKm, typeOf(vehicle.typeCode)?.costPerKm ?? 0, K),
+      },
+    };
+  };
+
+  const chainCommit: AutonomyDomain['chainCommit'] = (career, vehicleId, incident, at, fuelStop) => {
+    const vehicle = career.vehicles.find((v) => v.id === vehicleId);
+    if (!vehicle) return;
+    const s = stateOf(career, vehicleId);
+    // The old leg is over: the fuel of what was actually driven (the way home was booked whole), then a clean slate.
+    charge(career, vehicle, pendingAtShare(vehicle, s.pending, returnShare(vehicle, at)));
+    s.pending = EMPTY_PENDING();
+    s.onSceneSince = null;
+    s.departureReload = null;
+    s.resume = null;
+    s.mission = missionOf(incident);
+    if (fuelStop) {
+      s.fuelRatio = 1;
+      // Never below a zero balance (D-31): an unaffordable premium is simply skipped, like on the way home.
+      if (fuelStop.premium > 0 && Number(career.summary.credits) >= fuelStop.premium)
+        engine.credit(
+          career,
+          -fuelStop.premium,
+          'FUEL',
+          false,
+          text('ledger.FUEL', { refilledKm: fuelStop.refilledKm, callSign: vehicle.callSign }),
+        );
+    }
+    refresh(career, vehicleId);
+  };
+
   const domain: AutonomyDomain = {
     stateOf,
     profileOf: profileFor,
     requestResupply,
     setAutonomy,
+    chainCheck,
+    chainCommit,
   };
   domains.set(engine, domain);
 

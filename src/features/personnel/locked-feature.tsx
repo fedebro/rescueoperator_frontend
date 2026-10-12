@@ -11,7 +11,7 @@ export function LockedFeature({
   requiredLevel,
   description,
 }: {
-  feature: 'TEAMS' | 'DEPARTMENTS' | 'TRAINING';
+  feature: 'TEAMS' | 'TRAINING';
   requiredLevel: number;
   description: string;
 }) {

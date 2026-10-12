@@ -35,8 +35,8 @@
     "sections": {
       "personnel": {
         "title": "Personnel",
-        "body": "Here you hire, train and organise your stations’ operators into teams: without a crew a vehicle cannot leave.",
-        "tip1": "Quick hires cover an emergency; teams give steady bonuses.",
+        "body": "Here you hire, train and organise the operators of your stations. Without a crew a vehicle cannot leave; a team is the fixed crew of one vehicle, but it is optional.",
+        "tip1": "Quick hires cover an emergency; a fixed team keeps the same operators on the same vehicle.",
         "tip2": "A fatigued operator can be sent to rest from the Roster tab."
       },
       "medical": {
