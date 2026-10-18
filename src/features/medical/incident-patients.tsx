@@ -28,6 +28,7 @@ import { StabilityGauge } from './stability-gauge';
 import { SendVehicleList, TransportPanel } from './transport-panel';
 import { FieldPostBanner } from './mass-casualty';
 import { MedicalChip, PATIENT_STATUS_VISUALS, TRIAGE_VISUALS, WATER_VISUAL } from './visuals';
+import { WaterRescuePhases } from './water-rescue-phases';
 
 const PHASE_BY_STATUS: Partial<
   Record<PatientDto['status'], 'assessing' | 'treating' | 'packaging' | 'toHospital' | 'handoff'>
@@ -476,6 +477,8 @@ export function IncidentPatients({ incident }: { incident: IncidentDto }) {
           closeLabel={tc('close')}
         />
       </div>
+      {/* Water rescue with a meeting point: the phase strip stays visible even with the list folded (2026-10-18). */}
+      {list.length > 0 ? <WaterRescuePhases incident={incident} patients={list} /> : null}
       {expanded ? (
         <div id={bodyId} className="flex flex-col gap-2 pb-3">
           <SectionPrimer content={medicalContent} />

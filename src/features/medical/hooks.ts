@@ -20,6 +20,7 @@ const OFF_SCENE: ReadonlySet<PatientDto['status']> = new Set([
   'ADMITTED',
   'RELEASED_ON_SCENE',
   'DECEASED',
+  'NOT_RESCUED',
 ]);
 
 /** Still at the scene — in the water or at the meeting point: not on the way to hospital, care not over. */

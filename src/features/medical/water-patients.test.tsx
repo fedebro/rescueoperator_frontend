@@ -19,6 +19,7 @@ import { CareerProvider } from '@/features/game/hooks';
 import { canBeTransported, isInWater, isJustAshore } from './hooks';
 import { IncidentPatients } from './incident-patients';
 import { coPassengerCandidates } from './mass-casualty';
+import { rescuePhases } from '@/features/water/rescue-phases';
 
 vi.mock('@/lib/api/endpoints', () => ({
   gameApi: { sync: vi.fn(), catalog: vi.fn(), dispatchOptions: vi.fn(), dispatch: vi.fn() },
@@ -360,5 +361,78 @@ describe('IncidentPatients: water patients', () => {
     expect(screen.queryByTestId('patient-water')).not.toBeInTheDocument();
     expect(screen.queryByTestId('patient-ashore')).not.toBeInTheDocument();
     expect(screen.queryByTestId('patients-in-water')).not.toBeInTheDocument();
+  });
+});
+
+/** Water rescue with a meeting point (2026-10-18, analisi/studio-2026-10-18-mare/01): the phase strip and the landing warning. */
+describe('water rescue phases', () => {
+  const now = Date.now();
+  const aboard = (n: number, departsIn: number, landsIn: number) =>
+    patient(n, {
+      status: 'ASSESSED',
+      recovery: {
+        by: 'VEHICLE',
+        vehicleId: BOAT_ID,
+        etaAt: inSeconds(landsIn),
+        recoveredAt: null,
+        departsAt: inSeconds(departsIn),
+      },
+    });
+  const list = [
+    patient(1),
+    aboard(2, 20, 60),
+    aboard(3, -10, 30),
+    patient(4, {
+      location: 'ASHORE',
+      status: 'ASSESSED',
+      recovery: { by: 'VEHICLE', vehicleId: BOAT_ID, etaAt: null, recoveredAt: inSeconds(-30) },
+    }),
+    patient(5, { location: 'ASHORE', status: 'IN_TRANSPORT', assignedVehicleId: AMBULANCE_ID }),
+    patient(6, { status: 'NOT_RESCUED' }),
+  ];
+
+  it('puts each patient in its phase, with the unit that has them', () => {
+    const strip = rescuePhases(list, now)!;
+    const by = Object.fromEntries(strip.phases.map((p) => [p.key, p]));
+    expect(by.IN_WATER!.patients.map((p) => p.label)).toEqual(['Paziente 1']);
+    expect(by.ABOARD!.patients.map((p) => p.label)).toEqual(['Paziente 2']);
+    expect(by.ABOARD!.vehicleIds).toEqual([BOAT_ID]);
+    expect(by.HEADING_ASHORE!.patients.map((p) => p.label)).toEqual(['Paziente 3']);
+    expect(by.HEADING_ASHORE!.etaAt).toBe(list[2]!.recovery!.etaAt);
+    expect(by.ASHORE!.patients.map((p) => p.label)).toEqual(['Paziente 4']);
+    expect(by.HOSPITAL!.vehicleIds).toEqual([AMBULANCE_ID]);
+    expect(strip.others.map((p) => p.label)).toEqual(['Paziente 6']);
+    // a land incident (no water patient, no recovery) has no strip
+    expect(rescuePhases([patient(1, { location: 'ASHORE', recovery: null })], now)).toBeNull();
+  });
+
+  it('shows the strip, and warns when a boat is about to land people with no land medical unit there or coming', async () => {
+    renderSection(waterIncident({ patientCount: 6 }), list, [boat()]);
+    const strip = await screen.findByTestId('rescue-phases');
+    const counts = within(strip)
+      .getAllByTestId('rescue-phase')
+      .map((e) => [e.getAttribute('data-phase'), e.getAttribute('data-count')]);
+    expect(counts).toEqual([
+      ['IN_WATER', '1'],
+      ['ABOARD', '1'],
+      ['HEADING_ASHORE', '1'],
+      ['ASHORE', '1'],
+      ['HOSPITAL', '1'],
+    ]);
+    expect(within(strip).getAllByTestId('rescue-phase-vehicles')[0]).toHaveTextContent('BOAT 1');
+    expect(within(strip).getByTestId('rescue-phases-others')).toHaveTextContent('1 paziente con altro esito');
+    expect(screen.getByTestId('rescue-landing-warning')).toHaveTextContent(
+      'non c’è né arriva un mezzo di terra sanitario',
+    );
+  });
+
+  it('no landing warning once an ambulance is at the meeting point or on its way', async () => {
+    renderSection(
+      waterIncident({ patientCount: 2 }),
+      [patient(1), aboard(2, 20, 60)],
+      [boat(), ambulance({ status: 'EN_ROUTE' })],
+    );
+    await screen.findByTestId('rescue-phases');
+    expect(screen.queryByTestId('rescue-landing-warning')).toBeNull();
   });
 });

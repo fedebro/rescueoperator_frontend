@@ -22,6 +22,7 @@ import { domainState } from './index';
 import {
   RECOVERY_KNOBS,
   coastGuardRecoverySeconds,
+  isMedicalCarrier,
   isWaterUnit,
   landingOf,
   recoveryCapacity,
@@ -53,7 +54,9 @@ type Profile = (typeof PATIENT_PROFILES)[number] & {
   stability: { unstableBelow?: number };
   transport: { escortCapability?: string; escortThreshold?: number };
 };
-export type PatientOutcome = 'ADMITTED_STABLE' | 'ADMITTED_WORSENED' | 'RELEASED_ON_SCENE' | 'NOT_TREATED';
+/** `NOT_RESCUED` (2026-10-18): left in the water — scored like `NOT_TREATED` (backend `PatientOutcomeCode`). */
+export type PatientOutcome =
+  'ADMITTED_STABLE' | 'ADMITTED_WORSENED' | 'RELEASED_ON_SCENE' | 'NOT_TREATED' | 'NOT_RESCUED';
 
 /* ───────────── hospitals around Pescara (real names and positions; capacities/loads are game values) ───────────── */
 
@@ -204,6 +207,7 @@ const OUTCOME_SCORE: Record<PatientOutcome, number> = {
   RELEASED_ON_SCENE: 1.1,
   NOT_TREATED: 0.5,
   ...MEDICAL.outcomeScore,
+  NOT_RESCUED: MEDICAL.outcomeScore?.NOT_TREATED ?? 0.5,
 };
 const LOAD_DECAY_PER_HOUR = MEDICAL.hospitalLoadDecayPerHour ?? 6;
 
@@ -211,7 +215,7 @@ const MEDICAL_CAPS = ['MEDICAL_BASIC', 'MEDICAL_ADVANCED'];
 const TRANSPORT_CAP = 'PATIENT_TRANSPORT';
 /** A need the medical area serves: the capabilities of the patients' care and their transport (the backend's MEDICAL_CAPABILITY). */
 const MEDICAL_NEED = /^(MEDICAL_|PATIENT_TRANSPORT$)/;
-const FINAL = new Set<PatientDto['status']>(['ADMITTED', 'RELEASED_ON_SCENE', 'DECEASED']);
+const FINAL = new Set<PatientDto['status']>(['ADMITTED', 'RELEASED_ON_SCENE', 'DECEASED', 'NOT_RESCUED']);
 const ON_SCENE = new Set<PatientDto['status']>([
   'UNASSESSED',
   'ASSESSED',
@@ -375,10 +379,25 @@ export function installMedical(engine: MockEngine): void {
   const pending = (career: MockCareer, type: string, ref: string) =>
     career.actions.some((a) => a.type === type && a.ref === ref);
   const ratePerRealSecond = (decayPerMinute: number) => -(decayPerMinute / 60) * engine.speed;
-  /** Who counts for a patient: every vehicle on scene — only the water units (boats, winch helicopters) while in the water. */
+  /**
+   * Who counts for a patient: every vehicle on scene — only the water units (boats, winch helicopters) while in the water, and
+   * only the unit carrying them once aboard (2026-10-18: it treats on the way only if it is a medical carrier, see `careOf`).
+   */
   const careVehicles = (career: MockCareer, p: MockPatient): VehicleDto[] => {
     const onScene = onSceneVehicles(career, p.dto.incidentId);
+    if (aboard(p)) return onScene.filter((v) => v.id === p.dto.recovery!.vehicleId);
     return inWater(p) ? onScene.filter(isWaterUnit) : onScene;
+  };
+  /**
+   * What a patient's carers bring: their capabilities, whether one of them can assess (a medical capability) and whether they
+   * may treat — aboard a boat that is not a medical carrier nobody treats (it only carries them ashore; backend `syncScene`).
+   */
+  const careOf = (career: MockCareer, p: MockPatient) => {
+    const vehicles = careVehicles(career, p);
+    const sum = capsOf(vehicles);
+    const canAssess = MEDICAL_CAPS.some((c) => sum(c) > 0);
+    const mayTreat = !aboard(p) || vehicles.some((v) => isMedicalCarrier(v.typeCode));
+    return { sum, canAssess, mayTreat };
   };
 
   /* ── hospitals ── */
@@ -435,7 +454,7 @@ export function installMedical(engine: MockEngine): void {
         return {
           hospital,
           load: loadOf(career, hospital, at),
-          travelSeconds: engine.travelSeconds(distanceMeters, typeCode, career, path),
+          travelSeconds: engine.travelSeconds(distanceMeters, typeCode, career, path, true),
         };
       }),
       profileOf(p).hospital,
@@ -478,17 +497,17 @@ export function installMedical(engine: MockEngine): void {
   const refreshScene = (career: MockCareer, incidentId: string, at: number): void => {
     const state = medicalState(career);
     const boarded = new Set(startRecoveryTrips(career, incidentId, at).map((p) => p.dto.id));
-    const vehicles = onSceneVehicles(career, incidentId);
-    const sums = { ashore: capsOf(vehicles), water: capsOf(vehicles.filter(isWaterUnit)) };
     const freeTransport = freeTransportVehicles(career, incidentId);
     for (const p of patientsOf(career, incidentId)) {
       if (!ON_SCENE.has(p.dto.status)) continue;
       const water = inWater(p);
-      const sum = water ? sums.water : sums.ashore;
-      const medicalOnScene = MEDICAL_CAPS.some((c) => sum(c) > 0);
+      const care = careOf(career, p);
+      const sum = care.sum;
+      const medicalOnScene = care.canAssess;
       const profile = profileOf(p);
-      // Like the server: a treatment only starts (and only goes on) while the units here meet every REQUIRED need.
-      const requiredMet = requiredNeedsMet(p, sum);
+      // Like the server: a treatment only starts (and only goes on) while the units here meet every REQUIRED need — and,
+      // aboard a boat, only when that boat is a medical carrier.
+      const requiredMet = care.mayTreat && requiredNeedsMet(p, sum);
       let changed = boarded.has(p.dto.id);
       if (p.dto.status === 'UNASSESSED' && medicalOnScene) {
         p.dto = {
@@ -692,19 +711,29 @@ export function installMedical(engine: MockEngine): void {
       const waiting = list.filter(waitingInWater).sort(byRecoveryPriority);
       if (waiting.length === 0) break;
       const back = trip !== null ? recoveryHopSeconds(engine, unit.typeCode, landing, scene) : 0;
-      const landsAt =
-        at + engine.dur(back + pickup + recoveryHopSeconds(engine, unit.typeCode, scene, landing));
+      const hop = recoveryHopSeconds(engine, unit.typeCode, scene, landing);
+      const landsAt = at + engine.dur(back + pickup + hop);
       if (coastGuardAt !== null && landsAt > coastGuardAt) continue;
+      // The trip leaves the scene once the pickup is done ("a bordo" → "verso riva", 2026-10-18).
+      const departsAt = landsAt - engine.dur(hop);
       units[unit.id] = { incidentId, tripUntil: landsAt };
-      for (const p of waiting.slice(0, recoveryCapacity(unit.typeCode))) {
+      const group = waiting.slice(0, recoveryCapacity(unit.typeCode));
+      for (const p of group) {
         engine.cancelActions(career, (a) => a.ref === p.dto.id && a.type === 'PATIENT_COAST_GUARD');
         p.dto = {
           ...p.dto,
-          recovery: { by: 'VEHICLE', vehicleId: unit.id, etaAt: iso(landsAt), recoveredAt: null },
+          recovery: {
+            by: 'VEHICLE',
+            vehicleId: unit.id,
+            etaAt: iso(landsAt),
+            recoveredAt: null,
+            departsAt: iso(departsAt),
+          },
         };
         scheduleAt(career, 'PATIENT_RECOVERY_LAND', landsAt, p.dto.id);
         boarded.push(p);
       }
+      if (group[0]) scheduleAt(career, 'PATIENT_RECOVERY_DEPART', departsAt, group[0].dto.id);
     }
     return boarded;
   };
@@ -740,8 +769,9 @@ export function installMedical(engine: MockEngine): void {
       career,
       incidentId,
       'patient.recovered',
+      // A trip's third line (2026-10-18): landed at the meeting point, a land unit must take over.
       by === 'VEHICLE'
-        ? text('timeline.patients_recovered', { labels, count: group.length, callSign })
+        ? text('timeline.patients_landed', { labels, count: group.length, callSign })
         : text('timeline.patients_recovered_coast_guard', { labels, count: group.length }),
       at,
       vehicleId ?? undefined,
@@ -849,7 +879,8 @@ export function installMedical(engine: MockEngine): void {
       vehicle.id + hospital.id,
       vehicle.typeCode,
     );
-    const arriveAt = at + engine.dur(engine.travelSeconds(distanceMeters, vehicle.typeCode, career, path));
+    const arriveAt =
+      at + engine.dur(engine.travelSeconds(distanceMeters, vehicle.typeCode, career, path, true));
     for (const passenger of [p, ...others]) board(career, passenger, vehicle, hospital, arriveAt, at);
     const moving = engine.patchVehicle(career, vehicle.id, {
       status: 'TRANSPORTING',
@@ -994,7 +1025,45 @@ export function installMedical(engine: MockEngine): void {
     scheduleAt(career, 'PATIENT_ARRIVE_HOSPITAL', arriveAt, p.dto.id);
   };
 
+  /**
+   * Somebody still in the water when nobody of the player's will bring them ashore any more (the safety net, or the incident
+   * closing without them): NOT_RESCUED — "non soccorso" — never "affidato all'ospedale" (backend `LEFT_IN_WATER`, 2026-10-18).
+   */
+  const leaveInWater = (career: MockCareer, group: MockPatient[], at: number, emit = true) => {
+    if (group.length === 0) return;
+    const ids = new Set(group.map((p) => p.dto.id));
+    engine.cancelActions(career, (a) => ids.has(a.ref));
+    for (const p of group) {
+      p.stability = { value: stabilityAt(p.stability, at), ratePerSecond: 0, anchorAt: at };
+      p.outcome = 'NOT_RESCUED';
+      p.dto = {
+        ...p.dto,
+        status: 'NOT_RESCUED',
+        busyUntil: null,
+        assignedVehicleId: null,
+        recovery: p.dto.recovery
+          ? { ...p.dto.recovery, by: null, vehicleId: null, etaAt: null, departsAt: null }
+          : null,
+      };
+      publish(p, p.dto.profileCode !== null);
+    }
+    const labels = group.map((p) => p.dto.label).join(', ');
+    engine.log(
+      career,
+      group[0]!.dto.incidentId,
+      'patient.not_rescued',
+      text('timeline.patients_not_rescued', { labels, count: group.length }),
+      at,
+    );
+    if (emit) for (const p of group) emitPatient(career, p);
+  };
+
   const externalTakeover = (career: MockCareer, p: MockPatient, at: number) => {
+    if (inWater(p)) {
+      leaveInWater(career, [p], at);
+      afterPatientMoved(career, p.dto.incidentId, at);
+      return;
+    }
     const recommended = hospitalOptions(career, p.dto.id, at).find((o) => o.recommended);
     const hospital = HOSPITALS.find((h) => h.id === recommended?.hospitalId) ?? HOSPITALS[0]!;
     const travel = (recommended?.etaSeconds ?? 60) * engine.speed;
@@ -1144,6 +1213,9 @@ export function installMedical(engine: MockEngine): void {
 
   engine.hooks.incidentClosed.push((career, incident) => {
     const state = medicalState(career);
+    // Closed (failed, expired, cancelled) with people still in the water: they were not rescued (production incident 310).
+    if (incident.status !== 'RESOLVED')
+      leaveInWater(career, patientsOf(career, incident.id).filter(inWater), engine.now());
     // A patient already travelling with one of the player's ambulances completes the trip even if the incident is gone.
     const keep = (p: MockPatient) =>
       p.dto.incidentId !== incident.id ||
@@ -1166,8 +1238,9 @@ export function installMedical(engine: MockEngine): void {
     const incidentId = p.dto.incidentId;
     // In the water only the water units reach the patient, with the care their own capabilities allow.
     const water = inWater(p);
-    const sum = capsOf(careVehicles(career, p));
-    const medicalOnScene = MEDICAL_CAPS.some((c) => sum(c) > 0);
+    const care = careOf(career, p);
+    const sum = (code: string) => (care.mayTreat ? care.sum(code) : 0);
+    const medicalOnScene = care.canAssess && care.mayTreat;
     // A field post works at the meeting point: nothing for somebody still in the water.
     const fieldPost = !water && fieldPostOnScene(career, incidentId);
     if (p.dto.status === 'ASSESSED') {
@@ -1278,6 +1351,41 @@ export function installMedical(engine: MockEngine): void {
       (x) => aboard(x) && x.dto.recovery!.vehicleId === vehicleId && x.dto.recovery!.etaAt === etaAt,
     );
     landAshore(career, group, 'VEHICLE', vehicleId, action.dueAt);
+  });
+
+  /** A trip leaves the scene: "P1, P2 a bordo di X" and "X verso il punto di raccolta, arrivo hh:mm" (2026-10-18). */
+  engine.registerExecutor('PATIENT_RECOVERY_DEPART', (career, action) => {
+    const p = patientOf(career, action.ref);
+    if (!p || !aboard(p)) return;
+    const { vehicleId, etaAt } = p.dto.recovery!;
+    const group = patientsOf(career, p.dto.incidentId).filter(
+      (x) => aboard(x) && x.dto.recovery!.vehicleId === vehicleId && x.dto.recovery!.etaAt === etaAt,
+    );
+    const labels = group.map((x) => x.dto.label).join(', ');
+    const callSign = career.vehicles.find((v) => v.id === vehicleId)?.callSign ?? '';
+    const time = new Intl.DateTimeFormat('en-GB', {
+      timeZone: career.summary.timezone,
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    }).format(new Date(etaAt!));
+    const params = { labels, count: group.length, callSign };
+    engine.log(
+      career,
+      p.dto.incidentId,
+      'patient.aboard',
+      text('timeline.patients_aboard', params),
+      action.dueAt,
+      vehicleId ?? undefined,
+    );
+    engine.log(
+      career,
+      p.dto.incidentId,
+      'patient.heading_ashore',
+      text('timeline.rescue_heading_ashore', { ...params, etaAt: etaAt!, time }),
+      action.dueAt,
+      vehicleId ?? undefined,
+    );
   });
 
   engine.registerExecutor('PATIENT_COAST_GUARD', (career, action) => {
@@ -1442,7 +1550,10 @@ export function installMedical(engine: MockEngine): void {
       const ids = new Set(patients.map((p) => p.dto.id));
       const now = engine.now();
       for (const a of career.actions)
-        if (ids.has(a.ref) && (a.type === 'PATIENT_RECOVERY_LAND' || a.type === 'PATIENT_COAST_GUARD'))
+        if (
+          ids.has(a.ref) &&
+          ['PATIENT_RECOVERY_DEPART', 'PATIENT_RECOVERY_LAND', 'PATIENT_COAST_GUARD'].includes(a.type)
+        )
           a.dueAt = Math.min(a.dueAt, now);
       // The trips under way end now too: their units are free for the next ones.
       for (const p of patients.filter(aboard)) {

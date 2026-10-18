@@ -41,9 +41,14 @@ export const PersonnelStatus = z.enum([
 ]);
 export const FatigueBand = z.enum(['RESTED', 'TIRED', 'FATIGUED', 'REST_REQUIRED']);
 
+/**
+ * `NOT_RESCUED` (additive, 2026-10-18, migration 037): final — the patient was still in the water when the incident closed without
+ * them (failed / expired / cancelled) or the external safety net took over: nobody of the player's brought them ashore
+ * ("non soccorso"). Before, such a patient ended `ADMITTED`.
+ */
 export const PatientStatus = z.enum([
   'UNASSESSED', 'ASSESSED', 'TREATING', 'STABILIZED', 'AWAITING_TRANSPORT',
-  'IN_TRANSPORT', 'HANDOFF', 'ADMITTED', 'RELEASED_ON_SCENE', 'DECEASED',
+  'IN_TRANSPORT', 'HANDOFF', 'ADMITTED', 'RELEASED_ON_SCENE', 'DECEASED', 'NOT_RESCUED',
 ]);
 export const TriageCode = z.enum(['RED', 'ORANGE', 'BLUE', 'GREEN', 'WHITE']);
 

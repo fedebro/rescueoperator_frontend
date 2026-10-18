@@ -56,6 +56,7 @@ interface Raw {
     airSpeedKmh: number | null;
     /** Boats (water scene, D-68): cruise speed on the water, km/h; null for every other vehicle. */
     waterSpeedKmh: number | null;
+    emergencyKmh?: EmergencyKmh | null;
     preparationSeconds: number;
     deliverySeconds: number;
     patientCapacity: number;
@@ -401,6 +402,8 @@ export interface MockVehicleType {
   airSpeedKmh: number | null;
   /** Boats: km/h on the water (straight water legs, D-68). */
   waterSpeedKmh: number | null;
+  /** Owner 2026-10-18: real km/h on blue lights by road kind (null: the plain mock speed applies). */
+  emergencyKmh: EmergencyKmh | null;
   price: number;
   requiredLevel: number;
   capacityPoints: number;
@@ -432,6 +435,7 @@ export const VEHICLE_TYPES: MockVehicleType[] = RAW.vehicleTypes.map((v) => ({
   movement: v.movement,
   airSpeedKmh: v.airSpeedKmh,
   waterSpeedKmh: v.waterSpeedKmh ?? null,
+  emergencyKmh: v.emergencyKmh ?? null,
   price: v.price,
   requiredLevel: v.requiredLevel,
   capacityPoints: v.capacityPoints,
@@ -666,3 +670,28 @@ export function levelForXp(xp: number): number {
 export const levelRow = (level: number) => LEVELS.find((l) => l.level === level) ?? LEVELS.at(-1)!;
 export const rankFor = (level: number) =>
   RANKS.find((r) => level >= r.fromLevel && level <= r.toLevel) ?? RANKS.at(-1)!;
+
+/** Real km/h on blue lights on urban streets / extra-urban roads / motorways (`emergencyKmh`, owner 2026-10-18). */
+export interface EmergencyKmh {
+  urban: number;
+  rural: number;
+  motorway: number;
+}
+
+/**
+ * The server's `emergencyKmh` (emergency-speed.ts): the vehicle's speeds interpolated on the normal car average of the leg
+ * (anchors 33 / 52 / 67 km/h for town / provincial / motorway), never slower than without blue lights.
+ */
+export function emergencyKmh(normalKmh: number, speeds: EmergencyKmh, speedFactor = 1): number {
+  const [u, r, m] = [33, 52, 67];
+  const v = Math.max(1, normalKmh);
+  const kmh =
+    v <= u
+      ? speeds.urban * (v / u)
+      : v <= r
+        ? speeds.urban + ((speeds.rural - speeds.urban) * (v - u)) / (r - u)
+        : v <= m
+          ? speeds.rural + ((speeds.motorway - speeds.rural) * (v - r)) / (m - r)
+          : speeds.motorway;
+  return Math.max(kmh, v * speedFactor * 1.05);
+}

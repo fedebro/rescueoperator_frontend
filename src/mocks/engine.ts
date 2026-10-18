@@ -35,6 +35,7 @@ import {
   ECONOMY,
   MAJOR_SETTINGS,
   MAX_VEHICLES_PER_DISPATCH,
+  emergencyKmh,
   SERVICE_RAMP,
   creditSeverityFactor,
 } from './data/catalog';
@@ -1259,7 +1260,7 @@ export class MockEngine {
     return {
       path,
       distanceMeters,
-      seconds: this.travelSeconds(distanceMeters, vehicle.typeCode, career, path),
+      seconds: this.travelSeconds(distanceMeters, vehicle.typeCode, career, path, true),
     };
   }
 
@@ -1716,14 +1717,27 @@ export class MockEngine {
     const path = mockRoute(from, to, seed);
     return { path, distanceMeters: pathLengthMeters(path) };
   }
-  /** Travel seconds in game time: 42 km/h urban average × time compression 0.25 (D-63). */
-  travelSeconds(distanceMeters: number, typeCode: string, career?: MockCareer, path?: LngLat[]): number {
+  /**
+   * Travel seconds in game time: 42 km/h normal average (the mock's town-ish roads) × time compression 0.25 (D-63). On blue
+   * lights (`siren`) a vehicle with `emergencyKmh` drives its own speed for that average, as the server (emergency-speed.ts).
+   */
+  travelSeconds(
+    distanceMeters: number,
+    typeCode: string,
+    career?: MockCareer,
+    path?: LngLat[],
+    siren = false,
+  ): number {
     const type = VEHICLE_TYPES.find((t) => t.code === typeCode);
     if (type?.movement === 'AIR' && type.airSpeedKmh)
       return Math.max(8, Math.round((distanceMeters / (type.airSpeedKmh / 3.6)) * 0.25));
     const factor =
       career && path ? this.hooks.travelFactor.reduce((f, h) => f * h(career, path, typeCode), 1) : 1;
-    return Math.max(8, Math.round((distanceMeters / (11.7 * (type?.speedFactor ?? 1))) * 0.25 * factor));
+    const metresPerSecond =
+      siren && type?.emergencyKmh
+        ? emergencyKmh(42, type.emergencyKmh, type.speedFactor ?? 1) / 3.6
+        : 11.7 * (type?.speedFactor ?? 1);
+    return Math.max(8, Math.round((distanceMeters / metresPerSecond) * 0.25 * factor));
   }
 
   dispatchOptions(career: MockCareer, incidentId: string) {

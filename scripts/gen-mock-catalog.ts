@@ -90,6 +90,8 @@ const catalog = {
     ]),
     // Boats (D-68): cruise speed on the water, km/h — the water leg is a straight line at this speed.
     waterSpeedKmh: typeof v.waterSpeedKmh === 'number' ? v.waterSpeedKmh : null,
+    // Owner 2026-10-18: real km/h on blue lights (type override, else its mobility profile) — emergency-speed.ts on the server.
+    emergencyKmh: (v.emergencyKmh ?? profileOf(v)?.emergencyKmh ?? null) as Obj | null,
     movement: (profileOf(v)?.movement as string | undefined) ?? 'ROAD',
     autonomy: autonomyOf(v),
   })),

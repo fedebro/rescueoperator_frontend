@@ -60,6 +60,8 @@ export const PATIENT_STATUS_VISUALS: Record<PatientStatus, Visual> = {
   ADMITTED: { icon: Hospital, className: TONE.success },
   RELEASED_ON_SCENE: { icon: UserCheck, className: TONE.success },
   DECEASED: { icon: HandHeart, className: TONE.neutral },
+  /** Left in the water when the incident closed without them (2026-10-18): "non soccorso". */
+  NOT_RESCUED: { icon: LifeBuoy, className: TONE.warning },
 };
 
 /** Water patients: somebody still in the water (a lifebuoy — never a cross). */

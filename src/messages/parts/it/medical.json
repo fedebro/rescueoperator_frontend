@@ -131,7 +131,22 @@
       "sectionNoUnit": "Nessun mezzo acquatico sul posto o in arrivo: invia una barca.",
       "sectionCoastGuard": "La Guardia Costiera li porta a riva tra <countdown></countdown>",
       "noBoat": "Nessuna barca disponibile in questo momento.",
-      "boatSent": "{callSign} va a recuperare chi è in acqua"
+      "boatSent": "{callSign} va a recuperare chi è in acqua",
+      "dispatchNoWaterUnit": "Nessun mezzo in acqua: i pazienti restano in mare",
+      "phases": {
+        "title": "Fasi del soccorso in acqua",
+        "IN_WATER": "In mare",
+        "ABOARD": "A bordo",
+        "HEADING_ASHORE": "Verso riva",
+        "ASHORE": "A riva",
+        "HOSPITAL": "In ospedale",
+        "count": "{count, plural, one {# paziente} other {# pazienti}}",
+        "eta": "arrivo {time}",
+        "coastGuardEta": "Guardia Costiera alle {time}",
+        "waitingLandUnit": "in attesa del mezzo di terra",
+        "others": "{count, plural, one {# paziente con altro esito} other {# pazienti con altro esito}}",
+        "noLandUnit": "Una barca sta per sbarcare pazienti al punto di raccolta, ma lì non c’è né arriva un mezzo di terra sanitario: inviane uno."
+      }
     }
   },
   "status": {
@@ -145,7 +160,8 @@
       "HANDOFF": "Consegna in ospedale",
       "ADMITTED": "Affidato all’ospedale",
       "RELEASED_ON_SCENE": "Trattato sul posto",
-      "DECEASED": "Non sopravvissuto"
+      "DECEASED": "Non sopravvissuto",
+      "NOT_RESCUED": "Non soccorso"
     },
     "hospitalLoad": {
       "NORMAL": "Carico normale",
@@ -165,7 +181,11 @@
     "patient_released_field_post": "Paziente trattato e dimesso dal posto medico avanzato",
     "patient_transport_multi": "{callSign} trasporta {count} pazienti a {hospital}",
     "patients_recovered": "{count, plural, one {{labels} portato a riva da {callSign}} other {{labels} portati a riva da {callSign}}}",
-    "patients_recovered_coast_guard": "La Guardia Costiera ha portato a riva {labels}"
+    "patients_recovered_coast_guard": "La Guardia Costiera ha portato a riva {labels}",
+    "patients_aboard": "{labels} a bordo di {callSign}",
+    "rescue_heading_ashore": "{callSign} verso il punto di raccolta, arrivo {time}",
+    "patients_landed": "{count, plural, one {{labels} sbarcato al punto di raccolta: serve un mezzo di terra} other {{labels} sbarcati al punto di raccolta: serve un mezzo di terra}}",
+    "patients_not_rescued": "{count, plural, one {{labels} non soccorso: è rimasto in acqua} other {{labels} non soccorsi: sono rimasti in acqua}}"
   },
   "notifications": {
     "patientAwaitingTransport": "Paziente in attesa di trasporto in {address}"

@@ -523,6 +523,18 @@ export function isWaterUnit(vehicle: Pick<VehicleDto, 'typeCode'>): boolean {
   return type.domain === 'AIR' && (type.tags.includes('WINCH') || (type.caps.WATER_RESCUE ?? 0) > 0);
 }
 
+/**
+ * A medical carrier (backend `isMedicalCarrier`, 2026-10-18 — owner: "prime cure a bordo, solo le barche sanitarie"): a unit of
+ * the health service (EMS) with medical capabilities. Only it keeps treating the people it carries ashore; other boats only carry.
+ */
+export function isMedicalCarrier(typeCode: string): boolean {
+  const type = typeOf(typeCode);
+  return (
+    type?.family === 'EMS' &&
+    Object.entries(type.caps).some(([code, value]) => code.startsWith('MEDICAL_') && value > 0)
+  );
+}
+
 /** People a water unit brings ashore in one trip. */
 export function recoveryCapacity(typeCode: string): number {
   if (typeOf(typeCode)?.domain === 'AIR') return RECOVERY_KNOBS.aircraftCapacity;

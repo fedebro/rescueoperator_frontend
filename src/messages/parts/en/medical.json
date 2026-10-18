@@ -131,7 +131,22 @@
       "sectionNoUnit": "No water unit on scene or on its way: send a boat.",
       "sectionCoastGuard": "The Coast Guard brings them ashore in <countdown></countdown>",
       "noBoat": "No boat available right now.",
-      "boatSent": "{callSign} is heading out to recover the people in the water"
+      "boatSent": "{callSign} is heading out to recover the people in the water",
+      "dispatchNoWaterUnit": "No unit on the water: the patients stay in the sea",
+      "phases": {
+        "title": "Water rescue phases",
+        "IN_WATER": "In the sea",
+        "ABOARD": "Aboard",
+        "HEADING_ASHORE": "Heading ashore",
+        "ASHORE": "Ashore",
+        "HOSPITAL": "In hospital",
+        "count": "{count, plural, one {# patient} other {# patients}}",
+        "eta": "arrives {time}",
+        "coastGuardEta": "Coast Guard at {time}",
+        "waitingLandUnit": "waiting for a land unit",
+        "others": "{count, plural, one {# patient with another outcome} other {# patients with another outcome}}",
+        "noLandUnit": "A boat is about to land patients at the meeting point, but no land medical unit is there or on its way: send one."
+      }
     }
   },
   "status": {
@@ -145,7 +160,8 @@
       "HANDOFF": "Hospital handover",
       "ADMITTED": "Handed over to the hospital",
       "RELEASED_ON_SCENE": "Treated on scene",
-      "DECEASED": "Did not survive"
+      "DECEASED": "Did not survive",
+      "NOT_RESCUED": "Not rescued"
     },
     "hospitalLoad": {
       "NORMAL": "Normal load",
@@ -165,7 +181,11 @@
     "patient_released_field_post": "Patient treated and released by the advanced medical post",
     "patient_transport_multi": "{callSign} takes {count} patients to {hospital}",
     "patients_recovered": "{count, plural, one {{labels} brought ashore by {callSign}} other {{labels} brought ashore by {callSign}}}",
-    "patients_recovered_coast_guard": "The Coast Guard brought {labels} ashore"
+    "patients_recovered_coast_guard": "The Coast Guard brought {labels} ashore",
+    "patients_aboard": "{labels} aboard {callSign}",
+    "rescue_heading_ashore": "{callSign} heading for the meeting point, arrives {time}",
+    "patients_landed": "{count, plural, one {{labels} landed at the meeting point: a land unit is needed} other {{labels} landed at the meeting point: a land unit is needed}}",
+    "patients_not_rescued": "{count, plural, one {{labels} not rescued: left in the water} other {{labels} not rescued: left in the water}}"
   },
   "notifications": {
     "patientAwaitingTransport": "Patient awaiting transport at {address}"

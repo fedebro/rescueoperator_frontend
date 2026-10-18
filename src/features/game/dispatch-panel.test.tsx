@@ -8,6 +8,7 @@ import { useToastStore } from '@/stores/toast';
 import { renderWithIntl } from '@/test/render';
 import { CareerProvider } from '@/features/game/hooks';
 import { gameApi } from '@/lib/api/endpoints';
+import { medicalApi } from '@/lib/api/depth';
 import { DispatchPanel } from './dispatch-panel';
 
 // The real endpoints hit the network; the panel only needs `dispatch` and `dispatchOptions` mocked so the test can
@@ -22,6 +23,10 @@ vi.mock('@/lib/api/endpoints', () => ({
     cancelChain: vi.fn(),
     tutorialAdvance: vi.fn(),
   },
+}));
+
+vi.mock('@/lib/api/depth', () => ({
+  medicalApi: { patients: vi.fn(), hospitals: vi.fn(), hospitalOptions: vi.fn(), transport: vi.fn() },
 }));
 
 const CAREER_ID = 'car_1';
@@ -420,6 +425,49 @@ describe('DispatchPanel — water incidents', () => {
       .map((e) => e.getAttribute('data-destination'));
     // List order (2026-10-18): the free unit, then the boat that can queue, then the land unit that cannot go at all.
     expect(destinations).toEqual(['MEETING_POINT', 'SCENE', 'MEETING_POINT']);
+  });
+
+  /** Water rescue (2026-10-18): people in the water and a send with no unit on the water, none there nor coming. */
+  const inWater = {
+    id: 'pat_01HZZZZZZZZZZZZZZZZZZZZZZ1',
+    incidentId: incident.id,
+    label: 'Paziente 1',
+    profileCode: null,
+    triage: null,
+    status: 'UNASSESSED',
+    stability: null,
+    needs: [],
+    transportRequired: null,
+    assignedVehicleId: null,
+    hospitalId: null,
+    busyUntil: null,
+    location: 'WATER',
+    recovery: { by: null, vehicleId: null, etaAt: null, recoveredAt: null },
+  };
+  const renderWater = (vehicles: unknown[]) => {
+    vi.mocked(medicalApi.patients).mockResolvedValue([inWater] as never);
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    qc.setQueryData(qk.sync(CAREER_ID), { vehicles, incidents: [], facilities: [facility] });
+    renderWithIntl(
+      <QueryClientProvider client={qc}>
+        <CareerProvider value={CAREER_ID}>
+          <DispatchPanel incident={{ ...waterIncident, patientCount: 1 } as never} />
+        </CareerProvider>
+      </QueryClientProvider>,
+    );
+  };
+
+  it('warns that the patients stay in the sea when the send has no unit on the water', async () => {
+    renderWater([vehicle, tanker, boat]);
+    const warning = await screen.findByTestId('dispatch-no-water-unit');
+    expect(warning).toHaveTextContent('Nessun mezzo in acqua: i pazienti restano in mare');
+  });
+
+  it('says nothing when a unit on the water is already on its way', async () => {
+    renderWater([vehicle, tanker, { ...boat, status: 'EN_ROUTE', incidentId: incident.id }]);
+    await screen.findByTestId('dispatch-actions');
+    await waitFor(() => expect(medicalApi.patients).toHaveBeenCalled());
+    expect(screen.queryByTestId('dispatch-no-water-unit')).toBeNull();
   });
 });
 

@@ -50,6 +50,7 @@ import { CoachMark } from '@/features/coaching/coach-mark';
 import { useFamilyLabel } from '@/features/facilities/site-details';
 import { DispatchWaterRoute } from '@/features/water/incident-water';
 import { isWaterIncident, requirementsBySide } from '@/features/water/water';
+import { isInWater, useIsWaterUnit, usePatients } from '@/features/medical/hooks';
 import { useCareerId, useCatalog, useSnapshot, useVehicleTypeLookup } from './hooks';
 import { ChainActions, ChainMission, useChainFlow, useDispatchOptions } from './dispatch-chain';
 import { orderDispatchOptions } from './dispatch-order';
@@ -337,6 +338,7 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
   const tw = useTranslations('game.dispatch.warning');
   const tci = useTranslations('coaching.marks.crewInsufficient');
   const tm = useTranslations('maxi.dispatch');
+  const tmw = useTranslations('medical.water');
   const itemName = useCatalogName();
   /**
    * Warning codes are opaque strings; the stock ones carry the item code after a colon
@@ -368,6 +370,17 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
   const [familyFilter, setFamilyFilter] = React.useState<FamilyFilter>('ALL');
 
   const data = options.data;
+  // Water rescue (2026-10-18): the people in the water wait for a unit ON the water — a send with none, while none is there or
+  // on its way, leaves them in the sea (the Coast Guard never stands in for a busy boat).
+  const patients = usePatients(incident).data;
+  const isWaterUnit = useIsWaterUnit();
+  const someoneInWater = (patients ?? []).some(isInWater);
+  const waterUnitThere = vehicles.some(
+    (v) =>
+      v.incidentId === incident.id &&
+      ['PREPARING', 'EN_ROUTE', 'ON_SCENE'].includes(v.status) &&
+      isWaterUnit(v),
+  );
   const families = React.useMemo(() => {
     const set = new Set<ServiceFamily>();
     for (const o of data?.options ?? []) {
@@ -468,6 +481,16 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
   // its only unit inbound from another call), or the chain action has nowhere to appear.
   const anyChainable = (data?.options ?? []).some((o) => o.chain);
   const manualPick = manual !== null && !sameAsRecommended;
+  // What the primary action would send: the manual pick, else the recommended units that can leave now.
+  const toSend = manualPick ? [...selected] : [...recommended].filter((id) => dispatchable.has(id));
+  const noWaterUnit =
+    someoneInWater &&
+    !waterUnitThere &&
+    toSend.length > 0 &&
+    !toSend.some((id) => {
+      const vehicle = vehicles.find((v) => v.id === id);
+      return !!vehicle && isWaterUnit(vehicle);
+    });
   // What the primary action would add on top of what is already committed: the forecast of the summary line.
   const forecast = React.useMemo(() => {
     if (manualPick) return planned;
@@ -565,6 +588,16 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
               <p className="text-warning flex items-start gap-2 text-xs">
                 <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
                 {t('recommendationPartial')}
+              </p>
+            ) : null}
+            {noWaterUnit ? (
+              <p
+                role="status"
+                className="text-warning flex items-start gap-2 text-xs font-semibold"
+                data-testid="dispatch-no-water-unit"
+              >
+                <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                {tmw('dispatchNoWaterUnit')}
               </p>
             ) : null}
             {insufficient && !sameAsRecommended && selected.size > 0 ? (

@@ -4,8 +4,10 @@ import { bootCareer, hideDevToolsBadge, qa, trackProblems } from './helpers';
 /**
  * Water patients (analisi/note-agenti/water-patients.md), both layouts: the people of a water incident start IN the water.
  *  - an ambulance waiting at the meeting point can do nothing for them: "In acqua — in attesa del recupero", no transport;
- *  - a boat (sent from the patients section once the incident is RESOLVING) gives first aid in the water and brings them
- *    ashore: "BOAT 1 lo sta portando a riva", the hospital transport still waits for the landing;
+ *    sending it alone, the dispatch panel warns "Nessun mezzo in acqua: i pazienti restano in mare" (2026-10-18);
+ *  - a boat (sent from the patients section once the incident is RESOLVING) brings them ashore: "BOAT 1 lo sta portando a
+ *    riva", the phase strip (a bordo → verso riva, arrivo hh:mm); a gommone is not a medical boat, so no care on the way;
+ *    the hospital transport still waits for the landing;
  *  - ashore at the meeting point ("portato da BOAT 1") the ambulance takes over and the transport leaves from there;
  *  - without a boat the Coast Guard brings them ashore at its time.
  * The mock (src/mocks/domains/medical.ts) follows the backend rule; QA knobs make the phases long enough to be looked at.
@@ -47,16 +49,6 @@ async function openIncident(page: Page, incidentId: string) {
   await expect(page.getByTestId('map')).toHaveAttribute('data-ready', 'true');
   await page.locator(`[data-testid="incident-card"][data-incident-id="${incidentId}"]`).click();
   await expect(page.getByTestId('incident-inspector')).toHaveAttribute('data-incident-id', incidentId);
-}
-
-/**
- * Sends one vehicle from the dispatch panel (its option, its checkbox, "send"). Only for a pick that differs from the
- * recommendation: a pick equal to it has no "send selected" button (the main button sends it).
- */
-async function sendFromDispatchPanel(page: Page, callSign: RegExp) {
-  const option = page.getByTestId('dispatch-option').filter({ hasText: callSign });
-  await option.getByRole('checkbox').check();
-  await page.getByTestId('send-selected').click();
 }
 
 /** Dispatches through the mock engine itself (the same command the REST handler runs). */
@@ -110,8 +102,8 @@ test('a patient in the water: the ambulance waits at the meeting point, a boat b
   });
   // The career owns a boat able to do the water part: no Coast Guard.
   const incidentId = await qa<string>(page, 'spawnWater', 'MED_SWIMMER_DISTRESS', { severity: 3 });
-  // A hypothermia: the boat's first aid (MEDICAL_BASIC 45) covers what it needs, so it is treated in the water. (A patient the
-  // boat cannot treat stays assessed until ashore, where "take to hospital now" is the player's: load-and-go.spec.ts.)
+  // A hypothermia: the gommone could give that first aid, but it is not a medical boat — since 2026-10-18 it only carries the
+  // patient ashore (only a medical boat treats on the way); the ambulance at the meeting point takes over at the landing.
   await qa(page, 'setProfiles', incidentId, ['PP_HYPOTHERMIA']);
   const patients = page.getByTestId('incident-patients');
   const card = page.getByTestId('patient-card').first();
@@ -128,8 +120,13 @@ test('a patient in the water: the ambulance waits at the meeting point, a boat b
   });
 
   await test.step('the ambulance alone at the meeting point: no assessment, no care, no transport', async () => {
-    // The boat is part of the recommendation (the only one bringing WATER_RESCUE): the ambulance alone is a manual pick.
-    await sendFromDispatchPanel(page, /MSB/);
+    // The boat is part of the recommendation (the only one bringing WATER_RESCUE): the ambulance alone is a manual pick —
+    // and the panel says what that means (2026-10-18): nobody on the water, the patients stay in the sea.
+    await page.getByTestId('dispatch-option').filter({ hasText: /MSB/ }).getByRole('checkbox').check();
+    await expect(page.getByTestId('dispatch-no-water-unit')).toContainText(
+      'Nessun mezzo in acqua: i pazienti restano in mare',
+    );
+    await page.getByTestId('send-selected').click();
     await expect.poll(() => vehicleStatus(page, ambulanceId), { timeout: 60_000 }).toBe('ON_SCENE');
     // It arrived (the scene was re-evaluated then): the patients are still untouched in the water.
     for (const p of await patientsOf(page, incidentId))
@@ -158,7 +155,7 @@ test('a patient in the water: the ambulance waits at the meeting point, a boat b
     ).toBeVisible();
   });
 
-  await test.step('the boat on the scene: first aid in the water, "BOAT 1 lo sta portando a riva"', async () => {
+  await test.step('the boat on the scene: aboard, "BOAT 1 lo sta portando a riva", the phase strip', async () => {
     await expect.poll(() => vehicleStatus(page, boatId), { timeout: 60_000 }).toBe('ON_SCENE');
     const banner = card.getByTestId('patient-water');
     await expect(banner).toHaveAttribute('data-recovery', 'ABOARD');
@@ -168,13 +165,25 @@ test('a patient in the water: the ambulance waits at the meeting point, a boat b
     // The boat's crew assessed them: what it can do in the water.
     await expect(card).not.toHaveAttribute('data-patient-status', 'UNASSESSED');
     await expect(card.getByTestId('patient-needs')).toContainText('Primo soccorso in acqua');
-    // Treated in the water: waiting for the hospital, which only starts from the meeting point.
-    await expect(card).toHaveAttribute('data-patient-status', 'AWAITING_TRANSPORT', { timeout: 20_000 });
+    // Not a medical boat: no treatment on the way ashore, and no transport from the water.
+    await expect(card).toHaveAttribute('data-patient-status', 'ASSESSED');
     await expect(card).toHaveAttribute('data-patient-location', 'WATER');
-    await expect(card.getByTestId('patient-transport-after-recovery')).toContainText(
-      'Il trasporto in ospedale parte dal punto di raccolta, appena il paziente è a riva.',
-    );
     await expect(page.getByTestId('transport-panel')).toHaveCount(0);
+    // The phase strip: aboard BOAT 1 (the pickup), then heading ashore with the landing time.
+    const strip = patients.getByTestId('rescue-phases');
+    await expect(
+      strip.locator('[data-phase="ABOARD"], [data-phase="HEADING_ASHORE"]').filter({ hasText: 'BOAT 1' }),
+    ).toHaveCount(1);
+    // The trip ashore is short (a few hundred metres at mock speed ×12): count and text are read in the same instant.
+    const heading = strip.locator('[data-phase="HEADING_ASHORE"]');
+    await expect
+      .poll(
+        async () => ((await heading.getAttribute('data-count')) === '1' ? await heading.textContent() : null),
+        { timeout: 90_000, intervals: [50] },
+      )
+      .toContain('arrivo');
+    // The ambulance waits at the meeting point: no landing warning.
+    await expect(patients.getByTestId('rescue-landing-warning')).toHaveCount(0);
   });
 
   await test.step('ashore at the meeting point: the ambulance takes over, the transport leaves from there', async () => {
@@ -200,9 +209,12 @@ test('a patient in the water: the ambulance waits at the meeting point, a boat b
     if (ambulance.movement) expect(ambulance.movement.path[0]).toEqual(meetingPoint);
   });
 
-  await test.step('the timeline says who brought them ashore', async () => {
+  await test.step('the timeline: aboard, heading for the meeting point, landed', async () => {
     await page.getByTestId('incident-inspector').getByRole('tab', { name: 'Cronologia' }).click();
-    await expect(page.getByTestId('incident-inspector')).toContainText(/portat[oi] a riva da BOAT 1/);
+    const inspector = page.getByTestId('incident-inspector');
+    await expect(inspector).toContainText('Paziente 1 a bordo di BOAT 1');
+    await expect(inspector).toContainText(/BOAT 1 verso il punto di raccolta, arrivo \d{2}:\d{2}/);
+    await expect(inspector).toContainText(/sbarcat[oi] al punto di raccolta: serve un mezzo di terra/);
   });
 });
 

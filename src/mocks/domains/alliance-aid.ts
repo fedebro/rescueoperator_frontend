@@ -190,7 +190,7 @@ export function installAllianceAid(engine: MockEngine): void {
       `${vehicle.id}|aid|${target.id}`,
       vehicle.typeCode,
     );
-    const travel = engine.travelSeconds(distanceMeters, vehicle.typeCode, helper, path);
+    const travel = engine.travelSeconds(distanceMeters, vehicle.typeCode, helper, path, true);
     const seconds = Math.round(
       Math.min(
         AID_CFG.maxEtaMinutes * 60,

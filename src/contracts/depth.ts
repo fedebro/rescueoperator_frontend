@@ -178,6 +178,12 @@ export const PatientRecoveryDto = z.object({
   etaAt: IsoDateTime.nullable(),
   /** When they were brought ashore; null while still in the water. */
   recoveredAt: IsoDateTime.nullable(),
+  /**
+   * Additive (2026-10-18): the trip under way leaves the scene for the meeting point at this instant (pickup done). Before it the
+   * patient is being taken aboard ("a bordo"), after it the unit is heading ashore ("verso riva", landing at `etaAt`). Null outside
+   * a trip; absent from older servers.
+   */
+  departsAt: IsoDateTime.nullable().optional(),
 });
 export type PatientRecoveryDto = z.infer<typeof PatientRecoveryDto>;
 

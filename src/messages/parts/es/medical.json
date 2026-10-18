@@ -131,7 +131,22 @@
       "sectionNoUnit": "Ningún medio acuático en el lugar ni en camino: envía una embarcación.",
       "sectionCoastGuard": "Los guardacostas los llevan a tierra en <countdown></countdown>",
       "noBoat": "No hay ninguna embarcación disponible en este momento.",
-      "boatSent": "{callSign} va a rescatar a las personas en el agua"
+      "boatSent": "{callSign} va a rescatar a las personas en el agua",
+      "dispatchNoWaterUnit": "Ningún medio en el agua: los pacientes se quedan en el mar",
+      "phases": {
+        "title": "Fases del rescate en el agua",
+        "IN_WATER": "En el mar",
+        "ABOARD": "A bordo",
+        "HEADING_ASHORE": "Hacia la orilla",
+        "ASHORE": "En tierra",
+        "HOSPITAL": "En el hospital",
+        "count": "{count, plural, one {# paciente} other {# pacientes}}",
+        "eta": "llegada {time}",
+        "coastGuardEta": "Guardia Costera a las {time}",
+        "waitingLandUnit": "esperando un medio terrestre",
+        "others": "{count, plural, one {# paciente con otro desenlace} other {# pacientes con otro desenlace}}",
+        "noLandUnit": "Una embarcación va a desembarcar pacientes en el punto de encuentro, pero allí no hay ni llega ningún medio sanitario terrestre: envía uno."
+      }
     }
   },
   "status": {
@@ -145,7 +160,8 @@
       "HANDOFF": "Entrega en el hospital",
       "ADMITTED": "Entregado al hospital",
       "RELEASED_ON_SCENE": "Atendido en el lugar",
-      "DECEASED": "No ha sobrevivido"
+      "DECEASED": "No ha sobrevivido",
+      "NOT_RESCUED": "No rescatado"
     },
     "hospitalLoad": {
       "NORMAL": "Carga normal",
@@ -165,7 +181,11 @@
     "patient_released_field_post": "Paciente atendido y dado de alta por el puesto médico avanzado",
     "patient_transport_multi": "{callSign} traslada {count} pacientes a {hospital}",
     "patients_recovered": "{count, plural, one {{labels} llevado a tierra por {callSign}} other {{labels} llevados a tierra por {callSign}}}",
-    "patients_recovered_coast_guard": "Los guardacostas llevaron a tierra a {labels}"
+    "patients_recovered_coast_guard": "Los guardacostas llevaron a tierra a {labels}",
+    "patients_aboard": "{labels} a bordo de {callSign}",
+    "rescue_heading_ashore": "{callSign} hacia el punto de encuentro, llegada {time}",
+    "patients_landed": "{count, plural, one {{labels} desembarcado en el punto de encuentro: hace falta un medio terrestre} other {{labels} desembarcados en el punto de encuentro: hace falta un medio terrestre}}",
+    "patients_not_rescued": "{count, plural, one {{labels} no rescatado: se quedó en el agua} other {{labels} no rescatados: se quedaron en el agua}}"
   },
   "notifications": {
     "patientAwaitingTransport": "Paciente a la espera de traslado en {address}"
