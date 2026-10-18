@@ -908,8 +908,8 @@
         "description": "Circulation et constatations d’accidents."
       },
       "POL_VAN": {
-        "name": "Fourgon d’intervention",
-        "description": "Équipe nombreuse pour sécuriser les lieux."
+        "name": "Fourgon anti-émeute",
+        "description": "Équipe de maintien de l’ordre en tenue anti-émeute."
       },
       "POL_K9": {
         "name": "Équipe cynophile",

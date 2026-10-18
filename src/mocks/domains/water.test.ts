@@ -4,13 +4,14 @@ import { haversineMeters } from '@/lib/geo';
 import { MockEngine, MockError, OTP_CODE, memoryStorage, sceneOf, type MockCareer } from '../engine';
 import { INCIDENT_TEMPLATES, VEHICLE_TYPES, creditSeverityFactor, xpThreshold } from '../data/catalog';
 import { NAUTICAL_SITES, WATER_POINTS } from '../data/water';
-import { PESCARA } from '../data/pescara';
+import { INCIDENT_SPOTS, PESCARA } from '../data/pescara';
 import { installDomains } from './index';
 import { acquireFacility, listSites, transferVehicle } from './facilities';
 import {
   airGate,
   boatCapabilities,
   dispatchGate,
+  offshoreScene,
   spawnVerdict,
   waterGate,
   waterQa,
@@ -18,8 +19,8 @@ import {
 } from './water';
 
 /** A Pescara career at `level` with plenty of credits, off duty (no random spawns), ready to play. */
-function world(level = 9) {
-  let now = Date.parse('2026-07-01T10:00:00.000Z');
+function world(level = 9, start = '2026-07-01T10:00:00.000Z') {
+  let now = Date.parse(start);
   const events: RealtimeEnvelope[] = [];
   let seed = 11;
   const engine = new MockEngine({
@@ -472,6 +473,91 @@ describe('boat legs: from the berth, by trailer, from the bank', () => {
     for (const t of VEHICLE_TYPES.filter((v) => v.domain === 'WATER')) {
       expect(t.compatibleFacilityTypes, t.code).toEqual(['NAUTICAL_BASE']);
       expect(t.waterSpeedKmh, t.code).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('sea expansion (2026-10-18, analisi/note-agenti/mare.md)', () => {
+  const OFFSHORE = INCIDENT_TEMPLATES.filter((t) => t.water?.offshoreMeters).map((t) => t.code);
+  const seaPoint = WATER_POINTS.find((p) => p.bodyId === 'sea:adriatic' && p.shore)!;
+
+  it('ships the offshore templates from the generated catalog', () => {
+    expect(OFFSHORE.length).toBeGreaterThanOrEqual(5);
+    for (const c of OFFSHORE) expect(template(c).water!.bodies).toEqual(['SEA']);
+  });
+
+  it('pushes an offshore scene out to open sea, and keeps it under the coast when the leg crosses land', () => {
+    const w = world(14);
+    const scene = offshoreScene(w.career, seaPoint, [6000, 6000], () => 0.5);
+    expect(scene).not.toBeNull();
+    expect(haversineMeters(seaPoint.position, scene!)).toBeGreaterThan(5900);
+    expect(haversineMeters(seaPoint.position, scene!)).toBeLessThan(6100);
+    // Aimed straight at a land address of the town: the full push ends on land, so it is shortened (or dropped).
+    const spot = INCIDENT_SPOTS[0]!.position;
+    const d = haversineMeters(seaPoint.position, spot);
+    const mirror: [number, number] = [2 * seaPoint.position[0] - spot[0], 2 * seaPoint.position[1] - spot[1]];
+    const towardsLand = { position: seaPoint.position, snapped: seaPoint.snapped, shore: mirror };
+    const shortened = offshoreScene(w.career, towardsLand, [d, d], () => 0.5);
+    if (shortened) expect(haversineMeters(seaPoint.position, shortened)).toBeLessThan(0.61 * d);
+  });
+
+  it('places organic offshore calls kilometres out, with the meeting point on the shore road', () => {
+    const w = world(14);
+    const base = w.buildBase();
+    w.addVehicle('FIRE_BOAT', base.id);
+    for (let i = 0; i < 6; i++) {
+      const inc = w.engine.spawnIncident(w.career, 'TECH_FISHING_BOAT_BREAKDOWN', false, { organic: true });
+      const point = WATER_POINTS.find((p) => p.snapped.join() === inc.position.join())!;
+      expect(point.bodyId).toBe('sea:adriatic');
+      expect(inc.meetingPoint).toEqual(point.snapped);
+      expect(haversineMeters(sceneOf(inc), point.position)).toBeGreaterThan(1400);
+      expect(haversineMeters(sceneOf(inc), inc.position)).toBeLessThan(13_500);
+      w.engine.close(w.career, w.incident(inc.id), 'CANCELLED', w.now());
+    }
+  });
+
+  it('offshore: the Coast Guard never stands in for the boats (owner decision); under the coast it still does', () => {
+    const w = world(15);
+    for (const c of OFFSHORE)
+      expect(spawnVerdict(w.career, template(c)), c).toEqual({ bodies: [], coastGuardOnly: false });
+    expect(spawnVerdict(w.career, template('MED_RIP_CURRENT'))).toEqual({
+      bodies: ['SEA'],
+      coastGuardOnly: true,
+    });
+    const base = w.buildBase();
+    w.addVehicle('FIRE_BOAT', base.id);
+    expect(spawnVerdict(w.career, template('TECH_FISHING_BOAT_BREAKDOWN'))).toEqual({
+      bodies: ['SEA'],
+      coastGuardOnly: false,
+    });
+  });
+
+  /** Share of the spawn weight on water templates, exactly as `MockEngine.onSpawn` draws. */
+  const waterShare = (w: ReturnType<typeof world>): number => {
+    const pool = INCIDENT_TEMPLATES.filter(
+      (t) =>
+        !t.tutorial &&
+        t.minLevel <= w.career.summary.level &&
+        w.career.summary.unlockedFamilies.includes(t.primaryFamily),
+    ).map((t) => ({
+      t,
+      weight: w.engine.hooks.spawnWeight.reduce((acc, hook) => acc * hook(w.career, t), t.weight),
+    }));
+    const total = pool.reduce((sum, x) => sum + x.weight, 0);
+    return pool.filter((x) => x.t.water).reduce((sum, x) => sum + x.weight, 0) / total;
+  };
+
+  it('gives a coastal career with a Base nautica about one call in four on the sea in summer, at least one in six in winter', () => {
+    for (const [start, min, max] of [
+      ['2026-07-01T10:00:00.000Z', 0.2, 0.32],
+      ['2026-01-15T10:00:00.000Z', 1 / 6, 0.3],
+    ] as const) {
+      const w = world(14, start);
+      const base = w.buildBase();
+      w.addVehicle('FIRE_BOAT', base.id);
+      const share = waterShare(w);
+      expect(share, start).toBeGreaterThanOrEqual(min);
+      expect(share, start).toBeLessThanOrEqual(max);
     }
   });
 });

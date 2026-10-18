@@ -908,8 +908,8 @@
         "description": "Viabilità e rilievi degli incidenti."
       },
       "POL_VAN": {
-        "name": "Furgone operativo",
-        "description": "Squadra numerosa per la sicurezza della scena."
+        "name": "Furgone antisommossa",
+        "description": "Squadra dell’ordine pubblico in tenuta antisommossa."
       },
       "POL_K9": {
         "name": "Unità cinofila",

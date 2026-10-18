@@ -908,8 +908,8 @@
         "description": "Regulación del tráfico y atestados de accidentes."
       },
       "POL_VAN": {
-        "name": "Furgón policial",
-        "description": "Un equipo numeroso para asegurar la zona."
+        "name": "Furgón antidisturbios",
+        "description": "Equipo de orden público con equipo antidisturbios."
       },
       "POL_K9": {
         "name": "Unidad canina",

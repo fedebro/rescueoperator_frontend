@@ -241,7 +241,7 @@ describe('catalog mapping', () => {
   it('reads every icon key group of the bundled catalog', () => {
     expect(catalog.vehicleTypes).toHaveLength(45);
     expect(catalog.facilityTypes).toHaveLength(21);
-    expect(catalog.incidentTemplates).toHaveLength(143);
+    expect(catalog.incidentTemplates).toHaveLength(154); // + 11 sea templates (2026-10-18)
     for (const [group, list] of Object.entries(groups)) {
       expect(list.length, group).toBeGreaterThan(0);
       for (const entry of list)

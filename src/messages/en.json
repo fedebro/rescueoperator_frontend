@@ -908,8 +908,8 @@
         "description": "Traffic control and collision investigation."
       },
       "POL_VAN": {
-        "name": "Police van",
-        "description": "A large team for scene security."
+        "name": "Riot van",
+        "description": "A public-order team in riot gear."
       },
       "POL_K9": {
         "name": "Dog unit",

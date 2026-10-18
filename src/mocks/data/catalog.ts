@@ -181,7 +181,10 @@ interface Raw {
     icon: string;
     severity: { min: number; max: number; distribution: Record<string, number> };
     /** `placement: WATER_EDGE` = a water template: it spawns on the water bodies listed in `water.bodies` only. */
-    location: { placement: string; water: { bodies: WaterBodyType[]; urban: string } | null } | null;
+    location: {
+      placement: string;
+      water: { bodies: WaterBodyType[]; urban: string; offshoreMeters?: [number, number] } | null;
+    } | null;
     bands: RawBand[];
   }[];
   maxLevel: number;
@@ -560,8 +563,11 @@ export interface MockIncidentTemplate {
   complexity: number;
   consumables: { item: string; base: number; perSeverity: number }[];
   icon: string;
-  /** Water templates (`placement: WATER_EDGE`): the water bodies they may spawn on; null for every land template. */
-  water: { bodies: WaterBodyType[] } | null;
+  /**
+   * Water templates (`placement: WATER_EDGE`): the water bodies they may spawn on; null for every land template.
+   * `offshoreMeters` (2026-10-18): the scene is pushed this far out to open sea; null = under the coast.
+   */
+  water: { bodies: WaterBodyType[]; offshoreMeters: [number, number] | null } | null;
 }
 const RARITY_WEIGHT: Record<string, number> = { COMMON: 1, UNCOMMON: 0.45, RARE: 0.15, EPIC: 0.04 };
 /** 45 incident templates (12 FIRE / 8 EMS / 8 POLICE / 5 WILDFIRE / 5 ALPINE / 7 multi-service). */
@@ -592,7 +598,10 @@ export const INCIDENT_TEMPLATES: MockIncidentTemplate[] = RAW.incidentTemplates.
   icon: t.icon,
   water:
     t.location?.placement === 'WATER_EDGE'
-      ? { bodies: t.location.water?.bodies ?? ['SEA', 'LAKE', 'RIVER'] }
+      ? {
+          bodies: t.location.water?.bodies ?? ['SEA', 'LAKE', 'RIVER'],
+          offshoreMeters: t.location.water?.offshoreMeters ?? null,
+        }
       : null,
 }));
 export const TUTORIAL_TEMPLATE = RAW.starterPackage.tutorial.incidentTemplate;

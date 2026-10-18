@@ -1,5 +1,5 @@
 import type { I18nText, IncidentDto, VehicleDto } from '@/contracts';
-import { haversineMeters, type LngLat } from '@/lib/geo';
+import { bearingDeg, haversineMeters, type LngLat } from '@/lib/geo';
 import {
   INCIDENT_TEMPLATES,
   SHORE_CAPABILITIES,
@@ -8,6 +8,7 @@ import {
   type MockIncidentTemplate,
   type WaterBodyType,
 } from '../data/catalog';
+import { CANDIDATE_SITES, INCIDENT_SPOTS } from '../data/pescara';
 import { LAUNCH_POINTS, WATER_BODIES, WATER_POINTS, type MockWaterPoint } from '../data/water';
 import {
   MockError,
@@ -23,6 +24,7 @@ import {
 } from '../engine';
 import type { QaHelpers } from '../qa';
 import { domainState } from './index';
+import { timeContext } from './world-sim';
 
 /**
  * Water scene of the mock — the same rules as the backend (analisi/note-agenti/water-backend.md, D-23 [U] / D-68 [C]):
@@ -41,6 +43,15 @@ import { domainState } from './index';
  */
 export const WATER_KNOBS = {
   coastGuard: { waterBodies: ['SEA'] as WaterBodyType[], rewardShare: 0.6, spawnWeight: 0.5 },
+  /**
+   * Backend `depth.water.seaSpawnFactor` (2026-10-18, analisi/note-agenti/mare.md): spawn weight × this for the water templates
+   * the career may receive on the sea, by season. The backend values compensate its area-share term and the templates' season
+   * weights, neither of which the mock applies (it draws by catalog weight alone), so the mock uses the same shape with values
+   * that give it the same target — about one call in four on the sea for a Pescara career with a boat (measured in water.test.ts).
+   */
+  seaSpawnFactor: { WINTER: 1.3, SPRING: 1.3, SUMMER: 1.9, AUTUMN: 1.3 } as Record<string, number>,
+  /** Backend `depth.water.offshore`: the push of an offshore scene out to open sea (see `offshoreScene`). */
+  offshore: { roadClearanceRatio: 0.5, checkpoints: 4, retryFactors: [1, 0.6, 0.35], minMeters: 1500 },
   /** Server seconds (before the demo speed-up), like the backend's `depth.water`. */
   launchSeconds: 40,
   recoverySeconds: 30,
@@ -107,6 +118,8 @@ export function spawnVerdict(
   const level = career.summary.level;
   const atLevel = t.bands.filter((b) => b.minLevel <= level).flatMap((b) => b.requirements);
   if (boatsCanServe(atLevel, boatCapabilities(career))) return { bodies: allowed, coastGuardOnly: false };
+  // Offshore templates (owner's decision 2026-10-18): out at sea the Coast Guard never stands in for the player's boats.
+  if (t.water?.offshoreMeters) return { bodies: [], coastGuardOnly: false };
   const first = t.bands[0]?.requirements ?? [];
   const playerPart = first.some(
     (r) =>
@@ -198,6 +211,54 @@ export function decorateWaterIncident(
       max: scaled(incident.estimatedReward.max),
     },
   })!;
+}
+
+/** Point `meters` from `origin` towards `bearing` (degrees from north): equirectangular, plenty for a few kilometres. */
+function destination(origin: LngLat, meters: number, bearing: number): LngLat {
+  const rad = (bearing * Math.PI) / 180;
+  const dLat = (meters * Math.cos(rad)) / 111_320;
+  const dLng = (meters * Math.sin(rad)) / (111_320 * Math.cos((origin[1] * Math.PI) / 180));
+  return [origin[0] + dLng, origin[1] + dLat];
+}
+
+/** The mock's "roads" (it has no road network): every land address, site, meeting point and launch point it knows. */
+const roadSamples = (career: MockCareer): LngLat[] => [
+  ...INCIDENT_SPOTS.map((p) => p.position),
+  ...CANDIDATE_SITES.map((p) => p.position),
+  ...WATER_POINTS.flatMap((p) => (p.shore ? [p.snapped, p.shore] : [p.snapped])),
+  ...LAUNCH_POINTS.map((l) => l.position),
+  ...career.facilities.map((f) => f.position),
+];
+
+/**
+ * Offshore scene (backend `SpawnPlanner.offshoreScene`): the water point pushed out to sea along the shore → point direction
+ * by a distance drawn in `range`, kept only when every checkpoint of the leg has no "road" closer than `roadClearanceRatio` ×
+ * its distance from the point; otherwise a shorter push; null = the scene stays under the coast.
+ */
+export function offshoreScene(
+  career: MockCareer,
+  point: Pick<MockWaterPoint, 'position' | 'snapped' | 'shore'>,
+  range: readonly [number, number],
+  random: () => number,
+): LngLat | null {
+  const rules = WATER_KNOBS.offshore;
+  const origin = point.shore ?? point.snapped;
+  if (haversineMeters(origin, point.position) < 1) return null;
+  const bearing = bearingDeg(origin, point.position);
+  const drawn = range[0] + random() * (range[1] - range[0]);
+  const roads = roadSamples(career);
+  for (const factor of rules.retryFactors) {
+    const distance = drawn * factor;
+    if (distance < rules.minMeters) break;
+    let open = true;
+    for (let i = 1; i <= rules.checkpoints && open; i += 1) {
+      const along = (distance * i) / rules.checkpoints;
+      const probe = destination(point.position, along, bearing);
+      open = roads.every((r) => haversineMeters(probe, r) >= rules.roadClearanceRatio * along);
+    }
+    if (open) return destination(point.position, distance, bearing);
+  }
+  return null;
 }
 
 /** A water point for a water template: random, near a position (admin / QA), or beyond a distance (QA). */
@@ -561,17 +622,24 @@ export function installWater(engine: MockEngine): void {
     if (!isWaterTemplate(t)) return 1;
     const verdict = spawnVerdict(career, t);
     if (verdict.bodies.length === 0) return 0;
-    return verdict.coastGuardOnly ? WATER_KNOBS.coastGuard.spawnWeight : 1;
+    const sea = verdict.bodies.includes('SEA')
+      ? (WATER_KNOBS.seaSpawnFactor[timeContext(engine.now(), career.summary.timezone).season] ?? 1)
+      : 1;
+    return (verdict.coastGuardOnly ? WATER_KNOBS.coastGuard.spawnWeight : 1) * sea;
   });
   engine.hooks.spawnPlace.push((career, t, opts): SpawnPlace | null => {
     if (!isWaterTemplate(t)) return null;
     const point = pickWaterPoint(engine, career, t, opts);
     const body = WATER_BODIES[point.bodyId]!;
+    // Offshore template on the sea, organic spawn (backend: the planner's push; admin / QA spawns keep the point).
+    const offshore = opts.organic && body.type === 'SEA' ? t.water?.offshoreMeters : null;
+    const scene =
+      (offshore && offshoreScene(career, point, offshore, () => engine.random())) || point.position;
     return {
       position: point.snapped,
       address: `${point.street}, ${point.municipality}`,
       municipality: point.municipality,
-      scene: point.position,
+      scene,
       waterBody: { type: body.type, id: body.id, name: body.name },
       onCreated: (c, incident) => void decorateWaterIncident(engine, c, incident, point),
     };
