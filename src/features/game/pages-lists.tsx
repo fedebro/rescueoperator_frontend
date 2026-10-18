@@ -675,7 +675,7 @@ function FacilityDetail({ facilityId }: { facilityId: string }) {
         {!detail.data ? (
           <Skeleton className="h-32" />
         ) : (
-          <ul className="grid gap-2 sm:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {detail.data.availableUpgrades.map((u) => {
               const building = live.upgrades.find((x) => x.code === u.code)?.buildingUntil ?? null;
               const tooPoor = compareAmount(snapshot.career.credits, u.price) < 0;

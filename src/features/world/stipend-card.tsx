@@ -197,7 +197,8 @@ export function StipendCard() {
                 <div className="flex items-center justify-between gap-2 text-sm">
                   <span className="flex min-w-0 items-center gap-2">
                     <FamilyBadge family={f.family as ServiceFamily} size={20} />
-                    <span className="truncate">{name('family', f.family)}</span>
+                    {/* Two lines rather than "Emergenza Sanit…" next to the threshold on a 360 px phone. */}
+                    <span className="leading-tight">{name('family', f.family)}</span>
                   </span>
                   <span className="tabular text-muted shrink-0 text-xs">
                     {f.thresholdSeconds

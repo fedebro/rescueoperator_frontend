@@ -88,7 +88,7 @@ export function ObjectiveRow({
             <li key={c.careerId ?? c.directorName ?? 'x'}>
               <button
                 type="button"
-                className="bg-surface-2 border-border hover:bg-surface-3 rounded-full border px-2.5 py-0.5 text-xs"
+                className="bg-surface-2 border-border hover:bg-surface-3 inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs pointer-coarse:min-h-11"
                 onClick={() => c.careerId && onMember?.(c.careerId)}
               >
                 {c.directorName ?? t('deletedDirector')} <span className="tabular text-muted">{c.value}</span>

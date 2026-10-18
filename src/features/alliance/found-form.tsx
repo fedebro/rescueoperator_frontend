@@ -117,7 +117,7 @@ export function FoundForm({
     <form onSubmit={submit} className="flex flex-col gap-4" data-testid="found-form" noValidate>
       <Card className="flex flex-col gap-4">
         <SectionTitle>{t('identity')}</SectionTitle>
-        <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_140px]">
           <Field
             label={t('name')}
             htmlFor="found-name"
@@ -188,7 +188,7 @@ export function FoundForm({
       </Card>
       <Card className="flex flex-col gap-4">
         <SectionTitle>{t('access')}</SectionTitle>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Field label={t('language')} htmlFor="found-language" hint={t('languageHint')}>
             <Select
               id="found-language"

@@ -64,10 +64,9 @@ export function PersonnelScreen() {
       <SectionPrimer content={personnelContent} />
       {/* Labels on two lines rather than "PRONTI ALL'I…" on phones (03 §2.6). */}
       <Card className="grid grid-cols-3 gap-3">
-        <Stat wrapLabel label={t('summary.total')} value={people?.length ?? '—'} />
-        <Stat wrapLabel label={t('summary.ready')} value={ready ?? '—'} />
+        <Stat label={t('summary.total')} value={people?.length ?? '—'} />
+        <Stat label={t('summary.ready')} value={ready ?? '—'} />
         <Stat
-          wrapLabel
           label={t('summary.cost')}
           value={cost === undefined ? '—' : `${formatAmount(cost, locale)} ${tc('credits')}`}
         />

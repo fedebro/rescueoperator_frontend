@@ -333,11 +333,16 @@ export function RosterTab({
                     >
                       {p.firstName} {p.lastName}
                     </span>
+                    {/* The role stays readable on a narrow phone: the facility name gives way first. */}
                     <span
-                      className="text-muted block truncate text-xs"
+                      className="text-muted flex min-w-0 text-xs"
                       title={`${name('role', p.roleCode)} · ${facilityName(p.facilityId)}`}
                     >
-                      {name('role', p.roleCode)} · {facilityName(p.facilityId)}
+                      <span className="max-w-full shrink-0 truncate">{name('role', p.roleCode)}</span>
+                      <span className="min-w-0 truncate whitespace-pre">
+                        {' · '}
+                        {facilityName(p.facilityId)}
+                      </span>
                     </span>
                   </span>
                   <PersonnelStatusChip status={p.status} />

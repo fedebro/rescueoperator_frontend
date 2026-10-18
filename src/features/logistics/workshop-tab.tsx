@@ -212,7 +212,7 @@ export function WorkshopTab() {
 
       <section>
         <SectionTitle>{t('queue')}</SectionTitle>
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {(maintenance.data?.workshops ?? []).map((w) => {
             const mine = orders.filter(
               (o) => vehicles.find((v) => v.id === o.vehicleId)?.facilityId === w.facilityId,

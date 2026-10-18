@@ -58,7 +58,10 @@ export function VehicleCrewSection({ vehicle }: { vehicle: VehicleDto }) {
     <div data-testid="vehicle-crew">
       <SectionTitle
         action={
-          <Link href="/game/personnel" className="text-skyline text-xs hover:underline">
+          <Link
+            href="/game/personnel"
+            className="text-skyline inline-flex items-center text-xs hover:underline pointer-coarse:min-h-11 pointer-coarse:px-2"
+          >
             {t('manage')}
           </Link>
         }

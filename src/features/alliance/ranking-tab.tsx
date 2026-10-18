@@ -84,9 +84,14 @@ export function RankingTab() {
             <Stat
               label={t('myPosition')}
               value={
-                <span className="tabular">
-                  {mine.position > 0 ? `#${mine.position}` : t('notRanked', { min: data.minScoringMembers })}
-                </span>
+                mine.position > 0 ? (
+                  <span className="tabular">#{mine.position}</span>
+                ) : (
+                  // A sentence, not a number: body font and size, so it reads on two lines in a third of a phone.
+                  <span className="text-muted block font-sans text-xs leading-snug font-medium">
+                    {t('notRanked', { min: data.minScoringMembers })}
+                  </span>
+                )
               }
             />
             <Stat label={t('score')} value={<span className="tabular">{mine.score}</span>} />

@@ -109,9 +109,10 @@ function InspectorHeader({
             {title}
           </h2>
           {subtitle ? (
-            <p className="text-muted mt-0.5 flex items-center gap-1 truncate text-xs" title={subtitle}>
+            <p className="text-muted mt-0.5 flex min-w-0 items-center gap-1 text-xs" title={subtitle}>
               <MapPin className="size-3 shrink-0" aria-hidden />
-              {subtitle}
+              {/* The ellipsis needs its own box: on the flex row the address was cut mid-letter. */}
+              <span className="min-w-0 truncate">{subtitle}</span>
             </p>
           ) : null}
         </div>

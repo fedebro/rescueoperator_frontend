@@ -93,7 +93,7 @@ function QuickHire({ onSelect }: { onSelect: (id: string) => void }) {
         <p className="text-muted text-sm">{t('subtitle')}</p>
       </div>
       <Card className="flex flex-col gap-4">
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <span className="text-muted text-xs font-semibold tracking-wide uppercase">{t('role')}</span>
             <Select
@@ -290,7 +290,7 @@ function CandidatesMarket() {
           description={t('emptyHint')}
         />
       ) : (
-        <ul className="grid gap-3 md:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {market.data.candidates.map((c) => {
             const compatible = facilities.filter((f) => hosts(f, c.family) && freeBeds(f) > 0);
             const facilityId = facilityByCandidate[c.id] ?? compatible[0]?.id;
@@ -312,9 +312,10 @@ function CandidatesMarket() {
                         {name('role', c.roleCode)}
                       </p>
                     </div>
-                    <PotentialBadge potential={c.potential} />
                   </div>
+                  {/* The potential sits with the other chips: next to the name it cut "Davide C…" on a phone. */}
                   <div className="flex flex-wrap gap-1">
+                    <PotentialBadge potential={c.potential} />
                     <Badge tone="neutral">{t('competence', { value: c.competence })}</Badge>
                     {c.qualifications.map((q) => (
                       <Badge key={q} tone="info">

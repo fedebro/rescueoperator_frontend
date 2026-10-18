@@ -163,7 +163,7 @@ export function TrainingTab({ onSelect }: { onSelect: (id: string) => void }) {
 
       <section>
         <SectionTitle>{t('catalogue')}</SectionTitle>
-        <ul className="grid gap-3 md:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {sorted.map((c) => {
             const eligible = people.filter(
               (p) =>

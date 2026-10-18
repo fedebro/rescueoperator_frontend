@@ -105,26 +105,21 @@ export function Stat({
   label,
   value,
   className,
-  wrapLabel,
 }: {
   label: string;
   value: React.ReactNode;
   className?: string;
-  /** Let a long label take two lines instead of an ellipsis (narrow three-up rows on phones). */
-  wrapLabel?: boolean;
 }) {
   return (
     <div className={cn('flex min-w-0 flex-col', className)}>
       <span
-        className={cn(
-          'text-subtle text-xs font-semibold tracking-wide uppercase',
-          wrapLabel ? 'line-clamp-2 leading-tight' : 'truncate',
-        )}
+        className="text-subtle line-clamp-2 text-xs leading-tight font-semibold tracking-wide uppercase"
         title={label}
       >
         {label}
       </span>
-      <span className="tabular text-fg truncate text-base font-semibold">{value}</span>
+      {/* Wraps instead of an ellipsis: "180 Crediti" in a third of a 360 px phone must stay readable. */}
+      <span className="tabular text-fg text-base font-semibold [overflow-wrap:anywhere]">{value}</span>
     </div>
   );
 }

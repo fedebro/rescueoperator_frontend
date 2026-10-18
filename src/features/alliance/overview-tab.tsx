@@ -112,7 +112,7 @@ export function OverviewTab({
               alliance.coordinator.careerId ? (
                 <button
                   type="button"
-                  className="hover:text-fg truncate text-left underline-offset-2 hover:underline"
+                  className="hover:text-fg relative max-w-full truncate text-left underline-offset-2 hover:underline pointer-coarse:after:absolute pointer-coarse:after:inset-x-0 pointer-coarse:after:-inset-y-2.5 pointer-coarse:after:content-['']"
                   onClick={() => onMember(alliance.coordinator.careerId!)}
                 >
                   {alliance.coordinator.directorName}
@@ -176,7 +176,7 @@ export function OverviewTab({
               <li key={m.id}>
                 <button
                   type="button"
-                  className="bg-surface-2 border-border hover:bg-surface-3 rounded-full border px-3 py-1 text-sm"
+                  className="bg-surface-2 border-border hover:bg-surface-3 inline-flex items-center rounded-full border px-3 py-1 text-sm pointer-coarse:min-h-11"
                   onClick={() => onMember(m.careerId)}
                 >
                   <span className="bg-success mr-1.5 inline-block size-2 rounded-full" aria-hidden />
@@ -195,7 +195,7 @@ export function OverviewTab({
           <FeatureOff part="board" />
         )}
       </Card>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Card>
           <SectionTitle>{t('overview.objectives')}</SectionTitle>
           {flags.objectives ? <ObjectivesSection onMember={onMember} /> : <FeatureOff part="objectives" />}

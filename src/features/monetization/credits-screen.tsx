@@ -494,7 +494,10 @@ function CreditsContent() {
       ) : packages.isError ? (
         <EmptyState title={errorMessage(packages.error)} />
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5" aria-label={t('packages')}>
+        <ul
+          className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
+          aria-label={t('packages')}
+        >
           {(packages.data ?? []).map((pack) => (
             <PackageCard
               key={pack.id}

@@ -36,7 +36,9 @@ export default defineConfig({
       // Alliances (D-123): the section lives under "Altro" and its chat screen handles the keyboard — phone-specific too.
       // Sending a busy vehicle (confirmation sheet, rows at 360 px) lives on the phone as much as on the desktop.
       // Teams (squadre): dialogs are bottom sheets on a phone, opened from the vehicle sheet — WebKit covers them as well.
-      testMatch: /(mobile-ux|core-loop|in-app-browsers|dispatch-chain|alliance[a-z-]*|squadre)\.spec\.ts$/,
+      // Every player screen at phone widths (agent `mobile`): no sideways scroll, main action in reach.
+      testMatch:
+        /(mobile-ux|mobile-screens|core-loop|in-app-browsers|dispatch-chain|alliance[a-z-]*|squadre)\.spec\.ts$/,
     },
   ],
   webServer: {

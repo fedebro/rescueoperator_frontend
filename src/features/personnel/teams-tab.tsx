@@ -109,7 +109,7 @@ export function TeamsTab({
       ) : (
         <section>
           <SectionTitle>{t('teamsTitle', { count: teams.data.length })}</SectionTitle>
-          <ul className="grid gap-3 lg:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-3 lg:grid-cols-2">
             {teams.data.map((team) => (
               <li key={team.id}>
                 <TeamCard
@@ -182,8 +182,9 @@ function VehicleRow({
     >
       <FamilyBadge family={vehicle.family} size={32} />
       <div className="min-w-0 flex-1">
+        {/* Two lines rather than "APS 1 · Autop…" next to the button on a phone. */}
         <p
-          className="truncate text-sm font-semibold"
+          className="line-clamp-2 text-sm leading-snug font-semibold"
           title={`${vehicle.callSign} · ${name('vehicle', vehicle.typeCode)}`}
         >
           {vehicle.callSign}

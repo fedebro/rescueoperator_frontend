@@ -149,7 +149,7 @@ export function NewFacilitySection({ initialFamily }: { initialFamily?: string |
       ) : rows.length === 0 ? (
         <EmptyState title={t('empty')} />
       ) : (
-        <ul className="mt-3 grid gap-2 lg:grid-cols-2">
+        <ul className="mt-3 grid grid-cols-1 gap-2 lg:grid-cols-2">
           {rows.map((s) => {
             const option = entryOption(s);
             const buyable = s.options.some((o) => o.available);
@@ -179,7 +179,7 @@ export function NewFacilitySection({ initialFamily }: { initialFamily?: string |
                     <FamilyBadge family={siteFamily(s)} size={36} title={familyLabel(siteFamily(s))} />
                   )}
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold" title={s.name}>
+                    <span className="line-clamp-2 text-sm leading-snug font-semibold" title={s.name}>
                       {s.name}
                     </span>
                     <span

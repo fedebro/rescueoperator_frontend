@@ -188,7 +188,7 @@ function OrderForm({ facilityId: initialFacilityId, onDone }: { facilityId?: str
               <Package className="text-muted size-5 shrink-0" aria-hidden />
               <div className="min-w-0 flex-1">
                 <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold">
-                  <span className="truncate">{itemName}</span>
+                  <span className="min-w-0 leading-snug">{itemName}</span>
                   {line.low ? <StockChip low /> : null}
                 </p>
                 <p className="text-muted flex flex-wrap items-center gap-x-2 text-xs">

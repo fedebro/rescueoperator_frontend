@@ -314,7 +314,7 @@ function PresenceDialog({
                     <li key={m.id}>
                       <button
                         type="button"
-                        className="bg-surface-2 border-border hover:bg-surface-3 rounded-full border px-3 py-1 text-sm"
+                        className="bg-surface-2 border-border hover:bg-surface-3 inline-flex items-center rounded-full border px-3 py-1 text-sm pointer-coarse:min-h-11"
                         onClick={() => onOpenMember(m.careerId)}
                       >
                         {m.directorName}

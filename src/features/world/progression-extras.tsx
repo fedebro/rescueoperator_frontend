@@ -270,7 +270,7 @@ export function ReputationCard() {
       </div>
       <p className="text-muted -mt-2 text-xs">{t('effects')}</p>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <FactorList
           icon={<TrendingUp className="text-success size-4" aria-hidden />}
           title={t('up')}

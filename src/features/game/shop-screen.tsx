@@ -203,7 +203,8 @@ export function VehicleOffer({
           </li>
         ))}
       </ul>
-      <dl className="text-subtle grid grid-cols-3 gap-2 text-xs">
+      {/* The middle column ("2 · Autorimessa") takes the room the two short ones leave: no "2 ·" orphan on a phone. */}
+      <dl className="text-subtle grid grid-cols-[auto_minmax(0,1fr)_auto] gap-x-4 gap-y-2 text-xs">
         <div>
           <dt>{t('crew')}</dt>
           <dd className="tabular text-fg">

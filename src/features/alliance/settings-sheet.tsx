@@ -129,7 +129,7 @@ export function AllianceSettingsSheet({
             <p className="text-subtle mb-2 text-xs">
               {t('nameCooldown', { days: config.nameChangeCooldownDays })}
             </p>
-            <div className="grid gap-3 sm:grid-cols-[1fr_140px]">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_140px]">
               <Field label={tf('name')} htmlFor="settings-name" error={error('name')}>
                 <Input
                   id="settings-name"
@@ -186,7 +186,7 @@ export function AllianceSettingsSheet({
           </div>
           <div>
             <SectionTitle level={3}>{t('access')}</SectionTitle>
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <Field label={tf('language')} htmlFor="settings-language">
                 <Select
                   id="settings-language"

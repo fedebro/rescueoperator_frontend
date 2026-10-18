@@ -89,7 +89,15 @@ export function DialogContent({
 
 export function DialogFooter({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn('mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end', className)}>
+    <div
+      className={cn(
+        'mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end',
+        // Phones: a long sheet (an order, a squad, a course) keeps its actions in view — they stick to the bottom
+        // edge while the body scrolls under them, instead of waiting below the fold.
+        'max-md:bg-surface-1 max-md:border-border max-md:sticky max-md:bottom-0 max-md:z-10 max-md:-mx-5 max-md:border-t max-md:px-5 max-md:pt-3 max-md:pb-1',
+        className,
+      )}
+    >
       {children}
     </div>
   );

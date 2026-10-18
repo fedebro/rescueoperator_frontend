@@ -68,7 +68,10 @@ export function StockLines({ lines }: { lines: InventoryLine[] }) {
         >
           <div className="flex items-center gap-2">
             <Package className="text-muted size-4 shrink-0" aria-hidden />
-            <span className="min-w-0 flex-1 truncate text-sm font-semibold">{name('item', l.itemCode)}</span>
+            {/* Wraps: "Kit consumabili da estricazione" next to its status chip on a 360 px phone. */}
+            <span className="min-w-0 flex-1 text-sm leading-snug font-semibold">
+              {name('item', l.itemCode)}
+            </span>
             <StockChip low={l.low} />
           </div>
           {/* Sentence case, wrapping at a space if it must: the full word on a narrow phone, never "DISPONI…". */}

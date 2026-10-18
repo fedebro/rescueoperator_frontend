@@ -243,7 +243,7 @@ export function MyInvitationCard({ referral }: { referral: Referral }) {
         {t('title')}
       </SectionTitle>
       <p className="text-sm">{t('invitedBy', { name: invitation.referrerName })}</p>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <p className="tabular mb-1 text-sm">
             {t('missions', { done: invitation.missionsDone, required: missionsRequired })}
@@ -356,7 +356,7 @@ function ReferralContent() {
       ) : (
         <>
           <MyInvitationCard referral={referral} />
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <InviteCard referral={referral} />
             <NetworkProgressCard referral={referral} />
           </div>

@@ -115,7 +115,7 @@ export function ProgressionScreen() {
           <Stat label={t('failed')} value={progression?.incidentsFailed ?? '—'} />
         </div>
       </Card>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <ReputationCard />
         <MilestonesCard />
       </div>
@@ -141,7 +141,8 @@ export function ProgressionScreen() {
                       <li key={`${u.kind}-${u.code}`}>
                         <Badge
                           tone={u.kind === 'FAMILY' ? (reached ? 'success' : 'info') : 'neutral'}
-                          className="h-6"
+                          // A long name ("Löschhubschrauber mit Außenlastbehälter") wraps inside the chip on a phone.
+                          className="min-h-6 max-w-full whitespace-normal"
                         >
                           {reached ? (
                             <CheckCircle2 className="size-3" aria-label={tc('unlocked')} />
@@ -217,7 +218,7 @@ export function EconomyScreen() {
   ];
   return (
     <PageBody title={t('title')} subtitle={t('subtitle')}>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Card className="flex flex-col gap-3">
           <SectionTitle>{t('balance')}</SectionTitle>
           <CreditAmount value={career.credits} label={tc('credits')} size="lg" className="text-3xl" />
@@ -343,7 +344,7 @@ export function SettingsScreen() {
     <PageBody title={t('title')}>
       <Card>
         <SectionTitle>{t('account')}</SectionTitle>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Stat label={t('directorName')} value={<span className="font-sans">{user?.directorName}</span>} />
           <Stat label={t('email')} value={<span className="font-sans text-sm">{user?.email}</span>} />
         </div>
