@@ -206,6 +206,9 @@ const catalog = {
     'autonomy',
     // `resolution.maxVehiclesPerDispatch` (12): one dispatch command's limit on a normal call.
     'resolution',
+    // D-139: the credit table of the severities and the in-service ramp of the call generator, as on the server.
+    'reward',
+    'spawn',
   ]),
   majorIncidents: {
     settings: majors.settings,

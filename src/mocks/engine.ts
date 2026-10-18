@@ -35,6 +35,8 @@ import {
   ECONOMY,
   MAJOR_SETTINGS,
   MAX_VEHICLES_PER_DISPATCH,
+  SERVICE_RAMP,
+  creditSeverityFactor,
 } from './data/catalog';
 import { INCIDENT_SPOTS, PESCARA, STARTER_SITES, mockRoute } from './data/pescara';
 import { newId } from './ulid';
@@ -377,6 +379,8 @@ export interface MockCareer {
   away: { since: number; resolved: number; failed: number; credits: number; xp: number; stipend: number };
   lastSeenAt: number;
   awayFrom: number | null;
+  /** D-139: when the running spawn chain started (real ms); null/absent while the chain is stopped (off duty, away). */
+  spawnStreakStartedAt?: number | null;
   idempotency: Record<string, unknown>;
   /** Domain module state, keyed by domain name (personnel, medical, logistics, world, business…). */
   ext: Record<string, unknown>;
@@ -1422,7 +1426,21 @@ export class MockEngine {
 
   /* ───────────── incidents ───────────── */
   activeCap(career: MockCareer): number {
-    return levelRow(career.summary.level).maxActiveIncidents;
+    return levelRow(career.summary.level).maxActiveIncidents + this.serviceRamp(career).extra;
+  }
+
+  /**
+   * D-139, as the server's `serviceRamp`: real minutes since the spawn chain started / `fullAfterMinutes` (capped at 1).
+   * The next delay is divided by `factor`; once the ramp is full the active cap grows by `extra`.
+   */
+  serviceRamp(career: MockCareer): { factor: number; extra: number } {
+    const since = career.spawnStreakStartedAt;
+    if (since === undefined || since === null) return { factor: 1, extra: 0 };
+    const progress = Math.min(1, Math.max(0, this.now() - since) / 60_000 / SERVICE_RAMP.fullAfterMinutes);
+    return {
+      factor: 1 + (Math.max(1, SERVICE_RAMP.maxFactor) - 1) * progress,
+      extra: progress >= 1 ? SERVICE_RAMP.extraActiveAtFull : 0,
+    };
   }
 
   /**
@@ -1439,7 +1457,9 @@ export class MockEngine {
       return;
     // While a major incident runs, normal calls keep coming but `spawnSlowdown` (2.5×) slower (D-69).
     const slowdown = career.incidents.some((i) => i.major) ? MAJOR_SETTINGS.spawnSlowdown : 1;
-    this.schedule(career, 'INCIDENT_SPAWN', (35 + this.random() * 50) * slowdown, career.summary.id);
+    career.spawnStreakStartedAt ??= this.now(); // a new chain starts a new ramp (D-139)
+    const { factor } = this.serviceRamp(career);
+    this.schedule(career, 'INCIDENT_SPAWN', ((35 + this.random() * 50) * slowdown) / factor, career.summary.id);
   }
 
   private onSpawn(career: MockCareer): void {
@@ -1466,6 +1486,7 @@ export class MockEngine {
       if (picked) this.spawnIncident(career, picked.t.code, false, { organic: true });
     }
     if (!away) this.scheduleSpawn(career);
+    else career.spawnStreakStartedAt = null; // the chain stops: coming back starts the ramp again
   }
 
   spawnIncident(
@@ -1513,7 +1534,7 @@ export class MockEngine {
     const severity = opts.severity ?? (tutorial ? t.severity[0] : drawn);
     const band = bandFor(t, severity);
     const now = this.now();
-    const reward = Math.round(t.baseReward * t.complexity * (0.7 + 0.1 * severity));
+    const reward = Math.round(t.baseReward * t.complexity * creditSeverityFactor(severity));
     const externalFamilies = t.families.filter(
       (f) => f !== 'UNG' && !career.summary.unlockedFamilies.includes(f),
     );
@@ -2303,7 +2324,7 @@ export class MockEngine {
     const durationSeconds = Math.round(((at - created) / 1000) * this.speed);
     // The Coast Guard did the water part (D-68): reward and XP × its share (0.6), never a failure for the missing boat.
     const share = incident.waterSupport?.rewardShare ?? 1;
-    const gross = Math.round(t.baseReward * t.complexity * (0.7 + 0.1 * incident.severity) * share);
+    const gross = Math.round(t.baseReward * t.complexity * creditSeverityFactor(incident.severity) * share);
     const timeliness = Math.max(0, Math.min(1, 1.15 - responseSeconds / 240));
     const adequacy = incident.coverageRatio;
     const patients = this.hooks.patientOutcome
@@ -2479,8 +2500,10 @@ export class MockEngine {
 
   setDuty(career: MockCareer, onDuty: boolean): CareerSummary {
     career.summary = { ...career.summary, onDuty };
-    if (!onDuty) this.cancelActions(career, (a) => a.type === 'INCIDENT_SPAWN');
-    else this.scheduleSpawn(career);
+    if (!onDuty) {
+      this.cancelActions(career, (a) => a.type === 'INCIDENT_SPAWN');
+      career.spawnStreakStartedAt = null; // off duty ends the shift's ramp (D-139)
+    } else this.scheduleSpawn(career);
     this.emit(career, 'career.updated', { career: career.summary });
     this.save();
     return career.summary;

@@ -10,7 +10,7 @@ import {
 import { applyEvent } from '@/lib/realtime/reconcile';
 import { MockEngine, MockError, OTP_CODE, TUTORIAL_BONUS, memoryStorage, type MockCareer } from './engine';
 import { PESCARA, mockRoute } from './data/pescara';
-import { levelForXp, xpThreshold } from './data/catalog';
+import { levelForXp, levelRow, xpThreshold } from './data/catalog';
 
 function world(speed = 1) {
   let now = Date.parse('2026-03-01T09:00:00.000Z');
@@ -226,6 +226,33 @@ describe('mock core loop', () => {
       w.advance(30_000);
     }
     expect(career.incidents.length).toBeGreaterThan(0);
+  });
+
+  it('D-139: the longer the shift, the faster the calls (as the server); off duty starts the ramp again', () => {
+    w.engine.advanceTutorial(career, 'DONE');
+    w.engine.setDuty(career, false);
+    expect(career.spawnStreakStartedAt).toBeNull();
+    expect(w.engine.serviceRamp(career)).toEqual({ factor: 1, extra: 0 });
+    const cap = levelRow(career.summary.level).maxActiveIncidents;
+    w.engine.setDuty(career, true);
+    const started = career.spawnStreakStartedAt!;
+    expect(started).toBe(w.now());
+    for (let i = 0; i < 30; i++) {
+      w.engine.touch(career);
+      w.advance(30_000, 5_000);
+    }
+    // Fifteen real minutes in: halfway up the ramp, the same chain (same start), the cap still the level's.
+    expect(career.spawnStreakStartedAt).toBe(started);
+    expect(w.engine.serviceRamp(career).factor).toBeCloseTo(1.5, 5);
+    expect(w.engine.activeCap(career)).toBe(cap);
+    for (let i = 0; i < 30; i++) {
+      w.engine.touch(career);
+      w.advance(30_000, 5_000);
+    }
+    expect(w.engine.serviceRamp(career)).toEqual({ factor: 2, extra: 1 });
+    expect(w.engine.activeCap(career)).toBe(cap + 1);
+    w.engine.setDuty(career, false);
+    expect(w.engine.serviceRamp(career)).toEqual({ factor: 1, extra: 0 });
   });
 
   it('catches up after a reload: state persists and due actions run', () => {

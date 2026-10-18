@@ -238,6 +238,10 @@ interface Raw {
     autonomy: AutonomyKnobs;
     /** `economy.yaml → resolution`: only the per-dispatch limit of a normal call is read by the mock. */
     resolution: { maxVehiclesPerDispatch: number };
+    /** `economy.yaml → reward`: the mock reads the credit factor of each severity (D-139: the table × 1.25). */
+    reward?: { severityMultiplier: Record<string, number> };
+    /** `economy.yaml → spawn`: the mock reads the in-service ramp (D-139). */
+    spawn?: { serviceRamp?: ServiceRamp };
   };
   /** `major-incidents.yaml` (D-24 / D-69): the generator settings and the scenarios. */
   majorIncidents: { settings: MajorSettings; scenarios: MajorScenario[] };
@@ -619,6 +623,20 @@ export const ECONOMY = RAW.economy;
 export const AUTONOMY: AutonomyKnobs = RAW.economy.autonomy;
 /** How many vehicles ONE dispatch command may send to a normal call (`resolution.maxVehiclesPerDispatch`, 12). */
 export const MAX_VEHICLES_PER_DISPATCH = RAW.economy.resolution?.maxVehiclesPerDispatch ?? 12;
+/** D-139: the longer a career stays in service, the busier the shift (same knobs as the server's `serviceRamp`). */
+export interface ServiceRamp {
+  fullAfterMinutes: number;
+  maxFactor: number;
+  extraActiveAtFull: number;
+}
+export const SERVICE_RAMP: ServiceRamp = RAW.economy.spawn?.serviceRamp ?? {
+  fullAfterMinutes: 30,
+  maxFactor: 2,
+  extraActiveAtFull: 1,
+};
+/** Credit factor of a severity: the server's `reward.severityMultiplier` table (D-139), the old linear rule as fallback. */
+export const creditSeverityFactor = (severity: number): number =>
+  RAW.economy.reward?.severityMultiplier[String(severity)] ?? 0.7 + 0.1 * severity;
 /** Major incidents (D-24 / D-69): the real generator settings and the 14 scenarios of the catalog. */
 export const MAJOR_SETTINGS: MajorSettings = RAW.majorIncidents.settings;
 export const MAJOR_SCENARIOS: MajorScenario[] = RAW.majorIncidents.scenarios;

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { IncidentDto, SiteDto, VehicleDto, type RealtimeEnvelope } from '@/contracts';
 import { haversineMeters } from '@/lib/geo';
 import { MockEngine, MockError, OTP_CODE, memoryStorage, sceneOf, type MockCareer } from '../engine';
-import { INCIDENT_TEMPLATES, VEHICLE_TYPES, xpThreshold } from '../data/catalog';
+import { INCIDENT_TEMPLATES, VEHICLE_TYPES, creditSeverityFactor, xpThreshold } from '../data/catalog';
 import { NAUTICAL_SITES, WATER_POINTS } from '../data/water';
 import { PESCARA } from '../data/pescara';
 import { installDomains } from './index';
@@ -177,7 +177,7 @@ describe('Coast Guard (external support on the sea, D-68)', () => {
     const t = template('MED_SWIMMER_DISTRESS');
     expect(Number(outcome.grossCredits)).toBe(
       Math.round(
-        t.baseReward * t.complexity * (0.7 + 0.1 * inc.severity) * WATER_KNOBS.coastGuard.rewardShare,
+        t.baseReward * t.complexity * creditSeverityFactor(inc.severity) * WATER_KNOBS.coastGuard.rewardShare,
       ),
     );
   });
