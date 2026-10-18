@@ -1459,7 +1459,12 @@ export class MockEngine {
     const slowdown = career.incidents.some((i) => i.major) ? MAJOR_SETTINGS.spawnSlowdown : 1;
     career.spawnStreakStartedAt ??= this.now(); // a new chain starts a new ramp (D-139)
     const { factor } = this.serviceRamp(career);
-    this.schedule(career, 'INCIDENT_SPAWN', ((35 + this.random() * 50) * slowdown) / factor, career.summary.id);
+    this.schedule(
+      career,
+      'INCIDENT_SPAWN',
+      ((35 + this.random() * 50) * slowdown) / factor,
+      career.summary.id,
+    );
   }
 
   private onSpawn(career: MockCareer): void {
