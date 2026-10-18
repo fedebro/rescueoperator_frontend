@@ -118,7 +118,8 @@ export function VehicleMaintenanceSection({ vehicle }: { vehicle: VehicleDto }) 
           <CareSummary status={status} />
           <RecoverySteps vehicle={vehicle} order={order} />
           {order && recoveryStepOf(vehicle, order) === null ? <WorkOrderRow order={order} /> : null}
-          {!order && vehicle.status === 'AVAILABLE' && gate.unlocked ? (
+          {/* A vehicle back from a breakdown waits in MAINTENANCE for its repair: the offers must show there too. */}
+          {!order && (vehicle.status === 'AVAILABLE' || vehicle.status === 'MAINTENANCE') && gate.unlocked ? (
             <QuoteList vehicle={vehicle} quotes={status.quotes} />
           ) : null}
           <div>
