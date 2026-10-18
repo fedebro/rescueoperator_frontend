@@ -41,6 +41,7 @@
     "OTP_COOLDOWN": "Du hast gerade erst einen Code angefordert. Warte kurz, bevor du einen weiteren anforderst.",
     "DIRECTOR_NAME_REQUIRED": "Wähle einen Leiternamen, um fortzufahren.",
     "DIRECTOR_NAME_INVALID": "Dieser Name ist nicht verfügbar. Wähle einen anderen.",
+    "FACILITY_NAME_INVALID": "Dieser Name ist nicht erlaubt oder ungültig: 2 bis 40 Zeichen, keine beleidigenden Wörter.",
     "SESSION_REVOKED": "Diese Sitzung wurde von einem anderen Gerät beendet.",
     "CAREER_ALREADY_EXISTS": "Du hast bereits eine aktive Karriere.",
     "LOCATION_NOT_PLAYABLE": "Dieser Ort ist noch nicht spielbar.",
@@ -141,7 +142,8 @@
     "sites": {
       "title": "Wähle deine erste Wache in {location}",
       "subtitle": "Drei Lagen, drei Spielstile. Vergleiche Abdeckung und Reaktionszeiten: Weitere Wachen kannst du später eröffnen.",
-      "submit": "Karriere starten"
+      "submit": "Karriere starten",
+      "elsewhere": "{location} hat keine echte Feuerwache: Du kannst von den nächstgelegenen starten. Deine Karriere liegt dann in der Gemeinde der gewählten Wache."
     },
     "site": {
       "coverage": "Abgedeckte Bevölkerung",
@@ -164,7 +166,8 @@
         "CENTRAL": "Du bist fast überall schnell vor Ort, hast aber wenig Platz zum Wachsen.",
         "BALANCED": "Guter Kompromiss aus Reaktionszeit und Platz für neue Fahrzeuge. Empfohlen.",
         "PERIPHERAL": "Viel Platz und günstiger Ausbau, aber längere Anfahrt ins Zentrum."
-      }
+      },
+      "municipalityKm": "{municipality} · {km} km"
     },
     "creating": {
       "title": "Wir eröffnen deine Leitstelle…",

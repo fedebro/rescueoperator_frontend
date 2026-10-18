@@ -1393,6 +1393,7 @@ export function installMedical(engine: MockEngine): void {
           headquarters: false,
           operationalAt: null,
           promotion: null,
+          municipality: 'Pescara',
         };
         career.facilities.push(facility);
         if (!career.summary.unlockedFamilies.includes('EMS'))

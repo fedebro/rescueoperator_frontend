@@ -41,6 +41,7 @@
     "OTP_COOLDOWN": "Hai appena richiesto un codice. Attendi prima di richiederne un altro.",
     "DIRECTOR_NAME_REQUIRED": "Scegli il nome del Direttore per continuare.",
     "DIRECTOR_NAME_INVALID": "Questo nome non è disponibile. Scegline un altro.",
+    "FACILITY_NAME_INVALID": "Questo nome non è consentito o non è valido: usa da 2 a 40 caratteri, senza parole offensive.",
     "SESSION_REVOKED": "Questa sessione è stata chiusa da un altro dispositivo.",
     "CAREER_ALREADY_EXISTS": "Hai già una carriera attiva.",
     "LOCATION_NOT_PLAYABLE": "Questa località non è ancora giocabile.",
@@ -141,7 +142,8 @@
     "sites": {
       "title": "Scegli la prima sede a {location}",
       "subtitle": "Tre posizioni, tre stili di gioco. Confronta copertura e tempi di risposta: potrai aprire altre sedi più avanti.",
-      "submit": "Inizia la carriera"
+      "submit": "Inizia la carriera",
+      "elsewhere": "{location} non ha una caserma dei vigili del fuoco reale: puoi partire da quelle più vicine. La tua carriera sarà nel comune della caserma scelta."
     },
     "site": {
       "coverage": "Popolazione coperta",
@@ -164,7 +166,8 @@
         "CENTRAL": "Arrivi in fretta quasi ovunque, ma lo spazio per crescere è poco.",
         "BALANCED": "Buon compromesso tra tempi di risposta e spazio per nuovi mezzi. Consigliata.",
         "PERIPHERAL": "Tanto spazio e costi di crescita contenuti, ma tempi più lunghi verso il centro."
-      }
+      },
+      "municipalityKm": "{municipality} · {km} km"
     },
     "creating": {
       "title": "Apriamo la tua centrale…",

@@ -79,6 +79,12 @@ export const StarterSite = z.object({
   capacityPoints: z.number().int(),
   expansionPotential: z.enum(['LOW', 'MEDIUM', 'HIGH']),
   profile: z.enum(['CENTRAL', 'BALANCED', 'PERIPHERAL']),
+  /**
+   * Additive (D-140): municipality the station stands in, and its straight-line distance from the centre of the chosen one.
+   * With real sites only, a municipality without a real fire station offers the nearest ones: `municipality` then differs.
+   */
+  municipality: z.string().nullable().optional(),
+  distanceMeters: z.number().int().nullable().optional(),
 });
 
 /** POST /careers (Idempotency-Key) */
@@ -146,8 +152,17 @@ export const FacilityDto = z.object({
   promotion: z.object({ toTypeCode: z.string(), completeAt: IsoDateTime }).nullable().optional(),
   /** Additive (water): set on a Base nautica — its water body and the berth on the water its boats start from. */
   nautical: SiteNauticalDto.nullable().optional(),
+  /** Additive: name of the municipality the facility stands in ("Spoltore"), shown under its name; null when unknown. */
+  municipality: z.string().nullable().optional(),
 });
 export type FacilityDto = z.infer<typeof FacilityDto>;
+
+/** Rename limits of a facility (owner, 2026-10-18): the player's own name for one of their facilities. */
+export const FACILITY_NAME_MIN = 2;
+export const FACILITY_NAME_MAX = 40;
+/** PATCH /careers/:careerId/facilities/:facilityId — the player renames one of their facilities. */
+export const RenameFacilityBody = z.object({ name: z.string().trim().min(FACILITY_NAME_MIN).max(FACILITY_NAME_MAX) });
+export type RenameFacilityBody = z.infer<typeof RenameFacilityBody>;
 
 /**
  * One piece of a boat's mixed leg (additive, D-68): `ROAD` = on the trailer by road (draw solid), `LAUNCH` / `RECOVERY` =

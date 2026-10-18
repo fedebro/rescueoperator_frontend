@@ -182,6 +182,14 @@ export function NewFacilitySection({ initialFamily }: { initialFamily?: string |
                     <span className="line-clamp-2 text-sm leading-snug font-semibold" title={s.name}>
                       {s.name}
                     </span>
+                    {s.municipality ? (
+                      <span
+                        className="text-muted block truncate text-xs font-semibold"
+                        data-testid="site-municipality"
+                      >
+                        {s.municipality}
+                      </span>
+                    ) : null}
                     <span
                       className="text-muted block truncate text-xs"
                       title={`${formatDistance(distanceOf(s), locale)} · ${s.address ?? '—'}`}

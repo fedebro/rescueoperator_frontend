@@ -97,6 +97,15 @@
       "capsHint": "Los niveles máximos dependen del tipo de sede ({type}): asciéndela para subirlos.",
       "notOperational": "Disponible cuando la sede esté operativa",
       "showOnMap": "Mostrar en el mapa"
+    },
+    "rename": {
+      "action": "Renombrar",
+      "title": "Renombrar la base",
+      "hint": "Dale a la base un nombre tuyo: lo verás en las listas, en el mapa y en las misiones.",
+      "label": "Nombre de la base",
+      "limits": "De {min} a {max} caracteres.",
+      "save": "Guardar",
+      "done": "Base renombrada: {name}"
     }
   },
   "notifications": {

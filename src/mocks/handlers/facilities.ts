@@ -4,6 +4,7 @@ import {
   acquireFacility,
   listSites,
   promoteFacility,
+  renameFacility,
   transferVehicle,
   type SiteKind,
 } from '../domains/facilities';
@@ -37,6 +38,10 @@ export const facilitiesHandlers: DomainHandlers = ({
   http.post(
     url(`${C}/facilities`),
     command((_ctx, body, career) => acquireFacility(engine, career, body), 201),
+  ),
+  http.patch(
+    url(`${C}/facilities/:id`),
+    route((ctx, body) => ok(renameFacility(engine, careerOf(ctx), String(ctx.params.id), body.name))),
   ),
   http.post(
     url(`${C}/facilities/:id/promote`),

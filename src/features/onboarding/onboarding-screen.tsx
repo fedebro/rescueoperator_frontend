@@ -148,6 +148,16 @@ function SiteCard({ site, selected, onSelect }: { site: Site; selected: boolean;
       <span className="flex items-start gap-2">
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-semibold">{site.name}</span>
+          {site.municipality ? (
+            <span className="text-muted block truncate text-xs" data-testid="site-card-municipality">
+              {site.distanceMeters && site.distanceMeters >= 1000
+                ? t('municipalityKm', {
+                    municipality: site.municipality,
+                    km: Math.round(site.distanceMeters / 100) / 10,
+                  })
+                : site.municipality}
+            </span>
+          ) : null}
           <span className="text-muted block truncate text-xs">{site.address}</span>
         </span>
         {selected ? (
@@ -372,6 +382,17 @@ export function OnboardingScreen() {
                   {t('sites.title', { location: location.name })}
                 </h1>
                 <p className="text-muted mt-1 text-sm">{t('sites.subtitle')}</p>
+                {/* D-140: no real fire station in the chosen municipality → the nearest real ones, elsewhere. */}
+                {(sites.data ?? []).length > 0 &&
+                (sites.data ?? []).every((s) => s.municipality && s.municipality !== location.name) ? (
+                  <p
+                    className="bg-info/10 text-info mt-3 rounded-md p-3 text-sm"
+                    role="note"
+                    data-testid="sites-elsewhere"
+                  >
+                    {t('sites.elsewhere', { location: location.name })}
+                  </p>
+                ) : null}
               </div>
               {sites.isLoading ? (
                 <div className="flex flex-col gap-2">

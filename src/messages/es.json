@@ -41,6 +41,7 @@
     "OTP_COOLDOWN": "Acabas de solicitar un código. Espera un poco antes de pedir otro.",
     "DIRECTOR_NAME_REQUIRED": "Elige el nombre del Director para continuar.",
     "DIRECTOR_NAME_INVALID": "Este nombre no está disponible. Elige otro.",
+    "FACILITY_NAME_INVALID": "Este nombre no está permitido o no es válido: usa de 2 a 40 caracteres, sin palabras ofensivas.",
     "SESSION_REVOKED": "Esta sesión se ha cerrado desde otro dispositivo.",
     "CAREER_ALREADY_EXISTS": "Ya tienes una carrera activa.",
     "LOCATION_NOT_PLAYABLE": "Esta localidad todavía no es jugable.",
@@ -141,7 +142,8 @@
     "sites": {
       "title": "Elige tu primera base en {location}",
       "subtitle": "Tres ubicaciones, tres estilos de juego. Compara cobertura y tiempos de respuesta: más adelante podrás abrir otras bases.",
-      "submit": "Empezar la carrera"
+      "submit": "Empezar la carrera",
+      "elsewhere": "{location} no tiene un parque de bomberos real: puedes empezar desde los más cercanos. Tu carrera estará en el municipio del parque elegido."
     },
     "site": {
       "coverage": "Población cubierta",
@@ -164,7 +166,8 @@
         "CENTRAL": "Llegas rápido a casi todas partes, pero hay poco espacio para crecer.",
         "BALANCED": "Buen equilibrio entre tiempos de respuesta y espacio para nuevos vehículos. Recomendada.",
         "PERIPHERAL": "Mucho espacio y crecimiento barato, pero tardarás más en llegar al centro."
-      }
+      },
+      "municipalityKm": "{municipality} · {km} km"
     },
     "creating": {
       "title": "Estamos abriendo tu central…",

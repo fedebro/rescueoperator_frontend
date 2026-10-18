@@ -46,6 +46,7 @@ import { IncidentFamilies } from '@/features/families/family-chips';
 import { SectionHelpButton, SectionPrimer } from '@/features/coaching/section-primer';
 import { isAutonomyTracked, needsResupply } from '@/features/autonomy/autonomy';
 import { AutonomyChip } from '@/features/autonomy/gauge';
+import { RenameFacilityButton } from '@/features/facilities/rename-facility';
 import { PageBody } from './shell';
 
 /* ───────────────────────────── incidents ───────────────────────────── */
@@ -554,6 +555,11 @@ export function FacilitiesScreen() {
                     <span className="block truncate text-sm font-semibold" title={f.name}>
                       {f.name}
                     </span>
+                    {f.municipality ? (
+                      <span className="text-muted block truncate text-xs" data-testid="facility-municipality">
+                        {f.municipality}
+                      </span>
+                    ) : null}
                     <span className="text-muted block truncate text-xs" title={name('facility', f.typeCode)}>
                       {name('facility', f.typeCode)}
                     </span>
@@ -628,9 +634,20 @@ function FacilityDetail({ facilityId }: { facilityId: string }) {
         <div className="flex items-start gap-3">
           <FamilyBadge family={live.family} size={44} title={name('facility', live.typeCode)} />
           <div className="min-w-0 flex-1">
-            <h2 className="font-display truncate text-xl font-bold" title={live.name}>
-              {live.name}
-            </h2>
+            <div className="flex items-start gap-2">
+              <h2 className="font-display min-w-0 flex-1 truncate text-xl font-bold" title={live.name}>
+                {live.name}
+              </h2>
+              <RenameFacilityButton facility={live} />
+            </div>
+            {live.municipality ? (
+              <p
+                className="text-muted truncate text-sm font-semibold"
+                data-testid="facility-detail-municipality"
+              >
+                {live.municipality}
+              </p>
+            ) : null}
             <p
               className="text-muted truncate text-sm"
               title={`${name('facility', live.typeCode)}${detail.data?.address ? ` · ${detail.data.address}` : ''}`}

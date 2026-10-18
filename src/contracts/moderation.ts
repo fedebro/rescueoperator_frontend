@@ -29,7 +29,7 @@ export type SanctionKind = z.infer<typeof SanctionKind>;
 export const TextFilterTier = z.enum(['REJECT', 'MASK', 'FLAG']);
 export type TextFilterTier = z.infer<typeof TextFilterTier>;
 /** What is being checked: names and tags never get masked (a MASK hit rejects them). */
-export const TextFilterKind = z.enum(['MESSAGE', 'POST', 'REPLY', 'DIRECTOR_NAME', 'ALLIANCE_NAME', 'ALLIANCE_TAG', 'ALLIANCE_DESCRIPTION']);
+export const TextFilterKind = z.enum(['MESSAGE', 'POST', 'REPLY', 'DIRECTOR_NAME', 'ALLIANCE_NAME', 'ALLIANCE_TAG', 'ALLIANCE_DESCRIPTION', 'FACILITY_NAME']);
 export type TextFilterKind = z.infer<typeof TextFilterKind>;
 /** Why the filter reacted: a listed term, or one of the always-rejected patterns (links, e-mails, phone numbers, social handles). */
 export const TextFilterReason = z.enum(['BANNED_TERM', 'URL', 'EMAIL', 'PHONE', 'SOCIAL_HANDLE']);

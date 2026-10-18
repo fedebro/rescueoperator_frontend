@@ -97,6 +97,15 @@
       "capsHint": "Maximum levels depend on the facility type ({type}): promote it to raise them.",
       "notOperational": "Available once the facility is operational",
       "showOnMap": "Show on the map"
+    },
+    "rename": {
+      "action": "Rename",
+      "title": "Rename the facility",
+      "hint": "Give the facility a name of your own: you will see it in lists, on the map and in missions.",
+      "label": "Facility name",
+      "limits": "From {min} to {max} characters.",
+      "save": "Save",
+      "done": "Facility renamed: {name}"
     }
   },
   "notifications": {

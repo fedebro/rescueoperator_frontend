@@ -32,6 +32,8 @@ export const SiteDto = z.object({
   position: LngLat,
   address: z.string().nullable(),
   locationId: z.string(),
+  /** Additive: name of the municipality the site belongs to ("Spoltore"), shown under the site name. */
+  municipality: z.string().nullable().optional(),
   capacityPoints: z.number().int(),
   expansionPotential: z.enum(['LOW', 'MEDIUM', 'HIGH']),
   profile: z.enum(['CENTRAL', 'BALANCED', 'PERIPHERAL']),

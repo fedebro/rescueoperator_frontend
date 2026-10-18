@@ -97,6 +97,15 @@
       "capsHint": "Les niveaux maximum dépendent du type de base ({type}) : promouvez-la pour les relever.",
       "notOperational": "Disponible une fois la base opérationnelle",
       "showOnMap": "Afficher sur la carte"
+    },
+    "rename": {
+      "action": "Renommer",
+      "title": "Renommer la caserne",
+      "hint": "Donne à ta caserne un nom à toi : tu le verras dans les listes, sur la carte et dans les missions.",
+      "label": "Nom de la caserne",
+      "limits": "De {min} à {max} caractères.",
+      "save": "Enregistrer",
+      "done": "Caserne renommée : {name}"
     }
   },
   "notifications": {

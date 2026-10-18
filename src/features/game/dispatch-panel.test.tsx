@@ -418,7 +418,8 @@ describe('DispatchPanel — water incidents', () => {
     const destinations = screen
       .getAllByTestId('dispatch-water-route')
       .map((e) => e.getAttribute('data-destination'));
-    expect(destinations).toEqual(['MEETING_POINT', 'MEETING_POINT', 'SCENE']);
+    // List order (2026-10-18): the free unit, then the boat that can queue, then the land unit that cannot go at all.
+    expect(destinations).toEqual(['MEETING_POINT', 'SCENE', 'MEETING_POINT']);
   });
 });
 

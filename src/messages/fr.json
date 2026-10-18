@@ -41,6 +41,7 @@
     "OTP_COOLDOWN": "Vous venez de demander un code. Patientez avant d’en demander un autre.",
     "DIRECTOR_NAME_REQUIRED": "Choisissez le nom du Directeur pour continuer.",
     "DIRECTOR_NAME_INVALID": "Ce nom n’est pas disponible. Choisissez-en un autre.",
+    "FACILITY_NAME_INVALID": "Ce nom n’est pas autorisé ou pas valide : utilise de 2 à 40 caractères, sans mots offensants.",
     "SESSION_REVOKED": "Cette session a été fermée depuis un autre appareil.",
     "CAREER_ALREADY_EXISTS": "Vous avez déjà une carrière active.",
     "LOCATION_NOT_PLAYABLE": "Cette localité n’est pas encore jouable.",
@@ -141,7 +142,8 @@
     "sites": {
       "title": "Choisissez votre premier site à {location}",
       "subtitle": "Trois emplacements, trois styles de jeu. Comparez la couverture et les délais d’intervention : vous pourrez ouvrir d’autres sites plus tard.",
-      "submit": "Commencer la carrière"
+      "submit": "Commencer la carrière",
+      "elsewhere": "{location} n’a pas de vraie caserne de pompiers : tu peux partir des plus proches. Ta carrière sera dans la commune de la caserne choisie."
     },
     "site": {
       "coverage": "Population couverte",
@@ -164,7 +166,8 @@
         "CENTRAL": "Vous arrivez vite presque partout, mais la place pour grandir est limitée.",
         "BALANCED": "Bon compromis entre délais d’intervention et place pour de nouveaux véhicules. Recommandé.",
         "PERIPHERAL": "Beaucoup de place et des coûts de croissance réduits, mais des trajets plus longs vers le centre."
-      }
+      },
+      "municipalityKm": "{municipality} · {km} km"
     },
     "creating": {
       "title": "Ouverture de votre centre…",

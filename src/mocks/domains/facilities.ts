@@ -1,4 +1,11 @@
-import type { FacilityDto, SiteDto, VehicleDto } from '@/contracts';
+import {
+  FACILITY_NAME_MAX,
+  FACILITY_NAME_MIN,
+  type FacilityDto,
+  type SiteDto,
+  type VehicleDto,
+} from '@/contracts';
+import { checkText } from './alliance';
 import { haversineMeters } from '@/lib/geo';
 import {
   FACILITY_TYPES,
@@ -57,6 +64,33 @@ function isOwned(career: MockCareer, site: MockCandidateSite): boolean {
   return career.facilities.some((f) => haversineMeters(f.position, site.position) < SAME_SPOT_METERS);
 }
 
+/**
+ * D-141, as the server: the player's own name for one of their facilities — spaces collapsed, 2–40 characters, the word
+ * filter; 422 FACILITY_NAME_INVALID otherwise. Pushes `facility.updated`.
+ */
+export function renameFacility(
+  engine: MockEngine,
+  career: MockCareer,
+  facilityId: string,
+  raw: unknown,
+): FacilityDto {
+  const name = typeof raw === 'string' ? raw.replace(/\s+/g, ' ').trim() : '';
+  if (name.length < FACILITY_NAME_MIN || name.length > FACILITY_NAME_MAX)
+    throw new MockError(422, 'FACILITY_NAME_INVALID', 'Facility name must be 2-40 characters');
+  const verdict = checkText(name);
+  if (!verdict.ok)
+    throw new MockError(422, 'FACILITY_NAME_INVALID', 'This facility name is not allowed', {
+      filter: verdict,
+    });
+  const facility = career.facilities.find((f) => f.id === facilityId);
+  if (!facility) throw new MockError(404, 'NOT_FOUND', 'Facility not found');
+  const next = { ...facility, name };
+  career.facilities = career.facilities.map((f) => (f.id === facilityId ? next : f));
+  engine.emit(career, 'facility.updated', { facility: next, career: career.summary });
+  engine.save();
+  return next;
+}
+
 /** Lock reason of one facility type for this career (family gate first, then level). */
 export function facilityTypeLock(career: MockCareer, type: MockFacilityType): string | null {
   return lockReason(career, type.family, gateLevel(type));
@@ -72,6 +106,7 @@ export function siteDto(engine: MockEngine, career: MockCareer, site: MockCandid
     position: site.position,
     address: site.address,
     locationId: PESCARA.id,
+    municipality: PESCARA.name,
     capacityPoints: site.capacityPoints,
     expansionPotential: site.expansionPotential,
     profile: site.profile,
@@ -199,6 +234,7 @@ export function acquireFacility(
     operationalAt: iso(engine.now() + engine.dur(type.setupSeconds)),
     promotion: null,
     nautical: site.nautical ?? null,
+    municipality: PESCARA.name,
   };
   career.facilities.push(facility);
   career.facilityAddress[facility.id] = site.address;

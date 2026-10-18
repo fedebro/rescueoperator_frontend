@@ -764,7 +764,14 @@ export class MockEngine {
       }
       const { key: _key, ...rest } = s;
       void _key;
-      return { id, facilityTypeCode: 'FIRE_STATION_LOCAL', ...rest };
+      // D-140: the mock world is Pescara, whose stations are in town: municipality + distance from its centre, as the server.
+      return {
+        id,
+        facilityTypeCode: 'FIRE_STATION_LOCAL',
+        ...rest,
+        municipality: PESCARA.name,
+        distanceMeters: Math.round(haversineMeters(PESCARA.center, rest.position)),
+      };
     });
   }
 
@@ -792,6 +799,7 @@ export class MockEngine {
       headquarters: true,
       operationalAt: null,
       promotion: null,
+      municipality: PESCARA.name,
     };
     const career: MockCareer = {
       userId: account.user.id,

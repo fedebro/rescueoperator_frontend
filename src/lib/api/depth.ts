@@ -16,6 +16,7 @@ import {
   CreditPackageDto,
   EnrollmentDto,
   FacilityDetailV2Dto,
+  FacilityDto,
   HospitalDto,
   HospitalOption,
   type InventoryLineDto,
@@ -71,6 +72,9 @@ export const facilitiesApi = {
       query: { bbox: bbox.join(','), family, kind },
       schema: z.array(SiteDto),
     }),
+  /** D-141: the player's own name for one of their facilities (2–40 characters, word filter on the server). */
+  rename: (careerId: string, facilityId: string, name: string) =>
+    api.patch(`${c(careerId)}/facilities/${facilityId}`, { name }, { schema: FacilityDto }),
   acquire: (careerId: string, body: z.infer<typeof AcquireFacilityBody>) =>
     api.command(`${c(careerId)}/facilities`, body, { schema: FacilityDetailV2Dto }),
   detail: (careerId: string, id: string) =>

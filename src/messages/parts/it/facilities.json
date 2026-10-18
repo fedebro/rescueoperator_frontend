@@ -97,6 +97,15 @@
       "capsHint": "I livelli massimi dipendono dal tipo di sede ({type}): promuovila per alzarli.",
       "notOperational": "Disponibile quando la sede sarà operativa",
       "showOnMap": "Mostra sulla mappa"
+    },
+    "rename": {
+      "action": "Rinomina",
+      "title": "Rinomina la sede",
+      "hint": "Dai alla sede un nome tuo: lo vedrai negli elenchi, sulla mappa e nelle missioni.",
+      "label": "Nome della sede",
+      "limits": "Da {min} a {max} caratteri.",
+      "save": "Salva",
+      "done": "Sede rinominata: {name}"
     }
   },
   "notifications": {

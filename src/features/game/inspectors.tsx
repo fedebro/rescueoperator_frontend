@@ -75,6 +75,7 @@ import { VehicleCrewSection } from '@/features/personnel/slots';
 import { VehicleMaintenanceSection } from '@/features/logistics/slots';
 import { VehicleAutonomySection } from '@/features/autonomy/vehicle-autonomy';
 import { SpeedupButton } from '@/features/monetization/speedup-button';
+import { RenameFacilityButton } from '@/features/facilities/rename-facility';
 import { MajorInspector } from '@/features/major/coordination-view';
 import { MajorMemberBadge, MajorMemberBanner } from '@/features/major/queue';
 
@@ -719,7 +720,11 @@ export function FacilityInspector({ facility }: { facility: FacilityDto }) {
       <InspectorHeader
         icon={<FamilyBadge family={facility.family} size={40} title={name('facility', facility.typeCode)} />}
         title={facility.name}
-        subtitle={name('facility', facility.typeCode)}
+        subtitle={
+          facility.municipality
+            ? `${name('facility', facility.typeCode)} · ${facility.municipality}`
+            : name('facility', facility.typeCode)
+        }
         onFocus={() => focusOn(facility.position, 15)}
         badges={<StatusChip status={facility.status} label={ts(facility.status)} />}
       />
@@ -741,9 +746,12 @@ export function FacilityInspector({ facility }: { facility: FacilityDto }) {
         ) : null}
         <FacilitySummary facility={facility} compact />
         <NauticalFacilityCard facility={facility} />
-        <Button asChild variant="secondary" className="h-11">
-          <Link href={`/game/facilities?id=${facility.id}`}>{t('manage')}</Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button asChild variant="secondary" className="h-11 flex-1">
+            <Link href={`/game/facilities?id=${facility.id}`}>{t('manage')}</Link>
+          </Button>
+          <RenameFacilityButton facility={facility} labelled />
+        </div>
       </div>
     </div>
   );

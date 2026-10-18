@@ -97,6 +97,15 @@
       "capsHint": "Die Höchststufen hängen vom Standorttyp ab ({type}): Werte ihn auf, um sie zu erhöhen.",
       "notOperational": "Verfügbar, sobald der Standort einsatzbereit ist",
       "showOnMap": "Auf der Karte zeigen"
+    },
+    "rename": {
+      "action": "Umbenennen",
+      "title": "Wache umbenennen",
+      "hint": "Gib der Wache einen eigenen Namen: Du siehst ihn in den Listen, auf der Karte und in den Einsätzen.",
+      "label": "Name der Wache",
+      "limits": "{min} bis {max} Zeichen.",
+      "save": "Speichern",
+      "done": "Wache umbenannt: {name}"
     }
   },
   "notifications": {

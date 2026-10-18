@@ -52,6 +52,7 @@ import { DispatchWaterRoute } from '@/features/water/incident-water';
 import { isWaterIncident, requirementsBySide } from '@/features/water/water';
 import { useCareerId, useCatalog, useSnapshot, useVehicleTypeLookup } from './hooks';
 import { ChainActions, ChainMission, useChainFlow, useDispatchOptions } from './dispatch-chain';
+import { orderDispatchOptions } from './dispatch-order';
 
 type FamilyFilter = 'ALL' | ServiceFamily;
 
@@ -375,10 +376,14 @@ export function DispatchPanel({ incident }: { incident: IncidentDto }) {
     }
     return [...set];
   }, [data, vehicles]);
+  // Recommended first, then free + redirectable by distance, then queue-only by arrival (dispatch-order.ts).
   const visibleOptions = React.useMemo(
     () =>
-      (data?.options ?? []).filter(
-        (o) => familyFilter === 'ALL' || vehicles.find((v) => v.id === o.vehicleId)?.family === familyFilter,
+      orderDispatchOptions(
+        (data?.options ?? []).filter(
+          (o) =>
+            familyFilter === 'ALL' || vehicles.find((v) => v.id === o.vehicleId)?.family === familyFilter,
+        ),
       ),
     [data, vehicles, familyFilter],
   );

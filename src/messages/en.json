@@ -41,6 +41,7 @@
     "OTP_COOLDOWN": "You’ve just requested a code. Wait before requesting another.",
     "DIRECTOR_NAME_REQUIRED": "Choose your Director name to continue.",
     "DIRECTOR_NAME_INVALID": "This name isn’t available. Choose another.",
+    "FACILITY_NAME_INVALID": "This name is not allowed or not valid: use 2 to 40 characters, no offensive words.",
     "SESSION_REVOKED": "This session was signed out from another device.",
     "CAREER_ALREADY_EXISTS": "You already have an active career.",
     "LOCATION_NOT_PLAYABLE": "This location isn’t playable yet.",
@@ -141,7 +142,8 @@
     "sites": {
       "title": "Choose your first station in {location}",
       "subtitle": "Three locations, three play styles. Compare coverage and response times: you can open more stations later.",
-      "submit": "Start your career"
+      "submit": "Start your career",
+      "elsewhere": "{location} has no real fire station: you can start from the nearest ones. Your career will be in the municipality of the station you choose."
     },
     "site": {
       "coverage": "Population covered",
@@ -164,7 +166,8 @@
         "CENTRAL": "You get almost anywhere fast, but there’s little room to grow.",
         "BALANCED": "A good trade-off between response times and room for new vehicles. Recommended.",
         "PERIPHERAL": "Plenty of room and low growth costs, but longer runs to the centre."
-      }
+      },
+      "municipalityKm": "{municipality} · {km} km"
     },
     "creating": {
       "title": "Opening your control room…",
