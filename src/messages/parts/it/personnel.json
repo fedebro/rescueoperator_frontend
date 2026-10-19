@@ -149,7 +149,12 @@
       "emptyHint": "Allarga i filtri oppure assumi nuovi operatori dalla scheda Assunzioni.",
       "count": "{shown} di {total} operatori",
       "caption": "Organico della centrale",
-      "filters": "Filtri{count, plural, =0 {} other { (#)}}"
+      "filters": "Filtri{count, plural, =0 {} other { (#)}}",
+      "qualificationOption": "{name} ({count})",
+      "qualificationNone": "Nessuno ha la qualifica «{qualification}»",
+      "qualificationCourse": "Si ottiene con il corso «{course}» (dal livello {level}): iscrivi qualcuno in Formazione.",
+      "qualificationNoCourse": "Nessun corso la assegna: arriva solo con gli operatori che la hanno già all’assunzione.",
+      "toTraining": "Vai a Formazione"
     },
     "locked": {
       "progress": "Sei al livello {level} di {required}"

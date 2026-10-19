@@ -149,7 +149,12 @@
       "emptyHint": "Erweitere die Filter oder stelle im Reiter Einstellungen neue Kräfte ein.",
       "count": "{shown} von {total} Einsatzkräften",
       "caption": "Personal der Leitstelle",
-      "filters": "Filter{count, plural, =0 {} other { (#)}}"
+      "filters": "Filter{count, plural, =0 {} other { (#)}}",
+      "qualificationOption": "{name} ({count})",
+      "qualificationNone": "Niemand hat die Qualifikation „{qualification}“",
+      "qualificationCourse": "Sie gibt es mit dem Lehrgang „{course}“ (ab Stufe {level}): Melde jemanden unter Ausbildung an.",
+      "qualificationNoCourse": "Kein Lehrgang vermittelt sie: Nur Einsatzkräfte, die sie bei der Einstellung schon haben, bringen sie mit.",
+      "toTraining": "Zur Ausbildung"
     },
     "locked": {
       "progress": "Du bist auf Stufe {level} von {required}"

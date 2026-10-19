@@ -149,7 +149,12 @@
       "emptyHint": "Amplía los filtros o contrata nuevos operadores en la pestaña Contratación.",
       "count": "{shown} de {total} operadores",
       "caption": "Plantilla de la central",
-      "filters": "Filtros{count, plural, =0 {} other { (#)}}"
+      "filters": "Filtros{count, plural, =0 {} other { (#)}}",
+      "qualificationOption": "{name} ({count})",
+      "qualificationNone": "Nadie tiene la cualificación «{qualification}»",
+      "qualificationCourse": "Se obtiene con el curso «{course}» (desde el nivel {level}): inscribe a alguien en Formación.",
+      "qualificationNoCourse": "Ningún curso la otorga: solo la traen los efectivos que ya la tienen al contratarlos.",
+      "toTraining": "Ir a Formación"
     },
     "locked": {
       "progress": "Estás en el nivel {level} de {required}"

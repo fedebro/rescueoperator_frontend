@@ -163,3 +163,18 @@ test('hire → team with vehicle and readiness → course → crew preview and b
     await expect(sheet.getByTestId('fatigue-gauge')).toHaveAttribute('data-band', 'RESTED');
   });
 });
+
+test('the qualification filter lists every qualification, even one nobody holds, and says which course gives it', async ({
+  page,
+}, info) => {
+  // Owner 2026-10-19: "come faccio a identificare il personale con l'abilitazione di operatore autogrù?"
+  await bootCareer(page, info.project.name, { level: 12, credits: 5000 });
+  await openPersonnel(page);
+  if (isMobile(page)) await page.getByTestId('roster-filters-toggle').click();
+  await page.getByRole('combobox', { name: 'Qualifica' }).click();
+  await page.getByRole('option', { name: /^Operatore autogrù \(0\)$/ }).click();
+  await expect(page.getByText('Nessuno ha la qualifica «Operatore autogrù»')).toBeVisible();
+  await expect(page.getByText(/Corso operatore autogrù/)).toBeVisible();
+  await page.getByTestId('qualification-to-training').click();
+  await expect(page.getByRole('tab', { name: 'Formazione', selected: true })).toBeVisible();
+});

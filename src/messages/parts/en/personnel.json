@@ -149,7 +149,12 @@
       "emptyHint": "Widen the filters or hire new operators from the Recruitment tab.",
       "count": "{shown} of {total} operators",
       "caption": "Control centre roster",
-      "filters": "Filters{count, plural, =0 {} other { (#)}}"
+      "filters": "Filters{count, plural, =0 {} other { (#)}}",
+      "qualificationOption": "{name} ({count})",
+      "qualificationNone": "Nobody holds “{qualification}”",
+      "qualificationCourse": "It comes with the course “{course}” (from level {level}): enrol someone in Training.",
+      "qualificationNoCourse": "No course grants it: it only comes with responders who already hold it when hired.",
+      "toTraining": "Go to Training"
     },
     "locked": {
       "progress": "You are at level {level} of {required}"

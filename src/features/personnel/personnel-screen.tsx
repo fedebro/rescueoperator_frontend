@@ -37,6 +37,13 @@ export function PersonnelScreen() {
   const params = useSearchParams();
   const requestedTab = params.get('tab');
   const [tab, setTab] = React.useState<TabId>(isTab(requestedTab) ? requestedTab : 'roster');
+  // A link inside the page (`?tab=training` from the roster's qualification hint) changes the tab too, not only the first load
+  // (state adjusted while rendering when the URL parameter changes — React's "derived from props" pattern).
+  const [seenTab, setSeenTab] = React.useState(requestedTab);
+  if (seenTab !== requestedTab) {
+    setSeenTab(requestedTab);
+    if (isTab(requestedTab)) setTab(requestedTab);
+  }
   const [selected, setSelected] = React.useState<string | null>(params.get('operator'));
   const people = usePersonnel().data;
 

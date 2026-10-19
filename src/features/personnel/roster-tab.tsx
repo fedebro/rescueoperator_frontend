@@ -6,7 +6,7 @@ import { Search, SlidersHorizontal, Users } from 'lucide-react';
 import type { PersonnelDto } from '@/contracts';
 import { useIsDesktop } from '@/hooks/use-media-query';
 import { useServerNow } from '@/hooks/use-server-now';
-import { useCatalogName } from '@/i18n/use-i18n-text';
+import { useCatalogName, useI18nText } from '@/i18n/use-i18n-text';
 import { FamilyBadge } from '@/design/icons';
 import { Button } from '@/components/ui/button';
 import { Countdown } from '@/components/ui/countdown';
@@ -14,13 +14,13 @@ import { DataTable, type Column } from '@/components/ui/data-table';
 import { Input } from '@/components/ui/input';
 import { EmptyState, Skeleton } from '@/components/ui/misc';
 import { Select } from '@/components/ui/select';
-import { useSnapshot } from '@/features/game/hooks';
+import { useCatalog, useSnapshot } from '@/features/game/hooks';
 import { pickIdleSuggestion } from '@/features/coaching/idle-suggestion';
 import { useIdleSuggestionCopy } from '@/features/coaching/idle-suggestion-copy';
 import { FATIGUE_BANDS, bandOf, fatigueAt } from './fatigue';
 import { FatigueGauge } from './fatigue-gauge';
 import { PersonnelStatusChip } from './status';
-import { usePersonnel, useTeams, useFeature, useCandidates } from './queries';
+import { usePersonnel, useTeams, useFeature, useCandidates, useTraining } from './queries';
 
 const ALL = 'ALL';
 export interface RosterFilters {
@@ -72,6 +72,9 @@ export function RosterTab({
   const t = useTranslations('personnel.roster');
   const ts = useTranslations('status.personnel');
   const name = useCatalogName();
+  const tx = useI18nText();
+  const catalog = useCatalog();
+  const training = useTraining();
   const desktop = useIsDesktop();
   const { facilities } = useSnapshot();
   const people = usePersonnel();
@@ -89,6 +92,30 @@ export function RosterTab({
 
   const all = React.useMemo(() => people.data ?? [], [people.data]);
   const rows = React.useMemo(() => filterRoster(all, filters, now), [all, filters, now]);
+  const held = React.useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const p of all) for (const q of p.qualifications) counts.set(q.code, (counts.get(q.code) ?? 0) + 1);
+    return counts;
+  }, [all]);
+  const qualificationCodes = React.useMemo(() => {
+    const known = (catalog?.qualifications ?? [])
+      .map((q) => String(q.code))
+      .filter((c) => c && c !== 'undefined');
+    const codes = [...new Set([...known, ...held.keys()])];
+    return codes.sort(
+      (a, b) =>
+        (held.get(b) ?? 0) - (held.get(a) ?? 0) ||
+        name('qualification', a).localeCompare(name('qualification', b)),
+    );
+  }, [catalog, held, name]);
+  // Nobody holds the chosen qualification: say which course gives it, and where to enrol (owner 2026-10-19).
+  const missingQualification =
+    filters.qualification !== ALL && (held.get(filters.qualification) ?? 0) === 0
+      ? filters.qualification
+      : null;
+  const course = missingQualification
+    ? training.data?.courses.find((c) => c.grantsQualification === missingQualification)
+    : undefined;
   const facilityName = (id: string) => facilities.find((f) => f.id === id)?.name ?? '—';
   const teamName = (id: string | null) => teams?.find((x) => x.id === id)?.name ?? '—';
   const unique = (values: string[]) => [...new Set(values)].sort();
@@ -170,10 +197,15 @@ export function RosterTab({
             label={t('filter.qualification')}
             value={filters.qualification}
             onValueChange={set('qualification')}
+            // Every qualification of the game (owner 2026-10-19: "operatore autogru" must be findable even when nobody has it),
+            // each with how many hold it; the ones held come first.
             options={[
               option(ALL, t('all.qualification')),
-              ...unique(all.flatMap((p) => p.qualifications.map((q) => q.code))).map((c) =>
-                option(c, name('qualification', c)),
+              ...qualificationCodes.map((c) =>
+                option(
+                  c,
+                  t('qualificationOption', { name: name('qualification', c), count: held.get(c) ?? 0 }),
+                ),
               ),
             ]}
           />
@@ -273,7 +305,30 @@ export function RosterTab({
       ? pickIdleSuggestion({ candidates: candidates.data?.candidates, credits: '0', level: 1 })
       : null;
   const idleCopy = useIdleSuggestionCopy(idleSuggestion);
-  const empty = (
+  const empty = missingQualification ? (
+    <EmptyState
+      icon={<Users className="size-5" />}
+      title={t('qualificationNone', { qualification: name('qualification', missingQualification) })}
+      description={
+        course
+          ? t('qualificationCourse', { course: tx(course.name), level: course.requiredLevel })
+          : t('qualificationNoCourse')
+      }
+      action={
+        course ? (
+          <Button
+            asChild
+            variant="secondary"
+            size="sm"
+            className="h-11 lg:h-8"
+            data-testid="qualification-to-training"
+          >
+            <Link href="/game/personnel?tab=training">{t('toTraining')}</Link>
+          </Button>
+        ) : undefined
+      }
+    />
+  ) : (
     <EmptyState
       icon={<Users className="size-5" />}
       title={t('emptyTitle')}

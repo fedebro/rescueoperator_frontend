@@ -149,7 +149,12 @@
       "emptyHint": "Élargissez les filtres ou recrutez depuis l’onglet Recrutement.",
       "count": "{shown} opérateurs sur {total}",
       "caption": "Effectif du centre",
-      "filters": "Filtres{count, plural, =0 {} other { (#)}}"
+      "filters": "Filtres{count, plural, =0 {} other { (#)}}",
+      "qualificationOption": "{name} ({count})",
+      "qualificationNone": "Personne n’a la qualification « {qualification} »",
+      "qualificationCourse": "Elle s’obtient avec la formation « {course} » (dès le niveau {level}) : inscris quelqu’un dans Formation.",
+      "qualificationNoCourse": "Aucune formation ne la donne : seuls les intervenants qui l’ont déjà à l’embauche l’apportent.",
+      "toTraining": "Aller à Formation"
     },
     "locked": {
       "progress": "Vous êtes au niveau {level} sur {required}"
