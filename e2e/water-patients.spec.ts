@@ -6,7 +6,8 @@ import { bootCareer, hideDevToolsBadge, qa, trackProblems } from './helpers';
  *  - an ambulance waiting at the meeting point can do nothing for them: "In acqua — in attesa del recupero", no transport;
  *    sending it alone, the dispatch panel warns "Nessun mezzo in acqua: i pazienti restano in mare" (2026-10-18);
  *  - a boat (sent from the patients section once the incident is RESOLVING) brings them ashore: "BOAT 1 lo sta portando a
- *    riva", the phase strip (a bordo → verso riva, arrivo hh:mm); a gommone is not a medical boat, so no care on the way;
+ *    riva", the phase strip (a bordo → verso riva, arrivo hh:mm), the boat itself moving to the meeting point ("Verso il punto
+ *    di raccolta con Paziente 1", 2026-10-19) and home right after the last landing; a gommone only carries, no care;
  *    the hospital transport still waits for the landing;
  *  - ashore at the meeting point ("portato da BOAT 1") the ambulance takes over and the transport leaves from there;
  *  - without a boat the Coast Guard brings them ashore at its time.
@@ -99,6 +100,8 @@ test('a patient in the water: the ambulance waits at the meeting point, a boat b
     handoffSeconds: 300,
     // the pickup of the boat's trip (game seconds, ×12 → 50 s): time to look at the people aboard, even on a busy machine
     waterPickupSeconds: 600,
+    // and its trip to the meeting point (visible trip, 2026-10-19): time to look at the boat on its way
+    waterLegSeconds: 600,
   });
   // The career owns a boat able to do the water part: no Coast Guard.
   const incidentId = await qa<string>(page, 'spawnWater', 'MED_SWIMMER_DISTRESS', { severity: 3 });
@@ -174,14 +177,18 @@ test('a patient in the water: the ambulance waits at the meeting point, a boat b
     await expect(
       strip.locator('[data-phase="ABOARD"], [data-phase="HEADING_ASHORE"]').filter({ hasText: 'BOAT 1' }),
     ).toHaveCount(1);
-    // The trip ashore is short (a few hundred metres at mock speed ×12): count and text are read in the same instant.
+    // The trip ashore lasts `waterLegSeconds` (600 game s, 50 s at ×12, QA knob): long enough to look at it.
     const heading = strip.locator('[data-phase="HEADING_ASHORE"]');
-    await expect
-      .poll(
-        async () => ((await heading.getAttribute('data-count')) === '1' ? await heading.textContent() : null),
-        { timeout: 90_000, intervals: [50] },
-      )
-      .toContain('arrivo');
+    await expect(heading).toHaveAttribute('data-count', '1', { timeout: 90_000 });
+    await expect(heading).toContainText('arrivo');
+    await expect(patients.getByTestId('rescue-landing-warning')).toHaveCount(0);
+    // Visible trip (2026-10-19): the boat itself, on its way to the meeting point with the patient aboard.
+    await card.getByTestId('patient-water-vehicle').click();
+    const line = page.getByTestId('vehicle-water-rescue');
+    await expect(line).toHaveAttribute('data-phase', 'TO_SHORE');
+    await expect(line).toContainText(/Verso il punto di raccolta con Paziente 1, arrivo \d{2}:\d{2}/);
+    await expect(page.getByTestId('vehicle-inspector')).toHaveAttribute('data-vehicle-status', 'ON_SCENE');
+    await openIncident(page, incidentId);
     // The ambulance waits at the meeting point: no landing warning.
     await expect(patients.getByTestId('rescue-landing-warning')).toHaveCount(0);
   });
@@ -192,6 +199,8 @@ test('a patient in the water: the ambulance waits at the meeting point, a boat b
     await expect(card.getByTestId('patient-ashore')).toContainText('A riva al punto di raccolta');
     await expect(card.getByTestId('patient-ashore')).toContainText('portato da BOAT 1');
     await expect(patients.getByTestId('patients-in-water')).toHaveCount(0);
+    // Its last person ashore and the work over: the boat goes home now, from the landing (not at the end of everything).
+    await expect.poll(() => vehicleStatus(page, boatId), { timeout: 30_000 }).toBe('RETURNING');
     const panel = card.getByTestId('transport-panel');
     await expect(panel).toBeVisible({ timeout: 30_000 });
     await expect(panel.getByTestId('transport-carrier')).toHaveText(/MSB/);

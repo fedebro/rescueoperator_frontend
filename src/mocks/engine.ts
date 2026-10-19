@@ -1239,6 +1239,16 @@ export class MockEngine {
   }
 
   /** Where a vehicle of this type goes for this incident: boats and aircraft to the scene, land units to `position`. */
+  /**
+   * Where a unit on the scene really is: a boat on a water-rescue trip (2026-10-19) is somewhere between the scene and the
+   * landing — its movement says where; at the landing its position says so. Every other one is at its destination.
+   */
+  spotOf(vehicle: VehicleDto, incident: IncidentDto, at: number): LngLat {
+    if (vehicle.status !== 'ON_SCENE') return this.destinationOf(vehicle, incident);
+    if (vehicle.movement) return movementPoint(vehicle.movement, at).position;
+    return vehicle.position;
+  }
+
   destinationOf(vehicle: Pick<VehicleDto, 'typeCode'>, incident: IncidentDto): LngLat {
     const type = VEHICLE_TYPES.find((t) => t.code === vehicle.typeCode);
     return type && type.domain !== 'GROUND' ? sceneOf(incident) : incident.position;
@@ -2246,7 +2256,7 @@ export class MockEngine {
     const vehicles: VehicleDto[] = [];
     for (const v of career.vehicles.filter((x) => x.incidentId === incident.id && !retained.has(x.id)))
       vehicles.push(
-        this.sendHome(career, v, at, v.status === 'ON_SCENE' ? this.destinationOf(v, incident) : undefined),
+        this.sendHome(career, v, at, v.status === 'ON_SCENE' ? this.spotOf(v, incident, at) : undefined),
       );
     const { outcome } = this.reward(career, resolving, at);
     this.log(career, incident.id, 'incident.resolving', text('timeline.incident_resolving'), at);
@@ -2450,7 +2460,7 @@ export class MockEngine {
       (x) => x.incidentId === incident.id && ['PREPARING', 'EN_ROUTE', 'ON_SCENE'].includes(x.status),
     ))
       vehicles.push(
-        this.sendHome(career, v, at, v.status === 'ON_SCENE' ? this.destinationOf(v, incident) : undefined),
+        this.sendHome(career, v, at, v.status === 'ON_SCENE' ? this.spotOf(v, incident, at) : undefined),
       );
     for (const hook of this.hooks.incidentClosed) hook(career, closed, status);
 

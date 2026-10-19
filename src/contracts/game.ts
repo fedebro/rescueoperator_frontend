@@ -190,7 +190,15 @@ export const MovementDto = z.object({
   departAt: IsoDateTime,
   arriveAt: IsoDateTime,
   distanceMeters: z.number(),
-  purpose: z.enum(['TO_INCIDENT', 'TO_HOSPITAL', 'TO_BASE', 'DELIVERY', 'RECOVERY', 'TO_WATER_SOURCE', 'TAXIING', 'PATROLLING']),
+  /**
+   * `WATER_RESCUE_TO_SHORE` / `WATER_RESCUE_BACK` (additive, 2026-10-19): a boat / winch helicopter ON the scene of a water
+   * incident carrying people to the meeting point (`carrying`), or sailing back to the scene — the vehicle stays ON_SCENE.
+   */
+  purpose: z.enum([
+    'TO_INCIDENT', 'TO_HOSPITAL', 'TO_BASE', 'DELIVERY', 'RECOVERY', 'TO_WATER_SOURCE', 'TAXIING', 'PATROLLING', 'WATER_RESCUE_TO_SHORE', 'WATER_RESCUE_BACK',
+  ]),
+  /** Additive (`WATER_RESCUE_TO_SHORE`): the labels of the patients aboard ("P1", "P2"). */
+  carrying: z.array(z.string()).optional(),
   /**
    * Additive (water): a boat's leg by trailer + launch + water (or back). When present, interpolate inside the segment that
    * contains `now` instead of along the whole `path` (the road and the water parts do not move at the same speed, and the

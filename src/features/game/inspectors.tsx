@@ -453,7 +453,7 @@ export function VehicleInspector({ vehicle }: { vehicle: VehicleDto }) {
   const tx = useI18nText();
   const locale = useLocale();
   const errorMessage = useErrorMessage();
-  const { facilities, incidents } = useSnapshot();
+  const { facilities, incidents, career } = useSnapshot();
   const type = useVehicleTypeLookup()(vehicle.typeCode);
   const focusOn = useUiStore((s) => s.focusOn);
   const select = useUiStore((s) => s.select);
@@ -558,6 +558,27 @@ export function VehicleInspector({ vehicle }: { vehicle: VehicleDto }) {
               <Stat label={t('distance')} value={formatDistance(vehicle.movement.distanceMeters, locale)} />
               <MovementProgress vehicle={vehicle} />
             </div>
+            {/* Water rescue (2026-10-19): the trip to the meeting point with the people aboard, or back to the scene. */}
+            {vehicle.movement.purpose === 'WATER_RESCUE_TO_SHORE' ? (
+              <p
+                className="text-fg mt-2 text-sm font-semibold"
+                data-testid="vehicle-water-rescue"
+                data-phase="TO_SHORE"
+              >
+                {t('waterRescue.toShore', {
+                  labels: (vehicle.movement.carrying ?? []).join(', '),
+                  time: formatTime(vehicle.movement.arriveAt, locale, career.timezone),
+                })}
+              </p>
+            ) : vehicle.movement.purpose === 'WATER_RESCUE_BACK' ? (
+              <p
+                className="text-fg mt-2 text-sm font-semibold"
+                data-testid="vehicle-water-rescue"
+                data-phase="BACK"
+              >
+                {t('waterRescue.back')}
+              </p>
+            ) : null}
           </div>
         ) : null}
         {incident ? (

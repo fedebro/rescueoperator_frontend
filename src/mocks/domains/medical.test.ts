@@ -765,7 +765,7 @@ describe('water patients (analisi/note-agenti/water-patients.md)', () => {
     expect(result.vehicle.movement!.path[0]).toEqual(inc.position);
   });
 
-  it('a water ambulance treats a near-drowning patient in the water', async () => {
+  it('a water ambulance only stabilises the person it carries (2026-10-19): no treatment in the water', async () => {
     const w = await waterWorld();
     const unit = w.boat('EMS_WATER_AMBULANCE');
     w.raw.medicalConfig({ waterPickupSeconds: 900, alwaysTransport: true });
@@ -774,46 +774,45 @@ describe('water patients (analisi/note-agenti/water-patients.md)', () => {
     w.engine.dispatch(w.career, id, [unit]);
     w.onScene(unit);
     const p = w.patients(id)[0]!;
-    until(w, () => p.dto.status === 'TREATING');
-    expect(p.dto.location).toBe('WATER');
-    expect(p.dto.needs.every((n) => n.met)).toBe(true);
-    expect(p.dto.stability!.ratePerSecond).toBeGreaterThan(0);
-    until(w, () => p.dto.status === 'AWAITING_TRANSPORT');
-    expect(p.dto.location).toBe('WATER');
-    expect(p.stabilized).toBe(true);
+    until(w, () => p.dto.status === 'ASSESSED');
+    w.advance(60_000);
+    expect(p.dto).toMatchObject({ status: 'ASSESSED', location: 'WATER' });
+    expect(p.dto.stability!.ratePerSecond).toBe(0); // stabilised: it no longer worsens
   });
 
-  it('treated to the end in the water with no hospital needed: released there at once — the trip lands nobody for them', async () => {
+  it('visible trips (2026-10-19): a jet ski carries one person at a time to the landing and sails back for the next', async () => {
     const w = await waterWorld();
-    const unit = w.boat('EMS_WATER_AMBULANCE'); // 2 people per trip
-    w.raw.medicalConfig({ waterPickupSeconds: 900 });
-    const id = w.water.spawnWater('MULTI_CAPSIZED_BOAT', { severity: 7, body: 'SEA' });
+    w.raw.medicalConfig({ waterPickupSeconds: 60 });
+    const jet = w.boat('EMS_JETSKI');
+    const id = w.water.spawnWater('MULTI_CAPSIZED_BOAT', { severity: 5, body: 'SEA' });
     const list = w.patients(id);
-    expect(list.length).toBeGreaterThanOrEqual(3);
-    // all minor: the first two need no hospital, the others do
-    w.profiles(id, ['PP_MINOR_MEDICAL']);
-    list.forEach((p, i) => (p.transportDrawn = i >= 2));
-    w.engine.dispatch(w.career, id, [unit]);
-    w.onScene(unit);
-    const [first, second, third] = list;
-    const firstTrip = first!.dto.recovery!.etaAt!;
-    expect(second!.dto.recovery).toMatchObject({ by: 'VEHICLE', vehicleId: unit, etaAt: firstTrip });
-    expect(third!.dto.recovery!.by).toBeNull();
-    // treated aboard, no hospital needed: released at once, still in the water
-    until(w, () => first!.dto.status === 'RELEASED_ON_SCENE' && second!.dto.status === 'RELEASED_ON_SCENE');
-    for (const p of [first!, second!]) expect(p.dto.location).toBe('WATER');
-    expect(first!.outcome).toBe('RELEASED_ON_SCENE');
-    // the others wait in the water, awaiting the hospital
-    until(w, () => third!.dto.status === 'AWAITING_TRANSPORT');
-    expect(third!.dto.location).toBe('WATER');
-    // the trip ends at its instant with nobody to land; the unit sails back for the next ones
-    until(w, () => third!.dto.recovery?.by === 'VEHICLE');
+    expect(list.length).toBeGreaterThanOrEqual(2);
+    w.engine.dispatch(w.career, id, [jet]);
+    w.onScene(jet);
     const inc = w.incident(id);
-    const out = recoveryHopSeconds(w.engine, 'EMS_WATER_AMBULANCE', sceneOf(inc), landingOf(w.career, inc));
-    const back = recoveryHopSeconds(w.engine, 'EMS_WATER_AMBULANCE', landingOf(w.career, inc), sceneOf(inc));
-    expect(third!.dto.recovery!.etaAt).toBe(iso(Date.parse(firstTrip) + (back + 900 + out) * 1000));
-    expect(recoveredLines(w, id, 'timeline.patients_landed')).toEqual([]);
-    for (const p of [first!, second!]) expect(p.dto.location).toBe('WATER');
+    const scene = sceneOf(inc);
+    const landing = landingOf(w.career, inc);
+    // pickup at the scene: no movement yet
+    expect(w.vehicle(jet).status).toBe('ON_SCENE');
+    expect(w.vehicle(jet).movement).toBeNull();
+    // leaving the scene with the first one aboard
+    until(w, () => w.vehicle(jet).movement?.purpose === 'WATER_RESCUE_TO_SHORE');
+    const out = w.vehicle(jet).movement!;
+    expect(out.path).toEqual([scene, landing]);
+    expect(out.carrying).toHaveLength(1);
+    expect(w.vehicle(jet).status).toBe('ON_SCENE');
+    // landed: sailing back to the scene for the next one
+    until(w, () => w.vehicle(jet).movement?.purpose === 'WATER_RESCUE_BACK');
+    expect(w.vehicle(jet).movement!.path).toEqual([landing, scene]);
+    expect(list.filter((p) => p.dto.location === 'ASHORE')).toHaveLength(1);
+    // then off again with the second one
+    until(w, () => w.vehicle(jet).movement?.purpose === 'WATER_RESCUE_TO_SHORE');
+    expect(w.vehicle(jet).movement!.carrying).toHaveLength(1);
+    expect(w.vehicle(jet).movement!.carrying![0]).not.toBe(out.carrying![0]);
+    const updates = w.events.filter(
+      (e) => e.type === 'vehicle.updated' && (e.payload as { vehicle?: { id: string } }).vehicle?.id === jet,
+    );
+    expect(updates.length).toBeGreaterThanOrEqual(3);
   });
 
   it('a jet ski brings one person per trip, the worst first; its next trip first goes back to the scene', async () => {
@@ -964,7 +963,7 @@ describe('water patients (analisi/note-agenti/water-patients.md)', () => {
     expect(result.boarded).toEqual([]);
   });
 
-  it('aboard a boat that is not medical nobody treats; a medical boat treats on the way ashore (2026-10-18)', async () => {
+  it('aboard a boat that is not medical nobody treats; a medical boat stabilises on the way ashore (2026-10-19)', async () => {
     for (const [typeCode, treats] of [
       ['FIRE_BOAT', false],
       ['EMS_WATER_AMBULANCE', true],
@@ -983,11 +982,10 @@ describe('water patients (analisi/note-agenti/water-patients.md)', () => {
         recovery: { by: 'VEHICLE', vehicleId: boatId },
       });
       expect(p!.dto.recovery!.departsAt, typeCode).toBeTruthy();
-      if (treats)
-        expect(['TREATING', 'STABILIZED', 'AWAITING_TRANSPORT', 'RELEASED_ON_SCENE'], typeCode).toContain(
-          p!.dto.status,
-        );
-      else expect(p!.dto.status, typeCode).toBe('ASSESSED');
+      // Nobody treats in the water (2026-10-19); a medical boat stabilises the person it carries (stability frozen).
+      expect(p!.dto.status, typeCode).toBe('ASSESSED');
+      if (treats) expect(p!.dto.stability!.ratePerSecond, typeCode).toBe(0);
+      else expect(p!.dto.stability!.ratePerSecond, typeCode).toBeLessThan(0);
     }
   });
 

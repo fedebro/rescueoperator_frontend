@@ -26,5 +26,17 @@
   "timeline": {
     "vehicle_water_run_started": "{callSign} fliegt zur Wasseraufnahme nach {waterSource}",
     "vehicle_water_run_done": "{callSign} hat Wasser aufgenommen und kehrt zum Brand zurück"
+  },
+  "game": {
+    "vehicle": {
+      "purposes": {
+        "WATER_RESCUE_TO_SHORE": "Zum Treffpunkt",
+        "WATER_RESCUE_BACK": "Zurück zum Einsatzort"
+      },
+      "waterRescue": {
+        "toShore": "Zum Treffpunkt mit {labels}, Ankunft {time}",
+        "back": "Kehrt zum Einsatzort zurück"
+      }
+    }
   }
 }

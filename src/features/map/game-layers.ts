@@ -79,7 +79,10 @@ function vehicleMapState(v: VehicleDto): VehicleMapState {
     if (
       v.movement.purpose === 'TO_INCIDENT' ||
       v.movement.purpose === 'TO_HOSPITAL' ||
-      v.movement.purpose === 'TO_WATER_SOURCE'
+      v.movement.purpose === 'TO_WATER_SOURCE' ||
+      // a boat bringing people ashore, or going back for the next ones (2026-10-19)
+      v.movement.purpose === 'WATER_RESCUE_TO_SHORE' ||
+      v.movement.purpose === 'WATER_RESCUE_BACK'
     )
       return 'URGENT';
     if (v.movement.purpose === 'TO_BASE') return 'RETURNING';

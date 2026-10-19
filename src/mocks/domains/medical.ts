@@ -7,7 +7,7 @@ import type {
   PatientDto,
   VehicleDto,
 } from '@/contracts';
-import type { LngLat } from '@/lib/geo';
+import { haversineMeters, type LngLat } from '@/lib/geo';
 import {
   ECONOMY,
   FACILITY_TYPES,
@@ -22,6 +22,7 @@ import { domainState } from './index';
 import {
   RECOVERY_KNOBS,
   coastGuardRecoverySeconds,
+  isBoat,
   isMedicalCarrier,
   isWaterUnit,
   landingOf,
@@ -177,6 +178,8 @@ export interface MedicalState {
     coastGuardSeconds?: number;
     /** QA: the pickup at the scene of every recovery trip, in game seconds (default `RECOVERY_KNOBS.pickupSeconds`). */
     waterPickupSeconds?: number;
+    /** QA: every leg of a recovery trip (scene ⇄ landing), in game seconds — to look at a visible trip (default: by distance). */
+    waterLegSeconds?: number;
   };
   admitted: number;
   /**
@@ -386,7 +389,9 @@ export function installMedical(engine: MockEngine): void {
   const careVehicles = (career: MockCareer, p: MockPatient): VehicleDto[] => {
     const onScene = onSceneVehicles(career, p.dto.incidentId);
     if (aboard(p)) return onScene.filter((v) => v.id === p.dto.recovery!.vehicleId);
-    return inWater(p) ? onScene.filter(isWaterUnit) : onScene;
+    if (inWater(p)) return onScene.filter(isWaterUnit);
+    // Ashore at a water incident the care is the land units' (and the aircraft's), never a boat's (2026-10-19).
+    return p.dto.recovery ? onScene.filter((v) => !isBoat(v)) : onScene;
   };
   /**
    * What a patient's carers bring: their capabilities, whether one of them can assess (a medical capability) and whether they
@@ -396,8 +401,10 @@ export function installMedical(engine: MockEngine): void {
     const vehicles = careVehicles(career, p);
     const sum = capsOf(vehicles);
     const canAssess = MEDICAL_CAPS.some((c) => sum(c) > 0);
-    const mayTreat = !aboard(p) || vehicles.some((v) => isMedicalCarrier(v.typeCode));
-    return { sum, canAssess, mayTreat };
+    // In the water nobody gives the full treatment (2026-10-19): a medical carrier only stabilises the people it carries.
+    const mayTreat = !inWater(p);
+    const stabilises = aboard(p) && vehicles.some((v) => isMedicalCarrier(v.typeCode));
+    return { sum, canAssess, mayTreat, stabilises };
   };
 
   /* ── hospitals ── */
@@ -549,13 +556,17 @@ export function installMedical(engine: MockEngine): void {
         changed = true;
       }
       const s = profile.stability;
-      const rate = !medicalOnScene
-        ? ratePerRealSecond(s.decayPerMinuteUntreated)
-        : p.dto.status === 'TREATING'
-          ? ratePerRealSecond(requiredMet ? s.decayPerMinuteTreated : s.decayPerMinuteUntreated * 0.5)
-          : p.dto.status === 'STABILIZED' || p.dto.status === 'AWAITING_TRANSPORT'
-            ? ratePerRealSecond(p.stabilized ? s.decayPerMinuteInTransport : s.decayPerMinuteUntreated * 0.5)
-            : ratePerRealSecond(s.decayPerMinuteUntreated);
+      const rate = care.stabilises
+        ? 0
+        : !medicalOnScene
+          ? ratePerRealSecond(s.decayPerMinuteUntreated)
+          : p.dto.status === 'TREATING'
+            ? ratePerRealSecond(requiredMet ? s.decayPerMinuteTreated : s.decayPerMinuteUntreated * 0.5)
+            : p.dto.status === 'STABILIZED' || p.dto.status === 'AWAITING_TRANSPORT'
+              ? ratePerRealSecond(
+                  p.stabilized ? s.decayPerMinuteInTransport : s.decayPerMinuteUntreated * 0.5,
+                )
+              : ratePerRealSecond(s.decayPerMinuteUntreated);
       if (setRate(p, rate, at)) changed = true;
       // The hospital transport starts from the meeting point: never for somebody still in the water.
       if (
@@ -608,7 +619,7 @@ export function installMedical(engine: MockEngine): void {
           (v.status === 'TRANSPORTING' ||
             v.status === 'AT_HOSPITAL' ||
             (v.status === 'ON_SCENE' &&
-              ((someoneOnScene && hasCap(v, [...MEDICAL_CAPS, TRANSPORT_CAP])) ||
+              ((someoneOnScene && !isBoat(v) && hasCap(v, [...MEDICAL_CAPS, TRANSPORT_CAP])) ||
                 (someoneInWater && isWaterUnit(v))))),
       )
       .map((v) => v.id);
@@ -622,7 +633,7 @@ export function installMedical(engine: MockEngine): void {
     if (incident.status === 'RESOLVING' && !list.some((p) => ON_SCENE.has(p.dto.status))) {
       // From where each one works: a boat from the scene on the water, a land unit from the meeting point.
       const vehicles = onSceneVehicles(career, incidentId).map((v) =>
-        engine.sendHome(career, v, at, engine.destinationOf(v, incident)),
+        engine.sendHome(career, v, at, engine.spotOf(v, incident, at)),
       );
       if (vehicles.length) engine.emit(career, 'vehicle.returning', { vehicles });
     } else releaseAfterRecovery(career, incidentId, at);
@@ -704,14 +715,18 @@ export function installMedical(engine: MockEngine): void {
     const recoveryAt = incident.waterSupport?.recoveryAt;
     const coastGuardAt = recoveryAt ? Date.parse(recoveryAt) : null;
     const pickup = state.config.waterPickupSeconds ?? RECOVERY_KNOBS.pickupSeconds;
+    const legSeconds = (typeCode: string, a: LngLat, b: LngLat) =>
+      state.config.waterLegSeconds ?? recoveryHopSeconds(engine, typeCode, a, b);
     const boarded: MockPatient[] = [];
     for (const unit of onSceneVehicles(career, incidentId).filter(isWaterUnit)) {
       const trip = units[unit.id]?.incidentId === incidentId ? units[unit.id]!.tripUntil : null;
       if (trip !== null && trip > at) continue; // on a trip (even when nobody is left aboard: released in the water)
       const waiting = list.filter(waitingInWater).sort(byRecoveryPriority);
       if (waiting.length === 0) break;
-      const back = trip !== null ? recoveryHopSeconds(engine, unit.typeCode, landing, scene) : 0;
-      const hop = recoveryHopSeconds(engine, unit.typeCode, scene, landing);
+      // Visible trips (2026-10-19): from where the unit is — the landing, or on its way back — to the scene, then ashore.
+      const from = engine.spotOf(unit, incident, at);
+      const back = haversineMeters(from, scene) < 1 ? 0 : legSeconds(unit.typeCode, from, scene);
+      const hop = legSeconds(unit.typeCode, scene, landing);
       const landsAt = at + engine.dur(back + pickup + hop);
       if (coastGuardAt !== null && landsAt > coastGuardAt) continue;
       // The trip leaves the scene once the pickup is done ("a bordo" → "verso riva", 2026-10-18).
@@ -734,6 +749,22 @@ export function installMedical(engine: MockEngine): void {
         boarded.push(p);
       }
       if (group[0]) scheduleAt(career, 'PATIENT_RECOVERY_DEPART', departsAt, group[0].dto.id);
+      // On the map: sailing back to the scene first (from the landing), else taking them aboard at the scene.
+      const moving = engine.patchVehicle(career, unit.id, {
+        position: back > 0 ? from : scene,
+        movement:
+          back > 0
+            ? {
+                path: [from, scene],
+                departAt: iso(at),
+                arriveAt: iso(at + engine.dur(back)),
+                distanceMeters: haversineMeters(from, scene),
+                purpose: 'WATER_RESCUE_BACK',
+              }
+            : null,
+      })!;
+      if (back > 0) scheduleAt(career, 'WATER_RESCUE_BACK_ARRIVE', at + engine.dur(back), unit.id);
+      engine.emit(career, 'vehicle.updated', { vehicle: moving });
     }
     return boarded;
   };
@@ -757,6 +788,16 @@ export function installMedical(engine: MockEngine): void {
       career,
       (a) => ids.has(a.ref) && (a.type === 'PATIENT_RECOVERY_LAND' || a.type === 'PATIENT_COAST_GUARD'),
     );
+    // The unit is at the landing (visible trips, 2026-10-19): its next trip, or its way back / home, starts from here.
+    const incidentNow = career.incidents.find((i) => i.id === incidentId);
+    const carrier = vehicleId ? career.vehicles.find((v) => v.id === vehicleId) : undefined;
+    if (by === 'VEHICLE' && carrier?.status === 'ON_SCENE' && incidentNow) {
+      const landed = engine.patchVehicle(career, carrier.id, {
+        position: landingOf(career, incidentNow),
+        movement: null,
+      })!;
+      engine.emit(career, 'vehicle.updated', { vehicle: landed });
+    }
     for (const p of group)
       p.dto = {
         ...p.dto,
@@ -783,6 +824,33 @@ export function installMedical(engine: MockEngine): void {
       if (p.dto.status === 'AWAITING_TRANSPORT') notifyAwaitingTransport(career, incidentId);
     }
     releaseAfterRecovery(career, incidentId, at);
+    // Nobody else to fetch and still on the scene: it sails back there and stays (the work goes on).
+    const after = carrier ? career.vehicles.find((v) => v.id === carrier.id) : undefined;
+    const unitTrip = after ? medicalState(career).waterUnits?.[after.id] : undefined;
+    if (
+      after?.status === 'ON_SCENE' &&
+      !after.movement &&
+      incidentNow &&
+      !(unitTrip?.tripUntil && unitTrip.tripUntil > at)
+    ) {
+      const scene = sceneOf(incidentNow);
+      if (haversineMeters(after.position, scene) >= 1) {
+        const seconds =
+          medicalState(career).config.waterLegSeconds ??
+          recoveryHopSeconds(engine, after.typeCode, after.position, scene);
+        const back = engine.patchVehicle(career, after.id, {
+          movement: {
+            path: [after.position, scene],
+            departAt: iso(at),
+            arriveAt: iso(at + engine.dur(seconds)),
+            distanceMeters: haversineMeters(after.position, scene),
+            purpose: 'WATER_RESCUE_BACK',
+          },
+        })!;
+        scheduleAt(career, 'WATER_RESCUE_BACK_ARRIVE', at + engine.dur(seconds), after.id);
+        engine.emit(career, 'vehicle.updated', { vehicle: back });
+      }
+    }
   };
 
   /**
@@ -796,7 +864,7 @@ export function installMedical(engine: MockEngine): void {
     const keep = new Set(retainedVehicleIds(career, incident));
     const vehicles = onSceneVehicles(career, incidentId)
       .filter((v) => !keep.has(v.id))
-      .map((v) => engine.sendHome(career, v, at, engine.destinationOf(v, incident)));
+      .map((v) => engine.sendHome(career, v, at, engine.spotOf(v, incident, at)));
     if (vehicles.length) engine.emit(career, 'vehicle.returning', { vehicles });
   };
 
@@ -1370,6 +1438,25 @@ export function installMedical(engine: MockEngine): void {
       hourCycle: 'h23',
     }).format(new Date(etaAt!));
     const params = { labels, count: group.length, callSign };
+    // On the map: the unit leaves the scene for the landing with them aboard (visible trips, 2026-10-19).
+    const incident = career.incidents.find((i) => i.id === p.dto.incidentId);
+    const unit = career.vehicles.find((v) => v.id === vehicleId);
+    if (incident && unit?.status === 'ON_SCENE') {
+      const scene = sceneOf(incident);
+      const landing = landingOf(career, incident);
+      const moving = engine.patchVehicle(career, unit.id, {
+        position: scene,
+        movement: {
+          path: [scene, landing],
+          departAt: iso(action.dueAt),
+          arriveAt: etaAt!,
+          distanceMeters: haversineMeters(scene, landing),
+          purpose: 'WATER_RESCUE_TO_SHORE',
+          carrying: group.map((x) => x.dto.label),
+        },
+      })!;
+      engine.emit(career, 'vehicle.updated', { vehicle: moving });
+    }
     engine.log(
       career,
       p.dto.incidentId,
@@ -1386,6 +1473,15 @@ export function installMedical(engine: MockEngine): void {
       action.dueAt,
       vehicleId ?? undefined,
     );
+  });
+
+  /** A unit sailing back reaches the scene (2026-10-19): it stays there (taking the next people aboard, or working). */
+  engine.registerExecutor('WATER_RESCUE_BACK_ARRIVE', (career, action) => {
+    const v = career.vehicles.find((x) => x.id === action.ref);
+    if (!v || v.status !== 'ON_SCENE' || v.movement?.purpose !== 'WATER_RESCUE_BACK') return;
+    if (Math.abs(Date.parse(v.movement.arriveAt) - action.dueAt) > 1000) return;
+    const arrived = engine.patchVehicle(career, v.id, { position: v.movement.path.at(-1)!, movement: null })!;
+    engine.emit(career, 'vehicle.updated', { vehicle: arrived });
   });
 
   engine.registerExecutor('PATIENT_COAST_GUARD', (career, action) => {
@@ -1533,7 +1629,8 @@ export function installMedical(engine: MockEngine): void {
     },
     /**
      * Grace times in REAL seconds (auto-confirm of the recommended hospital, external ambulance takeover) + QA switches
-     * (`alwaysTransport`, `handoffSeconds`; water patients: `coastGuardSeconds`, `waterPickupSeconds` in game seconds).
+     * (`alwaysTransport`, `handoffSeconds`; water patients: `coastGuardSeconds`, `waterPickupSeconds`, `waterLegSeconds`, in
+     * game seconds).
      */
     medicalConfig: (config: Partial<MedicalState['config']>) => {
       Object.assign(medicalState(current()).config, config);
