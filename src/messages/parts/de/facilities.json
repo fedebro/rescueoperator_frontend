@@ -28,7 +28,11 @@
       },
       "owned": "Du hast an diesem Ort bereits einen Standort",
       "openFacility": "Standort öffnen",
-      "options": "Was du hier eröffnen kannst"
+      "options": "Was du hier eröffnen kannst",
+      "areaCalls": {
+        "WILDFIRE": "Waldbrandeinsätze kommen künftig auch aus den Wäldern rund um diesen Stützpunkt, im Umkreis von {km} km.",
+        "ALPINE": "Bergrettungseinsätze kommen künftig auch aus den Bergen rund um diese Station, im Umkreis von {km} km."
+      }
     },
     "map": {
       "modeTitle": "Neuer Standort",

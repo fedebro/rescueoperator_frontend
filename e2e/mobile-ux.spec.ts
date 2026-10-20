@@ -141,8 +141,14 @@ test.describe('bottom sheet (phones)', () => {
     await page.getByTestId('sheet-handle').tap();
     await page.getByTestId('sheet-handle').tap();
     await expect(sheet(page)).toHaveAttribute('data-snap', 'full');
-    await scroller(page).evaluate((el) => (el.scrollTop = 200));
-    await expect.poll(() => scroller(page).evaluate((el) => el.scrollTop)).toBe(200);
+    // The list scrolled as a player would leave it. Set once the sheet has settled at full and the position holds: WebKit
+    // re-syncs a scroller that just became touch-scrollable (pan-y at full) from its own side a few frames later, and a
+    // position set by script in that window is dropped (a finger scroll is not).
+    await expect(async () => {
+      await scroller(page).evaluate((el) => (el.scrollTop = 200));
+      await page.waitForTimeout(500);
+      expect(await scroller(page).evaluate((el) => el.scrollTop)).toBe(200);
+    }).toPass({ timeout: 10_000 });
 
     await page.getByTestId('incident-card').nth(3).tap();
     await expect(page.getByTestId('incident-inspector')).toBeVisible();

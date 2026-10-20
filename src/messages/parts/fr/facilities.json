@@ -28,7 +28,11 @@
       },
       "owned": "Vous avez déjà une base sur ce site",
       "openFacility": "Ouvrir la base",
-      "options": "Ce que vous pouvez ouvrir ici"
+      "options": "Ce que vous pouvez ouvrir ici",
+      "areaCalls": {
+        "WILDFIRE": "Des appels feux de forêt viendront aussi des bois autour de ce poste, dans un rayon de {km} km.",
+        "ALPINE": "Des appels de secours en montagne viendront aussi des montagnes autour de cette station, dans un rayon de {km} km."
+      }
     },
     "map": {
       "modeTitle": "Nouvelle base",

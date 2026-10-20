@@ -28,7 +28,11 @@
       },
       "owned": "Hai già una sede su questo sito",
       "openFacility": "Apri la sede",
-      "options": "Cosa puoi aprire qui"
+      "options": "Cosa puoi aprire qui",
+      "areaCalls": {
+        "WILDFIRE": "Le chiamate boschive arriveranno anche nei boschi intorno a questo presidio, entro {km} km.",
+        "ALPINE": "Le chiamate di soccorso alpino arriveranno anche in montagna intorno a questa stazione, entro {km} km."
+      }
     },
     "map": {
       "modeTitle": "Nuova sede",

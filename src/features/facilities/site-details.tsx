@@ -56,6 +56,9 @@ export function SiteOriginBadge({ site }: { site: Pick<SiteDto, 'real'> }) {
   );
 }
 
+/** Radius (km) of the calls around a facility of these families: the server defaults (`facilityAreaRadiusMeters`). */
+const FACILITY_AREA_KM = { WILDFIRE: 12, ALPINE: 15 } as const;
+
 function OptionRow({
   site,
   option,
@@ -145,6 +148,15 @@ function OptionRow({
           {t('setup')} <span className="tabular text-fg">{formatClock(option.setupSeconds)}</span>
         </li>
       </ul>
+      {/* Owner, 2026-10-20: the woods / mountains around the family's own facility are spawn area of its calls (server config
+          `incidents.spawn.facilityAreaRadiusMeters`, defaults below), even where the territory alone would give none. */}
+      {option.family in FACILITY_AREA_KM ? (
+        <p className="text-muted text-xs" data-testid="site-option-area-calls">
+          {t(`areaCalls.${option.family as keyof typeof FACILITY_AREA_KM}`, {
+            km: FACILITY_AREA_KM[option.family as keyof typeof FACILITY_AREA_KM],
+          })}
+        </p>
+      ) : null}
       {option.available ? (
         <Button
           variant={affordable ? 'primary' : 'outline'}

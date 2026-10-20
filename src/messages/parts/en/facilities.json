@@ -28,7 +28,11 @@
       },
       "owned": "You already have a facility on this site",
       "openFacility": "Open the facility",
-      "options": "What you can open here"
+      "options": "What you can open here",
+      "areaCalls": {
+        "WILDFIRE": "Wildfire calls will also come from the woods around this outpost, within {km} km.",
+        "ALPINE": "Mountain rescue calls will also come from the mountains around this station, within {km} km."
+      }
     },
     "map": {
       "modeTitle": "New facility",

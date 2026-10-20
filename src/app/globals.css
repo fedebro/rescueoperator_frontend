@@ -289,6 +289,14 @@ html[data-reduced-motion='true'] *::after {
    downward drag that starts with the list at its top. */
 [data-sheet-viewport] [data-sheet-scroll] {
   touch-action: none;
+  /* A phone draws overlay scrollbars that take no room. Where the system shows classic ones instead (WebKit on a Mac
+     with a mouse, a desktop browser at phone width) a 10 px bar would steal the width of the list in the peek and the
+     half state — the cards no longer fit and the list scrolls sideways. The sheet is moved and scrolled by touch and by
+     its handle: no bar. */
+  scrollbar-width: none;
+}
+[data-sheet-viewport] [data-sheet-scroll]::-webkit-scrollbar {
+  display: none;
 }
 section[data-snap='full'] [data-sheet-viewport] [data-sheet-scroll] {
   touch-action: pan-y;
