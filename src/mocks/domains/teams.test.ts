@@ -43,6 +43,8 @@ function world() {
     'vitest',
   );
   const account = engine.authenticate(`Bearer ${auth.accessToken}`);
+  // Legacy careers (before the first shift, D-148): its own suite is first-shift.test.ts.
+  engine.state.featureFlags.firstShift = false;
   const summary = engine.createCareer(account, {
     locationId: PESCARA.id,
     siteId: engine.starterSites()[1]!.id,
@@ -106,8 +108,9 @@ describe('forming a team from a vehicle', () => {
       vehicleId: vehicle.id,
       min: 3,
       optimal: 5,
-      available: 6,
-      remainingFree: 1,
+      // Starter roster of 7 (two drivers, D-148): 5 aboard, 2 left free.
+      available: 7,
+      remainingFree: 2,
       teamId: null,
     });
     expect(proposal.memberIds).toHaveLength(5);
@@ -169,7 +172,7 @@ describe('forming a team from a vehicle', () => {
     const { vehicle } = withTeam(w);
     const second = w.engine.addVehicle(w.career, 'FIRE_APS', w.career.facilities[0]!.id, true);
     const proposal = w.domain.teamProposal(w.career, second.id);
-    expect(proposal.memberIds).toHaveLength(1);
+    expect(proposal.memberIds).toHaveLength(2);
     expect(proposal).toMatchObject({ remainingFree: 0, efficiency: 0 });
     w.domain.createTeam(w.career, { vehicleId: second.id });
     const third = w.engine.addVehicle(w.career, 'FIRE_APS', w.career.facilities[0]!.id, true);

@@ -11,6 +11,7 @@ import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { SectionTitle } from '@/components/ui/misc';
 import { Badge } from '@/components/ui/badge';
 import { MapSlot } from './persistent-map';
+import { LiveStoryStrip } from './live-story';
 import { IncidentQueue } from './incident-queue';
 import { SelectionInspector } from './inspectors';
 import { DutyToggle } from './duty-toggle';
@@ -131,7 +132,10 @@ export function OperationsScreen() {
             <IncidentQueue />
           </div>
         </aside>
-        <MapSlot className="relative min-w-0 flex-1" />
+        <div className="relative min-w-0 flex-1">
+          <MapSlot className="absolute inset-0" />
+          <LiveStoryStrip className="absolute inset-x-0 bottom-8" />
+        </div>
         {selection ? (
           <aside
             className="border-border bg-surface-1 w-[400px] shrink-0 border-l"
@@ -164,7 +168,10 @@ export function OperationsScreen() {
             </>
           )}
         </aside>
-        <MapSlot className="relative min-w-0 flex-1" />
+        <div className="relative min-w-0 flex-1">
+          <MapSlot className="absolute inset-0" />
+          <LiveStoryStrip className="absolute inset-x-0 bottom-8" />
+        </div>
       </div>
     );
   }
@@ -173,6 +180,13 @@ export function OperationsScreen() {
     <div ref={rootRef} className="absolute inset-0" data-ops-layout="phone">
       <MapSlot className="absolute inset-0" />
       <AidMapCard />
+      {/* Just above the sheet's edge, wherever the sheet stands (the inset follows it). */}
+      {snap !== 'full' ? (
+        <LiveStoryStrip
+          hideForSelected
+          className="absolute inset-x-0 bottom-[calc(var(--rc-map-inset-bottom,0px)+30px)]"
+        />
+      ) : null}
       <BottomSheet
         snap={snap}
         onSnapChange={setSnap}

@@ -116,7 +116,7 @@ test('form the team of a vehicle, move it with the vehicle from the sheet, disso
     await expect(page.getByTestId('team-card')).toHaveCount(0);
     await expect(page.getByTestId('team-less-vehicle')).toHaveCount(1);
     await page.getByRole('tab', { name: 'Organico' }).click();
-    await expect(page.getByTestId('roster-count')).toHaveText('6 di 6 operatori');
+    await expect(page.getByTestId('roster-count')).toHaveText('7 di 7 operatori');
   });
 });
 

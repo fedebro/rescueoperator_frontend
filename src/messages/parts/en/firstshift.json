@@ -1,0 +1,100 @@
+{
+  "liveStory": {
+    "label": "Live story",
+    "open": "Open the emergency",
+    "preparing": "{callSign} is getting ready: leaving in {seconds} s",
+    "leaving": "{callSign} is leaving the station",
+    "enRoute": "{callSign} {meters, number} m away, arriving in {seconds} s",
+    "arrived": "{callSign} on scene: {category, select, FIRE {the crew attacks the fire} TECHNICAL {the crew makes the area safe} ROAD {the crew helps the people involved} MEDICAL {the crew assesses the patient} WATER {the crew reaches the people in the water} POLICE {the patrol takes charge} other {the crew gets to work}}",
+    "arrivedOthersComing": "{callSign} on scene, {other} arriving in {seconds} s",
+    "working": "{category, select, FIRE {Fire under control} TECHNICAL {Work in progress} ROAD {Rescue in progress} MEDICAL {Care in progress} WATER {Recovery in progress} other {Intervention in progress}}, {pct}%",
+    "almostDone": "{category, select, FIRE {Fire almost out} TECHNICAL {Almost done} ROAD {Road almost clear} MEDICAL {Patient almost ready} WATER {Recovery almost done} other {Almost done}}, {pct}%",
+    "resolving": "On-scene work finished: closing the intervention",
+    "transporting": "{callSign} is taking the patient to hospital",
+    "done": "Intervention complete"
+  },
+  "firstShift": {
+    "outcome": {
+      "label": "Mission outcome",
+      "title": "Mission {mission} complete!",
+      "titleGeneric": "Mission complete!",
+      "finishedTitle": "First shift complete!",
+      "finishedBody": "From now on calls come in on their own: keep an eye on the queue.",
+      "stars": "{stars} stars out of 3",
+      "credits": "+{amount} credits",
+      "xp": "+{amount} XP",
+      "nextCallIn": "New call in {seconds} s…",
+      "nextCallNow": "New call coming in…",
+      "hide": "Hide",
+      "praise": {
+        "RESPOND": "You answered at once: the vehicles left within seconds.",
+        "CHOOSE_VEHICLE": "You picked the right vehicle for the job yourself.",
+        "MULTI_VEHICLE": "Two vehicles together: the fire stood no chance.",
+        "REDIRECT": "You sent the vehicle straight there, without going back to the station.",
+        "FREE": "All on your own, without a single mistake.",
+        "FAST": "Fast response: the vehicles arrived in time.",
+        "DEFAULT": "Intervention closed without a hitch."
+      }
+    },
+    "bubble": {
+      "openCall": "New call: open it to see what is happening",
+      "sendRecommended": "One tap here and the recommended vehicles leave",
+      "watchStory": "Follow the story here: departure, arrival, work",
+      "tickVehicle": "This time you choose: tick the right vehicle",
+      "sendChosen": "Now send the vehicle you picked",
+      "redirectHere": "The vehicle is on its way back: send it here without stopping at the station",
+      "needSecond": "Two vehicles are needed: buy the second with the credits you won",
+      "buySecond": "Buy the second fire engine here",
+      "delivering": "The new fire engine reaches the station in a few seconds",
+      "backToCall": "Done! Go back to the call and send both vehicles",
+      "sendBoth": "Now send both vehicles",
+      "action": {
+        "openCall": "Open the call",
+        "goShop": "Go to the shop",
+        "backToCall": "Back to the call"
+      }
+    },
+    "skip": {
+      "button": "Play without the guide",
+      "title": "Do you really want to play without the guide?",
+      "body": "The first missions stay short: only the guide goes away.",
+      "keep": "Keep the guide",
+      "confirm": "Play without the guide"
+    },
+    "patientGuide": {
+      "progress": "{current} of {total}",
+      "dismiss": "Close the guide",
+      "SEND": "Assessment: send an ambulance. On arrival the crew examines the patient and gives them a colour code.",
+      "ASSESS": "Assessment: on arrival the crew examines the patient and gives them a colour code.",
+      "TREAT": "Care: on scene the crew stabilises the patient. The more serious, the longer it takes.",
+      "HOSPITAL": "Hospital: choose where to take them below and the ambulance leaves.",
+      "DONE": "Done: the patient is in good hands. From now on you know how to do it."
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "firstShift": {
+        "title": "First shift (last 14 days)",
+        "byMission": "Careers that completed each mission",
+        "mission": "Mission {mission}",
+        "recent": "Recent careers",
+        "director": "Director",
+        "startedAt": "Started",
+        "completed": "Missions",
+        "laterCalls": "Calls after",
+        "guided": "Guided",
+        "returnedNextDay": "Back the next day",
+        "yes": "Yes",
+        "no": "No",
+        "kpi": {
+          "careers": "New careers",
+          "medianFirstCall": "First call (median)",
+          "finished": "First shift completed",
+          "reachedSixthCall": "Reached the sixth call",
+          "returnedNextDay": "Back the next day",
+          "skippedTutorial": "Without the guide"
+        }
+      }
+    }
+  }
+}

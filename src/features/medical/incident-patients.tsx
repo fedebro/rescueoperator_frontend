@@ -29,6 +29,7 @@ import { SendVehicleList, TransportPanel } from './transport-panel';
 import { FieldPostBanner } from './mass-casualty';
 import { MedicalChip, PATIENT_STATUS_VISUALS, TRIAGE_VISUALS, WATER_VISUAL } from './visuals';
 import { WaterRescuePhases } from './water-rescue-phases';
+import { PatientGuide } from './patient-guide';
 
 const PHASE_BY_STATUS: Partial<
   Record<PatientDto['status'], 'assessing' | 'treating' | 'packaging' | 'toHospital' | 'handoff'>
@@ -477,6 +478,10 @@ export function IncidentPatients({ incident }: { incident: IncidentDto }) {
           closeLabel={tc('close')}
         />
       </div>
+      {/* First patient call after the 118 unlock: assessment, care, hospital — one at a time (primo turno §3.3). */}
+      {patients.isLoading ? null : (
+        <PatientGuide incident={incident} patients={list} medicalAssigned={medicalAssigned} />
+      )}
       {/* Water rescue with a meeting point: the phase strip stays visible even with the list folded (2026-10-18). */}
       {list.length > 0 ? <WaterRescuePhases incident={incident} patients={list} /> : null}
       {expanded ? (

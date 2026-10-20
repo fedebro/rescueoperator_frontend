@@ -46,6 +46,8 @@ function world(speed = 1) {
     const auth = signUp();
     const account = engine.authenticate(`Bearer ${auth.accessToken}`);
     const site = engine.starterSites()[1]!;
+    // Legacy careers (before the first shift, D-148): its own suite is first-shift.test.ts.
+    engine.state.featureFlags.firstShift = false;
     const summary = engine.createCareer(account, { locationId: PESCARA.id, siteId: site.id });
     return { account, career: engine.state.careers[summary.id] as MockCareer };
   };
@@ -280,9 +282,15 @@ describe('mock core loop', () => {
     const b = new MockEngine({ storage, now: () => now });
     b.process();
     const restored = b.state.careers[summary.id]!;
+    // First shift (D-148): mission 1 was rewarded; mission 2 came due while nobody was there, so it waits for the player.
     expect(restored.incidents).toHaveLength(0);
+    expect(restored.firstShift?.callOnReturn).toBe(true);
     expect(restored.pendingOutcomes).toHaveLength(1);
     expect(restored.vehicles[0]!.status).toBe('AVAILABLE');
+    b.touch(restored); // back: it rings 3 s (server) later
+    now += 3_000;
+    b.process();
+    expect(restored.incidents.map((i) => i.firstShift?.mission)).toEqual([2]);
     expect(b.refresh().user.activeCareerId).toBe(summary.id);
   });
 });

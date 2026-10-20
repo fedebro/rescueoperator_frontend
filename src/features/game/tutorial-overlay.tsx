@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useTargetRect } from '@/features/coaching/target-rect';
 import { useCareerId, usePatchSnapshot, useSnapshot } from './hooks';
+import { FirstShiftGuide, SkipGuide } from './first-shift-guide';
 
 export const TUTORIAL_STEPS = [
   'WELCOME',
@@ -103,6 +104,10 @@ export function TutorialOverlay() {
       : TARGET[step],
   );
   const target = rawTarget ? clampToViewport(rawTarget) : null;
+  // Primo turno (D-148): after the welcome, one-line bubbles per lesson (missions 1–4) instead of the step cards.
+  const firstShift = career.firstShift ?? null;
+  if (firstShift && step !== 'WELCOME')
+    return firstShift.guided ? <FirstShiftGuide onSkip={() => advance.mutate('DONE')} /> : null;
   if (step === 'DONE' || step === 'OUTCOME') return null; // OUTCOME is carried by the outcome modal itself
   if (step === 'DISPATCH' && selection?.kind !== 'incident') return null;
 
@@ -205,15 +210,20 @@ export function TutorialOverlay() {
             >
               {t('start')}
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-11 w-full lg:h-8"
-              onClick={() => advance.mutate('DONE')}
-              data-testid="tutorial-skip"
-            >
-              {t('skip')}
-            </Button>
+            {firstShift ? (
+              // Smaller, and asks first (study §3.3): the first missions stay short without the guide too.
+              <SkipGuide onSkip={() => advance.mutate('DONE')} className="mx-auto min-h-11 lg:min-h-8" />
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-11 w-full lg:h-8"
+                onClick={() => advance.mutate('DONE')}
+                data-testid="tutorial-skip"
+              >
+                {t('skip')}
+              </Button>
+            )}
           </div>
         ) : null}
       </div>

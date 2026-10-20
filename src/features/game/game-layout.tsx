@@ -8,6 +8,7 @@ import { ServerOfflineScreen } from '@/components/brand/server-offline';
 import { GameRuntime } from './game-runtime';
 import { GameShell } from './shell';
 import { OutcomeModal } from './outcome-modal';
+import { FirstShiftOutcome } from './first-shift-outcome';
 import { AwayReportDialog } from './away-report';
 import { TutorialOverlay } from './tutorial-overlay';
 import { InsufficientCreditsHost } from '@/features/monetization/insufficient-credits';
@@ -33,6 +34,8 @@ export function GameLayout({ children }: { children: React.ReactNode }) {
       <TutorialOverlay />
       <AwayReportDialog />
       <OutcomeModal />
+      {/* Primo turno (D-148): the short, celebrated outcome with the countdown to the next call. */}
+      <FirstShiftOutcome />
       <InsufficientCreditsHost />
       <FamilyUnlockCelebration />
       {/* The full-screen alert of a major incident, over any page (D-24, study 06 §2.6). */}

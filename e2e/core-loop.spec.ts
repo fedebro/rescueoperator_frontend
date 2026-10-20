@@ -5,6 +5,10 @@ import { describePageError, dismissPushPrompt, isBenignBrowserNoise } from './he
  * The whole core loop against the in-browser mock backend, in both layouts (projects: desktop, mobile):
  * sign up with OTP → pick Pescara → pick a site → tutorial incident → dispatch → arrival → outcome →
  * buy a second vehicle → reload with state intact → language switch → sign out and back in.
+ *
+ * A new career plays the first shift (D-148): mission 1 is the tutorial call, its outcome is the short card (no dialog), and
+ * this journey then leaves the guide («Gioca senza guida» pays the tutorial bonus) to buy the second vehicle right away —
+ * the guided five missions are e2e/primo-turno.spec.ts. The simulation runs at ×4 here: the first-shift phases are short.
  */
 
 const problems = new WeakMap<Page, string[]>();
@@ -41,6 +45,13 @@ async function goTo(page: Page, name: RegExp | string, moreFirst = false) {
 }
 
 test('core loop: from sign-up to a second vehicle, surviving a reload', async ({ page }, testInfo) => {
+  await page.addInitScript(() => {
+    try {
+      if (!localStorage.getItem('rc-mock-speed')) localStorage.setItem('rc-mock-speed', '4');
+    } catch {
+      /* storage blocked: default speed */
+    }
+  });
   const unique = `${testInfo.project.name}${Date.now()}`;
   const email = `direttore.${unique}@example.com`;
   const directorName = `Dir ${unique.slice(-9)}`;
@@ -120,16 +131,21 @@ test('core loop: from sign-up to a second vehicle, surviving a reload', async ({
     await expect(page.getByTestId('assigned-vehicle')).toHaveAttribute('data-vehicle-status', 'ON_SCENE');
   });
 
-  await test.step('mission outcome: stars, gross / costs / net, XP', async () => {
-    const modal = page.getByTestId('outcome-modal');
-    await expect(modal).toBeVisible({ timeout: 40_000 });
-    await expect(modal.getByTestId('outcome-stars')).toHaveAttribute('data-stars', /[1-3]/);
-    await expect(modal.getByText('Ricompensa lorda')).toBeVisible();
-    await expect(modal.getByText('Netto accreditato')).toBeVisible();
-    await expect(modal.getByTestId('outcome-net')).toContainText('+');
-    await page.getByTestId('outcome-continue').click();
-    await expect(modal).toBeHidden();
-    await expect(page.getByTestId('tutorial')).toHaveAttribute('data-step', 'BUY_VEHICLE');
+  await test.step('mission outcome: the short card — stars, credits, XP, the next call coming', async () => {
+    const outcome = page.getByTestId('first-shift-outcome');
+    await expect(outcome).toBeVisible({ timeout: 40_000 });
+    await expect(outcome.getByTestId('first-shift-outcome-stars')).toHaveAttribute('data-stars', /[1-3]/);
+    await expect(outcome.getByTestId('first-shift-outcome-credits')).toContainText('+');
+    await expect(page.getByTestId('outcome-modal')).toHaveCount(0);
+  });
+
+  await test.step('leave the guide: it asks first, then the bubbles are gone', async () => {
+    await page.getByTestId('tutorial-skip').first().click();
+    await expect(page.getByTestId('tutorial-skip-confirm')).toContainText(
+      'Vuoi davvero giocare senza guida?',
+    );
+    await page.getByTestId('tutorial-skip-confirm-button').click();
+    await expect(page.getByTestId('tutorial')).toHaveCount(0);
   });
 
   let creditsAfterPurchase = '';

@@ -495,7 +495,10 @@ export function installDispatchChain(engine: MockEngine): void {
 
     // From where the vehicle actually is on its way home — never from its base.
     const from = vehicle.movement ? movementPoint(vehicle.movement, now).position : vehicle.position;
-    const planned = engine.legFor(career, { ...vehicle, position: from }, target);
+    const raw = engine.legFor(career, { ...vehicle, position: from }, target);
+    // First shift (D-148): a redirect too is on scene within the call's cap.
+    const cap = target.firstShift?.arrivalCapSeconds;
+    const planned = cap && raw.seconds > cap ? { ...raw, seconds: cap } : raw;
     const stop = elig.autonomy?.fuelStop ?? null;
     // A redirect in reserve goes through a filling station first: the stop is part of the new leg.
     const leg = stop ? { ...planned, seconds: planned.seconds + stop.extraSeconds } : planned;

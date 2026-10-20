@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
+import type { AdminFirstShiftDto } from '@/contracts';
 import { adminApi, type AdminDashboardDto, type AdminQueueStats } from '@/lib/api/admin';
 import { qk } from '@/lib/api/query-keys';
 import type { Column } from '@/components/ui/data-table';
@@ -129,6 +130,7 @@ export function AdminDashboard() {
                 </Card>
               ))}
             </div>
+            <FirstShiftSection />
             <section>
               <SectionTitle className="mt-2">{t('queues')}</SectionTitle>
               <AdminTable
@@ -161,5 +163,123 @@ export function AdminDashboard() {
         ) : null}
       </QueryState>
     </>
+  );
+}
+
+type FirstShiftRow = AdminFirstShiftDto['recent'][number];
+
+/**
+ * Primo turno (D-148, study 2026-10-20 §3.4): did the first five minutes work? Time to the first call, how many reached each
+ * mission, finished the shift, got a 6th (normal) call, came back on a later day, skipped the tutorial — last 14 days.
+ */
+function FirstShiftSection() {
+  const t = useTranslations('admin.dashboard.firstShift');
+  const locale = useLocale();
+  const q = useQuery({
+    queryKey: qk.admin('first-shift'),
+    queryFn: () => adminApi.firstShift(14),
+    refetchInterval: 60_000,
+  });
+  const d = q.data;
+  if (!d) return null;
+  const pct = (n: number) =>
+    d.careers > 0
+      ? new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 }).format(n / d.careers)
+      : '—';
+  const columns: Column<FirstShiftRow>[] = [
+    {
+      id: 'director',
+      header: t('director'),
+      width: 'minmax(140px,2fr)',
+      cell: (r) => <span className="font-semibold">{r.directorName ?? r.careerId}</span>,
+    },
+    {
+      id: 'startedAt',
+      header: t('startedAt'),
+      width: '160px',
+      cell: (r) => new Date(r.startedAt).toLocaleString(locale),
+      sortValue: (r) => r.startedAt,
+    },
+    {
+      id: 'completed',
+      header: t('completed'),
+      width: '110px',
+      align: 'right',
+      cell: (r) => <span className="tabular">{r.completed} / 5</span>,
+      sortValue: (r) => r.completed,
+    },
+    {
+      id: 'laterCalls',
+      header: t('laterCalls'),
+      width: '110px',
+      align: 'right',
+      cell: (r) => <span className="tabular">{r.laterCalls}</span>,
+      sortValue: (r) => r.laterCalls,
+    },
+    {
+      id: 'guided',
+      header: t('guided'),
+      width: '120px',
+      cell: (r) => (
+        <StateBadge tone={r.guided ? 'success' : 'neutral'} label={r.guided ? t('yes') : t('no')} />
+      ),
+    },
+    {
+      id: 'returned',
+      header: t('returnedNextDay'),
+      width: '140px',
+      cell: (r) => (
+        <StateBadge
+          tone={r.returnedNextDay ? 'success' : 'neutral'}
+          label={r.returnedNextDay ? t('yes') : t('no')}
+        />
+      ),
+    },
+  ];
+  return (
+    <section data-testid="admin-first-shift">
+      <SectionTitle className="mt-2">{t('title')}</SectionTitle>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
+        {(
+          [
+            ['careers', d.careers.toLocaleString(locale)],
+            ['medianFirstCall', d.medianFirstCallSeconds === null ? '—' : `${d.medianFirstCallSeconds} s`],
+            ['finished', `${d.finished} · ${pct(d.finished)}`],
+            ['reachedSixthCall', `${d.reachedSixthCall} · ${pct(d.reachedSixthCall)}`],
+            ['returnedNextDay', `${d.returnedNextDay} · ${pct(d.returnedNextDay)}`],
+            ['skippedTutorial', `${d.skippedTutorial} · ${pct(d.skippedTutorial)}`],
+          ] as const
+        ).map(([key, value]) => (
+          <Card key={key}>
+            <Stat label={t(`kpi.${key}`)} value={<span data-testid={`first-shift-${key}`}>{value}</span>} />
+          </Card>
+        ))}
+      </div>
+      <ol className="mt-3 grid grid-cols-5 gap-2" aria-label={t('byMission')}>
+        {d.completedByMission.map((m) => (
+          <li
+            key={m.mission}
+            className="border-border bg-surface-2 rounded-md border p-2 text-center text-xs"
+          >
+            <span className="text-muted block">{t('mission', { mission: m.mission })}</span>
+            <span className="tabular text-sm font-bold">{m.completed}</span>
+            <span className="text-subtle block">{pct(m.completed)}</span>
+          </li>
+        ))}
+      </ol>
+      <div className="mt-3">
+        <AdminTable
+          caption={t('recent')}
+          columns={columns}
+          rows={d.recent}
+          rowKey={(r) => r.careerId}
+          titleColumn="director"
+          cardTitle={(r) => r.directorName ?? r.careerId}
+          density="dense"
+          maxHeight={260}
+          empty={null}
+        />
+      </div>
+    </section>
   );
 }

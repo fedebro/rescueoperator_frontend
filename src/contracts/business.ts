@@ -268,6 +268,23 @@ export const AdminFunnelDto = z.object({
   totals: z.object({ events: z.number().int(), users: z.number().int() }),
 });
 
+/**
+ * GET /admin/analytics/first-shift?sinceDays= (additive, primo turno D-148): the careers whose first shift started in the window —
+ * time to the first call, how many reached each of the 5 missions, finished the shift, got a 6th (normal) call, came back on a
+ * later day, skipped the tutorial — plus the 50 most recent careers.
+ */
+export const AdminFirstShiftDto = z.object({
+  from: IsoDateTime, to: IsoDateTime, careers: z.number().int(),
+  medianFirstCallSeconds: z.number().int().nullable(),
+  completedByMission: z.array(z.object({ mission: z.number().int(), completed: z.number().int() })),
+  finished: z.number().int(), reachedSixthCall: z.number().int(), returnedNextDay: z.number().int(), skippedTutorial: z.number().int(),
+  recent: z.array(z.object({
+    careerId: z.string(), directorName: z.string().nullable(), startedAt: IsoDateTime, firstCallSeconds: z.number().int().nullable(), completed: z.number().int(),
+    finishedAt: IsoDateTime.nullable(), laterCalls: z.number().int(), returnedNextDay: z.boolean(), guided: z.boolean(),
+  })),
+});
+export type AdminFirstShiftDto = z.infer<typeof AdminFirstShiftDto>;
+
 /** GET /admin/queues */
 export const AdminQueueList = z.array(AdminQueueStats);
 

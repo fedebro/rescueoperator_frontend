@@ -1,0 +1,100 @@
+{
+  "liveStory": {
+    "label": "Relato en directo",
+    "open": "Abrir la emergencia",
+    "preparing": "{callSign} se prepara: sale en {seconds} s",
+    "leaving": "{callSign} sale del parque",
+    "enRoute": "{callSign} a {meters, number} m, llega en {seconds} s",
+    "arrived": "{callSign} en el lugar: {category, select, FIRE {el equipo ataca el fuego} TECHNICAL {el equipo asegura la zona} ROAD {el equipo socorre a los implicados} MEDICAL {la tripulación valora al paciente} WATER {el equipo alcanza a las personas en el agua} POLICE {la patrulla toma el control} other {el equipo se pone a trabajar}}",
+    "arrivedOthersComing": "{callSign} en el lugar, {other} llega en {seconds} s",
+    "working": "{category, select, FIRE {Incendio bajo control} TECHNICAL {Trabajos en curso} ROAD {Rescate en curso} MEDICAL {Atención en curso} WATER {Recuperación en curso} other {Intervención en curso}}, {pct} %",
+    "almostDone": "{category, select, FIRE {Fuego casi apagado} TECHNICAL {Casi terminado} ROAD {Carretera casi despejada} MEDICAL {Paciente casi listo} WATER {Recuperación casi terminada} other {Casi terminado}}, {pct} %",
+    "resolving": "Trabajo en el lugar terminado: se cierra la intervención",
+    "transporting": "{callSign} lleva al paciente al hospital",
+    "done": "Intervención concluida"
+  },
+  "firstShift": {
+    "outcome": {
+      "label": "Resultado de la misión",
+      "title": "¡Misión {mission} completada!",
+      "titleGeneric": "¡Misión completada!",
+      "finishedTitle": "¡Primer turno completado!",
+      "finishedBody": "A partir de ahora las llamadas llegan solas: vigila la cola.",
+      "stars": "{stars} estrellas de 3",
+      "credits": "+{amount} créditos",
+      "xp": "+{amount} XP",
+      "nextCallIn": "Nueva llamada en {seconds} s…",
+      "nextCallNow": "Llega una nueva llamada…",
+      "hide": "Ocultar",
+      "praise": {
+        "RESPOND": "Respondiste al momento: los vehículos salieron en segundos.",
+        "CHOOSE_VEHICLE": "Elegiste tú el vehículo adecuado para el trabajo.",
+        "MULTI_VEHICLE": "Dos vehículos juntos: el fuego no tuvo ninguna opción.",
+        "REDIRECT": "Enviaste el vehículo directamente, sin volver al parque.",
+        "FREE": "Todo tú solo, y sin un solo error.",
+        "FAST": "Respuesta rápida: los vehículos llegaron a tiempo.",
+        "DEFAULT": "Intervención cerrada sin contratiempos."
+      }
+    },
+    "bubble": {
+      "openCall": "Nueva llamada: ábrela para ver qué pasa",
+      "sendRecommended": "Un toque aquí y salen los vehículos recomendados",
+      "watchStory": "Sigue aquí el relato: salida, llegada, trabajo",
+      "tickVehicle": "Esta vez eliges tú: marca el vehículo adecuado",
+      "sendChosen": "Ahora envía el vehículo elegido",
+      "redirectHere": "El vehículo está volviendo: envíalo aquí sin pasar por el parque",
+      "needSecond": "Hacen falta dos vehículos: compra el segundo con los créditos ganados",
+      "buySecond": "Compra aquí la segunda autobomba",
+      "delivering": "La nueva autobomba llega al parque en unos segundos",
+      "backToCall": "¡Hecho! Vuelve a la llamada y envía los dos vehículos",
+      "sendBoth": "Ahora envía los dos vehículos",
+      "action": {
+        "openCall": "Abrir la llamada",
+        "goShop": "Ir a compras",
+        "backToCall": "Volver a la llamada"
+      }
+    },
+    "skip": {
+      "button": "Jugar sin guía",
+      "title": "¿De verdad quieres jugar sin guía?",
+      "body": "Las primeras misiones siguen siendo cortas: solo desaparece la guía.",
+      "keep": "Seguir con la guía",
+      "confirm": "Jugar sin guía"
+    },
+    "patientGuide": {
+      "progress": "{current} de {total}",
+      "dismiss": "Cerrar la guía",
+      "SEND": "Valoración: envía una ambulancia. Al llegar, la tripulación examina al paciente y le asigna un código de color.",
+      "ASSESS": "Valoración: al llegar, la tripulación examina al paciente y le asigna un código de color.",
+      "TREAT": "Atención: en el lugar la tripulación estabiliza al paciente. Cuanto más grave, más tarda.",
+      "HOSPITAL": "Hospital: elige abajo adónde llevarlo y la ambulancia sale.",
+      "DONE": "Hecho: el paciente está en buenas manos. A partir de ahora sabes hacerlo."
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "firstShift": {
+        "title": "Primer turno (últimos 14 días)",
+        "byMission": "Carreras que completaron cada misión",
+        "mission": "Misión {mission}",
+        "recent": "Carreras recientes",
+        "director": "Director",
+        "startedAt": "Inicio",
+        "completed": "Misiones",
+        "laterCalls": "Llamadas después",
+        "guided": "Con guía",
+        "returnedNextDay": "Volvió al día siguiente",
+        "yes": "Sí",
+        "no": "No",
+        "kpi": {
+          "careers": "Carreras nuevas",
+          "medianFirstCall": "Primera llamada (mediana)",
+          "finished": "Primer turno completado",
+          "reachedSixthCall": "Llegaron a la sexta llamada",
+          "returnedNextDay": "Volvieron al día siguiente",
+          "skippedTutorial": "Sin guía"
+        }
+      }
+    }
+  }
+}

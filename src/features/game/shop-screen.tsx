@@ -436,7 +436,9 @@ function ShopContent({
       buy.mutate({
         type,
         facility,
-        completesTutorial: career.tutorial.step === 'BUY_VEHICLE' && !career.tutorial.completed,
+        // During the first shift (D-148) the purchase is a step of mission 3: the tutorial ends with mission 4.
+        completesTutorial:
+          career.tutorial.step === 'BUY_VEHICLE' && !career.tutorial.completed && !career.firstShift,
       });
   };
 

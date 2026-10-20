@@ -23,6 +23,7 @@ export const MESSAGE_PARTS = [
   'maxi',
   'push',
   'alliance',
+  'firstshift',
 ] as const;
 
 export type MessageTree = { [key: string]: MessageTree | string };

@@ -41,6 +41,18 @@ import {
 } from './data/catalog';
 import { INCIDENT_SPOTS, PESCARA, STARTER_SITES, mockRoute } from './data/pescara';
 import { newId } from './ulid';
+import {
+  FIRST_SHIFT_DELIVERY_SECONDS,
+  GENTLE_PERIOD,
+  arrivalFactor,
+  firstShiftReturnSeconds,
+  firstShiftView,
+  incidentFirstShift,
+  isProtectedIncident,
+  missionRule,
+  type FirstShiftMission,
+  type MockFirstShiftState,
+} from './first-shift';
 import type { QaHelpers } from './qa';
 
 /**
@@ -75,7 +87,8 @@ type CoreActionType =
   | 'INCIDENT_EXPIRE'
   | 'INCIDENT_ESCALATE'
   | 'UNG_ARRIVE'
-  | 'UNG_DONE';
+  | 'UNG_DONE'
+  | 'FIRST_SHIFT_CALL';
 export type ActionType = CoreActionType | (string & {});
 export interface Action {
   id: string;
@@ -236,6 +249,12 @@ export interface SpawnOptions {
    * the backend's `createIncident({ beforeAnnounce })`): the event already carries what it sets.
    */
   beforeAnnounce?: (career: MockCareer, incident: IncidentDto) => void;
+  /** Primo turno (D-148): the mission this call is — protected, fixed reward, scaled work, placed in its distance band. */
+  firstShift?: FirstShiftMission;
+  /** Gentle period after the first shift: at most this far (straight line) from the headquarters… */
+  maxDistanceMeters?: number;
+  /** …and at most this severity (never below the template's own minimum). */
+  maxSeverity?: number;
 }
 /**
  * A place chosen by a domain (water scene, D-68). `position` is where land units stop (the meeting point on the shore
@@ -393,6 +412,8 @@ export interface MockCareer {
   outbox?: RealtimeEnvelope[];
   /** The last player dispatches (free undo), newest last. Optional: older saves have none. */
   dispatches?: MockDispatchRecord[];
+  /** Primo turno (D-148): absent for careers that predate it (and for QA careers created past it). */
+  firstShift?: MockFirstShiftState;
 }
 
 interface MockUser {
@@ -851,7 +872,15 @@ export class MockEngine {
     this.credit(career, ECONOMY.startingCredits, 'STARTER_GRANT', true);
     this.addVehicle(career, 'FIRE_APS', facilityId, true);
     for (const hook of this.hooks.careerCreated) hook(career);
-    this.spawnIncident(career, TUTORIAL_TEMPLATE, true);
+    // Primo turno (D-148): every new career plays its first 5 missions on the first-shift rules; the tutorial call is mission 1.
+    if (this.state.featureFlags.firstShift !== false) this.startFirstShift(career);
+    const first = career.firstShift ? missionRule(1) : undefined;
+    this.spawnIncident(
+      career,
+      first?.templates[0] ?? TUTORIAL_TEMPLATE,
+      true,
+      first ? { firstShift: first } : {},
+    );
     this.save();
     return career.summary;
   }
@@ -950,6 +979,9 @@ export class MockEngine {
         break;
       case 'UNG_DONE':
         this.onUngDone(career, action.ref, at);
+        break;
+      case 'FIRST_SHIFT_CALL':
+        this.onFirstShiftCall(career);
         break;
       default:
         this.executors.get(action.type)?.(career, action);
@@ -1118,12 +1150,19 @@ export class MockEngine {
   }
 
   /* ───────────── vehicles & shop ───────────── */
-  addVehicle(career: MockCareer, typeCode: string, facilityId: string, instant: boolean): VehicleDto {
+  addVehicle(
+    career: MockCareer,
+    typeCode: string,
+    facilityId: string,
+    instant: boolean,
+    deliverySeconds?: number,
+  ): VehicleDto {
     const type = VEHICLE_TYPES.find((t) => t.code === typeCode)!;
     const facility = career.facilities.find((f) => f.id === facilityId)!;
     const n = (career.callSignCounters[typeCode] = (career.callSignCounters[typeCode] ?? 0) + 1);
     const short = typeCode.split('_').slice(1).join('') || typeCode;
-    const busyUntil = instant ? null : iso(this.now() + this.dur(type.deliverySeconds));
+    const delivery = deliverySeconds ?? type.deliverySeconds;
+    const busyUntil = instant ? null : iso(this.now() + this.dur(delivery));
     const vehicle: VehicleDto = {
       id: this.id('veh'),
       typeCode,
@@ -1152,7 +1191,7 @@ export class MockEngine {
             ),
           },
     );
-    if (!instant) this.schedule(career, 'VEHICLE_DELIVERED', type.deliverySeconds, vehicle.id);
+    if (!instant) this.schedule(career, 'VEHICLE_DELIVERED', delivery, vehicle.id);
     return career.vehicles.find((v) => v.id === vehicle.id) ?? vehicle;
   }
 
@@ -1174,13 +1213,21 @@ export class MockEngine {
       true,
       text('ledger.VEHICLE_PURCHASE', { item: type.code }),
     );
-    const vehicle = this.addVehicle(career, type.code, facility.id, false);
+    const vehicle = this.addVehicle(
+      career,
+      type.code,
+      facility.id,
+      false,
+      career.summary.firstShift ? FIRST_SHIFT_DELIVERY_SECONDS : undefined,
+    );
     this.emit(career, 'vehicle.updated', {
       vehicle,
       career: career.summary,
       facility: career.facilities.find((f) => f.id === facility.id),
     });
-    if (career.summary.tutorial.step === 'BUY_VEHICLE') this.advanceTutorial(career, 'DONE');
+    // During the first shift the purchase is part of the MULTI_VEHICLE lesson: the tutorial ends with mission 4 instead.
+    if (career.summary.tutorial.step === 'BUY_VEHICLE' && !career.summary.firstShift)
+      this.advanceTutorial(career, 'DONE');
     this.save();
     return vehicle;
   }
@@ -1472,6 +1519,8 @@ export class MockEngine {
 
   scheduleSpawn(career: MockCareer): void {
     if (career.actions.some((a) => a.type === 'INCIDENT_SPAWN')) return;
+    // One call at a time during the first shift: its own calls come on their own timer (FIRST_SHIFT_CALL).
+    if (career.summary.firstShift) return;
     if (!career.summary.onDuty || !['BUY_VEHICLE', 'DONE', null].includes(career.summary.tutorial.step))
       return;
     // While a major incident runs, normal calls keep coming but `spawnSlowdown` (2.5×) slower (D-69).
@@ -1507,7 +1556,15 @@ export class MockEngine {
       const total = pool.reduce((s, x) => s + x.weight, 0);
       let r = this.random() * total;
       const picked = pool.find((x) => (r -= x.weight) <= 0) ?? pool[0];
-      if (picked) this.spawnIncident(career, picked.t.code, false, { organic: true });
+      // After the first shift, a gentle quarter of an hour: calls close to the first station and light (D-148).
+      const gentle = (career.firstShift?.gentleUntil ?? 0) > this.now();
+      if (picked)
+        this.spawnIncident(career, picked.t.code, false, {
+          organic: true,
+          ...(gentle
+            ? { maxDistanceMeters: GENTLE_PERIOD.maxDistanceMeters, maxSeverity: GENTLE_PERIOD.maxSeverity }
+            : {}),
+        });
     }
     if (!away) this.scheduleSpawn(career);
     else career.spawnStreakStartedAt = null; // the chain stops: coming back starts the ramp again
@@ -1536,14 +1593,25 @@ export class MockEngine {
       ? place
       : opts.position
         ? { position: opts.position, address: opts.address ?? INCIDENT_SPOTS[0]!.address }
-        : tutorial
-          ? (sorted.find((s) => haversineMeters(base, s.position) > 900) ?? sorted[0]!)
-          : // `minDistanceMeters` (QA only): the nearest spot at or beyond that distance, so a test that needs an
-            // OBSERVABLE travel phase does not depend on which random spot came out.
-            opts.minDistanceMeters !== undefined
-            ? (sorted.find((s) => haversineMeters(base, s.position) >= opts.minDistanceMeters!) ??
-              sorted[sorted.length - 1]!)
-            : (spots[Math.floor(this.random() * spots.length)] ?? INCIDENT_SPOTS[0]!);
+        : opts.firstShift
+          ? this.spotInBand(career, opts.firstShift.distance)
+          : opts.maxDistanceMeters !== undefined
+            ? (() => {
+                const near = sorted.filter(
+                  (s) => haversineMeters(base, s.position) <= opts.maxDistanceMeters!,
+                );
+                return near.length
+                  ? near[Math.floor(this.random() * near.length)]!
+                  : (sorted[0] ?? INCIDENT_SPOTS[0]!);
+              })()
+            : tutorial
+              ? (sorted.find((s) => haversineMeters(base, s.position) > 900) ?? sorted[0]!)
+              : // `minDistanceMeters` (QA only): the nearest spot at or beyond that distance, so a test that needs an
+                // OBSERVABLE travel phase does not depend on which random spot came out.
+                opts.minDistanceMeters !== undefined
+                ? (sorted.find((s) => haversineMeters(base, s.position) >= opts.minDistanceMeters!) ??
+                  sorted[sorted.length - 1]!)
+                : (spots[Math.floor(this.random() * spots.length)] ?? INCIDENT_SPOTS[0]!);
     const municipality = place?.municipality ?? PESCARA.name;
     // Like the backend's `reportPlaceParams`: the report and radio say "{street}, {municipality}" — never the town twice.
     const suffix = `, ${municipality}`;
@@ -1555,7 +1623,11 @@ export class MockEngine {
     const pool = allowed.length ? allowed : Object.entries(t.distribution).slice(0, 1);
     let r = this.random() * pool.reduce((sum, [, w]) => sum + w, 0);
     const drawn = Number((pool.find(([, w]) => (r -= w) <= 0) ?? pool[0]!)[0]);
-    const severity = opts.severity ?? (tutorial ? t.severity[0] : drawn);
+    const chosen = opts.severity ?? opts.firstShift?.severity ?? (tutorial ? t.severity[0] : drawn);
+    const severity =
+      opts.maxSeverity !== undefined ? Math.max(t.severity[0], Math.min(chosen, opts.maxSeverity)) : chosen;
+    // Tutorial and first-shift calls cannot be lost: no expiry, no escalation (D-148).
+    const protectedCall = tutorial || !!opts.firstShift;
     const band = bandFor(t, severity);
     const now = this.now();
     const reward = Math.round(t.baseReward * t.complexity * creditSeverityFactor(severity));
@@ -1589,11 +1661,11 @@ export class MockEngine {
       severity,
       escalating: false,
       createdAt: iso(now),
-      expiresAt: tutorial ? null : iso(now + this.dur(600)),
-      nextEscalationAt: tutorial ? null : iso(now + this.dur(240)),
+      expiresAt: protectedCall ? null : iso(now + this.dur(600)),
+      nextEscalationAt: protectedCall ? null : iso(now + this.dur(240)),
       work: {
-        total: band.workSeconds,
-        remaining: band.workSeconds,
+        total: opts.firstShift?.workSeconds ?? band.workSeconds,
+        remaining: opts.firstShift?.workSeconds ?? band.workSeconds,
         ratePerSecond: 0,
         anchorAt: iso(now),
         estimatedEndAt: null,
@@ -1611,8 +1683,11 @@ export class MockEngine {
       })),
       assignedVehicleIds: [],
       patientCount: 0,
-      estimatedReward: { min: String(Math.round(reward * 0.5)), max: String(Math.round(reward * 1.2)) },
+      estimatedReward: opts.firstShift
+        ? { min: String(opts.firstShift.credits), max: String(opts.firstShift.credits) }
+        : { min: String(Math.round(reward * 0.5)), max: String(Math.round(reward * 1.2)) },
       isTutorial: tutorial,
+      ...(opts.firstShift ? { firstShift: incidentFirstShift(opts.firstShift) } : {}),
       externalFamilies,
       externalSupport: [],
       rewardedAt: null,
@@ -1626,7 +1701,12 @@ export class MockEngine {
     career.incidents.push(incident);
     place?.onCreated?.(career, incident);
     this.log(career, incident.id, 'incident.created', text('timeline.incident_created'), now);
-    if (!tutorial) {
+    if (opts.firstShift && career.firstShift) {
+      career.firstShift.missions[incident.id] = opts.firstShift.mission;
+      if (opts.firstShift.mission === 1) career.firstShift.firstCallAt ??= now;
+    } else if (opts.organic && career.firstShift && career.firstShift.completed >= 5)
+      career.firstShift.laterCalls = (career.firstShift.laterCalls ?? 0) + 1;
+    if (!protectedCall) {
       this.schedule(career, 'INCIDENT_EXPIRE', 600, incident.id);
       this.schedule(career, 'INCIDENT_ESCALATE', 240, incident.id);
     }
@@ -1690,7 +1770,13 @@ export class MockEngine {
     // settle the work done since the previous anchor
     const elapsed = Math.max(0, (at - Date.parse(incident.work.anchorAt)) / 1000) * this.speed;
     const remaining = Math.max(0, incident.work.remaining - incident.work.ratePerSecond * elapsed);
-    const rate = onScene.length || anyAllied ? Math.max(0.15, coverageRatio) * (1 + 0.3 * bonus) : 0;
+    // First shift (D-148): rate = coverage capped at 1, so the call lasts its set time with the recommended units.
+    const rate =
+      onScene.length || anyAllied
+        ? incident.firstShift
+          ? Math.max(0.15, Math.min(1, coverageRatio))
+          : Math.max(0.15, coverageRatio) * (1 + 0.3 * bonus)
+        : 0;
     const endAt = rate > 0 ? at + this.dur(remaining / rate) : null;
     this.cancelActions(career, (a) => a.type === 'INCIDENT_WORK_DONE' && a.ref === incidentId);
     if (endAt !== null)
@@ -1770,9 +1856,11 @@ export class MockEngine {
         if (v.health < 50) warnings.push('HEALTH_LOW');
         if (contributes.length === 0) warnings.push('NO_RELEVANT_CAPABILITY');
         const prep = VEHICLE_TYPES.find((t) => t.code === v.typeCode)?.preparationSeconds ?? 12;
+        // First shift: preparation + trip compressed under the call's arrival cap (D-148).
+        const factor = arrivalFactor(incident.firstShift?.arrivalCapSeconds, prep, leg.seconds);
         const option: MockDispatchOption = {
           vehicleId: v.id,
-          etaSeconds: Math.round((prep + leg.seconds) / this.speed),
+          etaSeconds: Math.round(((prep + leg.seconds) * factor) / this.speed),
           distanceMeters: Math.round(leg.distanceMeters),
           dispatchable,
           blockedReason: dispatchable ? null : 'VEHICLE_NOT_AVAILABLE',
@@ -1877,7 +1965,17 @@ export class MockEngine {
       );
       // A vehicle at base that must reload first (D-22) leaves later: the seconds are already in its option's ETA.
       const reload = this.hooks.departureDelay.reduce((s, hook) => s + hook(career, v, incident, now), 0);
-      const prep = (VEHICLE_TYPES.find((t) => t.code === v.typeCode)?.preparationSeconds ?? 12) + reload;
+      let prep = (VEHICLE_TYPES.find((t) => t.code === v.typeCode)?.preparationSeconds ?? 12) + reload;
+      if (incident.firstShift) {
+        // First shift: on scene within the cap — preparation and trip compressed together (the trip at the departure).
+        const factor = arrivalFactor(
+          incident.firstShift.arrivalCapSeconds,
+          prep,
+          this.legFor(career, v, incident).seconds,
+        );
+        prep *= factor;
+        if (career.firstShift) career.firstShift.factors[v.id] = factor;
+      }
       const patched = this.patchVehicle(career, v.id, {
         status: 'PREPARING',
         incidentId,
@@ -2042,7 +2140,11 @@ export class MockEngine {
       return;
     }
     // A boat's leg may be mixed (trailer on the road, launch, water: D-68); everything else drives or flies straight.
-    const leg = this.legFor(career, v, incident);
+    const planned = this.legFor(career, v, incident);
+    const factor = career.firstShift?.factors[v.id];
+    if (career.firstShift) delete career.firstShift.factors[v.id];
+    const leg =
+      factor !== undefined && factor < 1 ? { ...planned, seconds: planned.seconds * factor } : planned;
     const { movement, arriveAt } = this.movementOf(leg, at, 'TO_INCIDENT');
     const patched = this.patchVehicle(career, v.id, {
       status: 'EN_ROUTE',
@@ -2104,7 +2206,8 @@ export class MockEngine {
     this.emit(career, 'vehicle.arrived', { vehicle: patched, incident: next });
   }
 
-  sendHome(career: MockCareer, v: VehicleDto, at: number, from?: LngLat): VehicleDto {
+  /** `release` = the end of an intervention (not a recall): the first shift times that way home (D-148). */
+  sendHome(career: MockCareer, v: VehicleDto, at: number, from?: LngLat, release = false): VehicleDto {
     const facility = career.facilities.find((f) => f.id === v.facilityId)!;
     const start = from ?? v.position;
     // A boat on the water goes home by water (landing the rescued first), then its trailer if it came by road (D-68).
@@ -2122,6 +2225,9 @@ export class MockEngine {
       );
       home = { path, distanceMeters, seconds: this.travelSeconds(distanceMeters, v.typeCode, career, path) };
     }
+    // First shift: home before the next call rings (missions 1, 2, 4); still on the way when mission 4 rings (mission 3).
+    const mission = release && v.incidentId ? career.firstShift?.missions[v.incidentId] : undefined;
+    if (mission) home = { ...home, seconds: firstShiftReturnSeconds(mission, home.seconds) };
     const { movement, arriveAt } = this.movementOf(home, at, 'TO_BASE');
     this.cancelActions(
       career,
@@ -2191,7 +2297,7 @@ export class MockEngine {
         v.id,
       );
       const incident = this.recompute(career, incidentId, now);
-      if (incident && incident.status === 'PENDING_RESPONSE' && !incident.isTutorial)
+      if (incident && incident.status === 'PENDING_RESPONSE' && !isProtectedIncident(incident))
         this.schedule(career, 'INCIDENT_EXPIRE', 600, incidentId);
       this.emit(career, 'vehicle.returning', { vehicle: patched, ...(incident ? { incident } : {}) });
       // Nobody of the player left on the scene of a call whose patients are all looked after: it is over (medical domain).
@@ -2256,7 +2362,13 @@ export class MockEngine {
     const vehicles: VehicleDto[] = [];
     for (const v of career.vehicles.filter((x) => x.incidentId === incident.id && !retained.has(x.id)))
       vehicles.push(
-        this.sendHome(career, v, at, v.status === 'ON_SCENE' ? this.spotOf(v, incident, at) : undefined),
+        this.sendHome(
+          career,
+          v,
+          at,
+          v.status === 'ON_SCENE' ? this.spotOf(v, incident, at) : undefined,
+          true,
+        ),
       );
     const { outcome } = this.reward(career, resolving, at);
     this.log(career, incident.id, 'incident.resolving', text('timeline.incident_resolving'), at);
@@ -2268,6 +2380,7 @@ export class MockEngine {
     this.emit(career, 'incident.resolved', { incident: next, outcome, vehicles, career: career.summary });
     this.awardXp(career, Number(outcome.xp));
     if (incident.isTutorial && !career.summary.tutorial.completed) this.advanceTutorial(career, 'OUTCOME');
+    this.firstShiftOutcome(career, incident, at);
     this.scheduleSpawn(career);
   }
 
@@ -2381,29 +2494,38 @@ export class MockEngine {
     const scene = Math.round(
       legs.reduce((s, l) => s + (l.arrivedAt ? ((at - l.arrivedAt) / 60_000) * this.speed * 2 : 0), 0),
     );
-    const net = Math.max(Math.round(gross * 0.3), Math.round(gross * quality) - travel - scene);
-    const tutorialXp = incident.isTutorial ? 40 : 0;
-    const xp = Math.round(t.baseXp * (0.7 + 0.1 * incident.severity) * quality * share) + tutorialXp;
-    const stars = quality >= 1 ? 3 : quality >= 0.8 ? 2 : 1;
+    // First shift (D-148): a fixed reward, no costs, never short of stars; the 5th mission reaches level 2 at least.
+    const fs = incident.firstShift ? missionRule(incident.firstShift.mission) : undefined;
+    const legacyTutorial = incident.isTutorial && !fs;
+    const net = fs
+      ? fs.credits
+      : Math.max(Math.round(gross * 0.3), Math.round(gross * quality) - travel - scene);
+    const tutorialXp = legacyTutorial ? 40 : 0;
+    const xp = fs
+      ? fs.mission === 5
+        ? Math.max(fs.xp, xpThreshold(2) - Number(career.summary.xp))
+        : fs.xp
+      : Math.round(t.baseXp * (0.7 + 0.1 * incident.severity) * quality * share) + tutorialXp;
+    const stars = fs ? 3 : quality >= 1 ? 3 : quality >= 0.8 ? 2 : 1;
     const notes: I18nText[] = [];
     if (timeliness >= 0.8) notes.push(text('outcome.note.FAST_RESPONSE'));
     if (adequacy < 1) notes.push(text('outcome.note.UNDER_RESOURCED'));
     if ((incident.externalFamilies ?? []).length) notes.push(text('outcome.note.EXTERNAL_SUPPORT'));
     if (incident.waterSupport) notes.push(text('outcome.note.COAST_GUARD'));
-    if (incident.isTutorial) notes.push(text('outcome.note.TUTORIAL_BONUS'));
+    if (legacyTutorial) notes.push(text('outcome.note.TUTORIAL_BONUS'));
     // A member of a major incident moves no reputation of its own: the major's final step does (D-69).
     const member = !!incident.major;
     if (member) notes.push(text('major.note.MEMBER'));
     const outcome: IncidentOutcomeDto = {
       incidentId: incident.id,
-      result: adequacy >= 1 ? 'SUCCESS' : 'PARTIAL',
+      result: fs || adequacy >= 1 ? 'SUCCESS' : 'PARTIAL',
       stars,
       responseSeconds,
       durationSeconds,
-      grossCredits: String(gross),
+      grossCredits: String(fs ? fs.credits : gross),
       costs: [
-        { code: 'TRAVEL', amount: String(travel) },
-        { code: 'ON_SCENE', amount: String(scene) },
+        { code: 'TRAVEL', amount: String(fs ? 0 : travel) },
+        { code: 'ON_SCENE', amount: String(fs ? 0 : scene) },
       ],
       netCredits: String(net),
       xp: String(xp),
@@ -2422,7 +2544,7 @@ export class MockEngine {
       true,
       text('ledger.MISSION_REWARD', { incident: incident.templateCode }),
     );
-    if (incident.isTutorial) this.credit(career, TUTORIAL_BONUS, 'MILESTONE', true, text('ledger.MILESTONE'));
+    if (legacyTutorial) this.credit(career, TUTORIAL_BONUS, 'MILESTONE', true, text('ledger.MILESTONE'));
     if (!member)
       career.summary = {
         ...career.summary,
@@ -2460,7 +2582,13 @@ export class MockEngine {
       (x) => x.incidentId === incident.id && ['PREPARING', 'EN_ROUTE', 'ON_SCENE'].includes(x.status),
     ))
       vehicles.push(
-        this.sendHome(career, v, at, v.status === 'ON_SCENE' ? this.spotOf(v, incident, at) : undefined),
+        this.sendHome(
+          career,
+          v,
+          at,
+          v.status === 'ON_SCENE' ? this.spotOf(v, incident, at) : undefined,
+          true,
+        ),
       );
     for (const hook of this.hooks.incidentClosed) hook(career, closed, status);
 
@@ -2479,6 +2607,7 @@ export class MockEngine {
         this.awardXp(career, Number(outcome.xp));
         if (incident.isTutorial && !career.summary.tutorial.completed)
           this.advanceTutorial(career, 'OUTCOME');
+        this.firstShiftOutcome(career, incident, at);
       }
     } else if (status === 'CANCELLED') {
       this.log(career, incident.id, 'incident.cancelled', text('timeline.incident_cancelled'), at);
@@ -2528,6 +2657,12 @@ export class MockEngine {
     if (target > current && !career.summary.tutorial.completed) {
       const done = step === 'DONE';
       career.summary = { ...career.summary, tutorial: { completed: done, step: done ? null : step } };
+      if (career.firstShift) {
+        // The tutorial bonus is paid at the shop step or on «Salta» (and when mission 3 is born): once.
+        if (step === 'BUY_VEHICLE' || done) this.grantTutorialBonus(career);
+        if (done && career.firstShift.completed < 4) career.firstShift.skipped = true;
+        this.syncFirstShift(career); // `guided` follows the tutorial
+      }
       this.emit(career, 'career.updated', { career: career.summary });
       this.scheduleSpawn(career);
       this.save();
@@ -2540,7 +2675,10 @@ export class MockEngine {
     if (!onDuty) {
       this.cancelActions(career, (a) => a.type === 'INCIDENT_SPAWN');
       career.spawnStreakStartedAt = null; // off duty ends the shift's ramp (D-139)
-    } else this.scheduleSpawn(career);
+    } else {
+      this.scheduleSpawn(career);
+      this.resumeFirstShift(career);
+    }
     this.emit(career, 'career.updated', { career: career.summary });
     this.save();
     return career.summary;
@@ -2591,6 +2729,7 @@ export class MockEngine {
       career.away = { since: now, resolved: 0, failed: 0, credits: 0, xp: 0, stipend: 0 };
     career.lastSeenAt = now;
     for (const hook of this.hooks.touched) hook(career);
+    this.resumeFirstShift(career);
     this.scheduleSpawn(career);
     this.save();
   }
@@ -2618,7 +2757,154 @@ export class MockEngine {
 
   ackOutcome(career: MockCareer, incidentId: string): void {
     career.pendingOutcomes = career.pendingOutcomes.filter((o) => o.incidentId !== incidentId);
-    if (career.summary.tutorial.step === 'OUTCOME') this.advanceTutorial(career, 'BUY_VEHICLE');
+    // First shift: the tutorial stays on OUTCOME through mission 2; mission 3 moves it to the shop step.
+    if (career.summary.tutorial.step === 'OUTCOME' && !career.summary.firstShift)
+      this.advanceTutorial(career, 'BUY_VEHICLE');
     this.save();
   }
+
+  /* ───────────── primo turno (D-148) ───────────── */
+  startFirstShift(career: MockCareer): void {
+    career.firstShift = {
+      completed: 0,
+      nextCallAt: null,
+      gentleUntil: null,
+      bonusPaid: false,
+      factors: {},
+      missions: {},
+      startedAt: this.now(),
+      firstCallAt: null,
+      finishedAt: null,
+      laterCalls: 0,
+      skipped: false,
+    };
+    this.syncFirstShift(career);
+  }
+
+  /** Ends it at once (QA careers created past it): no first-shift view, the normal generator from now on. */
+  dropFirstShift(career: MockCareer): void {
+    delete career.firstShift;
+    this.cancelActions(career, (a) => a.type === 'FIRST_SHIFT_CALL');
+    career.incidents = career.incidents.map((i) => {
+      if (!i.firstShift) return i;
+      const { firstShift: _drop, ...rest } = i;
+      void _drop;
+      return rest;
+    });
+    career.summary = { ...career.summary, firstShift: null };
+  }
+
+  syncFirstShift(career: MockCareer): void {
+    if (!career.firstShift) return;
+    career.summary = {
+      ...career.summary,
+      firstShift: firstShiftView(career.firstShift, career.summary.tutorial, iso),
+    };
+  }
+
+  /** Where a first-shift call happens: a spot whose road distance from the first station is in the band. */
+  spotInBand(career: MockCareer, [min, max]: [number, number]): { address: string; position: LngLat } {
+    const base = (career.facilities.find((f) => f.headquarters) ?? career.facilities[0]!).position;
+    const used = new Set(career.incidents.map((i) => i.address));
+    const spots = INCIDENT_SPOTS.filter((s) => !used.has(s.address)).map((s) => ({
+      spot: s,
+      meters: this.route(base, s.position, `fs${s.address}`).distanceMeters,
+    }));
+    const inBand = spots.filter((x) => x.meters >= min && x.meters <= max);
+    if (inBand.length > 0) return inBand[Math.floor(this.random() * inBand.length)]!.spot;
+    // None in the band: on the way to the nearest spot beyond it, at the middle of the band.
+    const far =
+      spots.filter((x) => x.meters > max).sort((a, b) => a.meters - b.meters)[0] ??
+      [...spots].sort((a, b) => b.meters - a.meters)[0];
+    if (!far) return INCIDENT_SPOTS[0]!;
+    const f = (min + max) / 2 / Math.max(1, far.meters);
+    return {
+      address: far.spot.address,
+      position: [
+        base[0] + (far.spot.position[0] - base[0]) * f,
+        base[1] + (far.spot.position[1] - base[1]) * f,
+      ],
+    };
+  }
+
+  grantTutorialBonus(career: MockCareer): void {
+    const fs = career.firstShift;
+    if (!fs || fs.bonusPaid) return;
+    fs.bonusPaid = true;
+    this.credit(career, TUTORIAL_BONUS, 'MILESTONE', true, text('ledger.MILESTONE'));
+  }
+
+  /** A first-shift mission has its outcome: count it, time the next call (or end the shift, then the gentle period). */
+  private firstShiftOutcome(career: MockCareer, incident: IncidentDto, at: number): void {
+    const fs = career.firstShift;
+    const mission = incident.firstShift?.mission;
+    if (!fs || !mission || fs.completed >= mission) return;
+    const rule = missionRule(mission)!;
+    fs.completed = mission;
+    if (rule.nextCallSeconds !== null) {
+      fs.nextCallAt = at + this.dur(rule.nextCallSeconds);
+      this.cancelActions(career, (a) => a.type === 'FIRST_SHIFT_CALL');
+      career.actions.push({
+        id: this.id('act'),
+        type: 'FIRST_SHIFT_CALL',
+        dueAt: fs.nextCallAt,
+        ref: career.summary.id,
+      });
+    } else {
+      fs.nextCallAt = null;
+      fs.gentleUntil = at + this.dur(GENTLE_PERIOD.seconds);
+      fs.finishedAt = at;
+    }
+    // The guided part ends with mission 4 (the tutorial is DONE from there: no more bubbles).
+    if (mission >= 4 && !career.summary.tutorial.completed) this.advanceTutorial(career, 'DONE');
+    this.syncFirstShift(career);
+    this.emit(career, 'career.updated', { career: career.summary });
+  }
+
+  private onFirstShiftCall(career: MockCareer): void {
+    const fs = career.firstShift;
+    if (!fs || fs.completed >= 5) return;
+    const rule = missionRule(fs.completed + 1)!;
+    if (career.incidents.some((i) => i.firstShift?.mission === rule.mission)) return;
+    // Off duty or away: the call waits (nextCallAt in the past) and rings 3 s after the player is back.
+    if (!career.summary.onDuty || this.now() - career.lastSeenAt > 180_000) {
+      fs.callOnReturn = true;
+      return;
+    }
+    fs.callOnReturn = false;
+    fs.nextCallAt = null;
+    if (rule.mission === 3) {
+      // Mission 3 asks for two vehicles: the bonus pays the second one, the tutorial points at the shop.
+      this.grantTutorialBonus(career);
+      if (!career.summary.tutorial.completed) this.advanceTutorial(career, 'BUY_VEHICLE');
+    }
+    this.syncFirstShift(career);
+    const template = rule.templates[Math.floor(this.random() * rule.templates.length)]!;
+    this.spawnIncident(career, template, false, { firstShift: rule });
+    this.emit(career, 'career.updated', { career: career.summary });
+  }
+
+  /** The player is back (on duty again, or present again): a first-shift call that waited rings 3 s later. */
+  private resumeFirstShift(career: MockCareer): void {
+    const fs = career.firstShift;
+    if (!fs?.callOnReturn || career.actions.some((a) => a.type === 'FIRST_SHIFT_CALL')) return;
+    fs.callOnReturn = false;
+    fs.nextCallAt = this.now() + this.dur(3);
+    career.actions.push({
+      id: this.id('act'),
+      type: 'FIRST_SHIFT_CALL',
+      dueAt: fs.nextCallAt,
+      ref: career.summary.id,
+    });
+    this.syncFirstShift(career);
+    this.emit(career, 'career.updated', { career: career.summary });
+  }
+
+  /** QA: the next first-shift call now (instead of waiting for its timer). */
+  firstShiftCallNow(career: MockCareer): void {
+    const action = career.actions.find((a) => a.type === 'FIRST_SHIFT_CALL');
+    if (action) this.completeNow(career, action);
+  }
 }
+
+export { isProtectedIncident };

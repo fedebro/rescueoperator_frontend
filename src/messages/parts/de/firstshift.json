@@ -1,0 +1,100 @@
+{
+  "liveStory": {
+    "label": "Live-Bericht",
+    "open": "Einsatz öffnen",
+    "preparing": "{callSign} macht sich bereit: Abfahrt in {seconds} s",
+    "leaving": "{callSign} rückt aus der Wache aus",
+    "enRoute": "{callSign} noch {meters, number} m entfernt, Ankunft in {seconds} s",
+    "arrived": "{callSign} vor Ort: {category, select, FIRE {die Mannschaft greift das Feuer an} TECHNICAL {die Mannschaft sichert den Bereich} ROAD {die Mannschaft hilft den Beteiligten} MEDICAL {die Besatzung untersucht den Patienten} WATER {die Mannschaft erreicht die Personen im Wasser} POLICE {die Streife übernimmt die Lage} other {die Mannschaft legt los}}",
+    "arrivedOthersComing": "{callSign} vor Ort, {other} kommt in {seconds} s",
+    "working": "{category, select, FIRE {Feuer unter Kontrolle} TECHNICAL {Arbeiten laufen} ROAD {Rettung läuft} MEDICAL {Versorgung läuft} WATER {Bergung läuft} other {Einsatz läuft}}, {pct} %",
+    "almostDone": "{category, select, FIRE {Feuer fast gelöscht} TECHNICAL {Fast fertig} ROAD {Straße fast frei} MEDICAL {Patient fast bereit} WATER {Bergung fast fertig} other {Fast fertig}}, {pct} %",
+    "resolving": "Arbeit vor Ort beendet: der Einsatz wird abgeschlossen",
+    "transporting": "{callSign} bringt den Patienten ins Krankenhaus",
+    "done": "Einsatz abgeschlossen"
+  },
+  "firstShift": {
+    "outcome": {
+      "label": "Einsatzergebnis",
+      "title": "Einsatz {mission} geschafft!",
+      "titleGeneric": "Einsatz geschafft!",
+      "finishedTitle": "Erste Schicht geschafft!",
+      "finishedBody": "Ab jetzt kommen die Notrufe von selbst: behalte die Liste im Blick.",
+      "stars": "{stars} von 3 Sternen",
+      "credits": "+{amount} Credits",
+      "xp": "+{amount} XP",
+      "nextCallIn": "Neuer Notruf in {seconds} s…",
+      "nextCallNow": "Neuer Notruf kommt…",
+      "hide": "Ausblenden",
+      "praise": {
+        "RESPOND": "Sofort reagiert: die Fahrzeuge waren in Sekunden unterwegs.",
+        "CHOOSE_VEHICLE": "Du hast selbst das richtige Fahrzeug gewählt.",
+        "MULTI_VEHICLE": "Zwei Fahrzeuge zusammen: das Feuer hatte keine Chance.",
+        "REDIRECT": "Du hast das Fahrzeug direkt geschickt, ohne Umweg über die Wache.",
+        "FREE": "Ganz allein und ohne einen einzigen Fehler.",
+        "FAST": "Schnelle Reaktion: die Fahrzeuge waren rechtzeitig da.",
+        "DEFAULT": "Einsatz ohne Probleme abgeschlossen."
+      }
+    },
+    "bubble": {
+      "openCall": "Neuer Notruf: öffne ihn, um zu sehen, was los ist",
+      "sendRecommended": "Ein Tipp hier und die empfohlenen Fahrzeuge rücken aus",
+      "watchStory": "Verfolge hier den Bericht: Abfahrt, Ankunft, Arbeit",
+      "tickVehicle": "Diesmal wählst du: hake das richtige Fahrzeug an",
+      "sendChosen": "Schicke jetzt das gewählte Fahrzeug los",
+      "redirectHere": "Das Fahrzeug ist auf dem Rückweg: schick es hierher, ohne Halt an der Wache",
+      "needSecond": "Es braucht zwei Fahrzeuge: kauf das zweite mit den gewonnenen Credits",
+      "buySecond": "Kauf hier das zweite Löschfahrzeug",
+      "delivering": "Das neue Löschfahrzeug erreicht die Wache in wenigen Sekunden",
+      "backToCall": "Geschafft! Zurück zum Notruf und beide Fahrzeuge losschicken",
+      "sendBoth": "Schicke jetzt beide Fahrzeuge los",
+      "action": {
+        "openCall": "Notruf öffnen",
+        "goShop": "Zum Shop",
+        "backToCall": "Zurück zum Notruf"
+      }
+    },
+    "skip": {
+      "button": "Ohne Anleitung spielen",
+      "title": "Willst du wirklich ohne Anleitung spielen?",
+      "body": "Die ersten Einsätze bleiben kurz: nur die Anleitung verschwindet.",
+      "keep": "Mit Anleitung weiter",
+      "confirm": "Ohne Anleitung spielen"
+    },
+    "patientGuide": {
+      "progress": "{current} von {total}",
+      "dismiss": "Anleitung schließen",
+      "SEND": "Einschätzung: schick einen Rettungswagen. Vor Ort untersucht die Besatzung den Patienten und vergibt einen Farbcode.",
+      "ASSESS": "Einschätzung: vor Ort untersucht die Besatzung den Patienten und vergibt einen Farbcode.",
+      "TREAT": "Versorgung: vor Ort stabilisiert die Besatzung den Patienten. Je ernster, desto länger dauert es.",
+      "HOSPITAL": "Krankenhaus: wähle unten das Ziel und der Rettungswagen fährt los.",
+      "DONE": "Geschafft: der Patient ist in guten Händen. Ab jetzt kannst du das allein."
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "firstShift": {
+        "title": "Erste Schicht (letzte 14 Tage)",
+        "byMission": "Karrieren, die jeden Einsatz abgeschlossen haben",
+        "mission": "Einsatz {mission}",
+        "recent": "Neueste Karrieren",
+        "director": "Direktor",
+        "startedAt": "Beginn",
+        "completed": "Einsätze",
+        "laterCalls": "Notrufe danach",
+        "guided": "Mit Anleitung",
+        "returnedNextDay": "Am nächsten Tag zurück",
+        "yes": "Ja",
+        "no": "Nein",
+        "kpi": {
+          "careers": "Neue Karrieren",
+          "medianFirstCall": "Erster Notruf (Median)",
+          "finished": "Erste Schicht geschafft",
+          "reachedSixthCall": "Sechsten Notruf erreicht",
+          "returnedNextDay": "Am nächsten Tag zurück",
+          "skippedTutorial": "Ohne Anleitung"
+        }
+      }
+    }
+  }
+}

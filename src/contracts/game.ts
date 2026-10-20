@@ -118,6 +118,33 @@ export const SiteNauticalDto = z.object({
 });
 export type SiteNauticalDto = z.infer<typeof SiteNauticalDto>;
 
+/* ── additive (primo turno, D-148 — analisi/note-agenti/primo-turno-server.md) ── */
+
+/** Primo turno (D-148): the first 5 missions of a new career. Null when it is over or the career predates it. */
+export const FirstShiftDto = z.object({
+  /** The mission the player is on or waiting for, 1..5. */
+  mission: z.number().int().min(1).max(5),
+  /** Missions completed so far, 0..5. */
+  completed: z.number().int().min(0).max(5),
+  /** True while the tutorial is on (not skipped): the client shows the lesson bubbles. */
+  guided: z.boolean(),
+  /** When the next first-shift call arrives (the countdown after an outcome); null while a call is open. */
+  nextCallAt: IsoDateTime.nullable(),
+});
+export type FirstShiftDto = z.infer<typeof FirstShiftDto>;
+
+/** What a first-shift call teaches (IncidentDto.firstShift). */
+export const FirstShiftLesson = z.enum(['RESPOND', 'CHOOSE_VEHICLE', 'MULTI_VEHICLE', 'REDIRECT', 'FREE']);
+export type FirstShiftLesson = z.infer<typeof FirstShiftLesson>;
+
+export const IncidentFirstShiftDto = z.object({
+  mission: z.number().int().min(1).max(5),
+  lesson: FirstShiftLesson,
+  /** Guaranteed: every unit of the career is on scene within this many seconds of its departure order (20/25/30/30/30). */
+  arrivalCapSeconds: z.number().int(),
+});
+export type IncidentFirstShiftDto = z.infer<typeof IncidentFirstShiftDto>;
+
 export const CareerSummary = z.object({
   id: publicId(IdPrefix.career),
   directorName: z.string(),
@@ -137,6 +164,8 @@ export const CareerSummary = z.object({
   unlockedFamilies: z.array(ServiceFamily),
   tutorial: z.object({ completed: z.boolean(), step: z.string().nullable() }),
   createdAt: IsoDateTime,
+  /** Primo turno (D-148, additive): null/absent when it is over or the career predates it. */
+  firstShift: FirstShiftDto.nullable().optional(),
 });
 export type CareerSummary = z.infer<typeof CareerSummary>;
 
@@ -411,6 +440,9 @@ export const IncidentDto = z.object({
   aidRequestId: publicId(IdPrefix.aidRequest).nullable().optional(),
   /** "Unità alleate": allied columns towards this incident (en route, on scene, returning). Absent when none. */
   allied: z.array(IncidentAlliedColumnDto).optional(),
+  /* ── additive (primo turno, D-148) ── */
+  /** Set on the 5 calls of the first shift; null/absent on every other incident. */
+  firstShift: IncidentFirstShiftDto.nullable().optional(),
 });
 export type IncidentDto = z.infer<typeof IncidentDto>;
 

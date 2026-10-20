@@ -24,7 +24,7 @@ test('locked features show the level that opens them; the starter crew is on the
 }, info) => {
   await bootCareer(page, info.project.name, { level: 1 });
   await openPersonnel(page);
-  await expect(page.getByTestId('roster-count')).toHaveText('6 di 6 operatori');
+  await expect(page.getByTestId('roster-count')).toHaveText('7 di 7 operatori');
 
   await openFirstOperator(page);
   const sheet = page.getByTestId('operator-sheet');
@@ -61,7 +61,7 @@ test('hire → team with vehicle and readiness → course → crew preview and b
     await qa(page, 'fastForward', 60);
     await expect(page.getByTestId('onboarding-row')).toHaveCount(0);
     await page.getByRole('tab', { name: 'Organico' }).click();
-    await expect(page.getByTestId('roster-count')).toHaveText('8 di 8 operatori');
+    await expect(page.getByTestId('roster-count')).toHaveText('9 di 9 operatori');
   });
 
   await test.step('form the team of the vehicle in one tap, then change members and leader: readiness is shown', async () => {
@@ -69,7 +69,7 @@ test('hire → team with vehicle and readiness → course → crew preview and b
     await expect(page.getByTestId('locked-DEPARTMENTS')).toHaveCount(0);
     await expect(page.getByTestId('teams-intro')).toContainText('equipaggio fisso di un mezzo');
     await page.getByTestId('form-team').click();
-    // the game proposes the crew: five of the eight operators (the minimum is three)
+    // the game proposes the crew: five of the nine operators (starter roster of 7 + 2 hired) (the minimum is three)
     await expect(page.getByTestId('proposal-summary')).toContainText('5 operatori su 5 (minimo 3)');
     await expect(page.getByTestId('proposal-members').getByRole('listitem')).toHaveCount(5);
     await page.getByLabel('Nome').fill('Prima partenza');
@@ -87,7 +87,7 @@ test('hire → team with vehicle and readiness → course → crew preview and b
 
     await card.getByTestId('edit-members').click();
     const members = page.getByTestId('member-list');
-    await expect(members.getByRole('checkbox')).toHaveCount(8);
+    await expect(members.getByRole('checkbox')).toHaveCount(9);
     const picked = await members.getByRole('checkbox', { checked: true }).count();
     expect(picked).toBe(5);
     await members.getByRole('checkbox', { checked: false }).first().click();

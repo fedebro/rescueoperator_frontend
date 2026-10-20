@@ -58,6 +58,8 @@ function world(startIso = '2026-03-04T09:00:00.000Z') {
     'vitest',
   );
   const account = engine.authenticate(`Bearer ${auth.accessToken}`);
+  // Legacy careers (before the first shift, D-148): its own suite is first-shift.test.ts.
+  engine.state.featureFlags.firstShift = false;
   const summary = engine.createCareer(account, {
     locationId: PESCARA.id,
     siteId: engine.starterSites()[0]!.id,

@@ -50,6 +50,8 @@ function world(speed = 1) {
     'vitest',
   );
   const account = engine.authenticate(`Bearer ${auth.accessToken}`);
+  // Legacy careers (before the first shift, D-148): its own suite is first-shift.test.ts.
+  engine.state.featureFlags.firstShift = false;
   const summary = engine.createCareer(account, {
     locationId: PESCARA.id,
     siteId: engine.starterSites()[0]!.id,
@@ -210,10 +212,11 @@ describe('personnel domain', () => {
   it('seeds the starter crew: the first vehicle is fully crewed and the quarters are counted', () => {
     const w = world();
     const people = w.domain.list(w.career);
-    expect(people).toHaveLength(6);
+    // Starter roster (owner 2026-10-20, D-148): team leader, two drivers with the heavy licence, four firefighters.
+    expect(people).toHaveLength(7);
     expect(z.array(PersonnelDto).safeParse(people).success).toBe(true);
     expect(w.career.vehicles[0]!.crew).toEqual({ min: 3, optimal: 5, assigned: 5 });
-    expect(hq(w.career).capacities.find((c) => c.domain === 'PERSONNEL')).toMatchObject({ used: 6 });
+    expect(hq(w.career).capacities.find((c) => c.domain === 'PERSONNEL')).toMatchObject({ used: 7 });
     const option = w.engine.dispatchOptions(w.career, w.career.incidents[0]!.id).options[0]!;
     expect(option.dispatchable).toBe(true);
     expect(CrewPreview.parse(option.crew)).toMatchObject({ available: 5, min: 3, optimal: 5, efficiency: 1 });
@@ -272,9 +275,7 @@ describe('personnel domain', () => {
   it('shares operators fairly when two vehicles leave together (minimum first, then top up)', () => {
     const w = world();
     const second = w.engine.addVehicle(w.career, 'FIRE_APS', hq(w.career).id, true);
-    w.domain.quickHire(w.career, { roleCode: 'DRIVER_OPERATOR', facilityId: hq(w.career).id, count: 1 });
-    w.advance(13_000);
-    // 7 operators for two engines (min 3, optimal 5): a greedy first crew of 5 would leave the second one blocked.
+    // 7 operators (the starter roster, two drivers) for two engines (min 3, optimal 5): a greedy first crew of 5 would leave the second one blocked.
     w.engine.dispatch(w.career, w.career.incidents[0]!.id, [w.career.vehicles[0]!.id, second.id]);
     const crews = w.domain.state(w.career).crews;
     expect(
@@ -323,7 +324,7 @@ describe('personnel domain', () => {
     expect(w.career.ledger[0]).toMatchObject({ entryType: 'PERSONNEL_HIRE', amount: '-160' });
     expect(w.engine.findAction(w.career, ['ONBOARDING_DONE'], hired[0]!.id)).toBeDefined();
     w.advance(13_000);
-    expect(w.domain.list(w.career).filter((p) => p.status === 'AVAILABLE')).toHaveLength(8);
+    expect(w.domain.list(w.career).filter((p) => p.status === 'AVAILABLE')).toHaveLength(9);
     expect(w.career.notifications[0]).toMatchObject({ category: 'PERSONNEL' });
     const hire = (roleCode: string, count = 1) =>
       w.domain.quickHire(w.career, { roleCode, facilityId: hq(w.career).id, count });
@@ -456,14 +457,14 @@ describe('personnel domain', () => {
     );
     const free = w.domain.list(w.career).find((p) => p.status === 'AVAILABLE')!;
     w.domain.dismiss(w.career, free.id);
-    expect(w.domain.list(w.career)).toHaveLength(5);
-    expect(hq(w.career).capacities.find((c) => c.domain === 'PERSONNEL')!.used).toBe(5);
+    expect(w.domain.list(w.career)).toHaveLength(6);
+    expect(hq(w.career).capacities.find((c) => c.domain === 'PERSONNEL')!.used).toBe(6);
   });
 
   it('the personnel cost per period is what the stipend deducts', () => {
     const w = world();
     const total = w.engine.hooks.stipendDeductions.reduce((s, h) => s + h(w.career), 0);
-    expect(total).toBe(8 + 5 + 4 * 4);
+    expect(total).toBe(8 + 2 * 5 + 4 * 4);
   });
 
   it('qa.injure: MINOR injury with a recovery timer, then back to AVAILABLE', () => {

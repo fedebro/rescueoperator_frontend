@@ -12,6 +12,7 @@ import type {
   VehicleDto,
 } from '@/contracts';
 import { MockError, iso, type MockCareer, type MockEngine } from '../engine';
+import { isProtectedIncident } from '../first-shift';
 import { AID_CFG, DAY, activeMembers, allianceApiOf, careerAlliance, type MockAlliance } from './alliance';
 import { majorOf } from './major';
 
@@ -555,7 +556,7 @@ export function installAllianceAid(engine: MockEngine): void {
     const incident = incidentOf(career, incidentId);
     if (!incident || CLOSED_INCIDENT.has(incident.status))
       throw new MockError(404, 'NOT_FOUND', 'Incident not found');
-    if (incident.isTutorial)
+    if (isProtectedIncident(incident))
       throw new MockError(409, 'CONFLICT', 'Tutorial incident', { reason: 'INCIDENT_NOT_ACTIVE' });
     // A member of a major is asked for through the major route (one request spread over its sectors).
     if (!majorId && incident.major)

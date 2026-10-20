@@ -15,6 +15,7 @@ import { CreditAmount } from '@/components/ui/credit-amount';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog';
 import { Stat } from '@/components/ui/misc';
 import { useCareerId, useSnapshot } from './hooks';
+import { isFirstShiftOutcome } from './first-shift';
 
 /** Shows pending mission outcomes one at a time; acknowledging removes it server-side (so it survives reloads until seen). */
 export function OutcomeModal() {
@@ -25,7 +26,8 @@ export function OutcomeModal() {
   const tc = useTranslations('common');
   const tx = useI18nText();
   const qc = useQueryClient();
-  const outcome = pendingOutcomes[0];
+  // First-shift outcomes are celebrated by the non-blocking card instead (first-shift-outcome.tsx): nothing to close.
+  const outcome = pendingOutcomes.find((o) => !isFirstShiftOutcome(o, career));
   // The tutorial keeps the modal back until its own OUTCOME step is reached, so the coach text and the modal agree.
   const ack = useMutation({
     mutationFn: (incidentId: string) => gameApi.ackOutcome(careerId, incidentId),

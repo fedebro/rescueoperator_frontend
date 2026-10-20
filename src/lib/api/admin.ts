@@ -28,6 +28,7 @@ import {
   type AdminCreditAdjustmentBody as AdminCreditAdjustmentBodySchema,
   AdminCreditAdjustmentResult,
   AdminDashboardDto,
+  AdminFirstShiftDto,
   AdminFeatureFlagRow,
   AdminGeodataRelease,
   AdminIncidentDetail,
@@ -213,6 +214,9 @@ export const adminApi = {
   },
   dashboard: () => api.get('/admin/dashboard', { schema: AdminDashboardDto }),
   queues: () => api.get('/admin/queues', { schema: list(AdminQueueStats) }),
+  /** Primo turno (D-148): first call, missions reached, finished, 6th call, back the next day, skipped tutorial. */
+  firstShift: (sinceDays = 14) =>
+    api.get('/admin/analytics/first-shift', { query: { sinceDays }, schema: AdminFirstShiftDto }),
 
   users: (query: { q?: string; status?: string }) =>
     api.get('/admin/users', { query: { ...query, limit: LIMIT }, schema: list(AdminUserRow) }),

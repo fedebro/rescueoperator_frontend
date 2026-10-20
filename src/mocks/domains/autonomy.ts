@@ -2,6 +2,7 @@ import type { IncidentDto, MovementDto, ResupplyVehicleResult, VehicleDto } from
 import { haversineMeters, movementPoint, type LngLat } from '@/lib/geo';
 import { AUTONOMY as K, INCIDENT_TEMPLATES, ITEM_TYPES, VEHICLE_TYPES } from '../data/catalog';
 import { MockError, iso, text, type MockCareer, type MockEngine } from '../engine';
+import { isProtectedIncident } from '../first-shift';
 import type { QaHelpers } from '../qa';
 import { domainState } from './index';
 import { logisticsOf } from './logistics';
@@ -222,7 +223,8 @@ export function installAutonomy(engine: MockEngine): void {
     severity: incident.severity,
     category: incident.category,
     position: incident.position,
-    tutorial: incident.isTutorial,
+    // First-shift calls (D-148) are protected like the tutorial: free fuel and consumables.
+    tutorial: isProtectedIncident(incident),
     consumed: false,
   });
   const templateNeeds = (templateCode: string, severity: number): Record<string, number> => {
@@ -318,7 +320,7 @@ export function installAutonomy(engine: MockEngine): void {
     if (!incident) return;
     const at = action.dueAt;
     // Rotation (`flight.resumeAfterRefuel`): it goes home, refuels, then flies back on its own if the call is still open.
-    const resume = K.flight.resumeAfterRefuel && !incident.isTutorial;
+    const resume = K.flight.resumeAfterRefuel && !isProtectedIncident(incident);
     stateOf(career, vehicle.id).resume = resume ? { incidentId: incident.id } : null;
     const returning = engine.sendHome(career, vehicle, at, engine.destinationOf(vehicle, incident));
     engine.log(
@@ -514,7 +516,7 @@ export function installAutonomy(engine: MockEngine): void {
   };
 
   engine.hooks.workDone.push((career, incident) => {
-    if (incident.isTutorial) return;
+    if (isProtectedIncident(incident)) return;
     const needs = scaleNeeds(
       templateNeeds(incident.templateCode, incident.severity),
       itemMultiplier(career, incident),
@@ -719,7 +721,7 @@ export function installAutonomy(engine: MockEngine): void {
     // Arriving without an item the incident needs (nothing on board, nothing on the shelf before leaving): the work takes
     // longer, once per incident — the mock's stand-in for the backend's `affectedCapability × missingMultiplier`.
     const st = autonomyState(career);
-    if (st.penalised[incident.id] || incident.isTutorial) return;
+    if (st.penalised[incident.id] || isProtectedIncident(incident)) return;
     const needs = templateNeeds(incident.templateCode, incident.severity);
     const carried = profileFor(career, vehicle).items.filter((i) => (needs[i.code] ?? 0) > 0);
     if (carried.length === 0) return;

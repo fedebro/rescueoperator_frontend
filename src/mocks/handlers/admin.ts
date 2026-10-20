@@ -42,6 +42,7 @@ import {
   type ConfigVersion,
 } from '../domains/admin';
 import { majorOf } from '../domains/major';
+import { firstShiftReport } from '../first-shift';
 import type { Ctx, DomainHandlers, HandlerKit } from './kit';
 
 type Account = ReturnType<HandlerKit['authed']>;
@@ -195,6 +196,16 @@ export const adminHandlers: DomainHandlers = (kit) => {
           signupsLast7d: accounts(engine).filter((a) => now - Date.parse(a.user.createdAt) < 7 * 86_400_000)
             .length,
         });
+      }),
+    ),
+    /* Primo turno (D-148): the measures of the first five missions of new careers. */
+    http.get(
+      admin('/analytics/first-shift'),
+      route((ctx) => {
+        reader(ctx);
+        const days = Number(query(ctx).get('sinceDays') ?? 14);
+        const sinceDays = Number.isFinite(days) && days > 0 ? Math.min(90, Math.floor(days)) : 14;
+        return ok(firstShiftReport(Object.values(engine.state.careers), engine.now(), sinceDays, iso));
       }),
     ),
     http.get(

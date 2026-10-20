@@ -9,6 +9,7 @@ import {
   type MockVehicleType,
 } from '../data/catalog';
 import { MockError, iso, text, type DispatchLeg, type MockCareer, type MockEngine } from '../engine';
+import { isProtectedIncident } from '../first-shift';
 import type { QaHelpers } from '../qa';
 import { domainState } from './index';
 
@@ -749,7 +750,7 @@ export function installLogistics(engine: MockEngine): void {
       );
       incident = engine.recompute(career, incidentId, at);
       // Same rule as a recall: an incident left without vehicles can expire again.
-      if (incident?.status === 'PENDING_RESPONSE' && !incident.isTutorial)
+      if (incident?.status === 'PENDING_RESPONSE' && !isProtectedIncident(incident))
         engine.schedule(career, 'INCIDENT_EXPIRE', 600, incidentId);
     }
     engine.emit(career, 'vehicle.broke_down', { vehicle: broken, ...(incident ? { incident } : {}) });
@@ -855,7 +856,7 @@ export function installLogistics(engine: MockEngine): void {
     if (
       !incident ||
       !type ||
-      incident.isTutorial ||
+      isProtectedIncident(incident) ||
       missionsDone(career) < SAFE_MISSIONS ||
       career.summary.level < featureLevel('MAINTENANCE')
     )

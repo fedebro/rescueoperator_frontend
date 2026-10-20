@@ -75,6 +75,8 @@ export interface BootOptions {
   email?: string;
   /** Mock time compression for this test (default: the server default, ×12). */
   speed?: number;
+  /** Keep the first shift (D-148: the first 5 missions of a new career). Default: booted past it. */
+  firstShift?: boolean;
   /** Keep the push-permission sheet of this release (default: already shown — see `dismissPushPrompt`). */
   pushPrompt?: boolean;
 }
@@ -88,18 +90,19 @@ export async function bootCareer(page: Page, projectName: string, opts: BootOpti
   if (opts.speed) await page.evaluate((s) => localStorage.setItem('rc-mock-speed', String(s)), opts.speed);
   await page.waitForFunction(() => '__rcMock' in window);
   await page.evaluate(
-    ({ email, directorName, level, credits, tutorialDone }) =>
+    ({ email, directorName, level, credits, tutorialDone, firstShift }) =>
       (
         window as unknown as {
           __rcMock: { qa: { createReadyCareer: (o: Record<string, unknown>) => unknown } };
         }
-      ).__rcMock.qa.createReadyCareer({ email, directorName, level, credits, tutorialDone }),
+      ).__rcMock.qa.createReadyCareer({ email, directorName, level, credits, tutorialDone, firstShift }),
     {
       email,
       directorName,
       level: opts.level ?? 1,
       credits: opts.credits,
       tutorialDone: opts.tutorialDone ?? true,
+      firstShift: opts.firstShift ?? false,
     },
   );
   await dismissInstallHint(page);

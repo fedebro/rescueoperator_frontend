@@ -1522,13 +1522,16 @@ export function installPersonnel(engine: MockEngine): void {
       row.crew = selection.crew;
       for (const op of selection.crew) taken.add(op.id);
     }
+    // First-shift calls (D-148): at most min + 1 aboard, so the starter roster crews two engines at once.
+    const topUpTo = (type: (typeof plan)[number]['type']) =>
+      incident.firstShift ? Math.min(type.crewOptimal, type.crewMin + 1) : type.crewOptimal;
     // The top-up takes the best candidates left (the backend's fill order), not the holders of the required roles
     // first: those would leave the next vehicle of the same station without its own.
     for (const row of plan) {
       const extra = crewCandidates(row.type, poolOf(row.vehicle.facilityId), {
         now,
         ownTeam: ownTeamOf(career, row.vehicle.id),
-      }).ordered.slice(0, Math.max(0, row.type.crewOptimal - row.crew.length));
+      }).ordered.slice(0, Math.max(0, topUpTo(row.type) - row.crew.length));
       row.crew = [...row.crew, ...extra];
       for (const op of extra) taken.add(op.id);
     }

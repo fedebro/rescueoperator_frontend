@@ -57,6 +57,7 @@ import { useServerNow } from '@/hooks/use-server-now';
 import { useCareerId, useSnapshot, useVehicleTypeLookup } from './hooks';
 import { InspectorHeaderButton, SHEET_HEADER } from './inspector-parts';
 import { DispatchPanel, RequirementBars } from './dispatch-panel';
+import { LiveStoryCard } from './live-story';
 import { ResendHere } from './dispatch-chain';
 import { IncidentExternalSupport } from '@/features/families/external-support';
 import { AidIncidentSection, AlliedSupportLine, SharedBadge } from '@/features/alliance/aid-incident';
@@ -271,6 +272,8 @@ export function IncidentInspector({ incident }: { incident: IncidentDto }) {
               <MajorMemberBanner incident={incident} />
               {assigned.length > 0 ? (
                 <div className="border-border flex flex-col gap-3 border-b p-4">
+                  {/* «Racconto in diretta» (primo turno §3.2): what is happening, one line at a time. */}
+                  <LiveStoryCard incident={incident} />
                   {incident.status === 'ON_SCENE' || incident.work.ratePerSecond > 0 ? (
                     <WorkProgress incident={incident} />
                   ) : null}

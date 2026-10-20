@@ -14,6 +14,8 @@ export type QaHelpers = Record<string, (...args: never[]) => unknown> & {
     level?: number;
     credits?: number;
     tutorialDone?: boolean;
+    /** Keep the first shift (D-148; default false: QA careers start past it, with the normal generator). */
+    firstShift?: boolean;
   }) => { careerId: string };
   career: () => MockCareer;
   grant: (o: { credits?: number; xp?: number }) => void;
@@ -31,6 +33,10 @@ export type QaHelpers = Record<string, (...args: never[]) => unknown> & {
    * enough for a major incident. Call `staffAll()` afterwards when the personnel system needs crews. Returns their ids.
    */
   addVehicles: (typeCode: string, count?: number, facilityId?: string) => string[];
+  /** Primo turno: the simulation state (null when over / dropped). */
+  firstShift: () => MockCareer['firstShift'] | null;
+  /** Primo turno: the next call right now instead of after its countdown. */
+  firstShiftCallNow: () => void;
 };
 
 export function installQa(engine: MockEngine): void {
@@ -43,7 +49,14 @@ export function installQa(engine: MockEngine): void {
   };
   const qa: QaHelpers = {
     /** Creates account + session + career in Pescara, past the tutorial, ready to play. */
-    createReadyCareer: ({ email, directorName, level = 1, credits, tutorialDone = true }) => {
+    createReadyCareer: ({
+      email,
+      directorName,
+      level = 1,
+      credits,
+      tutorialDone = true,
+      firstShift = false,
+    }) => {
       const { challengeId } = engine.requestOtp(email);
       engine.verifyOtp(
         { challengeId, code: '123456', directorName, acceptTerms: true, confirmAge: true },
@@ -51,9 +64,15 @@ export function installQa(engine: MockEngine): void {
       );
       const account = engine.state.users[email.trim().toLowerCase()]!;
       const site = engine.starterSites()[0]!;
+      // Without the first shift (D-148): a career as before it — the legacy tutorial call, the normal generator after it.
+      const flag = engine.state.featureFlags.firstShift;
+      if (!firstShift) engine.state.featureFlags.firstShift = false;
       const summary = engine.createCareer(account, { locationId: PESCARA.id, siteId: site.id });
+      if (flag === undefined) delete engine.state.featureFlags.firstShift;
+      else engine.state.featureFlags.firstShift = flag;
       const career = engine.state.careers[summary.id]!;
-      if (tutorialDone) {
+      if (tutorialDone && firstShift) engine.advanceTutorial(career, 'DONE');
+      else if (tutorialDone) {
         const tutorial = career.incidents.find((i) => i.isTutorial);
         if (tutorial) engine.close(career, tutorial, 'CANCELLED', engine.now());
         career.pendingOutcomes = [];
@@ -104,6 +123,11 @@ export function installQa(engine: MockEngine): void {
       });
       engine.save();
       return ids;
+    },
+    firstShift: () => current().firstShift ?? null,
+    firstShiftCallNow: () => {
+      engine.firstShiftCallNow(current());
+      engine.save();
     },
     pause: (paused = true) => {
       engine.paused = paused;
